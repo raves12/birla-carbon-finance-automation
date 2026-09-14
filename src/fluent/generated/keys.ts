@@ -301,9 +301,49 @@ declare global {
                         table: 'sys_hub_action_instance_v2'
                         id: '6b25581331014cec938e1ed5a0805a2b'
                     }
+                    'ap-approval-entry': {
+                        table: 'sys_ui_related_list_entry'
+                        id: '6261fb27400a43078c246df30b532782'
+                    }
+                    'ap-audit-event-entry': {
+                        table: 'sys_ui_related_list_entry'
+                        id: '3f50bbec89084a4c9f43f12e9db8aae0'
+                    }
+                    'ap-exception-entry': {
+                        table: 'sys_ui_related_list_entry'
+                        id: 'cdb3bbad28614879a5f4965b084da398'
+                    }
+                    'ap-extraction-entry': {
+                        table: 'sys_ui_related_list_entry'
+                        id: 'b4c0f998562e4824a60824ce84df651c'
+                    }
+                    'ap-integration-txn-entry': {
+                        table: 'sys_ui_related_list_entry'
+                        id: 'b18dd3dead824aa08a5e13e3915d851a'
+                    }
                     'ap-invoice-lifecycle': {
                         table: 'sttrm_model'
                         id: '3d47c892fca14824b3093e6e0cca1b5a'
+                    }
+                    'ap-invoice-line-entry': {
+                        table: 'sys_ui_related_list_entry'
+                        id: '3e10aab4ea8949968ad56f5541fdbbb2'
+                    }
+                    'ap-invoice-related-list': {
+                        table: 'sys_ui_related_list'
+                        id: '5204fb0dd10e4066aef1705e63edf016'
+                    }
+                    'ap-invoice-to-audit-event-rel': {
+                        table: 'sys_relationship'
+                        id: '56f637cc9b114417b4bf030d96fbf173'
+                    }
+                    'ap-invoice-to-integration-txn-rel': {
+                        table: 'sys_relationship'
+                        id: '697373cbc19c4182aa7613ba5243d781'
+                    }
+                    'ap-match-entry': {
+                        table: 'sys_ui_related_list_entry'
+                        id: 'c4dc3de2264343c39d6cc834a14e4c40'
                     }
                     'ap-state-approved': {
                         table: 'sttrm_state'
@@ -472,6 +512,90 @@ declare global {
                     'ar-aging-lookup': {
                         table: 'sys_hub_action_instance_v2'
                         id: 'c820c2b10be74ce4b872e74fb991d8a1'
+                    }
+                    'ar-approval-entry': {
+                        table: 'sys_ui_related_list_entry'
+                        id: 'deada9cb87664befbe2a8db4b27dbbcf'
+                    }
+                    'ar-exception-entry': {
+                        table: 'sys_ui_related_list_entry'
+                        id: 'e52b5626825644ff8447e115eb6186f7'
+                    }
+                    'bcfa-app-menu': {
+                        table: 'sys_app_application'
+                        id: 'c34b89c19957473da79f8c95aa069e60'
+                    }
+                    'bcfa-mod-ap-approvals': {
+                        table: 'sys_app_module'
+                        id: '11dc22646a6b4082b1ea8692f207cfa5'
+                    }
+                    'bcfa-mod-ap-exceptions': {
+                        table: 'sys_app_module'
+                        id: 'baa419b93c6d4047a286d1a7e637b607'
+                    }
+                    'bcfa-mod-ap-invoices': {
+                        table: 'sys_app_module'
+                        id: '68e5cee2d97a47749a3e4f227cd7a85e'
+                    }
+                    'bcfa-mod-ar-approvals': {
+                        table: 'sys_app_module'
+                        id: '6961e3a3513745dbbdb6bf855d2c179a'
+                    }
+                    'bcfa-mod-ar-exceptions': {
+                        table: 'sys_app_module'
+                        id: '0ac0dc2fb4984410a87581371e092328'
+                    }
+                    'bcfa-mod-ar-open-items': {
+                        table: 'sys_app_module'
+                        id: '4fb67b970634442ab50f70fdd7c27612'
+                    }
+                    'bcfa-mod-ar-separator': {
+                        table: 'sys_app_module'
+                        id: '47a0e9b7777d4396af1dfe4a97e66656'
+                    }
+                    'bcfa-mod-audit-events': {
+                        table: 'sys_app_module'
+                        id: '08d81668c7b34cd49e989901b55e7d82'
+                    }
+                    'bcfa-mod-credit-notes': {
+                        table: 'sys_app_module'
+                        id: 'e2fcca7e32ed4dd693c612d16400c877'
+                    }
+                    'bcfa-mod-customers': {
+                        table: 'sys_app_module'
+                        id: '4a4e2cdfa9b84779b81513a6a127ee52'
+                    }
+                    'bcfa-mod-deductions': {
+                        table: 'sys_app_module'
+                        id: 'ab1b010fafdc4be48d96fb13798af350'
+                    }
+                    'bcfa-mod-int-separator': {
+                        table: 'sys_app_module'
+                        id: 'c6fc41d094d74359986a7b421cb0dd4f'
+                    }
+                    'bcfa-mod-integration-profiles': {
+                        table: 'sys_app_module'
+                        id: 'fe21eec338d44517a028581bd10e7dda'
+                    }
+                    'bcfa-mod-integration-txn': {
+                        table: 'sys_app_module'
+                        id: '930790bca28b43e1aa79ca44dddfccd9'
+                    }
+                    'bcfa-mod-payments': {
+                        table: 'sys_app_module'
+                        id: '18e4054cb8f44a58929e897a9b1eaba6'
+                    }
+                    'bcfa-mod-pos': {
+                        table: 'sys_app_module'
+                        id: 'eacb80c399984a7a8ba38d4bb7681c66'
+                    }
+                    'bcfa-mod-ref-separator': {
+                        table: 'sys_app_module'
+                        id: '212b13f0a6b143e8bd444b7ad0faf4d6'
+                    }
+                    'bcfa-mod-vendors': {
+                        table: 'sys_app_module'
+                        id: 'be5effcc5cdd4866b2646b82e2a9ba6f'
                     }
                     bom_json: {
                         table: 'sys_module'
@@ -657,6 +781,10 @@ declare global {
                         table: 'sttrm_model'
                         id: 'abff1713d7c94462ba74a68f0a935603'
                     }
+                    'deduction-entry': {
+                        table: 'sys_ui_related_list_entry'
+                        id: '0820a072c9534711bdf07df3f0517802'
+                    }
                     'flow-ap-exception-aging-escalation': {
                         table: 'sys_hub_flow'
                         id: '8769e860868b4d1da62856fa0f7e0f76'
@@ -710,9 +838,45 @@ declare global {
                         id: '06226f4a65c74f899aa237342ed1a170'
                         deleted: true
                     }
+                    'match-candidate-entry': {
+                        table: 'sys_ui_related_list_entry'
+                        id: 'b6d4108f47a94bbaadf4a45eb5b08487'
+                    }
                     package_json: {
                         table: 'sys_module'
                         id: 'e95435ae294b4c5bac7cbdf71afaf7ef'
+                    }
+                    'payment-allocation-entry': {
+                        table: 'sys_ui_related_list_entry'
+                        id: 'bf429c1395a048c6a45a2c150619b276'
+                    }
+                    'payment-allocation-related-list': {
+                        table: 'sys_ui_related_list'
+                        id: 'f46e1afbf3ae4f3ba08564b3be45a2d8'
+                    }
+                    'payment-audit-event-entry': {
+                        table: 'sys_ui_related_list_entry'
+                        id: '60c1c4b8ed9c4936be55df720432112d'
+                    }
+                    'payment-integration-txn-entry': {
+                        table: 'sys_ui_related_list_entry'
+                        id: '9e419aa473ba4dfdacc681e2342ef320'
+                    }
+                    'payment-related-list': {
+                        table: 'sys_ui_related_list'
+                        id: '6427ece927454448ba28afb659ba11f5'
+                    }
+                    'payment-to-audit-event-rel': {
+                        table: 'sys_relationship'
+                        id: '6d2eed938dbb42818c6d3c693889809a'
+                    }
+                    'payment-to-integration-txn-rel': {
+                        table: 'sys_relationship'
+                        id: '441636eb19f04a8cb37ee5da09cbadc8'
+                    }
+                    'remittance-entry': {
+                        table: 'sys_ui_related_list_entry'
+                        id: '68b282b5fb7d4dfe807e94d135d24695'
                     }
                     'si-ai-simulation-service': {
                         table: 'sys_script_include'
