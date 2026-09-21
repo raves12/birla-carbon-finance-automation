@@ -95,12 +95,13 @@ export const x_695068_bcfa_ap_extraction = Table({
         confidence: DecimalColumn({ label: 'Confidence', scale: 2 }),
         source: ChoiceColumn({
             label: 'Source',
-            default: 'simulated_document_intelligence',
+            default: 'claude_document_intelligence',
             choices: {
-                simulated_document_intelligence: 'Simulated (Document Intelligence stand-in)',
+                claude_document_intelligence: 'Claude (JSON-context extraction)',
+                simulated_document_intelligence: 'Simulated (deterministic fallback, legacy)',
                 now_assist_document_intelligence: 'Now Assist in Document Intelligence (not licensed in this PDI)',
             },
-            hint: 'DISCOVERY.md: Now Assist in Document Intelligence is not active in this PDI — extraction is simulated. This field records which engine actually produced the row.',
+            hint: 'Records which engine actually produced this extraction row. Claude is tried first when x_695068_bcfa.claude.enabled is true; the simulated fallback runs only if Claude is disabled or unavailable.',
         }),
         requires_review: BooleanColumn({ label: 'Requires Review', default: false }),
         reviewed_by: ReferenceColumn({ label: 'Reviewed By', referenceTable: 'sys_user' }),

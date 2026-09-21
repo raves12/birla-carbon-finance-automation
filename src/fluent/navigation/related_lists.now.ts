@@ -85,6 +85,11 @@ export const apAuditEventEntry = Record({
     table: 'sys_ui_related_list_entry',
     data: { list_id: apInvoiceRelatedList, position: 6, related_list: `REL:${apInvoiceToAuditEventRel}` },
 })
+export const apFinanceIntakeEntry = Record({
+    $id: Now.ID['ap-finance-intake-entry'],
+    table: 'sys_ui_related_list_entry',
+    data: { list_id: apInvoiceRelatedList, position: 7, related_list: 'x_695068_bcfa_finance_intake.ap_invoice' },
+})
 
 // --- Payment -------------------------------------------------------------
 
@@ -160,6 +165,11 @@ export const paymentAuditEventEntry = Record({
     $id: Now.ID['payment-audit-event-entry'],
     table: 'sys_ui_related_list_entry',
     data: { list_id: paymentRelatedList, position: 6, related_list: `REL:${paymentToAuditEventRel}` },
+})
+export const paymentFinanceIntakeEntry = Record({
+    $id: Now.ID['payment-finance-intake-entry'],
+    table: 'sys_ui_related_list_entry',
+    data: { list_id: paymentRelatedList, position: 7, related_list: 'x_695068_bcfa_finance_intake.payment' },
 })
 
 // --- Payment Allocation → Deduction ---------------------------------------

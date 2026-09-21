@@ -184,7 +184,7 @@ export const x_695068_bcfa_audit_event = Table({
             label: 'Actor Type',
             mandatory: true,
             default: 'system',
-            choices: { user: 'User', system: 'System', simulated_ai: 'Simulated AI (advisory)' },
+            choices: { user: 'User', system: 'System', simulated_ai: 'Simulated AI (advisory, legacy)', claude_ai: 'Claude (advisory)' },
         }),
         description: StringColumn({ label: 'Description', maxLength: 4000 }),
         before_value: JsonColumn({ label: 'Before Value' }),

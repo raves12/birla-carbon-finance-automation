@@ -332,6 +332,15 @@ Acl({
     roles: [bcfaAuditor, bcfaReadOnly, bcfaFinanceReviewer, bcfaAdmin],
 })
 
+Acl({
+    $id: Now.ID['acl-read-x_695068_bcfa_ai_interaction'],
+    type: 'record',
+    table: 'x_695068_bcfa_ai_interaction',
+    operation: 'read',
+    roles: [bcfaAuditor, bcfaReadOnly, bcfaFinanceReviewer, bcfaAdmin],
+    description: 'AI Interaction is an evidence/audit-trail table like Audit Event/Integration Transaction — same read-only role list, no business-role write ACL.',
+})
+
 // --- Integration operator: write access scoped to integration tables only --
 
 Acl({
@@ -633,6 +642,35 @@ Acl({
     field: 'decision',
     script: `current.requested_by != gs.getUserID()`,
     description: 'A finance approver may set the decision field on any AR Approval they did not request themselves — blocks self-approval.',
+})
+
+// --- Finance Document Intake -------------------------------------------------
+// Same read population as the rest of the app; write/create scoped to the two
+// processing roles (either can trigger document intake, since a raw document
+// isn't known to be AP or AR until Claude classifies it) plus admin.
+
+Acl({
+    $id: Now.ID['acl-read-x_695068_bcfa_finance_intake'],
+    type: 'record',
+    table: 'x_695068_bcfa_finance_intake',
+    operation: 'read',
+    roles: [bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin],
+})
+
+Acl({
+    $id: Now.ID['acl-create-x_695068_bcfa_finance_intake'],
+    type: 'record',
+    table: 'x_695068_bcfa_finance_intake',
+    operation: 'create',
+    roles: [bcfaApProcessor, bcfaArProcessor, bcfaAdmin],
+})
+
+Acl({
+    $id: Now.ID['acl-write-x_695068_bcfa_finance_intake'],
+    type: 'record',
+    table: 'x_695068_bcfa_finance_intake',
+    operation: 'write',
+    roles: [bcfaApProcessor, bcfaArProcessor, bcfaAdmin],
 })
 
 

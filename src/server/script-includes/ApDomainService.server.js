@@ -12,9 +12,17 @@ ApDomainService.prototype = {
         this.approvalEngine = new ApprovalEngine();
         this.integrationService = new IntegrationService();
         this.aiSimulation = new AISimulationService();
+        this.claudeClient = new BCClaudeClient();
     },
 
-    LOW_CONFIDENCE_THRESHOLD: 0.85,
+    // Public entry point for the "Explain with Claude" UI Action on AP
+    // Exception — regenerates the advisory ai_recommendation on demand
+    // (e.g. to refresh a recommendation written before Claude was wired in,
+    // or after new evidence was added to the invoice). Same Claude-first-
+    // with-fallback behavior as the automatic call during validate/match.
+    explainException: function(apExceptionSysId) {
+        return this._explainApException(apExceptionSysId);
+    },
 
     _setState: function(apInvoiceSysId, newState, correlationId, description) {
         var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
@@ -88,13 +96,85 @@ ApDomainService.prototype = {
         return { apInvoiceSysId: sysId, correlationId: correlationId };
     },
 
-    // seedFields stands in for what real OCR/Document Intelligence would
-    // have extracted (see AISimulationService).
+    // Creates one AP Invoice Line row. Previously this was only ever done as
+    // a raw GlideRecord insert inline inside DemoDataSeeder — this method
+    // encapsulates the same shape as a proper, reusable service call so
+    // FinanceDocumentIntakeService (and any future caller) doesn't have to
+    // reach around ApDomainService to create a line. Deliberately dumb: it
+    // only writes fields it is given — po_line/receipt_reference resolution
+    // is the caller's job (deterministic line-matching lives in
+    // ApLineResolutionService, not here), matching the existing separation
+    // where ApDomainService orchestrates state and MatchingEngine owns
+    // tolerance evaluation.
+    attachInvoiceLine: function(apInvoiceSysId, fields) {
+        var line = new GlideRecord('x_695068_bcfa_ap_invoice_line');
+        line.initialize();
+        line.setValue('ap_invoice', apInvoiceSysId);
+        line.setValue('line_number', fields.lineNumber || 1);
+        line.setValue('material_or_service', fields.materialOrService || '');
+        line.setValue('quantity', fields.quantity || 0);
+        line.setValue('unit', fields.unit || '');
+        line.setValue('unit_price', fields.unitPrice || 0);
+        line.setValue('tax', fields.tax || 0);
+        line.setValue('amount', fields.amount || 0);
+        if (fields.poLine) line.setValue('po_line', fields.poLine);
+        if (fields.receiptReference) line.setValue('receipt_reference', fields.receiptReference);
+        return line.insert();
+    },
+
+    // seedFields stands in for whatever partial, as-if-OCR'd fields a real
+    // extraction step would have produced — see BCClaudeClient.extractInvoice
+    // for why this app uses a JSON-context path rather than a document/image
+    // one (no attachment mechanism exists in this app). Tries Claude first;
+    // falls back to the deterministic simulated extraction (AISimulationService)
+    // if Claude is disabled or the call fails for any reason — extraction
+    // must never block the pipeline on an AI outage.
     runExtraction: function(apInvoiceSysId, seedFields, options) {
-        this._setState(apInvoiceSysId, 'EXTRACTING', null, 'Beginning simulated extraction');
-        var result = this.aiSimulation.simulateApExtraction(apInvoiceSysId, seedFields, options);
+        this._setState(apInvoiceSysId, 'EXTRACTING', null, 'Beginning extraction');
+        var result = this._runClaudeExtraction(apInvoiceSysId, seedFields, options) ||
+            this.aiSimulation.simulateApExtraction(apInvoiceSysId, seedFields, options);
         this._setState(apInvoiceSysId, 'EXTRACTED', null, 'Extraction complete, confidence ' + result.confidence);
         return result;
+    },
+
+    // Returns a simulateApExtraction()-shaped result on success, or null if
+    // Claude is disabled/unavailable/invalid so the caller falls back.
+    _runClaudeExtraction: function(apInvoiceSysId, seedFields, options) {
+        if (!this.claudeClient.isEnabled()) return null;
+
+        var envelope = this.claudeClient.extractInvoice(apInvoiceSysId, seedFields);
+        if (!envelope.ok) return null;
+
+        var data = envelope.data;
+        var forcedConfidence = options && options.forceConfidence !== undefined ? options.forceConfidence : null;
+        var confidence = forcedConfidence !== null ? forcedConfidence : data.confidence;
+        var requiresReview = confidence < this.claudeClient.confidenceThreshold();
+
+        var extraction = new GlideRecord('x_695068_bcfa_ap_extraction');
+        extraction.initialize();
+        extraction.setValue('ap_invoice', apInvoiceSysId);
+        extraction.setValue('extracted_fields', JSON.stringify(data));
+        extraction.setValue('confidence', confidence);
+        extraction.setValue('source', 'claude_document_intelligence');
+        extraction.setValue('requires_review', requiresReview);
+        var extractionSysId = extraction.insert();
+
+        var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
+        if (invoice.get(apInvoiceSysId)) {
+            invoice.setValue('extraction_confidence', confidence);
+            invoice.update();
+        }
+
+        this.auditEngine.logEvent({
+            sourceTable: 'x_695068_bcfa_ap_invoice',
+            sourceRecord: apInvoiceSysId,
+            eventType: 'ai_recommendation',
+            actorType: 'claude_ai',
+            description: 'Claude invoice extraction, confidence ' + confidence + (data.warnings && data.warnings.length ? '; warnings: ' + data.warnings.join('; ') : ''),
+            afterValue: { confidence: confidence, requiresReview: requiresReview }
+        });
+
+        return { extractionSysId: extractionSysId, confidence: confidence, requiresReview: requiresReview };
     },
 
     validateInvoice: function(apInvoiceSysId) {
@@ -110,9 +190,10 @@ ApDomainService.prototype = {
         extraction.query();
         var confidence = extraction.next() ? parseFloat(extraction.getValue('confidence') || '1') : 1;
 
+        var confidenceThreshold = this.claudeClient.confidenceThreshold();
         var failure = null;
-        if (confidence < this.LOW_CONFIDENCE_THRESHOLD) {
-            failure = { reasonCode: 'low_confidence', description: 'Extraction confidence ' + confidence + ' is below the ' + this.LOW_CONFIDENCE_THRESHOLD + ' review threshold.' };
+        if (confidence < confidenceThreshold) {
+            failure = { reasonCode: 'low_confidence', description: 'Extraction confidence ' + confidence + ' is below the ' + confidenceThreshold + ' review threshold.' };
         } else if (!invoice.getValue('invoice_number') || !invoice.getValue('vendor') || !invoice.getValue('gross_amount')) {
             failure = { reasonCode: 'missing_field', description: 'One or more mandatory fields (invoice number, vendor, gross amount) are missing.' };
         } else {
@@ -129,7 +210,7 @@ ApDomainService.prototype = {
 
         if (failure) {
             var exceptionSysId = this.exceptionEngine.createApException(apInvoiceSysId, failure.reasonCode, failure.description);
-            this.aiSimulation.recommendApExceptionResolution(exceptionSysId);
+            this._explainApException(exceptionSysId);
             this._setState(apInvoiceSysId, 'EXCEPTION', null, 'Validation failed: ' + failure.reasonCode);
             return { validated: false, reasonCode: failure.reasonCode, exceptionSysId: exceptionSysId };
         }
@@ -144,7 +225,7 @@ ApDomainService.prototype = {
         var duplicateResult = this.matchingEngine.detectDuplicateInvoice(apInvoiceSysId);
         if (duplicateResult.duplicate) {
             var dupExceptionSysId = this.exceptionEngine.createApException(apInvoiceSysId, 'duplicate', 'Duplicate of AP Invoice ' + duplicateResult.matchedInvoiceSysId);
-            this.aiSimulation.recommendApExceptionResolution(dupExceptionSysId);
+            this._explainApException(dupExceptionSysId);
             this._setState(apInvoiceSysId, 'EXCEPTION', null, 'Duplicate invoice detected');
             return { matched: false, reasonCode: 'duplicate', exceptionSysId: dupExceptionSysId };
         }
@@ -156,13 +237,44 @@ ApDomainService.prototype = {
             else if (!match.taxWithinTolerance) reasonCode = 'tax_validation';
             var exceptionSysId2 = this.exceptionEngine.createApException(apInvoiceSysId, reasonCode,
                 'Match result: ' + match.matchResult + '. Quantity variance ' + (match.quantityVariancePct * 100).toFixed(1) + '%, price variance ' + (match.priceVariancePct * 100).toFixed(1) + '%.');
-            this.aiSimulation.recommendApExceptionResolution(exceptionSysId2);
+            this._explainApException(exceptionSysId2);
             this._setState(apInvoiceSysId, 'EXCEPTION', null, 'Match failed: ' + reasonCode);
             return { matched: false, reasonCode: reasonCode, exceptionSysId: exceptionSysId2, match: match };
         }
 
         this._setState(apInvoiceSysId, 'MATCHED', null, 'Matched within tolerance');
         return { matched: true, match: match };
+    },
+
+    // Writes an analyst-facing explanation into the exception's existing
+    // advisory field (ai_recommendation) — never read by any deterministic
+    // rule or approval/posting logic. Tries Claude first; falls back to the
+    // deterministic templated explanation (AISimulationService) if Claude is
+    // disabled, returns insufficient_information, or fails for any reason.
+    _explainApException: function(exceptionSysId) {
+        if (this.claudeClient.isEnabled()) {
+            var envelope = this.claudeClient.explainInvoiceException(exceptionSysId);
+            if (envelope.ok && !envelope.data.insufficient_information) {
+                var recommendation = envelope.data.explanation +
+                    (envelope.data.recommended_action ? ' Recommended next step: ' + envelope.data.recommended_action : '') +
+                    (envelope.data.evidence && envelope.data.evidence.length ? ' Evidence: ' + envelope.data.evidence.join('; ') + '.' : '');
+                var exception = new GlideRecord('x_695068_bcfa_ap_exception');
+                if (exception.get(exceptionSysId)) {
+                    exception.setValue('ai_recommendation', recommendation);
+                    exception.update();
+                }
+                this.auditEngine.logEvent({
+                    sourceTable: 'x_695068_bcfa_ap_exception',
+                    sourceRecord: exceptionSysId,
+                    eventType: 'ai_recommendation',
+                    actorType: 'claude_ai',
+                    description: 'Claude exception explanation, confidence ' + envelope.data.confidence,
+                    afterValue: { recommendation: recommendation }
+                });
+                return { recommendation: recommendation };
+            }
+        }
+        return this.aiSimulation.recommendApExceptionResolution(exceptionSysId);
     },
 
     // Reviewer correction: resolve the exception, then loop back to

@@ -10,9 +10,25 @@ ArDomainService.prototype = {
         this.approvalEngine = new ApprovalEngine();
         this.integrationService = new IntegrationService();
         this.aiSimulation = new AISimulationService();
+        this.claudeClient = new BCClaudeClient();
     },
 
     BALANCE_TOLERANCE: 0.01,
+
+    // Public entry point for the "Explain with Claude" UI Action on AR
+    // Exception — same purpose as ApDomainService.explainException. For a
+    // customer_ambiguous exception, re-derives the same candidate-customer
+    // context from the exception's own description so a manual re-run is
+    // just as informed as the automatic call was.
+    explainException: function(arExceptionSysId) {
+        var exception = new GlideRecord('x_695068_bcfa_ar_exception');
+        var candidateCustomers = null;
+        if (exception.get(arExceptionSysId) && exception.getValue('reason_code') === 'customer_ambiguous') {
+            var match = /remitter name "([^"]*)"/.exec(exception.getValue('description') || '');
+            if (match) candidateCustomers = this._findCandidateCustomers(match[1]);
+        }
+        return this._explainArException(arExceptionSysId, candidateCustomers);
+    },
 
     _setState: function(paymentSysId, newState, correlationId, description) {
         var payment = new GlideRecord('x_695068_bcfa_payment');
@@ -97,9 +113,41 @@ ArDomainService.prototype = {
         if (fields.receivedDate) remittance.setValue('received_date', fields.receivedDate);
         var sysId = remittance.insert();
         if (fields.seedFields) {
-            this.aiSimulation.simulateArExtraction(sysId, fields.seedFields, fields.options);
+            this._runClaudeRemittanceExtraction(sysId, fields.seedFields, fields.options) ||
+                this.aiSimulation.simulateArExtraction(sysId, fields.seedFields, fields.options);
         }
         return { remittanceSysId: sysId };
+    },
+
+    // Returns a simulateArExtraction()-shaped result on success, or null if
+    // Claude is disabled/unavailable/invalid so the caller falls back —
+    // same pattern as ApDomainService._runClaudeExtraction.
+    _runClaudeRemittanceExtraction: function(remittanceSysId, seedFields, options) {
+        if (!this.claudeClient.isEnabled()) return null;
+
+        var envelope = this.claudeClient.extractRemittance(remittanceSysId, seedFields);
+        if (!envelope.ok) return null;
+
+        var data = envelope.data;
+        var forcedConfidence = options && options.forceConfidence !== undefined ? options.forceConfidence : null;
+        var confidence = forcedConfidence !== null ? forcedConfidence : data.confidence;
+
+        var remittance = new GlideRecord('x_695068_bcfa_remittance');
+        if (!remittance.get(remittanceSysId)) return null;
+        remittance.setValue('extracted_fields', JSON.stringify(data));
+        remittance.setValue('confidence', confidence);
+        remittance.update();
+
+        this.auditEngine.logEvent({
+            sourceTable: 'x_695068_bcfa_remittance',
+            sourceRecord: remittanceSysId,
+            eventType: 'ai_recommendation',
+            actorType: 'claude_ai',
+            description: 'Claude remittance extraction, confidence ' + confidence + (data.warnings && data.warnings.length ? '; warnings: ' + data.warnings.join('; ') : ''),
+            afterValue: { confidence: confidence }
+        });
+
+        return { confidence: confidence };
     },
 
     normalizePayment: function(paymentSysId) {
@@ -131,9 +179,29 @@ ArDomainService.prototype = {
         }
 
         var exceptionSysId = this.exceptionEngine.createArException(paymentSysId, 'customer_ambiguous', 'Could not resolve customer from remitter name "' + candidateName + '".');
-        this.aiSimulation.recommendArExceptionResolution(exceptionSysId);
+        this._explainArException(exceptionSysId, this._findCandidateCustomers(candidateName));
         this._setState(paymentSysId, 'EXCEPTION', null, 'Customer resolution failed');
         return { resolved: false, exceptionSysId: exceptionSysId };
+    },
+
+    // Deterministic, coarse pre-filter for the customer_ambiguous
+    // explanation — Claude only ever sees this short candidate list, never
+    // the full customer table. Matches on the first token of the attempted
+    // remitter name (e.g. "ACME" out of "ACME Trdg Co") since that's the
+    // most stable fragment across abbreviations/misspellings.
+    _findCandidateCustomers: function(candidateName) {
+        if (!candidateName) return [];
+        var firstToken = candidateName.split(/\s+/)[0];
+        if (!firstToken) return [];
+        var gr = new GlideRecord('x_695068_bcfa_customer');
+        gr.addQuery('name', 'STARTSWITH', firstToken);
+        gr.setLimit(5);
+        gr.query();
+        var candidates = [];
+        while (gr.next()) {
+            candidates.push({ customer_code: gr.getValue('customer_code'), name: gr.getValue('name') });
+        }
+        return candidates;
     },
 
     matchPayment: function(paymentSysId) {
@@ -146,10 +214,10 @@ ArDomainService.prototype = {
         }
 
         var multi = this.matchingEngine.multiInvoiceSuggestion(paymentSysId);
-        this.aiSimulation.suggestTopCandidate(paymentSysId);
+        this._recommendClaudeCashMatch(paymentSysId) || this.aiSimulation.suggestTopCandidate(paymentSysId);
         if (!multi.matched) {
             var exceptionSysId = this.exceptionEngine.createArException(paymentSysId, 'unmatched', 'No open item combination matched this payment.');
-            this.aiSimulation.recommendArExceptionResolution(exceptionSysId);
+            this._explainArException(exceptionSysId);
             this._setState(paymentSysId, 'UNMATCHED', null, 'No match found');
             this._setState(paymentSysId, 'EXCEPTION', null, 'Unmatched payment routed to exception');
             return { matched: false, exceptionSysId: exceptionSysId };
@@ -162,6 +230,83 @@ ArDomainService.prototype = {
 
         this._setState(paymentSysId, 'PARTIALLY_MATCHED', null, 'Partial multi-invoice candidate found, residual ' + multi.residual);
         return { matched: true, mode: 'partial', residual: multi.residual, arOpenItemSysIds: multi.arOpenItemSysIds };
+    },
+
+    // Returns a suggestTopCandidate()-shaped result on success, or null if
+    // Claude is disabled/unavailable/invalid so the caller falls back to
+    // the deterministic heuristic. Reuses the exact same candidate
+    // population multiInvoiceSuggestion just considered (this customer's
+    // not-cleared open items) — Claude never sees a broader population.
+    _recommendClaudeCashMatch: function(paymentSysId) {
+        if (!this.claudeClient.isEnabled()) return null;
+
+        var payment = new GlideRecord('x_695068_bcfa_payment');
+        if (!payment.get(paymentSysId) || !payment.getValue('customer')) return null;
+
+        var item = new GlideRecord('x_695068_bcfa_ar_open_item');
+        item.addQuery('customer', payment.getValue('customer'));
+        item.addQuery('status', '!=', 'cleared');
+        item.query();
+        var candidateSysIds = [];
+        while (item.next()) candidateSysIds.push(item.getUniqueValue());
+        if (candidateSysIds.length === 0) return null;
+
+        var envelope = this.claudeClient.recommendCashMatch(paymentSysId, candidateSysIds);
+        if (!envelope.ok) return null;
+
+        var data = envelope.data;
+        var suggestion = new GlideRecord('x_695068_bcfa_match_candidate');
+        suggestion.initialize();
+        suggestion.setValue('payment', paymentSysId);
+        if (data.recommended_open_item_sys_id) suggestion.setValue('ar_open_item', data.recommended_open_item_sys_id);
+        suggestion.setValue('customer_candidate', payment.getValue('customer'));
+        suggestion.setValue('match_type', 'ai_suggested');
+        suggestion.setValue('confidence', data.confidence);
+        suggestion.setValue('rank', 0);
+        suggestion.setValue('selected', false);
+        var sysId = suggestion.insert();
+
+        this.auditEngine.logEvent({
+            sourceTable: 'x_695068_bcfa_payment',
+            sourceRecord: paymentSysId,
+            eventType: 'ai_recommendation',
+            actorType: 'claude_ai',
+            description: 'Claude cash-match recommendation: ' + data.match_type + ', confidence ' + data.confidence + '. ' + (data.explanation || ''),
+            afterValue: { matchType: data.match_type, recommendedItemNumber: data.recommended_item_number || null }
+        });
+
+        return { suggested: true, matchCandidateSysId: sysId, matchType: data.match_type };
+    },
+
+    // Writes an analyst-facing explanation into the exception's existing
+    // advisory field (ai_recommendation). Same Claude-first-with-fallback
+    // pattern as ApDomainService._explainApException. candidateCustomers is
+    // optional context for the customer_ambiguous case (see
+    // _findCandidateCustomers).
+    _explainArException: function(exceptionSysId, candidateCustomers) {
+        if (this.claudeClient.isEnabled()) {
+            var envelope = this.claudeClient.explainCashException(exceptionSysId, candidateCustomers);
+            if (envelope.ok && !envelope.data.insufficient_information) {
+                var recommendation = envelope.data.explanation +
+                    (envelope.data.recommended_action ? ' Recommended next step: ' + envelope.data.recommended_action : '') +
+                    (envelope.data.evidence && envelope.data.evidence.length ? ' Evidence: ' + envelope.data.evidence.join('; ') + '.' : '');
+                var exception = new GlideRecord('x_695068_bcfa_ar_exception');
+                if (exception.get(exceptionSysId)) {
+                    exception.setValue('ai_recommendation', recommendation);
+                    exception.update();
+                }
+                this.auditEngine.logEvent({
+                    sourceTable: 'x_695068_bcfa_ar_exception',
+                    sourceRecord: exceptionSysId,
+                    eventType: 'ai_recommendation',
+                    actorType: 'claude_ai',
+                    description: 'Claude exception explanation, confidence ' + envelope.data.confidence,
+                    afterValue: { recommendation: recommendation }
+                });
+                return { recommendation: recommendation };
+            }
+        }
+        return this.aiSimulation.recommendArExceptionResolution(exceptionSysId);
     },
 
     // Builds Payment Allocation rows from the selected Match Candidates and
@@ -248,7 +393,7 @@ ArDomainService.prototype = {
         var reasonCode = difference > 0 ? 'over_pay' : 'short_pay';
         var exceptionSysId = this.exceptionEngine.createArException(paymentSysId, reasonCode,
             'Allocation total ' + allocatedTotal + ' does not match payment amount ' + paymentAmount + ' (difference ' + difference + ').');
-        this.aiSimulation.recommendArExceptionResolution(exceptionSysId);
+        this._explainArException(exceptionSysId);
         this._setState(paymentSysId, 'EXCEPTION', null, 'Allocation does not balance: ' + reasonCode);
         return { balanced: false, reasonCode: reasonCode, exceptionSysId: exceptionSysId, allocationSysIds: allocationSysIds, difference: difference };
     },
