@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_module">
+    <sys_module action="INSERT_OR_UPDATE">
+        <content><![CDATA[{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "serialNumber": "urn:uuid:4538eceb-c8a6-4db4-b1f2-8dfbae1987bd",
+  "metadata": {
+    "timestamp": "2026-09-17T14:57:08.022Z",
+    "tools": {
+      "components": [
+        {
+          "type": "library",
+          "name": "sdk-build-plugins",
+          "group": "@servicenow",
+          "version": "4.12.1",
+          "author": "ServiceNow"
+        }
+      ]
+    },
+    "component": {
+      "type": "application",
+      "name": "birla-carbon-finance-automation",
+      "version": "0.0.1",
+      "bom-ref": "pkg:servicenow/birla-carbon-finance-automation@0.0.1?sys_scope_id=229ba2b1a079431e104010f5ea883e85",
+      "licenses": [
+        {
+          "license": {
+            "name": "UNLICENSED"
+          }
+        }
+      ],
+      "purl": "pkg:servicenow/birla-carbon-finance-automation@0.0.1?sys_scope_id=229ba2b1a079431e104010f5ea883e85"
+    }
+  },
+  "components": [],
+  "dependencies": [
+    {
+      "ref": "pkg:servicenow/birla-carbon-finance-automation@0.0.1?sys_scope_id=229ba2b1a079431e104010f5ea883e85"
+    }
+  ]
+}]]></content>
+        <external_source>false</external_source>
+        <path>x_695068_bcfa/birla-carbon-finance-automation/0.0.1/bom.json</path>
+        <sys_class_name>sys_module</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:11:35</sys_created_on>
+        <sys_id>bec030c6665d49539f255c3748ff88d8</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_695068_bcfa/birla-carbon-finance-automation/0.0.1/bom.json</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_module_bec030c6665d49539f255c3748ff88d8</sys_update_name>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 07:11:35</sys_updated_on>
+    </sys_module>
+</record_update>

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_choice action="INSERT_OR_UPDATE" field="status" table="x_695068_bcfa_ap_exception" version="3">
+        <sys_choice_set action="INSERT_OR_UPDATE">
+            <element>status</element>
+            <name>x_695068_bcfa_ap_exception</name>
+            <sys_class_name>sys_choice_set</sys_class_name>
+            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+            <sys_created_on>2026-09-17 07:10:14</sys_created_on>
+            <sys_id>77f453f2835f43103d769be0deaad3c1</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>status</sys_name>
+            <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+            <sys_update_name>sys_choice_x_695068_bcfa_ap_exception_status</sys_update_name>
+            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+            <sys_updated_on>2026-09-17 07:10:14</sys_updated_on>
+        </sys_choice_set>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>status</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Open</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ap_exception</name>
+            <sequence>1</sequence>
+            <synonyms/>
+            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+            <sys_created_on>2026-09-17 14:59:05</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>b2dc2e9057b64ec6b9f2150e3465b0e4</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+            <sys_updated_on>2026-09-17 14:59:05</sys_updated_on>
+            <value>open</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>status</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>In Review</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ap_exception</name>
+            <sequence>2</sequence>
+            <synonyms/>
+            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+            <sys_created_on>2026-09-17 14:59:05</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>f67dc2fefb80455bb76c7946ef0118d3</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+            <sys_updated_on>2026-09-17 14:59:05</sys_updated_on>
+            <value>in_review</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>status</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Resolved</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ap_exception</name>
+            <sequence>3</sequence>
+            <synonyms/>
+            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+            <sys_created_on>2026-09-17 14:59:05</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>a29624c2e4774cec86a39eb5fde65c39</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+            <sys_updated_on>2026-09-17 14:59:05</sys_updated_on>
+            <value>resolved</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>status</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Closed</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ap_exception</name>
+            <sequence>4</sequence>
+            <synonyms/>
+            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+            <sys_created_on>2026-09-17 14:59:05</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>78ffe15e3a6e4af4ba51328d13854552</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+            <sys_updated_on>2026-09-17 14:59:05</sys_updated_on>
+            <value>closed</value>
+        </sys_choice>
+    </sys_choice>
+</record_update>

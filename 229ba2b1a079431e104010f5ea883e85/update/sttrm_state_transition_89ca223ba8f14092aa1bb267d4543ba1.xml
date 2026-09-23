@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sttrm_state_transition">
+    <sttrm_state_transition action="INSERT_OR_UPDATE">
+        <automatic>false</automatic>
+        <from_state display_value="Extracted">df5a92bcb2a4424c936e41c2343d667c</from_state>
+        <name>Extracted to Validating</name>
+        <sys_class_name>sttrm_state_transition</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:11:31</sys_created_on>
+        <sys_id>89ca223ba8f14092aa1bb267d4543ba1</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Extracted to Validating</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sttrm_state_transition_89ca223ba8f14092aa1bb267d4543ba1</sys_update_name>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 07:11:31</sys_updated_on>
+        <to_state display_value="Validating">6c1457c70fae4cceb1196028b1a06f13</to_state>
+    </sttrm_state_transition>
+    <sys_translated_text action="delete_multiple" query="documentkey=89ca223ba8f14092aa1bb267d4543ba1"/>
+</record_update>

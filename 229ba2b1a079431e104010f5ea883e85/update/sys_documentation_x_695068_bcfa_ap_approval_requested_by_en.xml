@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_documentation element="requested_by" label="Requested By" language="en" table="x_695068_bcfa_ap_approval">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>requested_by</element>
+            <help/>
+            <hint/>
+            <label>Requested By</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ap_approval</name>
+            <plural>Requested Bys</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+            <sys_created_on>2026-09-17 07:10:20</sys_created_on>
+            <sys_id>c90557f2835f43103d769be0deaad39d</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Requested By</sys_name>
+            <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+            <sys_update_name>sys_documentation_x_695068_bcfa_ap_approval_requested_by_en</sys_update_name>
+            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+            <sys_updated_on>2026-09-17 07:10:20</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+</record_update>

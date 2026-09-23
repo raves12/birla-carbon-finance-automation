@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>x_695068_bcfa.MockArchiveAdapter</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description>Deterministic mock archive/records-management adapter used by the AP/AR archive-and-audit steps.</description>
+        <mobile_callable>false</mobile_callable>
+        <name>MockArchiveAdapter</name>
+        <sandbox_callable>false</sandbox_callable>
+        <script><![CDATA[var MockArchiveAdapter = Class.create();
+MockArchiveAdapter.prototype = {
+    initialize: function() {},
+
+    // Simulates handing a completed transaction's evidence off to a
+    // long-term archive/records-management system. Returns a fabricated
+    // archive reference; a real implementation would call an actual
+    // document-archival endpoint through IntegrationHub.
+    archive: function(sourceTable, sourceRecord, correlationId) {
+        var archiveRef = 'ARCH-' + gs.generateGUID().substring(0, 12).toUpperCase();
+        return { status: 'SUCCESS', archiveReference: archiveRef, sourceTable: sourceTable, sourceRecord: sourceRecord, correlationId: correlationId };
+    },
+
+    type: 'MockArchiveAdapter'
+};
+]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:11:35</sys_created_on>
+        <sys_id>01297ad69cb043d38715dce94e0c0a13</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>MockArchiveAdapter</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_script_include_01297ad69cb043d38715dce94e0c0a13</sys_update_name>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 07:11:35</sys_updated_on>
+    </sys_script_include>
+</record_update>

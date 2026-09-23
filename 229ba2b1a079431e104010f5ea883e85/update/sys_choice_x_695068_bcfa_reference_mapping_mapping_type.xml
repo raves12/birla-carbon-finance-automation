@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_choice action="INSERT_OR_UPDATE" field="mapping_type" table="x_695068_bcfa_reference_mapping" version="3">
+        <sys_choice_set action="INSERT_OR_UPDATE">
+            <element>mapping_type</element>
+            <name>x_695068_bcfa_reference_mapping</name>
+            <sys_class_name>sys_choice_set</sys_class_name>
+            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+            <sys_created_on>2026-09-17 07:10:21</sys_created_on>
+            <sys_id>150597f2835f43103d769be0deaad369</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>mapping_type</sys_name>
+            <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+            <sys_update_name>sys_choice_x_695068_bcfa_reference_mapping_mapping_type</sys_update_name>
+            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+            <sys_updated_on>2026-09-17 07:10:21</sys_updated_on>
+        </sys_choice_set>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>mapping_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Vendor</label>
+            <language>en</language>
+            <name>x_695068_bcfa_reference_mapping</name>
+            <sequence>1</sequence>
+            <synonyms/>
+            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+            <sys_created_on>2026-09-17 14:59:08</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>ef134345896742b2b86bb5ab50480fd2</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+            <sys_updated_on>2026-09-17 14:59:08</sys_updated_on>
+            <value>vendor</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>mapping_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Customer</label>
+            <language>en</language>
+            <name>x_695068_bcfa_reference_mapping</name>
+            <sequence>2</sequence>
+            <synonyms/>
+            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+            <sys_created_on>2026-09-17 14:59:08</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>55238048cad74a728d247b9e7d5900c2</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+            <sys_updated_on>2026-09-17 14:59:08</sys_updated_on>
+            <value>customer</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>mapping_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Material</label>
+            <language>en</language>
+            <name>x_695068_bcfa_reference_mapping</name>
+            <sequence>3</sequence>
+            <synonyms/>
+            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+            <sys_created_on>2026-09-17 14:59:08</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>6afba48a1dfd455fa2cd78d114b10781</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+            <sys_updated_on>2026-09-17 14:59:08</sys_updated_on>
+            <value>material</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>mapping_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>GL Account</label>
+            <language>en</language>
+            <name>x_695068_bcfa_reference_mapping</name>
+            <sequence>4</sequence>
+            <synonyms/>
+            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+            <sys_created_on>2026-09-17 14:59:08</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>36dba4bdc54c4c1894cc67e38e88b8eb</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+            <sys_updated_on>2026-09-17 14:59:08</sys_updated_on>
+            <value>gl_account</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>mapping_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Currency</label>
+            <language>en</language>
+            <name>x_695068_bcfa_reference_mapping</name>
+            <sequence>5</sequence>
+            <synonyms/>
+            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+            <sys_created_on>2026-09-17 14:59:08</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>e44a552daa254607a8e11267aaf32cb0</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+            <sys_updated_on>2026-09-17 14:59:08</sys_updated_on>
+            <value>currency</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>mapping_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Payment Terms</label>
+            <language>en</language>
+            <name>x_695068_bcfa_reference_mapping</name>
+            <sequence>6</sequence>
+            <synonyms/>
+            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+            <sys_created_on>2026-09-17 14:59:08</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>417ec500704f4d31b25fbc047b5da946</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+            <sys_updated_on>2026-09-17 14:59:08</sys_updated_on>
+            <value>payment_terms</value>
+        </sys_choice>
+    </sys_choice>
+</record_update>

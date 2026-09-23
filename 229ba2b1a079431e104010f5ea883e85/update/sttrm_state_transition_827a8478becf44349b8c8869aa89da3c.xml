@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sttrm_state_transition">
+    <sttrm_state_transition action="INSERT_OR_UPDATE">
+        <automatic>false</automatic>
+        <from_state display_value="Normalized">d5bdae0d6ec34bf9b9e7164a0556b75a</from_state>
+        <name>Normalized to Customer Resolution</name>
+        <sys_class_name>sttrm_state_transition</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:11:31</sys_created_on>
+        <sys_id>827a8478becf44349b8c8869aa89da3c</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Normalized to Customer Resolution</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sttrm_state_transition_827a8478becf44349b8c8869aa89da3c</sys_update_name>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 07:11:31</sys_updated_on>
+        <to_state display_value="Customer Resolution">9396141c4d7f416c8df9a3e72ddd4623</to_state>
+    </sttrm_state_transition>
+    <sys_translated_text action="delete_multiple" query="documentkey=827a8478becf44349b8c8869aa89da3c"/>
+</record_update>

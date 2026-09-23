@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_user_role">
+    <sys_user_role action="INSERT_OR_UPDATE">
+        <assignable_by/>
+        <can_delegate>true</can_delegate>
+        <description>Processes AP invoices: intake, extraction review, matching exception resolution. Cannot approve postings.</description>
+        <elevated_privilege>false</elevated_privilege>
+        <federated_id>aVxs6EZ//5j7XZ7PIMJmmJzItTHRSPSRypcqXqJUD8g=</federated_id>
+        <grantable>true</grantable>
+        <includes_roles/>
+        <name>x_695068_bcfa.ap_processor</name>
+        <scoped_admin>false</scoped_admin>
+        <suffix>ap_processor</suffix>
+        <sys_class_name>sys_user_role</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:11:52</sys_created_on>
+        <sys_id>bf505b5092574a7fa59a01048550571a</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_695068_bcfa.ap_processor</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_user_role_bf505b5092574a7fa59a01048550571a</sys_update_name>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 07:11:52</sys_updated_on>
+    </sys_user_role>
+</record_update>

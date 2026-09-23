@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_documentation element="invoice_number" label="Invoice Number" language="en" table="x_695068_bcfa_ap_invoice">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>invoice_number</element>
+            <help/>
+            <hint/>
+            <label>Invoice Number</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ap_invoice</name>
+            <plural>Invoice Numbers</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+            <sys_created_on>2026-09-17 07:10:23</sys_created_on>
+            <sys_id>8e051bf2835f43103d769be0deaad312</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Invoice Number</sys_name>
+            <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+            <sys_update_name>sys_documentation_x_695068_bcfa_ap_invoice_invoice_number_en</sys_update_name>
+            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+            <sys_updated_on>2026-09-17 07:10:23</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+</record_update>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_choice action="INSERT_OR_UPDATE" field="match_result" table="x_695068_bcfa_ap_match" version="3">
+        <sys_choice_set action="INSERT_OR_UPDATE">
+            <element>match_result</element>
+            <name>x_695068_bcfa_ap_match</name>
+            <sys_class_name>sys_choice_set</sys_class_name>
+            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+            <sys_created_on>2026-09-17 07:10:26</sys_created_on>
+            <sys_id>ea055bf2835f43103d769be0deaad3dc</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>match_result</sys_name>
+            <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+            <sys_update_name>sys_choice_x_695068_bcfa_ap_match_match_result</sys_update_name>
+            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+            <sys_updated_on>2026-09-17 07:10:26</sys_updated_on>
+        </sys_choice_set>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>match_result</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Matched</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ap_match</name>
+            <sequence>1</sequence>
+            <synonyms/>
+            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+            <sys_created_on>2026-09-17 14:59:05</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>d8bb1795b940495d8151308541983e5d</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+            <sys_updated_on>2026-09-17 14:59:05</sys_updated_on>
+            <value>matched</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>match_result</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Partial</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ap_match</name>
+            <sequence>2</sequence>
+            <synonyms/>
+            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+            <sys_created_on>2026-09-17 14:59:05</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>86132f25e2eb4180ada121fc4c9ea82a</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+            <sys_updated_on>2026-09-17 14:59:05</sys_updated_on>
+            <value>partial</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>match_result</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Mismatch</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ap_match</name>
+            <sequence>3</sequence>
+            <synonyms/>
+            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+            <sys_created_on>2026-09-17 14:59:05</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>05beb123fc2a4ca6889742af14deec19</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+            <sys_updated_on>2026-09-17 14:59:05</sys_updated_on>
+            <value>mismatch</value>
+        </sys_choice>
+    </sys_choice>
+</record_update>

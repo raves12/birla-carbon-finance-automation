@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sttrm_state">
+    <sttrm_state action="INSERT_OR_UPDATE">
+        <initial_state>true</initial_state>
+        <state_label>Received</state_label>
+        <state_sequence>0</state_sequence>
+        <state_value>RECEIVED</state_value>
+        <sttrm_model display_value="Cash Application Lifecycle">abff1713d7c94462ba74a68f0a935603</sttrm_model>
+        <sys_class_name>sttrm_state</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:11:29</sys_created_on>
+        <sys_id>303095c1538148449b306dc5e2a7f77e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Received</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sttrm_state_303095c1538148449b306dc5e2a7f77e</sys_update_name>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 07:11:29</sys_updated_on>
+    </sttrm_state>
+    <sys_translated_text action="delete_multiple" query="documentkey=303095c1538148449b306dc5e2a7f77e"/>
+</record_update>

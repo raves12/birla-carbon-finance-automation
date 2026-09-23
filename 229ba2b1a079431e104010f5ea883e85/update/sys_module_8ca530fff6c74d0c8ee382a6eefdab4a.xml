@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_module">
+    <sys_module action="INSERT_OR_UPDATE">
+        <content><![CDATA[var AuditEngine = Class.create();
+AuditEngine.prototype = {
+    initialize: function() {},
+
+    // Appends one Audit Event row. Never throws — a failure to audit must
+    // not block the business transaction it's recording, but the caller
+    // should still know: it returns '' on failure the same way GlideRecord
+    // insert() does.
+    logEvent: function(params) {
+        params = params || {};
+        var gr = new GlideRecord('x_695068_bcfa_audit_event');
+        gr.initialize();
+        gr.setValue('correlation_id', params.correlationId || '');
+        gr.setValue('source_table', params.sourceTable || '');
+        gr.setValue('source_record', params.sourceRecord || '');
+        gr.setValue('event_type', params.eventType || 'state_transition');
+        if (params.actor) {
+            gr.setValue('actor', params.actor);
+        }
+        gr.setValue('actor_type', params.actorType || 'system');
+        gr.setValue('description', params.description || '');
+        if (params.beforeValue !== undefined && params.beforeValue !== null) {
+            gr.setValue('before_value', JSON.stringify(params.beforeValue));
+        }
+        if (params.afterValue !== undefined && params.afterValue !== null) {
+            gr.setValue('after_value', JSON.stringify(params.afterValue));
+        }
+        gr.setValue('occurred_at', new GlideDateTime().getValue());
+        return gr.insert();
+    },
+
+    type: 'AuditEngine'
+};
+]]></content>
+        <external_source>false</external_source>
+        <path>x_695068_bcfa/birla-carbon-finance-automation/0.0.1/src/server/script-includes/AuditEngine.server.js</path>
+        <sys_class_name>sys_module</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:11:34</sys_created_on>
+        <sys_id>8ca530fff6c74d0c8ee382a6eefdab4a</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_695068_bcfa/birla-carbon-finance-automation/0.0.1/src/server/script-includes/AuditEngine.server.js</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_module_8ca530fff6c74d0c8ee382a6eefdab4a</sys_update_name>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 07:11:34</sys_updated_on>
+    </sys_module>
+</record_update>

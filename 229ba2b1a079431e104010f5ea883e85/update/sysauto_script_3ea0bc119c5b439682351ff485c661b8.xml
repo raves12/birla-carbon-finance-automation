@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sysauto_script">
+    <sysauto_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <advanced>false</advanced>
+        <business_calendar/>
+        <condition/>
+        <conditional>false</conditional>
+        <entered_run_end/>
+        <entered_run_start>2026-09-16 00:00:00</entered_run_start>
+        <entered_time/>
+        <max_drift/>
+        <name>BCFA - One-Time Claude Demo Scenario Seed (v1)</name>
+        <offset/>
+        <offset_type>0</offset_type>
+        <repeat_every/>
+        <run_as/>
+        <run_as_tz/>
+        <run_dayofmonth>1</run_dayofmonth>
+        <run_dayofweek>1</run_dayofweek>
+        <run_daysofweek/>
+        <run_end/>
+        <run_month/>
+        <run_period/>
+        <run_start>2026-09-16 00:00:00</run_start>
+        <run_time>1970-01-01 00:00:00</run_time>
+        <run_type>once</run_type>
+        <run_weekinmonth/>
+        <script><![CDATA[
+        var seeder = new DemoDataSeeder();
+        var result = seeder.seedClaudeDemoScenarios();
+        gs.info('BCFA-CLAUDE-DEMO-SEED-V1: ' + JSON.stringify(result));
+    ]]></script>
+        <sys_class_name>sysauto_script</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 11:17:41</sys_created_on>
+        <sys_id>3ea0bc119c5b439682351ff485c661b8</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>BCFA - One-Time Claude Demo Scenario Seed (v1)</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sysauto_script_3ea0bc119c5b439682351ff485c661b8</sys_update_name>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 11:17:41</sys_updated_on>
+        <time_zone>UTC</time_zone>
+        <upgrade_safe>false</upgrade_safe>
+    </sysauto_script>
+</record_update>

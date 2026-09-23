@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_properties">
+    <sys_properties action="INSERT_OR_UPDATE">
+        <choices/>
+        <description>Default max_tokens sent with every Claude Messages API request unless a specific call overrides it.</description>
+        <ignore_cache>false</ignore_cache>
+        <is_private>false</is_private>
+        <name>x_695068_bcfa.claude.max_tokens</name>
+        <read_roles/>
+        <suffix>claude.max_tokens</suffix>
+        <sys_class_name>sys_properties</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 09:22:44</sys_created_on>
+        <sys_id>14de0ec35d204c53a2371a5f2d872355</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_695068_bcfa.claude.max_tokens</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_properties_14de0ec35d204c53a2371a5f2d872355</sys_update_name>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 09:22:44</sys_updated_on>
+        <type>integer</type>
+        <value>2048</value>
+        <write_roles/>
+    </sys_properties>
+    <sys_translated_text action="delete_multiple" query="documentkey=14de0ec35d204c53a2371a5f2d872355"/>
+</record_update>

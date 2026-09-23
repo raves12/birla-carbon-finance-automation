@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_action_role">
+    <sys_ui_action_role action="INSERT_OR_UPDATE">
+        <sys_class_name>sys_ui_action_role</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 12:06:29</sys_created_on>
+        <sys_id>eed66f90767f47d8a8c849faf82464b5</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Approve.x_695068_bcfa.admin</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_ui_action display_value="Approve">18b2ffb432d943449a162c7a1acfe9b3</sys_ui_action>
+        <sys_update_name>sys_ui_action_role_eed66f90767f47d8a8c849faf82464b5</sys_update_name>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 12:06:29</sys_updated_on>
+        <sys_user_role display_value="x_695068_bcfa.admin" name="x_695068_bcfa.admin">4411dd9103de4bdbb5468924b1e5459f</sys_user_role>
+    </sys_ui_action_role>
+</record_update>

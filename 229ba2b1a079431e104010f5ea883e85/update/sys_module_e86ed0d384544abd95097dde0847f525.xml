@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_module">
+    <sys_module action="INSERT_OR_UPDATE">
+        <content><![CDATA[// Orchestrates the AP Invoice lifecycle (Section 7 of the build brief) on
+// top of the AP Invoice StateModel. Each method performs the real
+// validation/matching/posting work FIRST, then moves the state field to
+// whichever transition that result legalizes — state progression is a
+// side effect of real logic running, never a bare status flip.
+var ApDomainService = Class.create();
+ApDomainService.prototype = {
+    initialize: function() {
+        this.auditEngine = new AuditEngine();
+        this.matchingEngine = new MatchingEngine();
+        this.exceptionEngine = new ExceptionEngine();
+        this.approvalEngine = new ApprovalEngine();
+        this.integrationService = new IntegrationService();
+        this.aiSimulation = new AISimulationService();
+        this.claudeClient = new BCClaudeClient();
+    },
+
+    // Public entry point for the "Explain with Claude" UI Action on AP
+    // Exception — regenerates the advisory ai_recommendation on demand
+    // (e.g. to refresh a recommendation written before Claude was wired in,
+    // or after new evidence was added to the invoice). Same Claude-first-
+    // with-fallback behavior as the automatic call during validate/match.
+    explainException: function(apExceptionSysId) {
+        return this._explainApException(apExceptionSysId);
+    },
+
+    _setState: function(apInvoiceSysId, newState, correlationId, description) {
+        var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
+        if (!invoice.get(apInvoiceSysId)) return false;
+        var previous = invoice.getValue('state');
+        invoice.setValue('state', newState);
+        invoice.update();
+        this.auditEngine.logEvent({
+            correlationId: correlationId || invoice.getValue('correlation_id'),
+            sourceTable: 'x_695068_bcfa_ap_invoice',
+            sourceRecord: apInvoiceSysId,
+            eventType: 'state_transition',
+            actorType: 'system',
+            description: description || ('AP Invoice ' + previous + ' -> ' + newState),
+            beforeValue: { state: previous },
+            afterValue: { state: newState }
+        });
+        return true;
+    },
+
+    // Single entry point for the fully-automated portion of the pipeline
+    // (Section 7 items 1-14): intake through matching, stopping naturally at
+    // whichever state the deterministic logic reaches (MATCHED or
+    // EXCEPTION). This is the "flow" for automated intake — see
+    // docs/ARTIFACT_STRATEGY.md's Stage 15 refinement for why this is a
+    // direct call chain rather than a Flow Designer flow.
+    intakeAndAutoProcess: function(fields) {
+        var intake = this.intakeInvoice(fields);
+        this.runExtraction(intake.apInvoiceSysId, fields.seedExtraction || {}, fields.extractionOptions);
+        var validation = this.validateInvoice(intake.apInvoiceSysId);
+        if (!validation.validated) {
+            return { apInvoiceSysId: intake.apInvoiceSysId, stoppedAt: 'VALIDATION_EXCEPTION', detail: validation };
+        }
+        var match = this.matchInvoice(intake.apInvoiceSysId);
+        if (!match.matched) {
+            return { apInvoiceSysId: intake.apInvoiceSysId, stoppedAt: 'MATCH_EXCEPTION', detail: match };
+        }
+        return { apInvoiceSysId: intake.apInvoiceSysId, stoppedAt: 'MATCHED', detail: match };
+    },
+
+    intakeInvoice: function(fields) {
+        var correlationId = fields.correlationId || gs.generateGUID();
+        var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
+        invoice.initialize();
+        invoice.setValue('invoice_number', fields.invoiceNumber);
+        if (fields.vendor) invoice.setValue('vendor', fields.vendor);
+        invoice.setValue('company_code', fields.companyCode || '');
+        invoice.setValue('currency', fields.currency || '');
+        if (fields.invoiceDate) invoice.setValue('invoice_date', fields.invoiceDate);
+        if (fields.purchaseOrder) invoice.setValue('purchase_order', fields.purchaseOrder);
+        if (fields.salesOrderReference) invoice.setValue('sales_order_reference', fields.salesOrderReference);
+        invoice.setValue('gross_amount', fields.grossAmount || 0);
+        invoice.setValue('tax_amount', fields.taxAmount || 0);
+        invoice.setValue('net_amount', fields.netAmount || 0);
+        invoice.setValue('source', fields.source || 'email');
+        invoice.setValue('correlation_id', correlationId);
+        if (fields.externalReference) invoice.setValue('external_reference', fields.externalReference);
+        invoice.setValue('state', 'RECEIVED');
+        invoice.setValue('approval_state', 'not_required');
+        invoice.setValue('posting_state', 'not_posted');
+        var sysId = invoice.insert();
+
+        this.auditEngine.logEvent({
+            correlationId: correlationId,
+            sourceTable: 'x_695068_bcfa_ap_invoice',
+            sourceRecord: sysId,
+            eventType: 'state_transition',
+            description: 'AP Invoice received (intake)',
+            afterValue: { state: 'RECEIVED' }
+        });
+        return { apInvoiceSysId: sysId, correlationId: correlationId };
+    },
+
+    // seedFields stands in for whatever partial, as-if-OCR'd fields a real
+    // extraction step would have produced — see BCClaudeClient.extractInvoice
+    // for why this app uses a JSON-context path rather than a document/image
+    // one (no attachment mechanism exists in this app). Tries Claude first;
+    // falls back to the deterministic simulated extraction (AISimulationService)
+    // if Claude is disabled or the call fails for any reason — extraction
+    // must never block the pipeline on an AI outage.
+    runExtraction: function(apInvoiceSysId, seedFields, options) {
+        this._setState(apInvoiceSysId, 'EXTRACTING', null, 'Beginning extraction');
+        var result = this._runClaudeExtraction(apInvoiceSysId, seedFields, options) ||
+            this.aiSimulation.simulateApExtraction(apInvoiceSysId, seedFields, options);
+        this._setState(apInvoiceSysId, 'EXTRACTED', null, 'Extraction complete, confidence ' + result.confidence);
+        return result;
+    },
+
+    // Returns a simulateApExtraction()-shaped result on success, or null if
+    // Claude is disabled/unavailable/invalid so the caller falls back.
+    _runClaudeExtraction: function(apInvoiceSysId, seedFields, options) {
+        if (!this.claudeClient.isEnabled()) return null;
+
+        var envelope = this.claudeClient.extractInvoice(apInvoiceSysId, seedFields);
+        if (!envelope.ok) return null;
+
+        var data = envelope.data;
+        var forcedConfidence = options && options.forceConfidence !== undefined ? options.forceConfidence : null;
+        var confidence = forcedConfidence !== null ? forcedConfidence : data.confidence;
+        var requiresReview = confidence < this.claudeClient.confidenceThreshold();
+
+        var extraction = new GlideRecord('x_695068_bcfa_ap_extraction');
+        extraction.initialize();
+        extraction.setValue('ap_invoice', apInvoiceSysId);
+        extraction.setValue('extracted_fields', JSON.stringify(data));
+        extraction.setValue('confidence', confidence);
+        extraction.setValue('source', 'claude_document_intelligence');
+        extraction.setValue('requires_review', requiresReview);
+        var extractionSysId = extraction.insert();
+
+        var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
+        if (invoice.get(apInvoiceSysId)) {
+            invoice.setValue('extraction_confidence', confidence);
+            invoice.update();
+        }
+
+        this.auditEngine.logEvent({
+            sourceTable: 'x_695068_bcfa_ap_invoice',
+            sourceRecord: apInvoiceSysId,
+            eventType: 'ai_recommendation',
+            actorType: 'claude_ai',
+            description: 'Claude invoice extraction, confidence ' + confidence + (data.warnings && data.warnings.length ? '; warnings: ' + data.warnings.join('; ') : ''),
+            afterValue: { confidence: confidence, requiresReview: requiresReview }
+        });
+
+        return { extractionSysId: extractionSysId, confidence: confidence, requiresReview: requiresReview };
+    },
+
+    validateInvoice: function(apInvoiceSysId) {
+        this._setState(apInvoiceSysId, 'VALIDATING', null, 'Running mandatory-field/vendor/PO/confidence validation');
+
+        var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
+        if (!invoice.get(apInvoiceSysId)) return { error: 'AP Invoice not found' };
+
+        var extraction = new GlideRecord('x_695068_bcfa_ap_extraction');
+        extraction.addQuery('ap_invoice', apInvoiceSysId);
+        extraction.orderByDesc('sys_created_on');
+        extraction.setLimit(1);
+        extraction.query();
+        var confidence = extraction.next() ? parseFloat(extraction.getValue('confidence') || '1') : 1;
+
+        var confidenceThreshold = this.claudeClient.confidenceThreshold();
+        var failure = null;
+        if (confidence < confidenceThreshold) {
+            failure = { reasonCode: 'low_confidence', description: 'Extraction confidence ' + confidence + ' is below the ' + confidenceThreshold + ' review threshold.' };
+        } else if (!invoice.getValue('invoice_number') || !invoice.getValue('vendor') || !invoice.getValue('gross_amount')) {
+            failure = { reasonCode: 'missing_field', description: 'One or more mandatory fields (invoice number, vendor, gross amount) are missing.' };
+        } else {
+            var vendor = new GlideRecord('x_695068_bcfa_vendor');
+            if (!vendor.get(invoice.getValue('vendor')) || vendor.getValue('active') !== '1') {
+                failure = { reasonCode: 'vendor_invalid', description: 'Vendor could not be resolved to an active master record.' };
+            } else if (invoice.getValue('purchase_order')) {
+                var po = new GlideRecord('x_695068_bcfa_purchase_order');
+                if (!po.get(invoice.getValue('purchase_order'))) {
+                    failure = { reasonCode: 'po_mismatch', description: 'Referenced purchase order could not be resolved.' };
+                }
+            }
+        }
+
+        if (failure) {
+            var exceptionSysId = this.exceptionEngine.createApException(apInvoiceSysId, failure.reasonCode, failure.description);
+            this._explainApException(exceptionSysId);
+            this._setState(apInvoiceSysId, 'EXCEPTION', null, 'Validation failed: ' + failure.reasonCode);
+            return { validated: false, reasonCode: failure.reasonCode, exceptionSysId: exceptionSysId };
+        }
+
+        this._setState(apInvoiceSysId, 'VALIDATED', null, 'Validation passed');
+        return { validated: true };
+    },
+
+    matchInvoice: function(apInvoiceSysId) {
+        this._setState(apInvoiceSysId, 'MATCHING', null, 'Running duplicate detection and 3-way match');
+
+        var duplicateResult = this.matchingEngine.detectDuplicateInvoice(apInvoiceSysId);
+        if (duplicateResult.duplicate) {
+            var dupExceptionSysId = this.exceptionEngine.createApException(apInvoiceSysId, 'duplicate', 'Duplicate of AP Invoice ' + duplicateResult.matchedInvoiceSysId);
+            this._explainApException(dupExceptionSysId);
+            this._setState(apInvoiceSysId, 'EXCEPTION', null, 'Duplicate invoice detected');
+            return { matched: false, reasonCode: 'duplicate', exceptionSysId: dupExceptionSysId };
+        }
+
+        var match = this.matchingEngine.threeWayMatch(apInvoiceSysId);
+        if (!match.withinTolerance) {
+            var reasonCode = 'price_tolerance';
+            if (match.quantityVariancePct > this.matchingEngine.DEFAULT_TOLERANCES.quantityPct) reasonCode = 'quantity_tolerance';
+            else if (!match.taxWithinTolerance) reasonCode = 'tax_validation';
+            var exceptionSysId2 = this.exceptionEngine.createApException(apInvoiceSysId, reasonCode,
+                'Match result: ' + match.matchResult + '. Quantity variance ' + (match.quantityVariancePct * 100).toFixed(1) + '%, price variance ' + (match.priceVariancePct * 100).toFixed(1) + '%.');
+            this._explainApException(exceptionSysId2);
+            this._setState(apInvoiceSysId, 'EXCEPTION', null, 'Match failed: ' + reasonCode);
+            return { matched: false, reasonCode: reasonCode, exceptionSysId: exceptionSysId2, match: match };
+        }
+
+        this._setState(apInvoiceSysId, 'MATCHED', null, 'Matched within tolerance');
+        return { matched: true, match: match };
+    },
+
+    // Writes an analyst-facing explanation into the exception's existing
+    // advisory field (ai_recommendation) — never read by any deterministic
+    // rule or approval/posting logic. Tries Claude first; falls back to the
+    // deterministic templated explanation (AISimulationService) if Claude is
+    // disabled, returns insufficient_information, or fails for any reason.
+    _explainApException: function(exceptionSysId) {
+        if (this.claudeClient.isEnabled()) {
+            var envelope = this.claudeClient.explainInvoiceException(exceptionSysId);
+            if (envelope.ok && !envelope.data.insufficient_information) {
+                var recommendation = envelope.data.explanation +
+                    (envelope.data.recommended_action ? ' Recommended next step: ' + envelope.data.recommended_action : '') +
+                    (envelope.data.evidence && envelope.data.evidence.length ? ' Evidence: ' + envelope.data.evidence.join('; ') + '.' : '');
+                var exception = new GlideRecord('x_695068_bcfa_ap_exception');
+                if (exception.get(exceptionSysId)) {
+                    exception.setValue('ai_recommendation', recommendation);
+                    exception.update();
+                }
+                this.auditEngine.logEvent({
+                    sourceTable: 'x_695068_bcfa_ap_exception',
+                    sourceRecord: exceptionSysId,
+                    eventType: 'ai_recommendation',
+                    actorType: 'claude_ai',
+                    description: 'Claude exception explanation, confidence ' + envelope.data.confidence,
+                    afterValue: { recommendation: recommendation }
+                });
+                return { recommendation: recommendation };
+            }
+        }
+        return this.aiSimulation.recommendApExceptionResolution(exceptionSysId);
+    },
+
+    // Reviewer correction: resolve the exception, then loop back to
+    // re-validate from scratch (Section 7 items 16-17: reviewer correction,
+    // rematch).
+    resolveExceptionAndRetry: function(apInvoiceSysId, exceptionSysId, resolutionNotes, resolvedBy) {
+        this._setState(apInvoiceSysId, 'RESOLUTION', null, 'Reviewer resolving exception');
+        this.exceptionEngine.resolveApException(exceptionSysId, resolutionNotes, resolvedBy);
+        this._setState(apInvoiceSysId, 'VALIDATING', null, 'Re-validating after correction');
+        return this.validateInvoice(apInvoiceSysId);
+    },
+
+    requestApproval: function(apInvoiceSysId, requestedBy) {
+        this._setState(apInvoiceSysId, 'PENDING_APPROVAL', null, 'Requesting posting approval');
+        var approvalSysId = this.approvalEngine.requestApInvoiceApproval(apInvoiceSysId, requestedBy);
+        return { approvalSysId: approvalSysId };
+    },
+
+    // IMPORTANT ordering: `approvalEngine.decideApInvoiceApproval` sets
+    // approval_state = 'approved' and calls .update(), which fires the
+    // "AP Invoice - Auto Post After Approval" Business Rule SYNCHRONOUSLY
+    // (ServiceNow "after" business rules run in-line, not async) — by the
+    // time that call returns, the invoice may already be POSTING/POSTED/
+    // RECONCILED/CLOSED. The state must therefore already be 'APPROVED'
+    // *before* triggering that update, and this method must never set state
+    // again afterward — doing so previously clobbered whatever state the
+    // cascade had already legitimately advanced to.
+    decideApproval: function(apInvoiceSysId, approvalSysId, decision, approver, notes) {
+        if (decision === 'approved') {
+            this._setState(apInvoiceSysId, 'APPROVED', null, 'Approving — posting cascade will follow');
+        }
+
+        var result = this.approvalEngine.decideApInvoiceApproval(approvalSysId, decision, approver, notes);
+        if (result.error) {
+            if (decision === 'approved') {
+                this._setState(apInvoiceSysId, 'PENDING_APPROVAL', null, 'Approval rejected by service layer (segregation of duties)');
+            }
+            return result;
+        }
+
+        if (decision !== 'approved') {
+            var exceptionSysId = this.exceptionEngine.createApException(apInvoiceSysId, 'other', 'Approval rejected: ' + (notes || ''));
+            this._setState(apInvoiceSysId, 'EXCEPTION', null, 'Approval rejected');
+            result.exceptionSysId = exceptionSysId;
+        }
+        return result;
+    },
+
+    // Posting eligibility gate + mock SAP posting + Section 11 Unknown
+    // Outcome Control, all in one step since eligibility is enforced by the
+    // state machine itself (only reachable from APPROVED).
+    postInvoice: function(apInvoiceSysId, simulateOutcome) {
+        var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
+        if (!invoice.get(apInvoiceSysId)) return { error: 'AP Invoice not found' };
+        if (invoice.getValue('approval_state') !== 'approved') {
+            return { error: 'Posting eligibility gate: AP Invoice has not been approved.' };
+        }
+
+        this._setState(apInvoiceSysId, 'POSTING', null, 'Invoking mock SAP posting');
+        invoice.setValue('posting_state', 'posting');
+        invoice.update();
+
+        var idempotencyKey = 'AP-POST-' + apInvoiceSysId;
+        var result = this.integrationService.execute({
+            operation: 'postVendorInvoice',
+            adapter: 'mock_sap',
+            correlationId: invoice.getValue('correlation_id'),
+            idempotencyKey: idempotencyKey,
+            sourceTable: 'x_695068_bcfa_ap_invoice',
+            sourceRecord: apInvoiceSysId,
+            payload: { invoiceNumber: invoice.getValue('invoice_number'), vendor: invoice.getValue('vendor'), amount: invoice.getValue('net_amount') },
+            simulateOutcome: simulateOutcome
+        });
+
+        return this._applyPostingResult(apInvoiceSysId, result);
+    },
+
+    _applyPostingResult: function(apInvoiceSysId, result) {
+        var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
+        invoice.get(apInvoiceSysId);
+
+        if (result.status === 'success') {
+            invoice.setValue('posting_state', 'posted');
+            if (result.response && result.response.sapDocumentId) invoice.setValue('sap_document_id', result.response.sapDocumentId);
+            invoice.update();
+            this._setState(apInvoiceSysId, 'POSTED', null, 'Posted to SAP (simulated): ' + (result.response ? result.response.sapDocumentId : ''));
+            this.reconcileAndClose(apInvoiceSysId);
+            return { posted: true, sapDocumentId: result.response ? result.response.sapDocumentId : null };
+        }
+
+        if (result.unknownOutcome) {
+            invoice.setValue('posting_state', 'unknown_outcome');
+            invoice.update();
+            this._setState(apInvoiceSysId, 'UNKNOWN_OUTCOME', null, 'Posting outcome unknown (timeout) — will query status before any retry, per Section 11.');
+            return { posted: false, unknownOutcome: true, transactionSysId: result.transactionSysId };
+        }
+
+        invoice.setValue('posting_state', 'failed');
+        invoice.update();
+        var exceptionSysId = this.exceptionEngine.createApException(apInvoiceSysId, 'other', 'SAP posting failed: ' + result.status);
+        this._setState(apInvoiceSysId, 'FAILED', null, 'Posting failed: ' + result.status);
+        return { posted: false, failed: true, reasonCode: result.status, exceptionSysId: exceptionSysId };
+    },
+
+    // Section 11 status-query step: never a blind retry. Resolves an
+    // UNKNOWN_OUTCOME invoice by asking the adapter for ground truth.
+    reconcilePosting: function(apInvoiceSysId, transactionSysId) {
+        var resolution = this.integrationService.reconcileUnknownOutcome(transactionSysId);
+
+        if (resolution.resolution === 'POSTED') {
+            var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
+            invoice.get(apInvoiceSysId);
+            invoice.setValue('posting_state', 'posted');
+            invoice.setValue('sap_document_id', resolution.sapDocumentId);
+            invoice.update();
+            this._setState(apInvoiceSysId, 'POSTED', null, 'Reconciliation confirmed the posting committed: ' + resolution.sapDocumentId);
+            this.reconcileAndClose(apInvoiceSysId);
+            return { posted: true, sapDocumentId: resolution.sapDocumentId };
+        }
+
+        if (resolution.resolution === 'RETRY') {
+            this._setState(apInvoiceSysId, 'POSTING', null, 'Reconciliation confirmed nothing committed — safe to retry.');
+            return this.postInvoice(apInvoiceSysId);
+        }
+
+        var exceptionSysId = this.exceptionEngine.createApException(apInvoiceSysId, 'other', 'Integration exception: ' + resolution.reason);
+        this._setState(apInvoiceSysId, 'FAILED', null, 'Reconciliation could not confirm outcome — integration exception.');
+        return { posted: false, failed: true, exceptionSysId: exceptionSysId };
+    },
+
+    reconcileAndClose: function(apInvoiceSysId) {
+        var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
+        if (!invoice.get(apInvoiceSysId)) return { error: 'AP Invoice not found' };
+
+        this.integrationService.execute({
+            operation: 'archive',
+            adapter: 'mock_archive',
+            correlationId: invoice.getValue('correlation_id'),
+            idempotencyKey: 'AP-ARCHIVE-' + apInvoiceSysId,
+            sourceTable: 'x_695068_bcfa_ap_invoice',
+            sourceRecord: apInvoiceSysId,
+            payload: { sourceTable: 'x_695068_bcfa_ap_invoice', sourceRecord: apInvoiceSysId, correlationId: invoice.getValue('correlation_id') }
+        });
+
+        this._setState(apInvoiceSysId, 'RECONCILED', null, 'Posting reconciled and archived');
+        this._setState(apInvoiceSysId, 'CLOSED', null, 'AP Invoice closed');
+        return { closed: true };
+    },
+
+    type: 'ApDomainService'
+};
+]]></content>
+        <external_source>false</external_source>
+        <path>x_695068_bcfa/birla-carbon-finance-automation/0.0.1/src/server/script-includes/ApDomainService.server.js</path>
+        <sys_class_name>sys_module</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:11:35</sys_created_on>
+        <sys_id>e86ed0d384544abd95097dde0847f525</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_695068_bcfa/birla-carbon-finance-automation/0.0.1/src/server/script-includes/ApDomainService.server.js</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_module_e86ed0d384544abd95097dde0847f525</sys_update_name>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 07:11:35</sys_updated_on>
+    </sys_module>
+</record_update>

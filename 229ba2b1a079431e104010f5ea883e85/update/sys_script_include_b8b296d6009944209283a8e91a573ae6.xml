@@ -1,0 +1,752 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>x_695068_bcfa.BCClaudeClient</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description>Sole seam for outbound calls to the Anthropic Messages API. Resolves the existing x_695068_bcfa.BC_Claude_API_Credentials Connection &amp; Credential Alias via sn_cc.ConnectionInfoProvider, forces structured tool-call output, and logs every call to AI Interaction. Business-process code (ApDomainService/ArDomainService) must call this class, never sn_cc/sn_ws directly.</description>
+        <mobile_callable>false</mobile_callable>
+        <name>BCClaudeClient</name>
+        <sandbox_callable>false</sandbox_callable>
+        <script><![CDATA[// Centralizes every outbound call to the Anthropic Messages API behind one
+// seam. Business-process code (ApDomainService/ArDomainService) must never
+// call sn_cc/sn_ws directly — only this class does, so the transport can
+// later be swapped for an enterprise AI gateway or an MCP gateway without
+// touching invoice/cash-application logic. Resolves the existing Connection
+// & Credential Alias (x_695068_bcfa.BC_Claude_API_Credentials) via the
+// platform's own sn_cc.ConnectionInfoProvider — never reads or logs the
+// decrypted key beyond setting it directly on the outbound request header.
+var BCClaudeClient = Class.create();
+BCClaudeClient.prototype = {
+    ALIAS_ID: 'x_695068_bcfa.BC_Claude_API_Credentials',
+    ANTHROPIC_VERSION: '2023-06-01',
+    MESSAGES_PATH: '/v1/messages',
+    // 1 initial attempt + 2 bounded retries, 429/5xx only. No sleep between
+    // attempts: gs.sleep()-style blocking waits are unsafe/unsupported in a
+    // scoped script include, so retries are immediate rather than
+    // backed-off — acceptable for a POC's call volume, called out here so
+    // it isn't mistaken for an oversight.
+    MAX_ATTEMPTS: 3,
+
+    initialize: function() {},
+
+    isEnabled: function() {
+        return gs.getProperty('x_695068_bcfa.claude.enabled', 'false') === 'true';
+    },
+
+    confidenceThreshold: function() {
+        return parseFloat(gs.getProperty('x_695068_bcfa.claude.confidence_threshold', '0.85'));
+    },
+
+    _model: function() {
+        return gs.getProperty('x_695068_bcfa.claude.model', 'claude-sonnet-4-5-20250929');
+    },
+
+    _timeoutMs: function() {
+        return parseInt(gs.getProperty('x_695068_bcfa.claude.timeout', '20000'), 10);
+    },
+
+    _maxTokens: function() {
+        return parseInt(gs.getProperty('x_695068_bcfa.claude.max_tokens', '2048'), 10);
+    },
+
+    // The alias record's sys_id is environment-specific (this admin created
+    // it directly on this instance, not via Fluent), so it is looked up by
+    // its stable dotted `id` at call time rather than hardcoded — the same
+    // dotted id you gave us, verified to exist via direct inspection before
+    // any of this was written.
+    _resolveAliasSysId: function() {
+        var gr = new GlideRecord('sys_alias');
+        gr.addQuery('id', this.ALIAS_ID);
+        gr.setLimit(1);
+        gr.query();
+        return gr.next() ? gr.getUniqueValue() : null;
+    },
+
+    // Builds a fully-authenticated RESTMessageV2 for one call, using
+    // sn_cc.ConnectionInfoProvider to resolve the connection URL and the
+    // api_key credential fields (api_key / api_key_header_name /
+    // api_key_prefix) already configured on the alias. Throws a small,
+    // safe error object (never the platform exception's raw internals) on
+    // any resolution failure.
+    _buildRequest: function() {
+        var aliasSysId = this._resolveAliasSysId();
+        if (!aliasSysId) {
+            throw { bcClaudeErrorCode: 'CREDENTIAL_RESOLUTION_ERROR', bcClaudeErrorMessage: 'Connection & Credential Alias not found: ' + this.ALIAS_ID };
+        }
+
+        var connectionInfo = new sn_cc.ConnectionInfoProvider().getConnectionInfo(aliasSysId);
+        if (!connectionInfo) {
+            throw { bcClaudeErrorCode: 'CREDENTIAL_RESOLUTION_ERROR', bcClaudeErrorMessage: 'Could not resolve connection info for alias: ' + this.ALIAS_ID };
+        }
+
+        var baseUrl = connectionInfo.getAttribute('connection_url');
+        var apiKey = connectionInfo.getCredentialAttribute('api_key');
+        if (!baseUrl || !apiKey) {
+            throw { bcClaudeErrorCode: 'CREDENTIAL_RESOLUTION_ERROR', bcClaudeErrorMessage: 'Alias resolved but connection URL or API key was empty: ' + this.ALIAS_ID };
+        }
+        var headerName = connectionInfo.getCredentialAttribute('api_key_header_name') || 'Authorization';
+        var prefix = connectionInfo.getCredentialAttribute('api_key_prefix') || '';
+
+        var request = new sn_ws.RESTMessageV2();
+        request.setHttpMethod('POST');
+        request.setEndpoint(baseUrl + this.MESSAGES_PATH);
+        request.setRequestHeader('anthropic-version', this.ANTHROPIC_VERSION);
+        request.setRequestHeader('content-type', 'application/json');
+        request.setRequestHeader(headerName, (prefix ? prefix + ' ' : '') + apiKey);
+        request.setHttpTimeout(this._timeoutMs());
+        return request;
+    },
+
+    // Generic, low-level call to /v1/messages. spec = { system, messages,
+    // tool: { name, description, input_schema }, maxTokens }. Forces
+    // structured output via tool_choice so the response is parseable JSON
+    // rather than free prose. Never throws on an expected failure mode
+    // (HTTP error, timeout, invalid JSON, refusal, disabled) — callers
+    // always get a normalized envelope back and decide how the business
+    // process degrades. meta = { correlationId, operation, sourceTable,
+    // sourceRecord, promptVersion }.
+    invoke: function(spec, meta) {
+        meta = meta || {};
+        var correlationId = meta.correlationId || gs.generateGUID();
+        var startTime = new Date().getTime();
+
+        if (!this.isEnabled()) {
+            return this._finish({ ok: false, status: 'disabled', httpStatus: null, safeError: 'Claude integration is disabled (x_695068_bcfa.claude.enabled=false).' }, meta, correlationId, startTime, 0);
+        }
+
+        var attempt = 0;
+        var envelope = null;
+        while (attempt < this.MAX_ATTEMPTS) {
+            attempt++;
+            try {
+                var request = this._buildRequest();
+                request.setRequestBody(JSON.stringify({
+                    model: this._model(),
+                    max_tokens: spec.maxTokens || this._maxTokens(),
+                    system: spec.system || '',
+                    messages: spec.messages,
+                    tools: [spec.tool],
+                    tool_choice: { type: 'tool', name: spec.tool.name },
+                }));
+
+                var httpResponse = request.execute();
+                var httpStatus = httpResponse.getStatusCode();
+
+                // A near/exceeded timeout surfaces as status 0 (no response
+                // received) rather than a thrown exception — confirmed via a
+                // real Phase 5 hardening test with claude.timeout set to 1ms.
+                // Treated as retryable, same as 429/5xx.
+                if (!httpStatus) {
+                    envelope = { ok: false, status: 'timeout', httpStatus: 0, safeError: 'Claude API call timed out before a response was received.' };
+                    continue;
+                }
+
+                if (httpStatus === 429 || (httpStatus >= 500 && httpStatus <= 599)) {
+                    envelope = { ok: false, status: 'http_error', httpStatus: httpStatus, safeError: this._describeHttpError(httpStatus, httpResponse.getBody()) };
+                    continue;
+                }
+
+                if (httpStatus < 200 || httpStatus >= 300) {
+                    envelope = { ok: false, status: 'http_error', httpStatus: httpStatus, safeError: this._describeHttpError(httpStatus, httpResponse.getBody()) };
+                    break;
+                }
+
+                envelope = this._parseSuccess(httpResponse.getBody(), spec);
+                break;
+            } catch (e) {
+                var errCode = (e && e.bcClaudeErrorCode) || 'TRANSPORT_ERROR';
+                envelope = {
+                    ok: false,
+                    status: errCode === 'CREDENTIAL_RESOLUTION_ERROR' ? 'credential_error' : 'timeout',
+                    httpStatus: null,
+                    safeError: (e && e.bcClaudeErrorMessage) || 'Claude API call failed before a response was received (network/timeout).',
+                };
+                if (errCode === 'CREDENTIAL_RESOLUTION_ERROR') break; // not retryable
+            }
+        }
+
+        return this._finish(envelope || { ok: false, status: 'timeout', httpStatus: null, safeError: 'Claude API call did not complete after ' + this.MAX_ATTEMPTS + ' attempt(s).' }, meta, correlationId, startTime, attempt);
+    },
+
+    // Anthropic's own error responses are JSON like
+    // {"type":"error","error":{"type":"authentication_error","message":"..."}}
+    // — that message is Anthropic's own diagnostic text, never our secret,
+    // so it's safe to surface directly rather than a generic "HTTP 401".
+    _describeHttpError: function(httpStatus, bodyText) {
+        try {
+            var parsed = JSON.parse(bodyText);
+            if (parsed && parsed.error && parsed.error.message) {
+                return 'Claude API returned HTTP ' + httpStatus + ': ' + parsed.error.message;
+            }
+        } catch (e) {
+            // body wasn't JSON — fall through to the generic message
+        }
+        return 'Claude API returned HTTP ' + httpStatus + '.';
+    },
+
+    _parseSuccess: function(bodyText, spec) {
+        var parsed;
+        try {
+            parsed = JSON.parse(bodyText);
+        } catch (e) {
+            return { ok: false, status: 'invalid_response', httpStatus: 200, safeError: 'Claude response was not valid JSON.' };
+        }
+
+        var usage = parsed.usage || {};
+        if (parsed.stop_reason === 'refusal') {
+            return { ok: false, status: 'refused', httpStatus: 200, safeError: 'Claude declined to produce a result for this request.', requestId: parsed.id, inputTokens: usage.input_tokens, outputTokens: usage.output_tokens };
+        }
+
+        var toolUse = null;
+        var content = parsed.content || [];
+        for (var i = 0; i < content.length; i++) {
+            if (content[i].type === 'tool_use' && content[i].name === spec.tool.name) {
+                toolUse = content[i];
+                break;
+            }
+        }
+        if (!toolUse || !toolUse.input) {
+            return { ok: false, status: 'invalid_response', httpStatus: 200, safeError: 'Claude response did not include the expected structured tool result.', requestId: parsed.id, inputTokens: usage.input_tokens, outputTokens: usage.output_tokens };
+        }
+
+        var result = {
+            ok: true,
+            status: 'success',
+            httpStatus: 200,
+            data: toolUse.input,
+            requestId: parsed.id,
+            inputTokens: usage.input_tokens,
+            outputTokens: usage.output_tokens,
+        };
+        // Every structured schema used by this app carries a top-level
+        // `confidence` — surfacing it here means every call site's AI
+        // Interaction row records it generically, without each use-case
+        // method having to repeat the plumbing.
+        if (toolUse.input && typeof toolUse.input.confidence === 'number') {
+            result.confidence = toolUse.input.confidence;
+        }
+        return result;
+    },
+
+    _finish: function(envelope, meta, correlationId, startTime, attempt) {
+        var latencyMs = new Date().getTime() - startTime;
+        this._logInteraction(envelope, meta, correlationId, latencyMs);
+        envelope.correlationId = correlationId;
+        envelope.latencyMs = latencyMs;
+        envelope.attempts = attempt;
+        return envelope;
+    },
+
+    // Appends one AI Interaction row. Mirrors AuditEngine.logEvent's own
+    // contract: logging failure must never surface as a call failure.
+    _logInteraction: function(envelope, meta, correlationId, latencyMs) {
+        try {
+            var gr = new GlideRecord('x_695068_bcfa_ai_interaction');
+            gr.initialize();
+            gr.setValue('correlation_id', correlationId);
+            gr.setValue('source_table', meta.sourceTable || '');
+            gr.setValue('source_record', meta.sourceRecord || '');
+            gr.setValue('operation', meta.operation || 'connectivity_test');
+            gr.setValue('claude_model', this._model());
+            gr.setValue('prompt_version', meta.promptVersion || '');
+            gr.setValue('status', envelope.status || 'invalid_response');
+            if (envelope.httpStatus) gr.setValue('http_status', envelope.httpStatus);
+            gr.setValue('claude_request_id', envelope.requestId || '');
+            gr.setValue('latency_ms', latencyMs);
+            if (envelope.inputTokens) gr.setValue('input_tokens', envelope.inputTokens);
+            if (envelope.outputTokens) gr.setValue('output_tokens', envelope.outputTokens);
+            if (envelope.confidence !== undefined && envelope.confidence !== null) gr.setValue('confidence', envelope.confidence);
+            gr.setValue('safe_error', envelope.safeError || '');
+            gr.setValue('initiated_by', gs.getUserID());
+            gr.insert();
+        } catch (logErr) {
+            // never let logging failure surface as a call failure
+        }
+    },
+
+    // Use Case 1 — Invoice extraction, JSON-context path (Phase 2 decision:
+    // this PDI has no attachment mechanism anywhere in the app yet, so
+    // rather than a document/image path this reads whatever partial
+    // "as-if-OCR'd" fields the caller already has (rawContext — the same
+    // seedFields the demo data seeder already threads through
+    // ApDomainService.runExtraction) plus the header fields ServiceNow
+    // already captured at intake, and asks Claude to cross-validate and
+    // produce the canonical structured extraction — genuine reasoning
+    // (consistency checks, confidence, warnings) even without a real
+    // document. rawContext is intentionally passed in rather than fetched
+    // internally, since there is nothing on the AP Invoice record itself to
+    // fetch it from.
+    extractInvoice: function(apInvoiceSysId, rawContext) {
+        var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
+        if (!invoice.get(apInvoiceSysId)) {
+            return { ok: false, status: 'invalid_response', httpStatus: null, safeError: 'AP Invoice not found: ' + apInvoiceSysId };
+        }
+        var vendorName = '';
+        var vendorCode = '';
+        if (invoice.getValue('vendor')) {
+            var vendor = new GlideRecord('x_695068_bcfa_vendor');
+            if (vendor.get(invoice.getValue('vendor'))) {
+                vendorName = vendor.getValue('name');
+                vendorCode = vendor.getValue('vendor_code');
+            }
+        }
+        var poNumber = '';
+        if (invoice.getValue('purchase_order')) {
+            var po = new GlideRecord('x_695068_bcfa_purchase_order');
+            if (po.get(invoice.getValue('purchase_order'))) poNumber = po.getValue('po_number');
+        }
+
+        var systemKnownFields = {
+            invoice_number: invoice.getValue('invoice_number'),
+            invoice_date: invoice.getValue('invoice_date'),
+            posting_date: invoice.getValue('posting_date'),
+            vendor_name: vendorName,
+            vendor_id: vendorCode,
+            po_number: poNumber,
+            currency: invoice.getValue('currency'),
+            subtotal: parseFloat(invoice.getValue('net_amount') || '0'),
+            tax_amount: parseFloat(invoice.getValue('tax_amount') || '0'),
+            invoice_amount: parseFloat(invoice.getValue('gross_amount') || '0'),
+        };
+
+        var spec = {
+            system: this._systemPrompt('invoice-extraction-v1',
+                'You extract and validate structured invoice header data for an accounts-payable process. ' +
+                'You are given two things: (1) raw, possibly incomplete fields captured from the incoming ' +
+                'invoice submission (rawExtractedFields), and (2) the fields already recorded in the system ' +
+                'of record for this invoice (systemKnownFields). Reconcile them into one structured result. ' +
+                'Use only the supplied evidence. Do not invent a value that is not present in either input — ' +
+                'if a field cannot be determined from the evidence, return an empty string (or 0 for amounts) ' +
+                'and add a warning naming that field. If rawExtractedFields conflicts with systemKnownFields ' +
+                '(e.g. a different invoice number or amount), prefer systemKnownFields as authoritative but add ' +
+                'a warning describing the conflict. Set confidence between 0 and 1 reflecting how complete and ' +
+                'internally consistent the evidence is — do not default to a high confidence.'),
+            messages: [{
+                role: 'user',
+                content: JSON.stringify({ rawExtractedFields: rawContext || {}, systemKnownFields: systemKnownFields }),
+            }],
+            tool: {
+                name: 'record_invoice_extraction',
+                description: 'Records the reconciled, structured invoice extraction result.',
+                input_schema: {
+                    type: 'object',
+                    properties: {
+                        invoice_number: { type: 'string' },
+                        invoice_date: { type: 'string' },
+                        posting_date: { type: 'string' },
+                        vendor_name: { type: 'string' },
+                        vendor_id: { type: 'string' },
+                        po_number: { type: 'string' },
+                        currency: { type: 'string' },
+                        subtotal: { type: 'number' },
+                        tax_amount: { type: 'number' },
+                        invoice_amount: { type: 'number' },
+                        confidence: { type: 'number' },
+                        warnings: { type: 'array', items: { type: 'string' } },
+                    },
+                    required: ['invoice_number', 'currency', 'invoice_amount', 'confidence', 'warnings'],
+                },
+            },
+        };
+
+        return this.invoke(spec, {
+            operation: 'extract_invoice',
+            sourceTable: 'x_695068_bcfa_ap_invoice',
+            sourceRecord: apInvoiceSysId,
+            promptVersion: 'invoice-extraction-v1',
+        });
+    },
+
+    // Use Case 4/5 — AP exception explanation. ServiceNow has already run
+    // deterministic validation/matching and decided the reason_code; Claude
+    // never re-classifies, it explains the existing classification using
+    // only the evidence ServiceNow already gathered (invoice header, match
+    // variances, configured tolerances). Returns INSUFFICIENT_INFORMATION
+    // rather than a speculative explanation when the evidence doesn't
+    // support one.
+    explainInvoiceException: function(apExceptionSysId) {
+        var exception = new GlideRecord('x_695068_bcfa_ap_exception');
+        if (!exception.get(apExceptionSysId)) {
+            return { ok: false, status: 'invalid_response', httpStatus: null, safeError: 'AP Exception not found: ' + apExceptionSysId };
+        }
+        var apInvoiceSysId = exception.getValue('ap_invoice');
+        var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
+        invoice.get(apInvoiceSysId);
+
+        // "Most recent by sys_created_on" is not reliable here: matchInvoice()
+        // can run twice for the same invoice in quick succession (once
+        // trivially before any line is attached, once for real after), both
+        // landing in the same second — confirmed live, where the tie
+        // resolved toward the wrong (trivial, "matched") row and Claude
+        // correctly refused to explain a price_tolerance exception given
+        // self-contradictory evidence. A match-based exception (this one or
+        // quantity_tolerance/tax_validation) is only ever raised for a row
+        // that actually failed tolerance, so prefer within_tolerance=false
+        // — that is the row the exception is actually about — and only
+        // fall back to plain most-recent for exceptions with no such row
+        // (duplicate, po_mismatch, missing_field, vendor_invalid).
+        var failedMatch = new GlideRecord('x_695068_bcfa_ap_match');
+        failedMatch.addQuery('ap_invoice', apInvoiceSysId);
+        failedMatch.addQuery('within_tolerance', false);
+        failedMatch.orderByDesc('sys_created_on');
+        failedMatch.setLimit(1);
+        failedMatch.query();
+        var match = failedMatch;
+        if (!failedMatch.hasNext()) {
+            match = new GlideRecord('x_695068_bcfa_ap_match');
+            match.addQuery('ap_invoice', apInvoiceSysId);
+            match.orderByDesc('sys_created_on');
+            match.setLimit(1);
+            match.query();
+        }
+        var matchContext = null;
+        if (match.next()) {
+            matchContext = {
+                match_result: match.getValue('match_result'),
+                within_tolerance: match.getValue('within_tolerance') === '1',
+                quantity_variance_pct: parseFloat(match.getValue('quantity_variance') || '0'),
+                price_variance_pct: parseFloat(match.getValue('price_variance') || '0'),
+                tax_variance: parseFloat(match.getValue('tax_variance') || '0'),
+            };
+        }
+
+        var context = {
+            reason_code: exception.getValue('reason_code'),
+            exception_description: exception.getValue('description'),
+            invoice: {
+                invoice_number: invoice.getValue('invoice_number'),
+                currency: invoice.getValue('currency'),
+                gross_amount: parseFloat(invoice.getValue('gross_amount') || '0'),
+                net_amount: parseFloat(invoice.getValue('net_amount') || '0'),
+                tax_amount: parseFloat(invoice.getValue('tax_amount') || '0'),
+                extraction_confidence: invoice.getValue('extraction_confidence') ? parseFloat(invoice.getValue('extraction_confidence')) : null,
+            },
+            match: matchContext,
+            configured_tolerances: new MatchingEngine().DEFAULT_TOLERANCES,
+        };
+
+        var spec = {
+            system: this._systemPrompt('ap-exception-explanation-v1',
+                'You explain accounts-payable processing exceptions to a finance analyst. ServiceNow has ' +
+                'already deterministically classified this exception (reason_code) — you never change or ' +
+                'second-guess that classification. Using only the supplied evidence, answer: what happened, ' +
+                'why it happened, and what the analyst should check next. Cite the specific numbers from the ' +
+                'evidence in your evidence list. If the evidence is insufficient to explain the reason_code ' +
+                'confidently, set insufficient_information to true and leave explanation empty rather than ' +
+                'guessing. Never state or imply that the invoice should be approved or posted — that decision ' +
+                'belongs to a human approver.'),
+            messages: [{ role: 'user', content: JSON.stringify(context) }],
+            tool: {
+                name: 'record_exception_explanation',
+                description: 'Records the exception explanation for analyst review.',
+                input_schema: {
+                    type: 'object',
+                    properties: {
+                        insufficient_information: { type: 'boolean' },
+                        evidence: { type: 'array', items: { type: 'string' } },
+                        explanation: { type: 'string' },
+                        recommended_action: { type: 'string' },
+                        confidence: { type: 'number' },
+                    },
+                    required: ['insufficient_information', 'evidence', 'confidence'],
+                },
+            },
+        };
+
+        return this.invoke(spec, {
+            operation: 'explain_ap_exception',
+            sourceTable: 'x_695068_bcfa_ap_exception',
+            sourceRecord: apExceptionSysId,
+            promptVersion: 'ap-exception-explanation-v1',
+        });
+    },
+
+    // Centralizes the boilerplate every system prompt shares (structured-
+    // output-only, no fabrication, no control-boundary overreach) so each
+    // use case only has to state what's specific to it. `version` is
+    // logged as promptVersion by the caller, not embedded here, so there is
+    // one place to see which prompt text produced a given AI Interaction
+    // row (join on prompt_version).
+    _systemPrompt: function(version, taskSpecificInstructions) {
+        return taskSpecificInstructions +
+            ' Use only the evidence supplied to you in this request. Do not fabricate a value that is not ' +
+            'present in the evidence. You are an advisory system only: you must never approve a financial ' +
+            'transaction, change an approval result, post to SAP, clear a payment, or override a configured ' +
+            'tolerance or business rule. Respond only through the provided tool — do not respond in prose.';
+    },
+
+    // Use Case 2 — Remittance extraction, same JSON-context path as
+    // extractInvoice and for the same reason (no attachment mechanism
+    // exists in this app). rawContext is whatever partial fields the caller
+    // already has (the remittance seeder's seedFields).
+    extractRemittance: function(remittanceSysId, rawContext) {
+        var remittance = new GlideRecord('x_695068_bcfa_remittance');
+        if (!remittance.get(remittanceSysId)) {
+            return { ok: false, status: 'invalid_response', httpStatus: null, safeError: 'Remittance not found: ' + remittanceSysId };
+        }
+        var payment = new GlideRecord('x_695068_bcfa_payment');
+        var paymentKnownFields = {};
+        if (remittance.getValue('payment') && payment.get(remittance.getValue('payment'))) {
+            paymentKnownFields = {
+                bank_reference: payment.getValue('bank_reference'),
+                amount: parseFloat(payment.getValue('amount') || '0'),
+                currency: payment.getValue('currency'),
+                value_date: payment.getValue('value_date'),
+            };
+        }
+
+        var spec = {
+            system: this._systemPrompt('remittance-extraction-v1',
+                'You extract and validate structured remittance advice data for a cash-application process. ' +
+                'You are given (1) raw, possibly incomplete fields captured from the incoming remittance ' +
+                '(rawExtractedFields — this may include free text such as an email body or payment reference ' +
+                'string) and (2) the payment fields already recorded in the system (paymentKnownFields). ' +
+                'Extract the customer name/id, any invoice references mentioned (there may be several), the ' +
+                'payment reference, amount, currency, date, and any stated reason for a deduction or short ' +
+                'payment. Never invent a value that is not present in the evidence — return an empty string ' +
+                '(or empty array for invoice_references) when information is genuinely absent, and add a ' +
+                'warning naming what is missing. Set confidence between 0 and 1 reflecting completeness and ' +
+                'consistency of the evidence.'),
+            messages: [{
+                role: 'user',
+                content: JSON.stringify({ rawExtractedFields: rawContext || {}, paymentKnownFields: paymentKnownFields }),
+            }],
+            tool: {
+                name: 'record_remittance_extraction',
+                description: 'Records the reconciled, structured remittance extraction result.',
+                input_schema: {
+                    type: 'object',
+                    properties: {
+                        customer_name: { type: 'string' },
+                        customer_id: { type: 'string' },
+                        invoice_references: { type: 'array', items: { type: 'string' } },
+                        payment_reference: { type: 'string' },
+                        payment_amount: { type: 'number' },
+                        currency: { type: 'string' },
+                        payment_date: { type: 'string' },
+                        deduction_reason: { type: 'string' },
+                        confidence: { type: 'number' },
+                        warnings: { type: 'array', items: { type: 'string' } },
+                    },
+                    required: ['customer_name', 'invoice_references', 'confidence', 'warnings'],
+                },
+            },
+        };
+
+        return this.invoke(spec, {
+            operation: 'extract_remittance',
+            sourceTable: 'x_695068_bcfa_remittance',
+            sourceRecord: remittanceSysId,
+            promptVersion: 'remittance-extraction-v1',
+        });
+    },
+
+    // Use Case 3 — Cash application match recommendation. ServiceNow has
+    // already deterministically narrowed the population before this is
+    // ever called (candidateOpenItemSysIds — same customer, not cleared;
+    // see ArDomainService.matchPayment/_recommendClaudeMatch). Claude never
+    // sees the full open-item population, only this pre-filtered list, and
+    // never selects a candidate itself — it only produces an advisory
+    // ranking/classification that gets written as one 'ai_suggested' Match
+    // Candidate row, exactly like the deterministic 'fuzzy' rows next to it.
+    recommendCashMatch: function(paymentSysId, candidateOpenItemSysIds) {
+        var payment = new GlideRecord('x_695068_bcfa_payment');
+        if (!payment.get(paymentSysId)) {
+            return { ok: false, status: 'invalid_response', httpStatus: null, safeError: 'Payment not found: ' + paymentSysId };
+        }
+        var customerName = '';
+        if (payment.getValue('customer')) {
+            var customer = new GlideRecord('x_695068_bcfa_customer');
+            if (customer.get(payment.getValue('customer'))) customerName = customer.getValue('name');
+        }
+
+        var candidates = [];
+        for (var i = 0; i < (candidateOpenItemSysIds || []).length; i++) {
+            var item = new GlideRecord('x_695068_bcfa_ar_open_item');
+            if (item.get(candidateOpenItemSysIds[i])) {
+                candidates.push({
+                    item_number: item.getValue('item_number'),
+                    sys_id: item.getUniqueValue(),
+                    currency: item.getValue('currency'),
+                    open_amount: parseFloat(item.getValue('open_amount') || '0'),
+                    due_date: item.getValue('due_date'),
+                });
+            }
+        }
+
+        var spec = {
+            system: this._systemPrompt('cash-match-recommendation-v1',
+                'You recommend how an incoming customer payment should be matched against a short, already ' +
+                'filtered list of that customer\'s open AR items — you are never shown the full open-item ' +
+                'population. Classify the match using exactly one of: EXACT, SHORT_PAY, OVER_PAY, ' +
+                'MISSING_REFERENCE, MULTIPLE_CANDIDATES, CUSTOMER_MISMATCH, CURRENCY_MISMATCH, NO_MATCH, ' +
+                'REVIEW_REQUIRED. Recommend at most one candidate open item by its item_number (or null if ' +
+                'none is appropriate). variance is payment amount minus the recommended item\'s open_amount ' +
+                '(0 for an exact match). This is advisory only — you are not selecting or clearing anything, ' +
+                'only recommending what a human reviewer should consider.'),
+            messages: [{
+                role: 'user',
+                content: JSON.stringify({
+                    payment: {
+                        bank_reference: payment.getValue('bank_reference'),
+                        customer_name: customerName,
+                        amount: parseFloat(payment.getValue('amount') || '0'),
+                        currency: payment.getValue('currency'),
+                    },
+                    candidate_open_items: candidates,
+                }),
+            }],
+            tool: {
+                name: 'record_cash_match_recommendation',
+                description: 'Records the advisory cash-application match recommendation.',
+                input_schema: {
+                    type: 'object',
+                    properties: {
+                        match_type: {
+                            type: 'string',
+                            enum: ['EXACT', 'SHORT_PAY', 'OVER_PAY', 'MISSING_REFERENCE', 'MULTIPLE_CANDIDATES', 'CUSTOMER_MISMATCH', 'CURRENCY_MISMATCH', 'NO_MATCH', 'REVIEW_REQUIRED'],
+                        },
+                        recommended_item_number: { type: 'string' },
+                        variance: { type: 'number' },
+                        evidence: { type: 'array', items: { type: 'string' } },
+                        explanation: { type: 'string' },
+                        recommended_action: { type: 'string' },
+                        confidence: { type: 'number' },
+                    },
+                    required: ['match_type', 'evidence', 'confidence'],
+                },
+            },
+        };
+
+        var envelope = this.invoke(spec, {
+            operation: 'recommend_cash_match',
+            sourceTable: 'x_695068_bcfa_payment',
+            sourceRecord: paymentSysId,
+            promptVersion: 'cash-match-recommendation-v1',
+        });
+        if (envelope.ok && envelope.data.recommended_item_number) {
+            for (var j = 0; j < candidates.length; j++) {
+                if (candidates[j].item_number === envelope.data.recommended_item_number) {
+                    envelope.data.recommended_open_item_sys_id = candidates[j].sys_id;
+                    break;
+                }
+            }
+        }
+        return envelope;
+    },
+
+    // Use Case 5 — AR exception explanation. Same contract as
+    // explainInvoiceException: ServiceNow has already deterministically
+    // classified the exception (reason_code); Claude explains it using only
+    // supplied evidence and never re-classifies. For customer_ambiguous,
+    // candidateCustomers is a short, deterministically pre-filtered list
+    // (e.g. name LIKE the attempted remitter name) — never the full
+    // customer population.
+    explainCashException: function(arExceptionSysId, candidateCustomers) {
+        var exception = new GlideRecord('x_695068_bcfa_ar_exception');
+        if (!exception.get(arExceptionSysId)) {
+            return { ok: false, status: 'invalid_response', httpStatus: null, safeError: 'AR Exception not found: ' + arExceptionSysId };
+        }
+        var paymentSysId = exception.getValue('payment');
+        var payment = new GlideRecord('x_695068_bcfa_payment');
+        payment.get(paymentSysId);
+
+        var allocatedTotal = 0;
+        var allocation = new GlideRecord('x_695068_bcfa_payment_allocation');
+        allocation.addQuery('payment', paymentSysId);
+        allocation.query();
+        while (allocation.next()) {
+            allocatedTotal += parseFloat(allocation.getValue('allocated_amount') || '0');
+        }
+
+        var context = {
+            reason_code: exception.getValue('reason_code'),
+            exception_description: exception.getValue('description'),
+            payment: {
+                bank_reference: payment.getValue('bank_reference'),
+                currency: payment.getValue('currency'),
+                amount: parseFloat(payment.getValue('amount') || '0'),
+            },
+            allocated_total: allocatedTotal,
+            candidate_customers: candidateCustomers || null,
+        };
+
+        var spec = {
+            system: this._systemPrompt('ar-exception-explanation-v1',
+                'You explain cash-application processing exceptions to a finance analyst. ServiceNow has ' +
+                'already deterministically classified this exception (reason_code) — you never change or ' +
+                'second-guess that classification. Using only the supplied evidence, answer: what happened, ' +
+                'why it happened, and what the analyst should check next. If candidate_customers is provided, ' +
+                'you may comment on which candidate looks most likely and why, but you are not assigning the ' +
+                'customer yourself. Cite specific numbers from the evidence. If the evidence is insufficient ' +
+                'to explain the reason_code confidently, set insufficient_information to true and leave ' +
+                'explanation empty rather than guessing. Never state or imply that the payment should be ' +
+                'cleared or posted — that decision belongs to a human approver.'),
+            messages: [{ role: 'user', content: JSON.stringify(context) }],
+            tool: {
+                name: 'record_exception_explanation',
+                description: 'Records the exception explanation for analyst review.',
+                input_schema: {
+                    type: 'object',
+                    properties: {
+                        insufficient_information: { type: 'boolean' },
+                        evidence: { type: 'array', items: { type: 'string' } },
+                        explanation: { type: 'string' },
+                        recommended_action: { type: 'string' },
+                        confidence: { type: 'number' },
+                    },
+                    required: ['insufficient_information', 'evidence', 'confidence'],
+                },
+            },
+        };
+
+        return this.invoke(spec, {
+            operation: 'explain_ar_exception',
+            sourceTable: 'x_695068_bcfa_ar_exception',
+            sourceRecord: arExceptionSysId,
+            promptVersion: 'ar-exception-explanation-v1',
+        });
+    },
+
+    // Minimal round-trip proof for Phase 1: drives Claude through the exact
+    // same structured tool-call path every real use case will use, so a
+    // pass here proves credential resolution, model config, transport,
+    // structured-output parsing, and logging all together — not just raw
+    // network reachability.
+    testConnectivity: function() {
+        var spec = {
+            system: 'You are a connectivity test endpoint for a server-side integration. Call the report_status tool exactly once with status "ok".',
+            messages: [{ role: 'user', content: 'Run the connectivity check.' }],
+            maxTokens: 64,
+            tool: {
+                name: 'report_status',
+                description: 'Reports a fixed connectivity status.',
+                input_schema: {
+                    type: 'object',
+                    properties: { status: { type: 'string', enum: ['ok'] } },
+                    required: ['status'],
+                },
+            },
+        };
+        return this.invoke(spec, { operation: 'connectivity_test', promptVersion: 'v1' });
+    },
+
+    type: 'BCClaudeClient',
+};
+]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 09:22:46</sys_created_on>
+        <sys_id>b8b296d6009944209283a8e91a573ae6</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>BCClaudeClient</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_script_include_b8b296d6009944209283a8e91a573ae6</sys_update_name>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 09:22:46</sys_updated_on>
+    </sys_script_include>
+</record_update>

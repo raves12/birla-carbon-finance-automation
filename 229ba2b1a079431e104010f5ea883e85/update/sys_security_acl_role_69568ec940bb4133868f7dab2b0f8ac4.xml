@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_security_acl_role">
+    <sys_security_acl_role action="INSERT_OR_UPDATE">
+        <sys_class_name>sys_security_acl_role</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:11:44</sys_created_on>
+        <sys_id>69568ec940bb4133868f7dab2b0f8ac4</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_695068_bcfa_ap_exception.x_695068_bcfa.ap_processor</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_security_acl display_value="x_695068_bcfa_ap_exception">096613b31c6b44939e4b1f0f77ed8bdf</sys_security_acl>
+        <sys_update_name>sys_security_acl_role_69568ec940bb4133868f7dab2b0f8ac4</sys_update_name>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 07:11:44</sys_updated_on>
+        <sys_user_role display_value="x_695068_bcfa.ap_processor" name="x_695068_bcfa.ap_processor">bf505b5092574a7fa59a01048550571a</sys_user_role>
+    </sys_security_acl_role>
+</record_update>

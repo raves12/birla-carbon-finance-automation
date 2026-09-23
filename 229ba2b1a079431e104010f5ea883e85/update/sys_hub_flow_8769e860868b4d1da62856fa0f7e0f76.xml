@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_hub_flow">
+    <sys_hub_flow action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <acls/>
+        <active>true</active>
+        <allow_high_security_roles>false</allow_high_security_roles>
+        <annotation/>
+        <attributes>timeFromCreateToActivate=28063000</attributes>
+        <authored_on_release_version/>
+        <callable_by_client_api>false</callable_by_client_api>
+        <category/>
+        <copied_from/>
+        <copied_from_name/>
+        <description>Daily sweep for AP Exceptions open more than 3 days; logs a warning for follow-up.</description>
+        <display_name_after_preview/>
+        <flow_priority>MEDIUM</flow_priority>
+        <generation_source>fluent</generation_source>
+        <internal_name>ap_exception_aging_escalation</internal_name>
+        <label_cache>[{"name":"6b255813-3101-4cec-938e-1ed5a0805a2b.Count","label":"6b255813-3101-4cec-938e-1ed5a0805a2b➛Count","type":"integer","base_type":"integer","usedInstances":{"7d908a15-9c3f-48d0-8901-50a89f37f44b":["log_message"]},"attributes":{}}]</label_cache>
+        <master_snapshot>8075d3fa835f43103d769be0deaad390</master_snapshot>
+        <master_snapshot_digest/>
+        <name>AP Exception Aging Escalation</name>
+        <natlang/>
+        <outputs/>
+        <pre_compiled>false</pre_compiled>
+        <remote_trigger_id>4c7517fa835f43103d769be0deaad38d</remote_trigger_id>
+        <run_as>system</run_as>
+        <run_with_roles/>
+        <sc_callable>false</sc_callable>
+        <show_draft_actions>false</show_draft_actions>
+        <show_triggered_flows>false</show_triggered_flows>
+        <status>published</status>
+        <substatus/>
+        <sys_class_name>sys_hub_flow</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:11:33</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>8769e860868b4d1da62856fa0f7e0f76</sys_id>
+        <sys_mod_count>41</sys_mod_count>
+        <sys_name>AP Exception Aging Escalation</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_hub_flow_8769e860868b4d1da62856fa0f7e0f76</sys_update_name>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 14:59:17</sys_updated_on>
+        <type>flow</type>
+        <updation_source/>
+        <version>2</version>
+        <version_record/>
+    </sys_hub_flow>
+    <sys_translated_text action="delete_multiple" query="documentkey=8769e860868b4d1da62856fa0f7e0f76"/>
+    <sys_variable_value action="delete_multiple" query="document_key=8769e860868b4d1da62856fa0f7e0f76"/>
+    <sys_flow_timer_trigger action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <day_of_month>1</day_of_month>
+        <day_of_week/>
+        <name/>
+        <published_version/>
+        <run_period/>
+        <run_start>2026-09-17 07:12:10</run_start>
+        <sys_class_name>sys_flow_timer_trigger</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:12:10</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>4c7517fa835f43103d769be0deaad38d</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_overrides/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 07:12:10</sys_updated_on>
+        <time>1970-01-01 16:00:00</time>
+        <timer_type>11</timer_type>
+        <trigger_definition display_value="Daily">89142dc0c32222002841b63b12d3ae8a</trigger_definition>
+    </sys_flow_timer_trigger>
+    <sys_trigger_runner_mapping action="delete_multiple" query="identifier=8769e860868b4d1da62856fa0f7e0f76"/>
+    <sys_hub_flow_stage action="delete_multiple" query="flow=8769e860868b4d1da62856fa0f7e0f76"/>
+    <sys_flow_cat_variable_model action="delete_multiple" query="id=8769e860868b4d1da62856fa0f7e0f76"/>
+    <sys_hub_flow_input action="delete_multiple" query="model=8769e860868b4d1da62856fa0f7e0f76"/>
+    <sys_hub_flow_output action="delete_multiple" query="model=8769e860868b4d1da62856fa0f7e0f76"/>
+    <sys_hub_alias_mapping action="delete_multiple" query="source_id=8769e860868b4d1da62856fa0f7e0f76"/>
+    <sys_hub_trigger_instance_v2 action="delete_multiple" query="flow=8769e860868b4d1da62856fa0f7e0f76^sys_idNOT IN0cca1ec2e8594aa5b64adb9fcf33583a"/>
+    <sys_hub_trigger_instance_v2 action="INSERT_OR_UPDATE">
+        <comment/>
+        <display_text/>
+        <flow display_value="AP Exception Aging Escalation">8769e860868b4d1da62856fa0f7e0f76</flow>
+        <generation_source/>
+        <name>Daily</name>
+        <published_version/>
+        <remote_sys_id/>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:11:33</sys_created_on>
+        <sys_id>0cca1ec2e8594aa5b64adb9fcf33583a</sys_id>
+        <sys_mod_count>20</sys_mod_count>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 14:59:16</sys_updated_on>
+        <trigger_definition display_value="Daily">89142dc0c32222002841b63b12d3ae8a</trigger_definition>
+        <trigger_inputs>H4sIAAAAAAAA/31RwWrDMAz9leFzBs5pW267FAqDwRp2KaWotpIIHCfYStes5N+nNFnIxhjo4CfJeu9J+6viQGWJYesjgze46+PWqkypRDk4oZNnTjUKJM8YPLi8b1GypSOLR55qFlv0Fj1PP03VkMEXioL3h0TV4C1wE3qVcegwUUVo6hzr1gHLrAJclGQTLAaVpVonykM9kszjz+C6EaZPD/pepxJ3+jHTWmIkpyiD+vd/m0xFzgb0k6AWghDwSHf97fMnNf/hdhYqMvHCo2+7eFg5nTMBwb56169aLpE+8fa/i3hc7W7uKHZV8/GGBYpegxvyN7q56BoDbkHAcr9TxxjFyTAsy9gQuvmM0QRq+dkwnb93PRy+AM96iw75AQAA</trigger_inputs>
+        <trigger_outputs/>
+        <trigger_type>daily</trigger_type>
+        <updation_source/>
+    </sys_hub_trigger_instance_v2>
+    <sys_hub_action_instance_v2 action="delete_multiple" query="flow=8769e860868b4d1da62856fa0f7e0f76^sys_idNOT IN6b25581331014cec938e1ed5a0805a2b,7d908a159c3f48d0890150a89f37f44b"/>
+    <sys_hub_action_instance_v2 action="INSERT_OR_UPDATE">
+        <action_type display_value="Look Up Records">43400a1587003300663ca1bb36cb0b4b</action_type>
+        <action_type_parent display_value="">43400a1587003300663ca1bb36cb0b4b</action_type_parent>
+        <attributes>timeFromCreateToActivate=36000</attributes>
+        <comment>Find AP exceptions open more than 3 days</comment>
+        <compiled_snapshot/>
+        <display_text/>
+        <flow display_value="AP Exception Aging Escalation">8769e860868b4d1da62856fa0f7e0f76</flow>
+        <generation_source/>
+        <order>1</order>
+        <parent_ui_id/>
+        <sys_class_name>sys_hub_action_instance_v2</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:11:33</sys_created_on>
+        <sys_id>6b25581331014cec938e1ed5a0805a2b</sys_id>
+        <sys_mod_count>20</sys_mod_count>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 14:59:16</sys_updated_on>
+        <ui_id>6b255813-3101-4cec-938e-1ed5a0805a2b</ui_id>
+        <updation_source/>
+        <values>H4sIAAAAAAAA/+VXUU/bMBD+K1WeNqmqUloK9A2BkCYNkADxwph1sZ3Wm2tntlNaEP995zgJoQ0wtiKB9pi78913d9+dnau7SMGMR+OIasWEE1rZqBvNQeZeaB243H7L43jAdMbVd7u0hBoOjjOiVaGgP2AOlhqRufHE9hgs7f5Enzsw7tPgMzpjwmYSlpeb9JmBQdiOm2h8F9GpkMxwFY2vrruRYBhkNx3GMfS3d3fQ2yCOR6MBhX6SDEY0iZPtGF1ISLhE04Nm4m3FcMusVfa1zYE2zIPqdyO+cFwxjmhSkJZ3oxkoBk6bZS3BpNmpkg+CqVAOPUbeeGHFLcbFPGJvmXLMkPKgrT9JWdwgTg/BwbkzOXW5KU3pVAvKbagN4ynk0h00ZcHgNPMZhCMOElmd1jKfqZNQlah2UPUSJblFEDzzqXrsGBzzSM+n+uasAnkkVFGUMkmpKcj6C5wzIsmdh3MXccln6IfMIMuEmpDM6LkoDiOUWW8i8aOXSn2DMa2YqB5QjxsZ4qB3hPLDQnwJRvgkjtENHr7vRkiyAwnWPqSCNSS/co8kJFamQIoqhBL4cwUJ9zHKnJeY77v10ASzh3lZkNHedjzaJQlNgUBG+ILyUNm1OXjW9t/4PUwa/L4oMa5ALlldfJJC95jVxbHOSVCUrI43xurdj8TpMo13RmoEJCQyhIQWWp2bopRzQmVuC4UBZYOvvxiBl9lvtXGk4FHjxvAyXN3rfIeO053bP+B2/Pzu3mtw+xyjdS4CghZQ1eYu2LC6tSthye3Bxrg92NoMt+/qNOvStVS5Gk3fl8r+1tvDqj2Sq3Ggf982O6+K2X9tzK379dkcvGo4m/QKmsMnWLbhGU4ZSQWXjAglhSo2J950GOfNhpuRKR4t45EwieRGsAl3D9ErK6bdDcifbfqScaRqVJHe2+2D0MAmDx4971reg6v6l/YD3Xl2P2w39sOp510nWa6shxpjuSBCZ1suwSOvWLkEt/7PS/BdPuy6T83lm734sHnEcIulav4n9eN4ndhB+BKbh8/edqN+g83HsOic1bFbAZWERq7xSVGfJpu/1NKSysMN/qW8WypjG+Inr4t+N2g/xItvczv7+jcuv/0D+A8AAA==</values>
+    </sys_hub_action_instance_v2>
+    <sys_hub_alias_mapping action="delete_multiple" query="source_id=6b25581331014cec938e1ed5a0805a2b"/>
+    <sys_hub_action_instance_v2 action="INSERT_OR_UPDATE">
+        <action_type display_value="Log">5bc1bcc6531003003bf1d9109ec587d4</action_type>
+        <action_type_parent display_value="">5bc1bcc6531003003bf1d9109ec587d4</action_type_parent>
+        <attributes>timeFromCreateToActivate=36000</attributes>
+        <comment>Log aging exception count</comment>
+        <compiled_snapshot/>
+        <display_text/>
+        <flow display_value="AP Exception Aging Escalation">8769e860868b4d1da62856fa0f7e0f76</flow>
+        <generation_source/>
+        <order>2</order>
+        <parent_ui_id/>
+        <sys_class_name>sys_hub_action_instance_v2</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:11:33</sys_created_on>
+        <sys_id>7d908a159c3f48d0890150a89f37f44b</sys_id>
+        <sys_mod_count>20</sys_mod_count>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 14:59:16</sys_updated_on>
+        <ui_id>7d908a15-9c3f-48d0-8901-50a89f37f44b</ui_id>
+        <updation_source/>
+        <values>H4sIAAAAAAAA/+VUXWvbMBT9K0ZPG8TGjuM2zVtJVxj0Y6zQPZQSZPk6EciSJ8n5WMh/35WtJO5atgUKexj45R4f6d5zdO992hJJKyATItR8JmAJggzIkorGYSuqJYYFN7Wgm0ePfkOUyzn+qKnGwxY0mWwJW3BRaJBk8vQ8ILxAZpazJGfsLEuTOE7xy8ukuEjiC2DZ+Lw4xysEzTHlhNz41G9UYze1g9hCcQY+vvHHpntQ6cKVEQ8IrC3IAjB/SYWBAamoLKhVenNANNDiXoojsODS4m3EkdeG/8B8o9jxSkBFDLp/h3DmHeng8opa+mB1w2yjPbUr1qAX24PEMAzulIQgDHsW90rfDY7cz7JUPRbvQs9M+szja/zyap487JM/aa10jwo+9tx0hy9XQEkbYaenK0j+WsHwFAXpCQpGTkFn/n1tucJuJInrGZqL/dMo0VTyruszctD7+LJQj169bH0vqjHYAlC7NnN945uofFio1dd9j1xz2VbkfwrFqDhE1FrN88Y6f7cEBFR40ayidY1GzGqtlrw9jMVW0VxgEJVCrTCp4XMZUeakRdjVNLpG/KqFH6nmTuYtXoOHdwNiNmYqqDFHsdjCs++Nq6ST7jXMWqPaI0zz2l5igiX4cp39vbGswBg6h94bXH4JYM2g9Tugc5QQmBVAHZSqkUWw3Z7lwywbJ2mIeyAJRwxYeJGOIUygyGg8jjM6zKMpku1uFyis6XjfB/MxUALNCOyCyiANCrox0eul9E9q+NP+G6a/23+Q9fbf7cHVN632O9Bg27ST0t+BD3twP4bvtgPRsfdZgm+tldeDetKc/n9j+PwTKLF1y60HAAA=</values>
+    </sys_hub_action_instance_v2>
+    <sys_hub_alias_mapping action="delete_multiple" query="source_id=7d908a159c3f48d0890150a89f37f44b"/>
+    <sys_hub_sub_flow_instance_v2 action="delete_multiple" query="flow=8769e860868b4d1da62856fa0f7e0f76"/>
+    <sys_hub_flow_logic_instance_v2 action="delete_multiple" query="flow=8769e860868b4d1da62856fa0f7e0f76"/>
+    <sys_hub_pill_compound action="delete_multiple" query="attached_to=8769e860868b4d1da62856fa0f7e0f76"/>
+    <sys_hub_flow_variable action="delete_multiple" query="model=8769e860868b4d1da62856fa0f7e0f76"/>
+    <sys_choice action="delete_multiple" query="name=var__m_sys_hub_flow_input_8769e860868b4d1da62856fa0f7e0f76"/>
+    <sys_choice action="delete_multiple" query="name=var__m_sys_hub_flow_output_8769e860868b4d1da62856fa0f7e0f76"/>
+    <sys_hub_flow_snapshot action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <acls/>
+        <active>true</active>
+        <allow_high_security_roles>false</allow_high_security_roles>
+        <annotation/>
+        <attributes>timeFromCreateToActivate=36000</attributes>
+        <authored_on_release_version>-1</authored_on_release_version>
+        <callable_by_client_api>false</callable_by_client_api>
+        <category/>
+        <copied_from/>
+        <copied_from_name/>
+        <description>Daily sweep for AP Exceptions open more than 3 days; logs a warning for follow-up.</description>
+        <flow_priority>MEDIUM</flow_priority>
+        <internal_name>ap_exception_aging_escalation</internal_name>
+        <label_cache>[{"name":"6b255813-3101-4cec-938e-1ed5a0805a2b.Count","label":"6b255813-3101-4cec-938e-1ed5a0805a2b➛Count","type":"integer","base_type":"integer","usedInstances":{"7d908a15-9c3f-48d0-8901-50a89f37f44b":["log_message"]},"attributes":{}}]</label_cache>
+        <master>true</master>
+        <name>AP Exception Aging Escalation</name>
+        <natlang/>
+        <outputs/>
+        <parent_flow display_value="AP Exception Aging Escalation">8769e860868b4d1da62856fa0f7e0f76</parent_flow>
+        <remote_trigger_id/>
+        <run_as>system</run_as>
+        <run_with_roles/>
+        <sc_callable>false</sc_callable>
+        <status>published</status>
+        <sys_class_name>sys_hub_flow_snapshot</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:12:10</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>8075d3fa835f43103d769be0deaad390</sys_id>
+        <sys_mod_count>19</sys_mod_count>
+        <sys_name/>
+        <sys_overrides/>
+        <sys_package/>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name/>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 14:59:17</sys_updated_on>
+        <type>flow</type>
+        <version>2</version>
+    </sys_hub_flow_snapshot>
+    <sys_translated_text action="delete_multiple" query="documentkey=8075d3fa835f43103d769be0deaad390"/>
+    <sys_variable_value action="delete_multiple" query="document_key=8075d3fa835f43103d769be0deaad390"/>
+    <sys_hub_flow_stage action="delete_multiple" query="flow=8075d3fa835f43103d769be0deaad390"/>
+    <sys_flow_cat_variable_model action="delete_multiple" query="id=8075d3fa835f43103d769be0deaad390"/>
+    <sys_hub_flow_input action="delete_multiple" query="model=8075d3fa835f43103d769be0deaad390"/>
+    <sys_hub_flow_output action="delete_multiple" query="model=8075d3fa835f43103d769be0deaad390"/>
+    <sys_hub_alias_mapping action="delete_multiple" query="source_id=8075d3fa835f43103d769be0deaad390"/>
+    <sys_hub_trigger_instance_v2 action="delete_multiple" query="flow=8075d3fa835f43103d769be0deaad390^sys_idNOT INcc75d3fa835f43103d769be0deaad3f6"/>
+    <sys_hub_trigger_instance_v2 action="INSERT_OR_UPDATE">
+        <comment/>
+        <display_text/>
+        <flow display_value="AP Exception Aging Escalation">8075d3fa835f43103d769be0deaad390</flow>
+        <generation_source/>
+        <name>Daily</name>
+        <published_version/>
+        <remote_sys_id/>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:12:10</sys_created_on>
+        <sys_id>cc75d3fa835f43103d769be0deaad3f6</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 07:12:10</sys_updated_on>
+        <trigger_definition display_value="Daily">89142dc0c32222002841b63b12d3ae8a</trigger_definition>
+        <trigger_inputs>H4sIAAAAAAAA/31RwWrDMAz9leFzBs5pW267FAqDwRp2KaWotpIIHCfYStes5N+nNFnIxhjo4CfJeu9J+6viQGWJYesjgze46+PWqkypRDk4oZNnTjUKJM8YPLi8b1GypSOLR55qFlv0Fj1PP03VkMEXioL3h0TV4C1wE3qVcegwUUVo6hzr1gHLrAJclGQTLAaVpVonykM9kszjz+C6EaZPD/pepxJ3+jHTWmIkpyiD+vd/m0xFzgb0k6AWghDwSHf97fMnNf/hdhYqMvHCo2+7eFg5nTMBwb56169aLpE+8fa/i3hc7W7uKHZV8/GGBYpegxvyN7q56BoDbkHAcr9TxxjFyTAsy9gQuvmM0QRq+dkwnb93PRy+AM96iw75AQAA</trigger_inputs>
+        <trigger_outputs/>
+        <trigger_type>daily</trigger_type>
+        <updation_source/>
+    </sys_hub_trigger_instance_v2>
+    <sys_hub_action_instance_v2 action="delete_multiple" query="flow=8075d3fa835f43103d769be0deaad390^sys_idNOT IN0875d3fa835f43103d769be0deaad3f5,0c75d3fa835f43103d769be0deaad3f3"/>
+    <sys_hub_action_instance_v2 action="INSERT_OR_UPDATE">
+        <action_type display_value="Log">5bc1bcc6531003003bf1d9109ec587d4</action_type>
+        <action_type_parent display_value="Log">0e0ae8c2531003003bf1d9109ec587c8</action_type_parent>
+        <attributes>timeFromCreateToActivate=36000</attributes>
+        <comment>Log aging exception count</comment>
+        <compiled_snapshot>5bc1bcc6531003003bf1d9109ec587d4</compiled_snapshot>
+        <display_text/>
+        <flow display_value="AP Exception Aging Escalation">8075d3fa835f43103d769be0deaad390</flow>
+        <generation_source/>
+        <order>2</order>
+        <parent_ui_id/>
+        <sys_class_name>sys_hub_action_instance_v2</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:12:10</sys_created_on>
+        <sys_id>0875d3fa835f43103d769be0deaad3f5</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 09:23:06</sys_updated_on>
+        <ui_id>7d908a15-9c3f-48d0-8901-50a89f37f44b</ui_id>
+        <updation_source/>
+        <values>H4sIAAAAAAAA/+VUXWvbMBT9K0ZPG8TGjuM2zVtJVxj0Y6zQPZQSZPk6EciSJ8n5WMh/35WtJO5atgUKexj45R4f6d5zdO992hJJKyATItR8JmAJggzIkorGYSuqJYYFN7Wgm0ePfkOUyzn+qKnGwxY0mWwJW3BRaJBk8vQ8ILxAZpazJGfsLEuTOE7xy8ukuEjiC2DZ+Lw4xysEzTHlhNz41G9UYze1g9hCcQY+vvHHpntQ6cKVEQ8IrC3IAjB/SYWBAamoLKhVenNANNDiXoojsODS4m3EkdeG/8B8o9jxSkBFDLp/h3DmHeng8opa+mB1w2yjPbUr1qAX24PEMAzulIQgDHsW90rfDY7cz7JUPRbvQs9M+szja/zyap487JM/aa10jwo+9tx0hy9XQEkbYaenK0j+WsHwFAXpCQpGTkFn/n1tucJuJInrGZqL/dMo0VTyruszctD7+LJQj169bH0vqjHYAlC7NnN945uofFio1dd9j1xz2VbkfwrFqDhE1FrN88Y6f7cEBFR40ayidY1GzGqtlrw9jMVW0VxgEJVCrTCp4XMZUeakRdjVNLpG/KqFH6nmTuYtXoOHdwNiNmYqqDFHsdjCs++Nq6ST7jXMWqPaI0zz2l5igiX4cp39vbGswBg6h94bXH4JYM2g9Tugc5QQmBVAHZSqkUWw3Z7lwywbJ2mIeyAJRwxYeJGOIUygyGg8jjM6zKMpku1uFyis6XjfB/MxUALNCOyCyiANCrox0eul9E9q+NP+G6a/23+Q9fbf7cHVN632O9Bg27ST0t+BD3twP4bvtgPRsfdZgm+tldeDetKc/n9j+PwTKLF1y60HAAA=</values>
+    </sys_hub_action_instance_v2>
+    <sys_hub_alias_mapping action="delete_multiple" query="source_id=0875d3fa835f43103d769be0deaad3f5"/>
+    <sys_hub_action_instance_v2 action="INSERT_OR_UPDATE">
+        <action_type display_value="Look Up Records">43400a1587003300663ca1bb36cb0b4b</action_type>
+        <action_type_parent display_value="Look Up Records">d1c56ec50b30030085c083eb37673a50</action_type_parent>
+        <attributes>timeFromCreateToActivate=36000</attributes>
+        <comment>Find AP exceptions open more than 3 days</comment>
+        <compiled_snapshot>43400a1587003300663ca1bb36cb0b4b</compiled_snapshot>
+        <display_text/>
+        <flow display_value="AP Exception Aging Escalation">8075d3fa835f43103d769be0deaad390</flow>
+        <generation_source/>
+        <order>1</order>
+        <parent_ui_id/>
+        <sys_class_name>sys_hub_action_instance_v2</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:12:10</sys_created_on>
+        <sys_id>0c75d3fa835f43103d769be0deaad3f3</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 09:23:06</sys_updated_on>
+        <ui_id>6b255813-3101-4cec-938e-1ed5a0805a2b</ui_id>
+        <updation_source/>
+        <values>H4sIAAAAAAAA/+VXUU/bMBD+K1WeNqmqUloK9A2BkCYNkADxwph1sZ3Wm2tntlNaEP995zgJoQ0wtiKB9pi78913d9+dnau7SMGMR+OIasWEE1rZqBvNQeZeaB243H7L43jAdMbVd7u0hBoOjjOiVaGgP2AOlhqRufHE9hgs7f5Enzsw7tPgMzpjwmYSlpeb9JmBQdiOm2h8F9GpkMxwFY2vrruRYBhkNx3GMfS3d3fQ2yCOR6MBhX6SDEY0iZPtGF1ISLhE04Nm4m3FcMusVfa1zYE2zIPqdyO+cFwxjmhSkJZ3oxkoBk6bZS3BpNmpkg+CqVAOPUbeeGHFLcbFPGJvmXLMkPKgrT9JWdwgTg/BwbkzOXW5KU3pVAvKbagN4ynk0h00ZcHgNPMZhCMOElmd1jKfqZNQlah2UPUSJblFEDzzqXrsGBzzSM+n+uasAnkkVFGUMkmpKcj6C5wzIsmdh3MXccln6IfMIMuEmpDM6LkoDiOUWW8i8aOXSn2DMa2YqB5QjxsZ4qB3hPLDQnwJRvgkjtENHr7vRkiyAwnWPqSCNSS/co8kJFamQIoqhBL4cwUJ9zHKnJeY77v10ASzh3lZkNHedjzaJQlNgUBG+ILyUNm1OXjW9t/4PUwa/L4oMa5ALlldfJJC95jVxbHOSVCUrI43xurdj8TpMo13RmoEJCQyhIQWWp2bopRzQmVuC4UBZYOvvxiBl9lvtXGk4FHjxvAyXN3rfIeO053bP+B2/Pzu3mtw+xyjdS4CghZQ1eYu2LC6tSthye3Bxrg92NoMt+/qNOvStVS5Gk3fl8r+1tvDqj2Sq3Ggf982O6+K2X9tzK379dkcvGo4m/QKmsMnWLbhGU4ZSQWXjAglhSo2J950GOfNhpuRKR4t45EwieRGsAl3D9ErK6bdDcifbfqScaRqVJHe2+2D0MAmDx4971reg6v6l/YD3Xl2P2w39sOp510nWa6shxpjuSBCZ1suwSOvWLkEt/7PS/BdPuy6T83lm734sHnEcIulav4n9eN4ndhB+BKbh8/edqN+g83HsOic1bFbAZWERq7xSVGfJpu/1NKSysMN/qW8WypjG+Inr4t+N2g/xItvczv7+jcuv/0D+A8AAA==</values>
+    </sys_hub_action_instance_v2>
+    <sys_hub_alias_mapping action="delete_multiple" query="source_id=0c75d3fa835f43103d769be0deaad3f3"/>
+    <sys_hub_sub_flow_instance_v2 action="delete_multiple" query="flow=8075d3fa835f43103d769be0deaad390"/>
+    <sys_hub_flow_logic_instance_v2 action="delete_multiple" query="flow=8075d3fa835f43103d769be0deaad390"/>
+    <sys_hub_pill_compound action="delete_multiple" query="attached_to=8075d3fa835f43103d769be0deaad390"/>
+    <sys_hub_flow_variable action="delete_multiple" query="model=8075d3fa835f43103d769be0deaad390"/>
+    <sys_choice action="delete_multiple" query="name=var__m_sys_hub_flow_input_8075d3fa835f43103d769be0deaad390"/>
+    <sys_choice action="delete_multiple" query="name=var__m_sys_hub_flow_output_8075d3fa835f43103d769be0deaad390"/>
+    <sys_hub_flow action="UPDATE">
+        <sys_id>8769e860868b4d1da62856fa0f7e0f76</sys_id>
+        <latest_snapshot>8075d3fa835f43103d769be0deaad390</latest_snapshot>
+        <compiler_build/>
+        <version_record/>
+    </sys_hub_flow>
+    <sys_flow_trigger_plan action="delete_multiple" query="plan_id=8769e860868b4d1da62856fa0f7e0f76^sys_idNOT IN447557fa835f43103d769be0deaad388"/>
+    <sys_flow_trigger_plan action="INSERT_OR_UPDATE">
+        <binding_strategy>com.snc.process_flow.engine.binding.RunAlways</binding_strategy>
+        <plan/>
+        <plan_id>8769e860868b4d1da62856fa0f7e0f76</plan_id>
+        <snapshot>8075d3fa835f43103d769be0deaad390</snapshot>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:12:10</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>447557fa835f43103d769be0deaad388</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_overrides/>
+        <sys_scope/>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 07:12:10</sys_updated_on>
+        <trigger display_value="">4c7517fa835f43103d769be0deaad38d</trigger>
+    </sys_flow_trigger_plan>
+    <sys_flow_subflow_plan action="delete_multiple" query="plan_id=8769e860868b4d1da62856fa0f7e0f76"/>
+</record_update>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sttrm_state_transition">
+    <sttrm_state_transition action="INSERT_OR_UPDATE">
+        <automatic>false</automatic>
+        <from_state display_value="Unknown Outcome">562b028d09e44c6e98e431b0b8b1a6b3</from_state>
+        <name>Unknown Outcome to Failed</name>
+        <sys_class_name>sttrm_state_transition</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:11:30</sys_created_on>
+        <sys_id>1846fc53a0a64411bfd3a7677bd6868e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Unknown Outcome to Failed</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sttrm_state_transition_1846fc53a0a64411bfd3a7677bd6868e</sys_update_name>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 07:11:30</sys_updated_on>
+        <to_state display_value="Failed">cdb78cc015084ba989f488018f95fd7f</to_state>
+    </sttrm_state_transition>
+    <sys_translated_text action="delete_multiple" query="documentkey=1846fc53a0a64411bfd3a7677bd6868e"/>
+</record_update>

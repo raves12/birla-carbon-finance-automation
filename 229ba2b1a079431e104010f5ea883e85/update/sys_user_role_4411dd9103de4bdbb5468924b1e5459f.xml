@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_user_role">
+    <sys_user_role action="INSERT_OR_UPDATE">
+        <assignable_by/>
+        <can_delegate>true</can_delegate>
+        <description>Full administrative access to the Birla Carbon Finance Automation app.</description>
+        <elevated_privilege>false</elevated_privilege>
+        <federated_id>L+7r0gmyST9ns05ZHHdlTa3fsV8WigO6xFmkDbXI0U0=</federated_id>
+        <grantable>true</grantable>
+        <includes_roles/>
+        <name>x_695068_bcfa.admin</name>
+        <scoped_admin>true</scoped_admin>
+        <suffix>admin</suffix>
+        <sys_class_name>sys_user_role</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:11:50</sys_created_on>
+        <sys_id>4411dd9103de4bdbb5468924b1e5459f</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_695068_bcfa.admin</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_user_role_4411dd9103de4bdbb5468924b1e5459f</sys_update_name>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 07:11:50</sys_updated_on>
+    </sys_user_role>
+</record_update>

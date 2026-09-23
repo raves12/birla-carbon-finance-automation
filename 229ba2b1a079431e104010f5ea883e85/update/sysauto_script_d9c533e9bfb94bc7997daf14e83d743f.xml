@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sysauto_script">
+    <sysauto_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <advanced>false</advanced>
+        <business_calendar/>
+        <condition/>
+        <conditional>false</conditional>
+        <entered_run_end/>
+        <entered_run_start>2026-09-13 06:13:00</entered_run_start>
+        <entered_time/>
+        <max_drift/>
+        <name>BCFA - One-Time Correctness Verification (v2, post-fix)</name>
+        <offset/>
+        <offset_type>0</offset_type>
+        <repeat_every/>
+        <run_as/>
+        <run_as_tz/>
+        <run_dayofmonth>1</run_dayofmonth>
+        <run_dayofweek>1</run_dayofweek>
+        <run_daysofweek/>
+        <run_end/>
+        <run_month/>
+        <run_period/>
+        <run_start>2026-09-13 06:13:00</run_start>
+        <run_time>1970-01-01 00:00:00</run_time>
+        <run_type>once</run_type>
+        <run_weekinmonth/>
+        <script><![CDATA[
+        var results = {};
+
+        try {
+            var svc = new IntegrationService();
+            var key = 'IDEMPOTENCY-TEST-' + gs.generateGUID();
+            var payload = { invoiceNumber: 'IDEMTEST', vendor: '', amount: 100 };
+            svc.execute({ operation: 'postVendorInvoice', adapter: 'mock_sap', idempotencyKey: key, payload: payload });
+            var r2 = svc.execute({ operation: 'postVendorInvoice', adapter: 'mock_sap', idempotencyKey: key, payload: payload });
+            var count = new GlideAggregate('x_695068_bcfa_integration_txn');
+            count.addQuery('idempotency_key', key);
+            count.addQuery('status', 'success');
+            count.addAggregate('COUNT');
+            count.query();
+            var total = count.next() ? parseInt(count.getAggregate('COUNT'), 10) : 0;
+            results.idempotency = { pass: (total === 1 && r2.idempotentReplay === true), transactionCount: total, replay: r2.idempotentReplay };
+        } catch (e) {
+            results.idempotency = { pass: false, error: e.toString() };
+        }
+
+        try {
+            var apService = new ApDomainService();
+            var intake = apService.intakeInvoice({ invoiceNumber: 'SOD-TEST-V2-' + gs.generateGUID(), currency: 'INR', grossAmount: 100, netAmount: 100, taxAmount: 0 });
+            var approvalEngine = new ApprovalEngine();
+            var sameUser = gs.getUserID();
+            var approvalSysId = approvalEngine.requestApInvoiceApproval(intake.apInvoiceSysId, sameUser);
+            var decision = approvalEngine.decideApInvoiceApproval(approvalSysId, 'approved', sameUser, 'attempting self-approval');
+            results.segregationOfDuties = { pass: !!decision.error, decision: decision };
+        } catch (e2) {
+            results.segregationOfDuties = { pass: false, error: e2.toString() };
+        }
+
+        try {
+            var svc3 = new IntegrationService();
+            var key3 = 'UOC-TEST-V2-' + gs.generateGUID();
+            var timeoutResult = svc3.execute({
+                operation: 'postVendorInvoice', adapter: 'mock_sap', idempotencyKey: key3,
+                payload: { invoiceNumber: 'UOC-TEST-V2', amount: 100 }, simulateOutcome: 'timeout'
+            });
+            var reconciliation = svc3.reconcileUnknownOutcome(timeoutResult.transactionSysId);
+            results.unknownOutcomeControl = {
+                pass: (timeoutResult.unknownOutcome === true && (reconciliation.resolution === 'POSTED' || reconciliation.resolution === 'RETRY')),
+                timeoutResult: timeoutResult, reconciliation: reconciliation
+            };
+        } catch (e3) {
+            results.unknownOutcomeControl = { pass: false, error: e3.toString() };
+        }
+
+        // Also verify the decideApproval ordering fix directly: a freshly
+        // approved happy-path invoice should reach CLOSED, not get stuck at
+        // APPROVED (the bug this job exists to catch).
+        try {
+            var apService2 = new ApDomainService();
+            var vendor = new GlideRecord('x_695068_bcfa_vendor');
+            vendor.get('vendor_code', 'V001');
+            var intake2 = apService2.intakeInvoice({ invoiceNumber: 'ORDERING-FIX-TEST-' + gs.generateGUID(), vendor: vendor.getUniqueValue(), currency: 'INR', grossAmount: 100, netAmount: 100, taxAmount: 0 });
+            apService2.runExtraction(intake2.apInvoiceSysId, {});
+            apService2.validateInvoice(intake2.apInvoiceSysId);
+            var approvalReq = apService2.requestApproval(intake2.apInvoiceSysId, gs.getUserID());
+            var otherUser = new GlideRecord('sys_user');
+            otherUser.addQuery('sys_id', '!=', gs.getUserID());
+            otherUser.addQuery('active', true);
+            otherUser.setLimit(1);
+            otherUser.query();
+            var approverId = otherUser.next() ? otherUser.getUniqueValue() : gs.getUserID();
+            apService2.decideApproval(intake2.apInvoiceSysId, approvalReq.approvalSysId, 'approved', approverId, 'ordering fix verification');
+            var finalInvoice = new GlideRecord('x_695068_bcfa_ap_invoice');
+            finalInvoice.get(intake2.apInvoiceSysId);
+            results.approvalCascadeOrderingFix = { pass: finalInvoice.getValue('state') === 'CLOSED', finalState: finalInvoice.getValue('state'), postingState: finalInvoice.getValue('posting_state') };
+        } catch (e4) {
+            results.approvalCascadeOrderingFix = { pass: false, error: e4.toString() };
+        }
+
+        gs.info('BCFA-TEST-V2: ' + JSON.stringify(results));
+    ]]></script>
+        <sys_class_name>sysauto_script</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:11:53</sys_created_on>
+        <sys_id>d9c533e9bfb94bc7997daf14e83d743f</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>BCFA - One-Time Correctness Verification (v2, post-fix)</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sysauto_script_d9c533e9bfb94bc7997daf14e83d743f</sys_update_name>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 07:11:53</sys_updated_on>
+        <time_zone>UTC</time_zone>
+        <upgrade_safe>false</upgrade_safe>
+    </sysauto_script>
+</record_update>

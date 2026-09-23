@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_user_role">
+    <sys_user_role action="INSERT_OR_UPDATE">
+        <assignable_by/>
+        <can_delegate>true</can_delegate>
+        <description>Processes Cash Application: payment/remittance review, allocation, exception resolution. Cannot approve clearing.</description>
+        <elevated_privilege>false</elevated_privilege>
+        <federated_id>NNBM6muf+1hwYE8OO4g2MwUaD1JkPQbK1YKzyBLCwG0=</federated_id>
+        <grantable>true</grantable>
+        <includes_roles/>
+        <name>x_695068_bcfa.ar_processor</name>
+        <scoped_admin>false</scoped_admin>
+        <suffix>ar_processor</suffix>
+        <sys_class_name>sys_user_role</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:11:51</sys_created_on>
+        <sys_id>588d615a5fea475bbe3422f50e91c218</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_695068_bcfa.ar_processor</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_user_role_588d615a5fea475bbe3422f50e91c218</sys_update_name>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 07:11:51</sys_updated_on>
+    </sys_user_role>
+</record_update>

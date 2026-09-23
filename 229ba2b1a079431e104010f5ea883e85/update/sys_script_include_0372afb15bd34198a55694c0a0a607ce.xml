@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>x_695068_bcfa.AISimulationService</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description>Simulates Now Assist Document Intelligence extraction and AI Agent advisory recommendations — not licensed in this PDI (see docs/DISCOVERY.md). Every output is advisory only.</description>
+        <mobile_callable>false</mobile_callable>
+        <name>AISimulationService</name>
+        <sandbox_callable>false</sandbox_callable>
+        <script><![CDATA[// Simulates the AI/LLM capabilities the workbook recommends (Now Assist in
+// Document Intelligence, AI Agents) which are NOT active in this PDI (see
+// docs/DISCOVERY.md). Every output here is advisory: it is written only to
+// fields/rows explicitly modeled as advisory (AP/AR Exception.ai_recommendation,
+// a distinct 'ai_suggested' Match Candidate row) and logged with
+// actor_type: 'simulated_ai' in the Audit Event trail. Nothing in this file
+// ever sets an authoritative field, an approval decision, or triggers a
+// posting/clearing call — see docs/ARCHITECTURE.md section 4.
+var AISimulationService = Class.create();
+AISimulationService.prototype = {
+    initialize: function() {
+        this.auditEngine = new AuditEngine();
+    },
+
+    // seedFields: the "ground truth" field values from demo data, standing
+    // in for what a real OCR/LLM extraction would have produced from a PDF.
+    // options.forceConfidence lets a demo scenario (AP-007 low confidence)
+    // deterministically produce a low-confidence result.
+    simulateApExtraction: function(apInvoiceSysId, seedFields, options) {
+        options = options || {};
+        var confidence = options.forceConfidence !== undefined ? options.forceConfidence : 0.95;
+        var requiresReview = confidence < 0.85;
+
+        var extraction = new GlideRecord('x_695068_bcfa_ap_extraction');
+        extraction.initialize();
+        extraction.setValue('ap_invoice', apInvoiceSysId);
+        extraction.setValue('extracted_fields', JSON.stringify(seedFields || {}));
+        extraction.setValue('confidence', confidence);
+        extraction.setValue('source', 'simulated_document_intelligence');
+        extraction.setValue('requires_review', requiresReview);
+        var sysId = extraction.insert();
+
+        this.auditEngine.logEvent({
+            sourceTable: 'x_695068_bcfa_ap_invoice',
+            sourceRecord: apInvoiceSysId,
+            eventType: 'ai_recommendation',
+            actorType: 'simulated_ai',
+            description: 'Simulated Document Intelligence extraction, confidence ' + confidence,
+            afterValue: { confidence: confidence, requiresReview: requiresReview }
+        });
+
+        return { extractionSysId: sysId, confidence: confidence, requiresReview: requiresReview };
+    },
+
+    simulateArExtraction: function(remittanceSysId, seedFields, options) {
+        options = options || {};
+        var confidence = options.forceConfidence !== undefined ? options.forceConfidence : 0.95;
+
+        var remittance = new GlideRecord('x_695068_bcfa_remittance');
+        if (!remittance.get(remittanceSysId)) return { error: 'Remittance not found' };
+        remittance.setValue('extracted_fields', JSON.stringify(seedFields || {}));
+        remittance.setValue('confidence', confidence);
+        remittance.update();
+
+        this.auditEngine.logEvent({
+            sourceTable: 'x_695068_bcfa_remittance',
+            sourceRecord: remittanceSysId,
+            eventType: 'ai_recommendation',
+            actorType: 'simulated_ai',
+            description: 'Simulated Document Intelligence remittance extraction, confidence ' + confidence,
+            afterValue: { confidence: confidence }
+        });
+
+        return { confidence: confidence };
+    },
+
+    // Writes a templated, human-readable recommendation into the exception's
+    // advisory field only. Deterministic rules already decided the reason
+    // code and status; this text never drives any further automated action.
+    recommendApExceptionResolution: function(apExceptionSysId) {
+        var exception = new GlideRecord('x_695068_bcfa_ap_exception');
+        if (!exception.get(apExceptionSysId)) return { error: 'Exception not found' };
+        var reasonCode = exception.getValue('reason_code');
+        var recommendation = this._templateForApReason(reasonCode);
+        exception.setValue('ai_recommendation', recommendation);
+        exception.update();
+
+        this.auditEngine.logEvent({
+            sourceTable: 'x_695068_bcfa_ap_exception',
+            sourceRecord: apExceptionSysId,
+            eventType: 'ai_recommendation',
+            actorType: 'simulated_ai',
+            description: 'Simulated advisory recommendation for AP exception (' + reasonCode + ')',
+            afterValue: { recommendation: recommendation }
+        });
+        return { recommendation: recommendation };
+    },
+
+    recommendArExceptionResolution: function(arExceptionSysId) {
+        var exception = new GlideRecord('x_695068_bcfa_ar_exception');
+        if (!exception.get(arExceptionSysId)) return { error: 'Exception not found' };
+        var reasonCode = exception.getValue('reason_code');
+        var recommendation = this._templateForArReason(reasonCode);
+        exception.setValue('ai_recommendation', recommendation);
+        exception.update();
+
+        this.auditEngine.logEvent({
+            sourceTable: 'x_695068_bcfa_ar_exception',
+            sourceRecord: arExceptionSysId,
+            eventType: 'ai_recommendation',
+            actorType: 'simulated_ai',
+            description: 'Simulated advisory recommendation for AR exception (' + reasonCode + ')',
+            afterValue: { recommendation: recommendation }
+        });
+        return { recommendation: recommendation };
+    },
+
+    // Adds one additional, clearly-tagged 'ai_suggested' Match Candidate row
+    // alongside whatever deterministic 'fuzzy' rows MatchingEngine already
+    // wrote — the AI's opinion is visible to the reviewer but never
+    // pre-selected (`selected` stays false; a human or the deterministic
+    // exact-match path sets it).
+    suggestTopCandidate: function(paymentSysId) {
+        var best = null;
+        var bestAmount = -1;
+        var candidate = new GlideRecord('x_695068_bcfa_match_candidate');
+        candidate.addQuery('payment', paymentSysId);
+        candidate.addQuery('match_type', 'fuzzy');
+        candidate.query();
+        while (candidate.next()) {
+            var item = new GlideRecord('x_695068_bcfa_ar_open_item');
+            if (item.get(candidate.getValue('ar_open_item'))) {
+                var openAmount = parseFloat(item.getValue('open_amount') || '0');
+                if (openAmount > bestAmount) {
+                    bestAmount = openAmount;
+                    best = candidate;
+                }
+            }
+        }
+        if (!best) return { suggested: false };
+
+        var suggestion = new GlideRecord('x_695068_bcfa_match_candidate');
+        suggestion.initialize();
+        suggestion.setValue('payment', paymentSysId);
+        suggestion.setValue('ar_open_item', best.getValue('ar_open_item'));
+        suggestion.setValue('customer_candidate', best.getValue('customer_candidate'));
+        suggestion.setValue('match_type', 'ai_suggested');
+        suggestion.setValue('confidence', 0.7);
+        suggestion.setValue('rank', 0);
+        suggestion.setValue('selected', false);
+        var sysId = suggestion.insert();
+
+        this.auditEngine.logEvent({
+            sourceTable: 'x_695068_bcfa_payment',
+            sourceRecord: paymentSysId,
+            eventType: 'ai_recommendation',
+            actorType: 'simulated_ai',
+            description: 'Simulated AI-suggested top allocation candidate (advisory, not auto-selected).',
+            afterValue: { arOpenItem: best.getValue('ar_open_item') }
+        });
+        return { suggested: true, matchCandidateSysId: sysId };
+    },
+
+    _templateForApReason: function(reasonCode) {
+        var templates = {
+            duplicate: 'This invoice shares vendor, invoice number and amount with an existing record — recommend confirming with the vendor before reprocessing.',
+            po_mismatch: 'Invoice references do not resolve to an active PO — recommend verifying the PO number with the requester.',
+            quantity_tolerance: 'Invoiced quantity differs from the receipted quantity beyond tolerance — recommend checking for a partial delivery.',
+            price_tolerance: 'Invoiced unit price differs from the PO price beyond tolerance — recommend checking for an unrecorded price amendment.',
+            tax_validation: 'Invoiced tax does not match the expected rate for the vendor country — recommend confirming the applicable tax code.',
+            low_confidence: 'Extraction confidence was below the review threshold — recommend visually confirming the header fields against the source document.',
+            missing_field: 'One or more mandatory fields could not be extracted — recommend requesting a corrected document from the vendor.',
+            vendor_invalid: 'Vendor could not be resolved to an active master record — recommend confirming the vendor code.',
+            other: 'Recommend manual review — no specific pattern matched.'
+        };
+        return templates.hasOwnProperty(reasonCode) ? templates[reasonCode] : templates.other;
+    },
+
+    _templateForArReason: function(reasonCode) {
+        var templates = {
+            unmatched: 'No open item combination matched this payment amount — recommend contacting the customer for remittance detail.',
+            customer_ambiguous: 'Multiple customers share a similar remitter name — recommend confirming against the bank account on file.',
+            short_pay: 'Payment is less than the open item total — recommend checking for an unrecorded discount or dispute.',
+            over_pay: 'Payment exceeds the open item total — recommend checking for an advance payment or unapplied cash.',
+            duplicate: 'This payment shares bank reference and amount with an existing record — recommend confirming with treasury.',
+            currency_mismatch: 'Payment currency differs from the customer\'s invoicing currency — recommend confirming the applicable exchange rate.',
+            other: 'Recommend manual review — no specific pattern matched.'
+        };
+        return templates.hasOwnProperty(reasonCode) ? templates[reasonCode] : templates.other;
+    },
+
+    type: 'AISimulationService'
+};
+]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:11:36</sys_created_on>
+        <sys_id>0372afb15bd34198a55694c0a0a607ce</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>AISimulationService</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_script_include_0372afb15bd34198a55694c0a0a607ce</sys_update_name>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 07:11:36</sys_updated_on>
+    </sys_script_include>
+</record_update>

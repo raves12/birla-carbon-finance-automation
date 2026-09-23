@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_module">
+    <sys_module action="INSERT_OR_UPDATE">
+        <content><![CDATA[var ExceptionEngine = Class.create();
+ExceptionEngine.prototype = {
+    initialize: function() {},
+
+    createApException: function(apInvoiceSysId, reasonCode, description) {
+        var gr = new GlideRecord('x_695068_bcfa_ap_exception');
+        gr.initialize();
+        gr.setValue('ap_invoice', apInvoiceSysId);
+        gr.setValue('reason_code', reasonCode);
+        gr.setValue('description', description || '');
+        gr.setValue('status', 'open');
+        return gr.insert();
+    },
+
+    resolveApException: function(exceptionSysId, resolutionNotes, resolvedBy) {
+        var gr = new GlideRecord('x_695068_bcfa_ap_exception');
+        if (!gr.get(exceptionSysId)) return false;
+        gr.setValue('status', 'resolved');
+        gr.setValue('resolution_notes', resolutionNotes || '');
+        if (resolvedBy) gr.setValue('assigned_to', resolvedBy);
+        return gr.update() ? true : false;
+    },
+
+    createArException: function(paymentSysId, reasonCode, description) {
+        var gr = new GlideRecord('x_695068_bcfa_ar_exception');
+        gr.initialize();
+        gr.setValue('payment', paymentSysId);
+        gr.setValue('reason_code', reasonCode);
+        gr.setValue('description', description || '');
+        gr.setValue('status', 'open');
+        return gr.insert();
+    },
+
+    resolveArException: function(exceptionSysId, resolutionNotes, resolvedBy) {
+        var gr = new GlideRecord('x_695068_bcfa_ar_exception');
+        if (!gr.get(exceptionSysId)) return false;
+        gr.setValue('status', 'resolved');
+        gr.setValue('resolution_notes', resolutionNotes || '');
+        if (resolvedBy) gr.setValue('assigned_to', resolvedBy);
+        return gr.update() ? true : false;
+    },
+
+    createFinanceException: function(domain, sourceTable, sourceRecord, reasonCode, description, severity) {
+        var gr = new GlideRecord('x_695068_bcfa_finance_exception');
+        gr.initialize();
+        gr.setValue('domain', domain || 'general');
+        gr.setValue('source_table', sourceTable || '');
+        gr.setValue('source_record', sourceRecord || '');
+        gr.setValue('reason_code', reasonCode);
+        gr.setValue('description', description || '');
+        gr.setValue('severity', severity || 'medium');
+        gr.setValue('status', 'open');
+        return gr.insert();
+    },
+
+    type: 'ExceptionEngine'
+};
+]]></content>
+        <external_source>false</external_source>
+        <path>x_695068_bcfa/birla-carbon-finance-automation/0.0.1/src/server/script-includes/ExceptionEngine.server.js</path>
+        <sys_class_name>sys_module</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:11:34</sys_created_on>
+        <sys_id>002a997e82d441c8a4a8c3efe8da4b6c</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_695068_bcfa/birla-carbon-finance-automation/0.0.1/src/server/script-includes/ExceptionEngine.server.js</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_module_002a997e82d441c8a4a8c3efe8da4b6c</sys_update_name>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 07:11:34</sys_updated_on>
+    </sys_module>
+</record_update>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_module">
+    <sys_module action="INSERT_OR_UPDATE">
+        <content><![CDATA[var MockBankAdapter = Class.create();
+MockBankAdapter.prototype = {
+    initialize: function() {},
+
+    // For this POC, bank statement lines and remittances are seeded directly
+    // as Payment/Remittance demo records (Stage 10) rather than pulled
+    // through a live polling adapter — there is no real bank connectivity in
+    // this PDI (see docs/DISCOVERY.md). This operation exists so the
+    // canonical adapter surface and its Integration Profile are complete and
+    // ready to be replaced by a real bank-file/SFTP/API adapter later
+    // without changing calling code.
+    getBankStatement: function(bankAccount, fromDate, toDate) {
+        var lines = [];
+        var gr = new GlideRecord('x_695068_bcfa_payment');
+        gr.addQuery('bank_account', bankAccount);
+        if (fromDate) gr.addQuery('value_date', '>=', fromDate);
+        if (toDate) gr.addQuery('value_date', '<=', toDate);
+        gr.query();
+        while (gr.next()) {
+            lines.push({
+                sysId: gr.getUniqueValue(),
+                bankReference: gr.getValue('bank_reference'),
+                valueDate: gr.getValue('value_date'),
+                amount: parseFloat(gr.getValue('amount') || '0'),
+                currency: gr.getValue('currency')
+            });
+        }
+        return { found: true, lines: lines };
+    },
+
+    type: 'MockBankAdapter'
+};
+]]></content>
+        <external_source>false</external_source>
+        <path>x_695068_bcfa/birla-carbon-finance-automation/0.0.1/src/server/script-includes/MockBankAdapter.server.js</path>
+        <sys_class_name>sys_module</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:11:35</sys_created_on>
+        <sys_id>d7f35577f18d40f395a19330a33c5d90</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_695068_bcfa/birla-carbon-finance-automation/0.0.1/src/server/script-includes/MockBankAdapter.server.js</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_module_d7f35577f18d40f395a19330a33c5d90</sys_update_name>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 07:11:35</sys_updated_on>
+    </sys_module>
+</record_update>

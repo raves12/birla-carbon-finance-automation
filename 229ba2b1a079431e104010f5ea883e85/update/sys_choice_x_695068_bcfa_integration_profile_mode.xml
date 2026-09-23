@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_choice action="INSERT_OR_UPDATE" field="mode" table="x_695068_bcfa_integration_profile" version="3">
+        <sys_choice_set action="INSERT_OR_UPDATE">
+            <element>mode</element>
+            <name>x_695068_bcfa_integration_profile</name>
+            <sys_class_name>sys_choice_set</sys_class_name>
+            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+            <sys_created_on>2026-09-17 07:10:15</sys_created_on>
+            <sys_id>800593f2835f43103d769be0deaad330</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>mode</sys_name>
+            <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+            <sys_update_name>sys_choice_x_695068_bcfa_integration_profile_mode</sys_update_name>
+            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+            <sys_updated_on>2026-09-17 07:10:15</sys_updated_on>
+        </sys_choice_set>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>mode</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Simulation</label>
+            <language>en</language>
+            <name>x_695068_bcfa_integration_profile</name>
+            <sequence>1</sequence>
+            <synonyms/>
+            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+            <sys_created_on>2026-09-17 14:59:07</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>3d748cbcdaaa4f3f8060eac896e11a41</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+            <sys_updated_on>2026-09-17 14:59:07</sys_updated_on>
+            <value>simulation</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>mode</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Passthrough (future real connectivity)</label>
+            <language>en</language>
+            <name>x_695068_bcfa_integration_profile</name>
+            <sequence>2</sequence>
+            <synonyms/>
+            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+            <sys_created_on>2026-09-17 14:59:07</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>eb318fb1c8334843887eef583f813685</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+            <sys_updated_on>2026-09-17 14:59:07</sys_updated_on>
+            <value>passthrough</value>
+        </sys_choice>
+    </sys_choice>
+</record_update>

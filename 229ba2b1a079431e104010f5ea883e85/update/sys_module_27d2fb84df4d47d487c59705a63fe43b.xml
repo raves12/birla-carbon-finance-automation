@@ -1,0 +1,709 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_module">
+    <sys_module action="INSERT_OR_UPDATE">
+        <content><![CDATA[// Stage 10/17 demo data. Deliberately scaled down from the brief's suggested
+// volumes (10 vendors/10 customers kept as-is; POs/receipts/open-items
+// reduced) because the 10 named AP/AR scenarios — the actual acceptance
+// criteria — need specific, deliberately-crafted supporting data more than
+// they need raw volume. See docs/BUILD_REPORT.md for this scope note.
+//
+// Run once via an ATF runServerSideScript step (see tests/) — there is no
+// other script-execution surface available to this build.
+var DemoDataSeeder = Class.create();
+DemoDataSeeder.prototype = {
+    initialize: function() {
+        this.apService = new ApDomainService();
+        this.arService = new ArDomainService();
+    },
+
+    seedAll: function() {
+        var alreadySeeded = new GlideRecord('x_695068_bcfa_vendor');
+        alreadySeeded.addQuery('vendor_code', 'V001');
+        alreadySeeded.query();
+        var masterData = alreadySeeded.next() ? { skipped: true } : this.seedMasterData();
+
+        // AP/AR scenarios use fixed, deterministic keys (INV-AP-001,
+        // BANK-AR-001, ...) by design, so re-running this against an instance
+        // that already has them would trip the seeder's own duplicate/
+        // idempotency detection against its *own* prior output. Guard the
+        // same way seedMasterData() already does.
+        var apAlreadySeeded = new GlideRecord('x_695068_bcfa_ap_invoice');
+        apAlreadySeeded.addQuery('invoice_number', 'INV-AP-001');
+        apAlreadySeeded.query();
+        var apResults = apAlreadySeeded.next() ? { skipped: true } : this.seedApScenarios();
+
+        var arAlreadySeeded = new GlideRecord('x_695068_bcfa_payment');
+        arAlreadySeeded.addQuery('bank_reference', 'BANK-AR-001');
+        arAlreadySeeded.query();
+        var arResults = arAlreadySeeded.next() ? { skipped: true } : this.seedArScenarios();
+
+        return { masterData: masterData, apScenarios: apResults, arScenarios: arResults };
+    },
+
+    _twoUsers: function() {
+        var users = [];
+        var gr = new GlideRecord('sys_user');
+        gr.addQuery('active', true);
+        gr.orderBy('sys_created_on');
+        gr.setLimit(5);
+        gr.query();
+        while (gr.next() && users.length < 2) {
+            users.push(gr.getUniqueValue());
+        }
+        if (users.length === 0) users.push(gs.getUserID());
+        if (users.length === 1) users.push(users[0]);
+        return users;
+    },
+
+    _insert: function(table, fields) {
+        var gr = new GlideRecord(table);
+        gr.initialize();
+        for (var key in fields) {
+            gr.setValue(key, fields[key]);
+        }
+        return gr.insert();
+    },
+
+    seedMasterData: function() {
+        var vendorDefs = [
+            { vendor_code: 'V001', name: 'Rajasthan Carbon Feedstock Pvt Ltd', country: 'India', currency: 'INR', payment_terms: 'NET30', bank_account: 'IN-ACC-0001' },
+            { vendor_code: 'V002', name: 'Gujarat Oil Traders Ltd', country: 'India', currency: 'INR', payment_terms: 'NET45', bank_account: 'IN-ACC-0002' },
+            { vendor_code: 'V003', name: 'Budapest Chemicals Kft', country: 'Hungary', currency: 'EUR', payment_terms: 'NET30', bank_account: 'HU-ACC-0003' },
+            { vendor_code: 'V004', name: 'Rhine Logistics GmbH', country: 'Germany', currency: 'EUR', payment_terms: 'NET30', bank_account: 'DE-ACC-0004' },
+            { vendor_code: 'V005', name: 'Gulf Coast Feedstock LLC', country: 'United States', currency: 'USD', payment_terms: 'NET60', bank_account: 'US-ACC-0005' },
+            { vendor_code: 'V006', name: 'Chennai Packaging Solutions', country: 'India', currency: 'INR', payment_terms: 'NET30', bank_account: 'IN-ACC-0006' },
+            { vendor_code: 'V007', name: 'Miskolc Freight Services', country: 'Hungary', currency: 'EUR', payment_terms: 'NET15', bank_account: 'HU-ACC-0007' },
+            { vendor_code: 'V008', name: 'Bavaria Industrial Supplies AG', country: 'Germany', currency: 'EUR', payment_terms: 'NET30', bank_account: 'DE-ACC-0008' },
+            { vendor_code: 'V009', name: 'Texas Carbon Feedstock Inc', country: 'United States', currency: 'USD', payment_terms: 'NET45', bank_account: 'US-ACC-0009' },
+            { vendor_code: 'V010', name: 'Odisha Raw Materials Pvt Ltd', country: 'India', currency: 'INR', payment_terms: 'NET30', bank_account: 'IN-ACC-0010' }
+        ];
+        var vendorSysId = {};
+        for (var v = 0; v < vendorDefs.length; v++) {
+            var def = vendorDefs[v];
+            def.active = true;
+            vendorSysId[def.vendor_code] = this._insert('x_695068_bcfa_vendor', def);
+        }
+
+        var customerDefs = [
+            { customer_code: 'C001', name: 'Continental Tyre Manufacturing', country: 'India', currency: 'INR' },
+            { customer_code: 'C002', name: 'Deccan Rubber Industries', country: 'India', currency: 'INR' },
+            { customer_code: 'C003', name: 'Pannonia Polymer Zrt', country: 'Hungary', currency: 'EUR' },
+            { customer_code: 'C004', name: 'Schwarzwald Elastomers GmbH', country: 'Germany', currency: 'EUR' },
+            { customer_code: 'C005', name: 'Lone Star Tyre Corp', country: 'United States', currency: 'USD' },
+            { customer_code: 'C006', name: 'Bengal Compounds Ltd', country: 'India', currency: 'INR' },
+            { customer_code: 'C007', name: 'Danube Rubber Kft', country: 'Hungary', currency: 'EUR' },
+            { customer_code: 'C008', name: 'Ruhr Valley Polymers AG', country: 'Germany', currency: 'EUR' },
+            { customer_code: 'C009', name: 'Pacific Coast Tyre Co', country: 'United States', currency: 'USD' },
+            { customer_code: 'C010', name: 'Karnataka Elastomers Pvt Ltd', country: 'India', currency: 'INR' }
+        ];
+        var customerSysId = {};
+        for (var c = 0; c < customerDefs.length; c++) {
+            var cdef = customerDefs[c];
+            cdef.active = true;
+            customerSysId[cdef.customer_code] = this._insert('x_695068_bcfa_customer', cdef);
+        }
+
+        // Purchase orders + lines. Each entry describes one PO with one line.
+        var poDefs = [
+            { po: 'PO0001', vendorCode: 'V001', qty: 100, unitPrice: 50, unit: 'MT' },
+            { po: 'PO0002', vendorCode: 'V002', qty: 200, unitPrice: 30, unit: 'MT' },
+            { po: 'PO0003', vendorCode: 'V003', qty: 50, unitPrice: 120, unit: 'MT' },
+            { po: 'PO0004', vendorCode: 'V004', qty: 10, unitPrice: 500, unit: 'EA' },
+            { po: 'PO0005', vendorCode: 'V005', qty: 300, unitPrice: 40, unit: 'MT' },
+            { po: 'PO0006', vendorCode: 'V006', qty: 1000, unitPrice: 2, unit: 'EA' },
+            { po: 'PO0007', vendorCode: 'V007', qty: 20, unitPrice: 250, unit: 'EA' },
+            { po: 'PO0008', vendorCode: 'V008', qty: 75, unitPrice: 80, unit: 'MT' },
+            { po: 'PO0009', vendorCode: 'V009', qty: 150, unitPrice: 45, unit: 'MT' },
+            { po: 'PO0010', vendorCode: 'V010', qty: 90, unitPrice: 60, unit: 'MT' }
+        ];
+        var poLineSysId = {};
+        var poSysId = {};
+        for (var p = 0; p < poDefs.length; p++) {
+            var pdef = poDefs[p];
+            var poId = this._insert('x_695068_bcfa_purchase_order', {
+                po_number: pdef.po, vendor: vendorSysId[pdef.vendorCode], company_code: '1000',
+                currency: 'INR', status: 'open', created_date: new GlideDateTime().getDate()
+            });
+            poSysId[pdef.po] = poId;
+            poLineSysId[pdef.po] = this._insert('x_695068_bcfa_po_line', {
+                purchase_order: poId, line_number: 1, material_or_service: 'Carbon black feedstock',
+                quantity: pdef.qty, unit: pdef.unit, unit_price: pdef.unitPrice, received_quantity: pdef.qty
+            });
+        }
+
+        // Receipts: most match their PO line exactly; RCPT0004 and RCPT0005
+        // are deliberately off to support AP-004/AP-005.
+        var receiptDefs = [
+            { receipt: 'RCPT0001', po: 'PO0001', qty: 100 },
+            { receipt: 'RCPT0002', po: 'PO0002', qty: 200 },
+            { receipt: 'RCPT0003', po: 'PO0003', qty: 50 },
+            { receipt: 'RCPT0004', po: 'PO0004', qty: 10 },
+            { receipt: 'RCPT0005', po: 'PO0005', qty: 300 },
+            { receipt: 'RCPT0006', po: 'PO0006', qty: 1000 },
+            { receipt: 'RCPT0007', po: 'PO0007', qty: 20 },
+            { receipt: 'RCPT0008', po: 'PO0008', qty: 75 },
+            { receipt: 'RCPT0009', po: 'PO0009', qty: 150 },
+            { receipt: 'RCPT0010', po: 'PO0010', qty: 90 }
+        ];
+        var receiptSysId = {};
+        for (var r = 0; r < receiptDefs.length; r++) {
+            var rdef = receiptDefs[r];
+            receiptSysId[rdef.receipt] = this._insert('x_695068_bcfa_receipt', {
+                receipt_number: rdef.receipt, po_line: poLineSysId[rdef.po], receipt_type: 'grn',
+                quantity: rdef.qty, receipt_date: new GlideDateTime().getDate(), sap_document_id: 'MIGO' + rdef.receipt
+            });
+        }
+
+        // AR open items spread across customers for exact/multi/partial match testing.
+        var itemDefs = [
+            { item: 'ARI0001', customerCode: 'C001', amount: 15000 },
+            { item: 'ARI0002', customerCode: 'C002', amount: 8000 },
+            { item: 'ARI0003', customerCode: 'C002', amount: 12000 },
+            { item: 'ARI0004', customerCode: 'C002', amount: 5000 },
+            { item: 'ARI0005', customerCode: 'C003', amount: 22000 },
+            { item: 'ARI0006', customerCode: 'C004', amount: 9500 },
+            { item: 'ARI0007', customerCode: 'C005', amount: 30000 },
+            { item: 'ARI0008', customerCode: 'C006', amount: 4200 },
+            { item: 'ARI0009', customerCode: 'C007', amount: 17500 },
+            { item: 'ARI0010', customerCode: 'C008', amount: 6800 },
+            { item: 'ARI0011', customerCode: 'C009', amount: 25000 },
+            { item: 'ARI0012', customerCode: 'C010', amount: 11000 },
+            { item: 'ARI0013', customerCode: 'C001', amount: 3000 },
+            { item: 'ARI0014', customerCode: 'C003', amount: 7000 },
+            { item: 'ARI0015', customerCode: 'C009', amount: 5500 }
+        ];
+        var itemSysId = {};
+        for (var i = 0; i < itemDefs.length; i++) {
+            var idef = itemDefs[i];
+            // Stagger due dates by index rather than stamping every item with
+            // today's date — multiInvoiceSuggestion orders by due_date
+            // ("oldest first"), and identical dates made that ordering
+            // meaningless (effectively arbitrary/insertion-order), which is
+            // what let AR-008's fuzzy match silently grab C001's much larger
+            // ARI0001 instead of the small ARI0013 the credit-note-netting
+            // demo actually needs.
+            var dueDate = new GlideDateTime();
+            dueDate.addDaysUTC(-i);
+            itemSysId[idef.item] = this._insert('x_695068_bcfa_ar_open_item', {
+                item_number: idef.item, customer: customerSysId[idef.customerCode], company_code: '1000',
+                currency: 'INR', invoice_amount: idef.amount, open_amount: idef.amount,
+                due_date: dueDate.getDate(), status: 'open'
+            });
+        }
+
+        var creditNoteDefs = [
+            { cn: 'CN0001', customerCode: 'C001', amount: 1000 },
+            { cn: 'CN0002', customerCode: 'C002', amount: 500 },
+            { cn: 'CN0003', customerCode: 'C005', amount: 2000 },
+            { cn: 'CN0004', customerCode: 'C007', amount: 750 },
+            { cn: 'CN0005', customerCode: 'C009', amount: 1200 }
+        ];
+        for (var n = 0; n < creditNoteDefs.length; n++) {
+            var ndef = creditNoteDefs[n];
+            this._insert('x_695068_bcfa_credit_note', {
+                credit_note_number: ndef.cn, customer: customerSysId[ndef.customerCode],
+                amount: ndef.amount, open_amount: ndef.amount, issue_date: new GlideDateTime().getDate(), status: 'open'
+            });
+        }
+
+        // Customer alias for AR-004.
+        this._insert('x_695068_bcfa_customer_alias', {
+            customer: customerSysId['C005'], alias_name: 'LONE STAR TYRE CO', alias_type: 'bank_remitter_name', confidence: 0.9, active: true
+        });
+
+        // Integration Profiles (Section 9) — all default to success; Stage 12
+        // resilience tests flip these temporarily.
+        this._insert('x_695068_bcfa_integration_profile', { name: 'Mock SAP - Default', adapter: 'mock_sap', mode: 'simulation', active: true, response_delay_ms: 0, failure_mode: 'success' });
+        this._insert('x_695068_bcfa_integration_profile', { name: 'Mock Bank - Default', adapter: 'mock_bank', mode: 'simulation', active: true, response_delay_ms: 0, failure_mode: 'success' });
+        this._insert('x_695068_bcfa_integration_profile', { name: 'Mock Archive - Default', adapter: 'mock_archive', mode: 'simulation', active: true, response_delay_ms: 0, failure_mode: 'success' });
+
+        this._vendorSysId = vendorSysId;
+        this._customerSysId = customerSysId;
+        this._poSysId = poSysId;
+        this._poLineSysId = poLineSysId;
+        this._receiptSysId = receiptSysId;
+        this._itemSysId = itemSysId;
+
+        return {
+            vendors: vendorDefs.length, customers: customerDefs.length, purchaseOrders: poDefs.length,
+            receipts: receiptDefs.length, arOpenItems: itemDefs.length, creditNotes: creditNoteDefs.length
+        };
+    },
+
+    _lookupSysId: function(table, field, value) {
+        var gr = new GlideRecord(table);
+        if (gr.get(field, value)) return gr.getUniqueValue();
+        return null;
+    },
+
+    // The approval cascade Business Rules (ApInvoiceApprovalCascade /
+    // ArPaymentApprovalCascade) always auto-post/auto-clear synchronously on
+    // approval using the *active* Integration Profile's failure_mode — they
+    // never see a per-call simulateOutcome. To demo a specific SAP outcome
+    // (AP-009/AP-010/AR-010) the profile itself must be flipped immediately
+    // before the approval call and restored immediately after, rather than
+    // making a second explicit postInvoice()/clearPayment() call afterward —
+    // that second call would just replay the cascade's own already-successful
+    // result via the idempotency cache and never actually simulate anything.
+    _setAdapterFailureMode: function(adapter, mode) {
+        var gr = new GlideRecord('x_695068_bcfa_integration_profile');
+        gr.addQuery('adapter', adapter);
+        gr.addQuery('active', true);
+        gr.query();
+        while (gr.next()) {
+            gr.setValue('failure_mode', mode);
+            gr.update();
+        }
+    },
+
+    _latestIntegrationTxn: function(sourceTable, sourceRecord, operation) {
+        var gr = new GlideRecord('x_695068_bcfa_integration_txn');
+        gr.addQuery('source_table', sourceTable);
+        gr.addQuery('source_record', sourceRecord);
+        gr.addQuery('operation', operation);
+        gr.orderByDesc('sys_created_on');
+        gr.setLimit(1);
+        gr.query();
+        return gr.next() ? gr.getUniqueValue() : null;
+    },
+
+    // ---- AP scenarios (Section 17/19) ---------------------------------------
+
+    seedApScenarios: function() {
+        var users = this._twoUsers();
+        var requester = users[0];
+        var approver = users[1];
+        var results = {};
+
+        // AP-001 Happy path: full lifecycle through CLOSED.
+        var ap001 = this.apService.intakeAndAutoProcess({
+            invoiceNumber: 'INV-AP-001', vendor: this._lookupSysId('x_695068_bcfa_vendor', 'vendor_code', 'V001'),
+            companyCode: '1000', currency: 'INR', purchaseOrder: this._lookupSysId('x_695068_bcfa_purchase_order', 'po_number', 'PO0001'),
+            grossAmount: 5000, taxAmount: 900, netAmount: 5000,
+            seedExtraction: { invoiceNumber: 'INV-AP-001', vendor: 'V001', amount: 5000 }
+        });
+        this._attachInvoiceLine(ap001.apInvoiceSysId, 'PO0001', 'RCPT0001', 100, 50, 900, 5000);
+        var ap001Rematch = this.apService.matchInvoice(ap001.apInvoiceSysId);
+        results['AP-001'] = { apInvoiceSysId: ap001.apInvoiceSysId, match: ap001Rematch };
+        if (ap001Rematch.matched) {
+            var ap001Approval = this.apService.requestApproval(ap001.apInvoiceSysId, requester);
+            this.apService.decideApproval(ap001.apInvoiceSysId, ap001Approval.approvalSysId, 'approved', approver, 'Approved for demo AP-001 happy path.');
+        }
+
+        // AP-002 Duplicate invoice: same vendor/invoice_number/amount as AP-001.
+        var ap002 = this.apService.intakeAndAutoProcess({
+            invoiceNumber: 'INV-AP-001', vendor: this._lookupSysId('x_695068_bcfa_vendor', 'vendor_code', 'V001'),
+            companyCode: '1000', currency: 'INR', grossAmount: 5000, netAmount: 5000, taxAmount: 900,
+            seedExtraction: { invoiceNumber: 'INV-AP-001', vendor: 'V001', amount: 5000 }
+        });
+        results['AP-002'] = ap002;
+
+        // AP-003 PO mismatch: purchase_order left unset intentionally, but the
+        // invoice text implies one was expected — validateInvoice does not
+        // fail on a missing PO by itself, so we simulate the mismatch by
+        // pointing at a PO line that does not belong to any PO record.
+        var ap003 = this.apService.intakeInvoice({
+            invoiceNumber: 'INV-AP-003', vendor: this._lookupSysId('x_695068_bcfa_vendor', 'vendor_code', 'V002'),
+            companyCode: '1000', currency: 'INR', grossAmount: 6000, netAmount: 6000, taxAmount: 1080
+        });
+        this.apService.runExtraction(ap003.apInvoiceSysId, { invoiceNumber: 'INV-AP-003' });
+        var invoice003 = new GlideRecord('x_695068_bcfa_ap_invoice');
+        invoice003.get(ap003.apInvoiceSysId);
+        invoice003.setValue('purchase_order', gs.generateGUID());
+        invoice003.update();
+        results['AP-003'] = this.apService.validateInvoice(ap003.apInvoiceSysId);
+
+        // AP-004 Quantity tolerance failure: line quantity far exceeds receipt.
+        var ap004 = this.apService.intakeAndAutoProcess({
+            invoiceNumber: 'INV-AP-004', vendor: this._lookupSysId('x_695068_bcfa_vendor', 'vendor_code', 'V004'),
+            companyCode: '1000', currency: 'EUR', purchaseOrder: this._lookupSysId('x_695068_bcfa_purchase_order', 'po_number', 'PO0004'),
+            grossAmount: 5000, netAmount: 5000, taxAmount: 950,
+            seedExtraction: { invoiceNumber: 'INV-AP-004' }
+        });
+        this._attachInvoiceLine(ap004.apInvoiceSysId, 'PO0004', 'RCPT0004', 15, 500, 950, 5000);
+        results['AP-004'] = this.apService.matchInvoice(ap004.apInvoiceSysId);
+
+        // AP-005 Price tolerance failure: unit price far above PO price.
+        var ap005 = this.apService.intakeAndAutoProcess({
+            invoiceNumber: 'INV-AP-005', vendor: this._lookupSysId('x_695068_bcfa_vendor', 'vendor_code', 'V005'),
+            companyCode: '1000', currency: 'USD', purchaseOrder: this._lookupSysId('x_695068_bcfa_purchase_order', 'po_number', 'PO0005'),
+            grossAmount: 15000, netAmount: 15000, taxAmount: 0,
+            seedExtraction: { invoiceNumber: 'INV-AP-005' }
+        });
+        this._attachInvoiceLine(ap005.apInvoiceSysId, 'PO0005', 'RCPT0005', 300, 50, 0, 15000);
+        results['AP-005'] = this.apService.matchInvoice(ap005.apInvoiceSysId);
+
+        // AP-006 Tax validation failure: India vendor, tax far off 18%.
+        var ap006 = this.apService.intakeAndAutoProcess({
+            invoiceNumber: 'INV-AP-006', vendor: this._lookupSysId('x_695068_bcfa_vendor', 'vendor_code', 'V006'),
+            companyCode: '1000', currency: 'INR', purchaseOrder: this._lookupSysId('x_695068_bcfa_purchase_order', 'po_number', 'PO0006'),
+            grossAmount: 2100, netAmount: 2000, taxAmount: 50,
+            seedExtraction: { invoiceNumber: 'INV-AP-006' }
+        });
+        this._attachInvoiceLine(ap006.apInvoiceSysId, 'PO0006', 'RCPT0006', 1000, 2, 50, 2000);
+        results['AP-006'] = this.apService.matchInvoice(ap006.apInvoiceSysId);
+
+        // AP-007 Low-confidence extraction.
+        var ap007 = this.apService.intakeInvoice({
+            invoiceNumber: 'INV-AP-007', vendor: this._lookupSysId('x_695068_bcfa_vendor', 'vendor_code', 'V007'),
+            companyCode: '1000', currency: 'EUR', grossAmount: 3000, netAmount: 3000, taxAmount: 0
+        });
+        this.apService.runExtraction(ap007.apInvoiceSysId, { invoiceNumber: 'INV-AP-007' }, { forceConfidence: 0.5 });
+        results['AP-007'] = this.apService.validateInvoice(ap007.apInvoiceSysId);
+
+        // AP-008 Approval required: matched, left pending for a human.
+        var ap008 = this.apService.intakeAndAutoProcess({
+            invoiceNumber: 'INV-AP-008', vendor: this._lookupSysId('x_695068_bcfa_vendor', 'vendor_code', 'V008'),
+            companyCode: '1000', currency: 'EUR', purchaseOrder: this._lookupSysId('x_695068_bcfa_purchase_order', 'po_number', 'PO0008'),
+            grossAmount: 6000, netAmount: 6000, taxAmount: 1140,
+            seedExtraction: { invoiceNumber: 'INV-AP-008' }
+        });
+        this._attachInvoiceLine(ap008.apInvoiceSysId, 'PO0008', 'RCPT0008', 75, 80, 1140, 6000);
+        var ap008Match = this.apService.matchInvoice(ap008.apInvoiceSysId);
+        if (ap008Match.matched) this.apService.requestApproval(ap008.apInvoiceSysId, requester);
+        results['AP-008'] = { apInvoiceSysId: ap008.apInvoiceSysId, match: ap008Match };
+
+        // AP-009 SAP posting failure.
+        var ap009 = this.apService.intakeAndAutoProcess({
+            invoiceNumber: 'INV-AP-009', vendor: this._lookupSysId('x_695068_bcfa_vendor', 'vendor_code', 'V009'),
+            companyCode: '1000', currency: 'USD', purchaseOrder: this._lookupSysId('x_695068_bcfa_purchase_order', 'po_number', 'PO0009'),
+            grossAmount: 6750, netAmount: 6750, taxAmount: 0,
+            seedExtraction: { invoiceNumber: 'INV-AP-009' }
+        });
+        this._attachInvoiceLine(ap009.apInvoiceSysId, 'PO0009', 'RCPT0009', 150, 45, 0, 6750);
+        var ap009Match = this.apService.matchInvoice(ap009.apInvoiceSysId);
+        if (ap009Match.matched) {
+            var ap009Approval = this.apService.requestApproval(ap009.apInvoiceSysId, requester);
+            this._setAdapterFailureMode('mock_sap', 'technical_error');
+            this.apService.decideApproval(ap009.apInvoiceSysId, ap009Approval.approvalSysId, 'approved', approver, 'Approved — will fail at SAP for demo AP-009.');
+            this._setAdapterFailureMode('mock_sap', 'success');
+            var ap009Invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
+            ap009Invoice.get(ap009.apInvoiceSysId);
+            results['AP-009'] = {
+                posted: false,
+                failed: ap009Invoice.getValue('posting_state') === 'failed',
+                postingState: ap009Invoice.getValue('posting_state'),
+                state: ap009Invoice.getValue('state')
+            };
+        } else {
+            results['AP-009'] = { error: 'match failed unexpectedly', detail: ap009Match };
+        }
+
+        // AP-010 SAP timeout -> Unknown Outcome -> reconciled to POSTED (Demo 3).
+        // taxAmount is 18% of netAmount (India vendor rate, see
+        // docs/BUSINESS_RULES.md's country tax table) — an earlier version of
+        // this scenario hardcoded taxAmount: 0, which itself failed tax
+        // validation before ever reaching the posting step this scenario is
+        // meant to demonstrate.
+        var ap010 = this.apService.intakeAndAutoProcess({
+            invoiceNumber: 'INV-AP-010', vendor: this._lookupSysId('x_695068_bcfa_vendor', 'vendor_code', 'V010'),
+            companyCode: '1000', currency: 'INR', purchaseOrder: this._lookupSysId('x_695068_bcfa_purchase_order', 'po_number', 'PO0010'),
+            grossAmount: 6372, netAmount: 5400, taxAmount: 972,
+            seedExtraction: { invoiceNumber: 'INV-AP-010' }
+        });
+        this._attachInvoiceLine(ap010.apInvoiceSysId, 'PO0010', 'RCPT0010', 90, 60, 972, 5400);
+        var ap010Match = this.apService.matchInvoice(ap010.apInvoiceSysId);
+        if (ap010Match.matched) {
+            var ap010Approval = this.apService.requestApproval(ap010.apInvoiceSysId, requester);
+            this._setAdapterFailureMode('mock_sap', 'timeout');
+            this.apService.decideApproval(ap010.apInvoiceSysId, ap010Approval.approvalSysId, 'approved', approver, 'Approved — will time out for demo AP-010.');
+            this._setAdapterFailureMode('mock_sap', 'success');
+            var ap010TxnSysId = this._latestIntegrationTxn('x_695068_bcfa_ap_invoice', ap010.apInvoiceSysId, 'postVendorInvoice');
+            results['AP-010'] = { transactionSysId: ap010TxnSysId };
+            if (ap010TxnSysId) {
+                results['AP-010'].reconciliation = this.apService.reconcilePosting(ap010.apInvoiceSysId, ap010TxnSysId);
+            }
+        } else {
+            results['AP-010'] = { error: 'match failed unexpectedly', detail: ap010Match };
+        }
+
+        return results;
+    },
+
+    _attachInvoiceLine: function(apInvoiceSysId, poNumber, receiptNumber, quantity, unitPrice, tax, amount) {
+        var poLine = this._lookupSysId('x_695068_bcfa_po_line', 'purchase_order', this._lookupSysId('x_695068_bcfa_purchase_order', 'po_number', poNumber));
+        var receipt = this._lookupSysId('x_695068_bcfa_receipt', 'receipt_number', receiptNumber);
+        return this._insert('x_695068_bcfa_ap_invoice_line', {
+            ap_invoice: apInvoiceSysId, line_number: 1, material_or_service: 'Carbon black feedstock',
+            quantity: quantity, unit: 'MT', unit_price: unitPrice, tax: tax, amount: amount,
+            po_line: poLine, receipt_reference: receipt
+        });
+    },
+
+    // ---- AR scenarios (Section 17/19) ---------------------------------------
+
+    seedArScenarios: function() {
+        var users = this._twoUsers();
+        var requester = users[0];
+        var approver = users[1];
+        var results = {};
+
+        // AR-001 Exact match: payment equals ARI0001's open amount exactly.
+        var ar001 = this.arService.intakeAndAutoProcess({
+            bankReference: 'BANK-AR-001', customer: this._lookupSysId('x_695068_bcfa_customer', 'customer_code', 'C001'),
+            currency: 'INR', amount: 15000, bankAccount: 'IN-COLL-001',
+            idempotencyKey: 'AR-CLEAR-DEMO-001'
+        });
+        results['AR-001'] = ar001;
+        if (ar001.stoppedAt === 'PENDING_APPROVAL') {
+            var ar001Approval = this.arService.requestApproval(ar001.paymentSysId, requester);
+            this.arService.decideApproval(ar001.paymentSysId, ar001Approval.approvalSysId, 'approved', approver, 'Approved for demo AR-001.');
+        }
+
+        // AR-002 Partial payment: less than ARI0006's open amount, only
+        // candidate available for that customer.
+        var ar002 = this.arService.intakeAndAutoProcess({
+            bankReference: 'BANK-AR-002', customer: this._lookupSysId('x_695068_bcfa_customer', 'customer_code', 'C004'),
+            currency: 'EUR', amount: 6000, bankAccount: 'DE-COLL-002',
+            idempotencyKey: 'AR-CLEAR-DEMO-002'
+        });
+        results['AR-002'] = ar002;
+
+        // AR-003 Multi-invoice allocation: sum of ARI0002+ARI0003+ARI0004 = 25000.
+        var ar003 = this.arService.intakeAndAutoProcess({
+            bankReference: 'BANK-AR-003', customer: this._lookupSysId('x_695068_bcfa_customer', 'customer_code', 'C002'),
+            currency: 'INR', amount: 25000, bankAccount: 'IN-COLL-003',
+            idempotencyKey: 'AR-CLEAR-DEMO-003'
+        });
+        results['AR-003'] = ar003;
+        if (ar003.stoppedAt === 'PENDING_APPROVAL') {
+            var ar003Approval = this.arService.requestApproval(ar003.paymentSysId, requester);
+            this.arService.decideApproval(ar003.paymentSysId, ar003Approval.approvalSysId, 'approved', approver, 'Approved for demo AR-003.');
+        }
+
+        // AR-004 Customer alias: customer left unset, resolved via alias.
+        var ar004 = this.arService.intakeAndAutoProcess({
+            bankReference: 'BANK-AR-004', currency: 'USD', amount: 30000, bankAccount: 'US-COLL-004',
+            idempotencyKey: 'AR-CLEAR-DEMO-004', candidateCustomerName: 'LONE STAR TYRE CO'
+        });
+        results['AR-004'] = ar004;
+
+        // AR-005 Unmatched payment: customer with no open items (C010 already
+        // has ARI0012, so pick an amount nothing sums to and no candidate
+        // customer at all).
+        var ar005 = this.arService.intakeAndAutoProcess({
+            bankReference: 'BANK-AR-005', currency: 'INR', amount: 99999, bankAccount: 'IN-COLL-005',
+            idempotencyKey: 'AR-CLEAR-DEMO-005', candidateCustomerName: 'UNKNOWN REMITTER XYZ'
+        });
+        results['AR-005'] = ar005;
+
+        // AR-006 Short pay: less than ARI0009's open amount.
+        var ar006 = this.arService.intakeAndAutoProcess({
+            bankReference: 'BANK-AR-006', customer: this._lookupSysId('x_695068_bcfa_customer', 'customer_code', 'C007'),
+            currency: 'EUR', amount: 15000, bankAccount: 'HU-COLL-006',
+            idempotencyKey: 'AR-CLEAR-DEMO-006'
+        });
+        results['AR-006'] = ar006;
+        if (ar006.stoppedAt === 'ALLOCATION_EXCEPTION') {
+            this.arService.exceptionEngine.resolveArException(ar006.detail.exceptionSysId, 'Confirmed with customer: intentional short-pay pending credit memo. Approved to proceed as-is for demo.', requester);
+            this.arService.forceProceedDespiteImbalance(ar006.paymentSysId, 'Manager override: proceeding despite confirmed short-pay — demo AR-006.');
+        }
+
+        // AR-007 Bank charge: payment is open_amount minus a small bank
+        // charge — flagged as short_pay, then a reviewer records the
+        // deduction (see docs/BUSINESS_RULES.md limitation note on
+        // auto-classifying deductions).
+        var ar007 = this.arService.intakeAndAutoProcess({
+            bankReference: 'BANK-AR-007', customer: this._lookupSysId('x_695068_bcfa_customer', 'customer_code', 'C010'),
+            currency: 'INR', amount: 10975, bankAccount: 'IN-COLL-007',
+            idempotencyKey: 'AR-CLEAR-DEMO-007'
+        });
+        results['AR-007'] = ar007;
+        if (ar007.stoppedAt === 'ALLOCATION_EXCEPTION') {
+            var allocation007 = new GlideRecord('x_695068_bcfa_payment_allocation');
+            allocation007.addQuery('payment', ar007.paymentSysId);
+            allocation007.query();
+            if (allocation007.next()) {
+                this._insert('x_695068_bcfa_deduction', { payment_allocation: allocation007.getUniqueValue(), deduction_type: 'bank_charge', amount: 25, status: 'approved', notes: 'Bank charge identified during review — demo AR-007.' });
+            }
+            this.arService.exceptionEngine.resolveArException(ar007.detail.exceptionSysId, 'Bank charge of 25 identified and recorded as a deduction.', requester);
+            this.arService.advanceAfterDeduction(ar007.paymentSysId);
+        }
+
+        // AR-008 Credit note netting: payment short by the amount of CN0001.
+        var ar008 = this.arService.intakeAndAutoProcess({
+            bankReference: 'BANK-AR-008', customer: this._lookupSysId('x_695068_bcfa_customer', 'customer_code', 'C001'),
+            currency: 'INR', amount: 2000, bankAccount: 'IN-COLL-008',
+            idempotencyKey: 'AR-CLEAR-DEMO-008'
+        });
+        results['AR-008'] = ar008;
+        if (ar008.stoppedAt === 'ALLOCATION_EXCEPTION') {
+            var allocation008 = new GlideRecord('x_695068_bcfa_payment_allocation');
+            allocation008.addQuery('payment', ar008.paymentSysId);
+            allocation008.query();
+            var creditNote001 = this._lookupSysId('x_695068_bcfa_credit_note', 'credit_note_number', 'CN0001');
+            if (allocation008.next()) {
+                this._insert('x_695068_bcfa_deduction', { payment_allocation: allocation008.getUniqueValue(), deduction_type: 'credit_note_netting', amount: 1000, credit_note: creditNote001, status: 'approved', notes: 'Netted against CN0001 — demo AR-008.' });
+            }
+            this.arService.exceptionEngine.resolveArException(ar008.detail.exceptionSysId, 'Residual netted against credit note CN0001.', requester);
+            this.arService.advanceAfterDeduction(ar008.paymentSysId);
+        }
+
+        // AR-009 Approval required: matched, left pending for a human.
+        var ar009 = this.arService.intakeAndAutoProcess({
+            bankReference: 'BANK-AR-009', customer: this._lookupSysId('x_695068_bcfa_customer', 'customer_code', 'C003'),
+            currency: 'EUR', amount: 22000, bankAccount: 'HU-COLL-009',
+            idempotencyKey: 'AR-CLEAR-DEMO-009'
+        });
+        results['AR-009'] = ar009;
+        if (ar009.stoppedAt === 'PENDING_APPROVAL') {
+            this.arService.requestApproval(ar009.paymentSysId, requester);
+        }
+
+        // AR-010 Clearing timeout -> Unknown Outcome -> reconciled to CLEARED.
+        var ar010 = this.arService.intakeAndAutoProcess({
+            bankReference: 'BANK-AR-010', customer: this._lookupSysId('x_695068_bcfa_customer', 'customer_code', 'C009'),
+            currency: 'USD', amount: 5500, bankAccount: 'US-COLL-010',
+            idempotencyKey: 'AR-CLEAR-DEMO-010'
+        });
+        results['AR-010'] = ar010;
+        if (ar010.stoppedAt === 'PENDING_APPROVAL') {
+            var ar010Approval = this.arService.requestApproval(ar010.paymentSysId, requester);
+            // Same cascade-timing fix as AP-009/AP-010: ArPaymentApprovalCascade
+            // auto-clears synchronously on approval using the active profile's
+            // failure mode, so the profile must be flipped before approving,
+            // not passed to a second clearPayment() call afterward.
+            this._setAdapterFailureMode('mock_sap', 'timeout');
+            this.arService.decideApproval(ar010.paymentSysId, ar010Approval.approvalSysId, 'approved', approver, 'Approved — will time out for demo AR-010.');
+            this._setAdapterFailureMode('mock_sap', 'success');
+            var ar010TxnSysId = this._latestIntegrationTxn('x_695068_bcfa_payment', ar010.paymentSysId, 'clearPayment');
+            results['AR-010'] = { intake: ar010, transactionSysId: ar010TxnSysId };
+            if (ar010TxnSysId) {
+                results['AR-010'].reconciliation = this.arService.reconcileClearing(ar010.paymentSysId, ar010TxnSysId);
+            }
+        }
+
+        return results;
+    },
+
+    // ---- Phase 6 (Claude AI layer) client demo scenarios --------------------
+    // Four purpose-built scenarios matching the client demo script exactly:
+    // AP happy path, AP amount-mismatch exception, Cash exact match, Cash
+    // short pay. Dedicated master data (own PO/receipt/AR-open-item) so
+    // these never interact with the original AP-001..010/AR-001..010 set.
+    // All four are deliberately left at their natural stopping point
+    // (PENDING_APPROVAL or EXCEPTION) rather than auto-approved — that's the
+    // live click-through moment for the actual client demo.
+    seedClaudeDemoScenarios: function() {
+        var alreadySeeded = new GlideRecord('x_695068_bcfa_purchase_order');
+        alreadySeeded.addQuery('po_number', 'PO-BC-1001');
+        alreadySeeded.query();
+        if (alreadySeeded.next()) return { skipped: true };
+
+        var results = {};
+        var vendor001 = this._lookupSysId('x_695068_bcfa_vendor', 'vendor_code', 'V001');
+        var vendor002 = this._lookupSysId('x_695068_bcfa_vendor', 'vendor_code', 'V002');
+        var customer001 = this._lookupSysId('x_695068_bcfa_customer', 'customer_code', 'C001');
+        var customer004 = this._lookupSysId('x_695068_bcfa_customer', 'customer_code', 'C004');
+
+        // --- AP-BC-1001: Happy path (India vendor, 18% GST, exact 3-way match) --
+        var po1001 = this._insert('x_695068_bcfa_purchase_order', {
+            po_number: 'PO-BC-1001', vendor: vendor001, company_code: '1000', currency: 'INR', status: 'open', created_date: new GlideDateTime().getDate()
+        });
+        var poLine1001 = this._insert('x_695068_bcfa_po_line', {
+            purchase_order: po1001, line_number: 1, material_or_service: 'Carbon black feedstock', quantity: 10, unit: 'MT', unit_price: 10000, received_quantity: 10
+        });
+        this._insert('x_695068_bcfa_receipt', {
+            receipt_number: 'RCPT-BC-1001', po_line: poLine1001, receipt_type: 'grn', quantity: 10, receipt_date: new GlideDateTime().getDate(), sap_document_id: 'MIGO-BC-1001'
+        });
+
+        // seedExtraction deliberately includes invoice_date/posting_date —
+        // Claude's extraction prompt correctly flags genuinely missing dates
+        // as warnings and lowers confidence accordingly (proven by an
+        // earlier seed attempt that omitted them and legitimately tripped
+        // the low_confidence review path). A clean happy-path demo needs
+        // complete evidence, not a prompt workaround.
+        var todayStr1 = new GlideDateTime().getDate().getValue();
+        var apBc1001 = this.apService.intakeAndAutoProcess({
+            invoiceNumber: 'INV-BC-1001', vendor: vendor001, companyCode: '1000', currency: 'INR',
+            purchaseOrder: po1001, grossAmount: 118000, netAmount: 100000, taxAmount: 18000,
+            invoiceDate: new GlideDateTime().getDate(),
+            seedExtraction: { invoiceNumber: 'INV-BC-1001', vendor: 'V001', amount: 118000, invoice_date: todayStr1, posting_date: todayStr1 }
+        });
+        results['AP-BC-1001'] = { apInvoiceSysId: apBc1001.apInvoiceSysId, stoppedAt: apBc1001.stoppedAt };
+        if (apBc1001.stoppedAt !== 'VALIDATION_EXCEPTION') {
+            this._attachInvoiceLine(apBc1001.apInvoiceSysId, 'PO-BC-1001', 'RCPT-BC-1001', 10, 10000, 18000, 100000);
+            var apBc1001Match = this.apService.matchInvoice(apBc1001.apInvoiceSysId);
+            results['AP-BC-1001'].match = apBc1001Match;
+            if (apBc1001Match.matched) {
+                this.apService.requestApproval(apBc1001.apInvoiceSysId, this._twoUsers()[0]);
+            }
+        }
+
+        // --- AP-BC-1002: Amount-mismatch exception (invoice line price 3% ----
+        // above the PO line price — exceeds the 2% tolerance).
+        var po1002 = this._insert('x_695068_bcfa_purchase_order', {
+            po_number: 'PO-BC-1002', vendor: vendor002, company_code: '1000', currency: 'INR', status: 'open', created_date: new GlideDateTime().getDate()
+        });
+        var poLine1002 = this._insert('x_695068_bcfa_po_line', {
+            purchase_order: po1002, line_number: 1, material_or_service: 'Carbon black feedstock', quantity: 10, unit: 'MT', unit_price: 10000, received_quantity: 10
+        });
+        this._insert('x_695068_bcfa_receipt', {
+            receipt_number: 'RCPT-BC-1002', po_line: poLine1002, receipt_type: 'grn', quantity: 10, receipt_date: new GlideDateTime().getDate(), sap_document_id: 'MIGO-BC-1002'
+        });
+
+        var todayStr2 = new GlideDateTime().getDate().getValue();
+        var apBc1002 = this.apService.intakeAndAutoProcess({
+            invoiceNumber: 'INV-BC-1002', vendor: vendor002, companyCode: '1000', currency: 'INR',
+            purchaseOrder: po1002, grossAmount: 121540, netAmount: 103000, taxAmount: 18540,
+            invoiceDate: new GlideDateTime().getDate(),
+            seedExtraction: { invoiceNumber: 'INV-BC-1002', vendor: 'V002', amount: 121540, invoice_date: todayStr2, posting_date: todayStr2 }
+        });
+        results['AP-BC-1002'] = { apInvoiceSysId: apBc1002.apInvoiceSysId, stoppedAt: apBc1002.stoppedAt };
+        if (apBc1002.stoppedAt !== 'VALIDATION_EXCEPTION') {
+            this._attachInvoiceLine(apBc1002.apInvoiceSysId, 'PO-BC-1002', 'RCPT-BC-1002', 10, 10300, 18540, 103000);
+            results['AP-BC-1002'].match = this.apService.matchInvoice(apBc1002.apInvoiceSysId);
+        }
+
+        // --- CASH-BC-0001: Exact match ------------------------------------------
+        var dueDate1 = new GlideDateTime();
+        dueDate1.addDaysUTC(30);
+        this._insert('x_695068_bcfa_ar_open_item', {
+            item_number: 'ARI-BC-0001', customer: customer001, company_code: '1000', currency: 'INR',
+            invoice_amount: 100000, open_amount: 100000, due_date: dueDate1.getDate(), status: 'open'
+        });
+        var cashBc0001 = this.arService.intakeAndAutoProcess({
+            bankReference: 'BANK-BC-0001', customer: customer001, currency: 'INR', amount: 100000, bankAccount: 'IN-COLL-BC-001',
+            idempotencyKey: 'AR-CLEAR-DEMO-BC-0001'
+        });
+        results['CASH-BC-0001'] = cashBc0001;
+
+        // --- CASH-BC-0002: Short pay (paid 2500 less than the open item) -------
+        // Due date deliberately much older than any pre-existing open item
+        // for this customer (e.g. ARI0006) — multiInvoiceSuggestion greedily
+        // accumulates oldest-due-first until the running total reaches the
+        // payment amount, so this item must sort first or the demo's clean
+        // single-item short-pay picks up an extra unrelated item too.
+        var dueDate2 = new GlideDateTime();
+        dueDate2.addDaysUTC(-100);
+        this._insert('x_695068_bcfa_ar_open_item', {
+            item_number: 'ARI-BC-0002', customer: customer004, company_code: '1000', currency: 'EUR',
+            invoice_amount: 100000, open_amount: 100000, due_date: dueDate2.getDate(), status: 'open'
+        });
+        var cashBc0002 = this.arService.intakeAndAutoProcess({
+            bankReference: 'UTR20260917002', customer: customer004, currency: 'EUR', amount: 97500, bankAccount: 'DE-COLL-BC-002',
+            idempotencyKey: 'AR-CLEAR-DEMO-BC-0002'
+        });
+        results['CASH-BC-0002'] = cashBc0002;
+
+        return results;
+    },
+
+    type: 'DemoDataSeeder'
+};
+]]></content>
+        <external_source>false</external_source>
+        <path>x_695068_bcfa/birla-carbon-finance-automation/0.0.1/src/server/script-includes/DemoDataSeeder.server.js</path>
+        <sys_class_name>sys_module</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 07:11:34</sys_created_on>
+        <sys_id>27d2fb84df4d47d487c59705a63fe43b</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_695068_bcfa/birla-carbon-finance-automation/0.0.1/src/server/script-includes/DemoDataSeeder.server.js</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_module_27d2fb84df4d47d487c59705a63fe43b</sys_update_name>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 07:11:34</sys_updated_on>
+    </sys_module>
+</record_update>
