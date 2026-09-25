@@ -6,6 +6,7 @@
             <sys_class_name>sys_choice_set</sys_class_name>
             <sys_created_by>Ravi_MCP_Admin</sys_created_by>
             <sys_created_on>2026-09-17 07:10:16</sys_created_on>
+            <sys_id>500593f2835f43103d769be0deaad3f2</sys_id>
             <sys_mod_count>0</sys_mod_count>
             <sys_name>status</sys_name>
             <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
@@ -29,6 +30,7 @@
             <sys_created_on>2026-09-17 14:59:06</sys_created_on>
             <sys_domain>global</sys_domain>
             <sys_domain_path>/</sys_domain_path>
+            <sys_id>8a1daf2a8f024284adb7b9efb422d29e</sys_id>
             <sys_mod_count>0</sys_mod_count>
             <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
             <sys_updated_on>2026-09-17 14:59:06</sys_updated_on>
@@ -48,6 +50,7 @@
             <sys_created_on>2026-09-17 14:59:06</sys_created_on>
             <sys_domain>global</sys_domain>
             <sys_domain_path>/</sys_domain_path>
+            <sys_id>ca36e1188f534d4085fddec1017572da</sys_id>
             <sys_mod_count>0</sys_mod_count>
             <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
             <sys_updated_on>2026-09-17 14:59:06</sys_updated_on>
@@ -67,6 +70,7 @@
             <sys_created_on>2026-09-17 14:59:06</sys_created_on>
             <sys_domain>global</sys_domain>
             <sys_domain_path>/</sys_domain_path>
+            <sys_id>7756a480d2824340aba1da42af6cb9b7</sys_id>
             <sys_mod_count>0</sys_mod_count>
             <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
             <sys_updated_on>2026-09-17 14:59:06</sys_updated_on>

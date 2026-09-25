@@ -1,78 +1,160 @@
-<?xml version="1.0"?>
-<record_update>
-  <sys_choice_set action="INSERT_OR_UPDATE" field="processing_status" table="x_695068_bcfa_finance_intake" version="3" apply_defaults="true">
-    <sys_choice_set action="INSERT_OR_UPDATE" apply_defaults="true">
-      <sys_id>5e39c12e13fa4de4baacb074b1dfc3ca</sys_id>
-      <element>processing_status</element>
-      <sys_update_name>sys_choice_x_695068_bcfa_finance_intake_processing_status</sys_update_name>
-      <name>x_695068_bcfa_finance_intake</name>
-      <sys_class_name>sys_choice_set</sys_class_name>
-      <sys_scope display_value="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_scope>
-      <sys_package display_value="x_695068_bcfa" source="229ba2b1a079431e104010f5ea883e85">229ba2b1a079431e104010f5ea883e85</sys_package>
-      <sys_name>processing_status</sys_name>
-    </sys_choice_set>
-    <sys_choice action="INSERT_OR_UPDATE" apply_defaults="true">
-      <sys_id>780013163bb04113a9202c672906c9ec</sys_id>
-      <name>x_695068_bcfa_finance_intake</name>
-      <element>processing_status</element>
-      <label>New</label>
-      <value>new</value>
-      <sequence>1</sequence>
-      <language>en</language>
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_choice action="INSERT_OR_UPDATE" field="processing_status" table="x_695068_bcfa_finance_intake" version="3">
+        <sys_choice_set action="INSERT_OR_UPDATE">
+            <element>processing_status</element>
+            <name>x_695068_bcfa_finance_intake</name>
+            <sys_class_name>sys_choice_set</sys_class_name>
+            <sys_created_by>RaviMAdmin</sys_created_by>
+            <sys_created_on>2026-09-25 11:44:27</sys_created_on>
+            <sys_id>f67021a9ebef8314311dff0dcad0cd3b</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>processing_status</sys_name>
+            <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+            <sys_update_name>sys_choice_x_695068_bcfa_finance_intake_processing_status</sys_update_name>
+            <sys_updated_by>RaviMAdmin</sys_updated_by>
+            <sys_updated_on>2026-09-25 11:44:27</sys_updated_on>
+        </sys_choice_set>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>processing_status</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>New</label>
+            <language>en</language>
+            <name>x_695068_bcfa_finance_intake</name>
+            <sequence>1</sequence>
+            <synonyms/>
+            <sys_created_by>RaviMAdmin</sys_created_by>
+            <sys_created_on>2026-09-25 11:44:40</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>780013163bb04113a9202c672906c9ec</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>RaviMAdmin</sys_updated_by>
+            <sys_updated_on>2026-09-25 11:44:40</sys_updated_on>
+            <value>new</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>processing_status</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Classifying</label>
+            <language>en</language>
+            <name>x_695068_bcfa_finance_intake</name>
+            <sequence>2</sequence>
+            <synonyms/>
+            <sys_created_by>RaviMAdmin</sys_created_by>
+            <sys_created_on>2026-09-25 11:44:40</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>06254937a2c14351b2575f7ed2238ddf</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>RaviMAdmin</sys_updated_by>
+            <sys_updated_on>2026-09-25 11:44:40</sys_updated_on>
+            <value>classifying</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>processing_status</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Extracting</label>
+            <language>en</language>
+            <name>x_695068_bcfa_finance_intake</name>
+            <sequence>3</sequence>
+            <synonyms/>
+            <sys_created_by>RaviMAdmin</sys_created_by>
+            <sys_created_on>2026-09-25 11:44:40</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>626ed2c364ba493fb6c474a5203e4c7c</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>RaviMAdmin</sys_updated_by>
+            <sys_updated_on>2026-09-25 11:44:40</sys_updated_on>
+            <value>extracting</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>processing_status</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Review Required</label>
+            <language>en</language>
+            <name>x_695068_bcfa_finance_intake</name>
+            <sequence>4</sequence>
+            <synonyms/>
+            <sys_created_by>RaviMAdmin</sys_created_by>
+            <sys_created_on>2026-09-25 11:44:40</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>1b47ed2cbfd74bdab80fc6ed00f2a5e3</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>RaviMAdmin</sys_updated_by>
+            <sys_updated_on>2026-09-25 11:44:40</sys_updated_on>
+            <value>review_required</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>processing_status</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Processing</label>
+            <language>en</language>
+            <name>x_695068_bcfa_finance_intake</name>
+            <sequence>5</sequence>
+            <synonyms/>
+            <sys_created_by>RaviMAdmin</sys_created_by>
+            <sys_created_on>2026-09-25 11:44:40</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>05394d9c237d477dac372db92886cb30</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>RaviMAdmin</sys_updated_by>
+            <sys_updated_on>2026-09-25 11:44:40</sys_updated_on>
+            <value>processing</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>processing_status</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Completed</label>
+            <language>en</language>
+            <name>x_695068_bcfa_finance_intake</name>
+            <sequence>6</sequence>
+            <synonyms/>
+            <sys_created_by>RaviMAdmin</sys_created_by>
+            <sys_created_on>2026-09-25 11:44:40</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>29620345019a426ea225b32bea073147</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>RaviMAdmin</sys_updated_by>
+            <sys_updated_on>2026-09-25 11:44:40</sys_updated_on>
+            <value>completed</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>processing_status</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Failed</label>
+            <language>en</language>
+            <name>x_695068_bcfa_finance_intake</name>
+            <sequence>7</sequence>
+            <synonyms/>
+            <sys_created_by>RaviMAdmin</sys_created_by>
+            <sys_created_on>2026-09-25 11:44:40</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>2bc5c1594100497bb7fb5f36b9bc9eff</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>RaviMAdmin</sys_updated_by>
+            <sys_updated_on>2026-09-25 11:44:40</sys_updated_on>
+            <value>failed</value>
+        </sys_choice>
     </sys_choice>
-    <sys_choice action="INSERT_OR_UPDATE" apply_defaults="true">
-      <sys_id>06254937a2c14351b2575f7ed2238ddf</sys_id>
-      <name>x_695068_bcfa_finance_intake</name>
-      <element>processing_status</element>
-      <label>Classifying</label>
-      <value>classifying</value>
-      <sequence>2</sequence>
-      <language>en</language>
-    </sys_choice>
-    <sys_choice action="INSERT_OR_UPDATE" apply_defaults="true">
-      <sys_id>626ed2c364ba493fb6c474a5203e4c7c</sys_id>
-      <name>x_695068_bcfa_finance_intake</name>
-      <element>processing_status</element>
-      <label>Extracting</label>
-      <value>extracting</value>
-      <sequence>3</sequence>
-      <language>en</language>
-    </sys_choice>
-    <sys_choice action="INSERT_OR_UPDATE" apply_defaults="true">
-      <sys_id>1b47ed2cbfd74bdab80fc6ed00f2a5e3</sys_id>
-      <name>x_695068_bcfa_finance_intake</name>
-      <element>processing_status</element>
-      <label>Review Required</label>
-      <value>review_required</value>
-      <sequence>4</sequence>
-      <language>en</language>
-    </sys_choice>
-    <sys_choice action="INSERT_OR_UPDATE" apply_defaults="true">
-      <sys_id>05394d9c237d477dac372db92886cb30</sys_id>
-      <name>x_695068_bcfa_finance_intake</name>
-      <element>processing_status</element>
-      <label>Processing</label>
-      <value>processing</value>
-      <sequence>5</sequence>
-      <language>en</language>
-    </sys_choice>
-    <sys_choice action="INSERT_OR_UPDATE" apply_defaults="true">
-      <sys_id>29620345019a426ea225b32bea073147</sys_id>
-      <name>x_695068_bcfa_finance_intake</name>
-      <element>processing_status</element>
-      <label>Completed</label>
-      <value>completed</value>
-      <sequence>6</sequence>
-      <language>en</language>
-    </sys_choice>
-    <sys_choice action="INSERT_OR_UPDATE" apply_defaults="true">
-      <sys_id>2bc5c1594100497bb7fb5f36b9bc9eff</sys_id>
-      <name>x_695068_bcfa_finance_intake</name>
-      <element>processing_status</element>
-      <label>Failed</label>
-      <value>failed</value>
-      <sequence>7</sequence>
-      <language>en</language>
-    </sys_choice>
-  </sys_choice_set>
 </record_update>

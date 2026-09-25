@@ -6,6 +6,7 @@
             <sys_class_name>sys_choice_set</sys_class_name>
             <sys_created_by>Ravi_MCP_Admin</sys_created_by>
             <sys_created_on>2026-09-17 07:10:27</sys_created_on>
+            <sys_id>cf05dbf2835f43103d769be0deaad383</sys_id>
             <sys_mod_count>0</sys_mod_count>
             <sys_name>domain</sys_name>
             <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
@@ -29,6 +30,7 @@
             <sys_created_on>2026-09-17 14:59:07</sys_created_on>
             <sys_domain>global</sys_domain>
             <sys_domain_path>/</sys_domain_path>
+            <sys_id>587b2254e3e140a2a110649c8fff57be</sys_id>
             <sys_mod_count>0</sys_mod_count>
             <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
             <sys_updated_on>2026-09-17 14:59:07</sys_updated_on>
@@ -48,6 +50,7 @@
             <sys_created_on>2026-09-17 14:59:07</sys_created_on>
             <sys_domain>global</sys_domain>
             <sys_domain_path>/</sys_domain_path>
+            <sys_id>bba1b54dd352408f9bc9ec3ec6719b60</sys_id>
             <sys_mod_count>0</sys_mod_count>
             <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
             <sys_updated_on>2026-09-17 14:59:07</sys_updated_on>
@@ -67,6 +70,7 @@
             <sys_created_on>2026-09-17 14:59:07</sys_created_on>
             <sys_domain>global</sys_domain>
             <sys_domain_path>/</sys_domain_path>
+            <sys_id>b30d4384aeb84092b47374c1ac78e331</sys_id>
             <sys_mod_count>0</sys_mod_count>
             <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
             <sys_updated_on>2026-09-17 14:59:07</sys_updated_on>
@@ -86,6 +90,7 @@
             <sys_created_on>2026-09-17 14:59:07</sys_created_on>
             <sys_domain>global</sys_domain>
             <sys_domain_path>/</sys_domain_path>
+            <sys_id>9e424d25b5c641fcac449b9bd72bc38b</sys_id>
             <sys_mod_count>0</sys_mod_count>
             <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
             <sys_updated_on>2026-09-17 14:59:07</sys_updated_on>

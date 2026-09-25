@@ -1,53 +1,64 @@
-<?xml version="1.0"?>
-<database>
-  <element name="x_695068_bcfa_finance_intake" type="collection" label="Finance Document Intake" is_extendable="false" text_index="false" read_only="false" audit="true" display="number" access="public" caller_access="0" scriptable_table="false" attributes="">
-    <element name="number" type="string" active="true" array="false" audit="false" unique="false" label="Number" mandatory="false" read_only="false" choice="0" display="true" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="true" plural="Numbers"/>
-    <element name="source" type="choice" active="true" array="false" audit="false" default_value="workspace_upload" unique="false" label="Source" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Sources">
-      <choice>
-        <element value="workspace_upload" label="Workspace Upload" sequence="1" language="en"/>
-        <element value="email" label="Email" sequence="2" language="en"/>
-        <element value="shared_drive" label="Shared Drive" sequence="3" language="en"/>
-        <element value="manual" label="Manual Entry" sequence="4" language="en"/>
-      </choice>
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element audit="true" db_object_id="1270ed69ebef8314311dff0dcad0cda5" label="Finance Document Intake" max_length="40" name="x_695068_bcfa_finance_intake" type="collection">
+        <element label="Remittance" max_length="32" name="remittance" reference="x_695068_bcfa_remittance" type="reference"/>
+        <element hint="Full, unedited structured result Claude returned (classification + extraction). Retained verbatim for audit even after a reviewer corrects a value — see Phase 9/11." label="Extraction JSON" max_length="4000" name="extraction_json" type="json"/>
+        <element label="Reviewed By" max_length="32" name="reviewed_by" reference="sys_user" type="reference"/>
+        <element display="true" label="Number" max_length="40" name="number" primary="true" type="string"/>
+        <element hint="Free-text origin reference — e.g. an email message ID — used alongside attachment_hash for Phase 10 duplicate-intake detection." label="Source Reference" max_length="200" name="source_reference" type="string"/>
+        <element default="new" label="Processing Status" mandatory="true" max_length="40" name="processing_status" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Processing" sequence="5" value="processing"/>
+                <element inactive_on_update="false" label="Classifying" sequence="2" value="classifying"/>
+                <element inactive_on_update="false" label="Review Required" sequence="4" value="review_required"/>
+                <element inactive_on_update="false" label="Completed" sequence="6" value="completed"/>
+                <element inactive_on_update="false" label="Failed" sequence="7" value="failed"/>
+                <element inactive_on_update="false" label="Extracting" sequence="3" value="extracting"/>
+                <element inactive_on_update="false" label="New" sequence="1" value="new"/>
+            </choice>
+        </element>
+        <element hint="SHA-256 of the primary attachment content, computed at classification time. Phase 10 duplicate-intake detection key, independent of the existing AP Invoice duplicate_key check (vendor+invoice_number+amount), which only runs after a transaction already exists." label="Attachment Hash" max_length="64" name="attachment_hash" type="string"/>
+        <element hint="Claude's stated reason for the document_type it returned. Advisory only, shown for reviewer context." label="Classification Reason" max_length="1000" name="classification_reason" type="string"/>
+        <element label="Company Code" max_length="10" name="company_code" type="string"/>
+        <element label="Correlation ID" max_length="64" name="correlation_id" type="string"/>
+        <element hint="Human-readable failure description only — never exception internals or credential material (same discipline as ai_interaction.safe_error)." label="Processing Error" max_length="4000" name="processing_error" type="string"/>
+        <element label="Requires Review" max_length="40" name="requires_review" type="boolean"/>
+        <element label="Reviewed At" max_length="40" name="reviewed_at" type="glide_date_time"/>
+        <element default="workspace_upload" label="Source" max_length="40" name="source" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Workspace Upload" sequence="1" value="workspace_upload"/>
+                <element inactive_on_update="false" label="Shared Drive" sequence="3" value="shared_drive"/>
+                <element inactive_on_update="false" label="Manual Entry" sequence="4" value="manual"/>
+                <element inactive_on_update="false" label="Email" sequence="2" value="email"/>
+            </choice>
+        </element>
+        <element attributes="scale=2" label="Classification Confidence" max_length="15" name="classification_confidence" type="decimal"/>
+        <element label="AP Invoice" max_length="32" name="ap_invoice" reference="x_695068_bcfa_ap_invoice" type="reference"/>
+        <element attributes="scale=2" label="Extraction Confidence" max_length="15" name="extraction_confidence" type="decimal"/>
+        <element label="Payment" max_length="32" name="payment" reference="x_695068_bcfa_payment" type="reference"/>
+        <element label="Currency" max_length="3" name="currency" type="string"/>
+        <element default="unknown" label="Document Type" max_length="40" name="document_type" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Unknown" sequence="1" value="unknown"/>
+                <element inactive_on_update="false" label="AR Remittance" sequence="4" value="ar_remittance"/>
+                <element inactive_on_update="false" label="AR Payment Advice" sequence="3" value="ar_payment_advice"/>
+                <element inactive_on_update="false" label="AP Invoice" sequence="2" value="ap_invoice"/>
+            </choice>
+        </element>
+        <element label="Claude Request ID" max_length="100" name="claude_request_id" type="string"/>
+        <index name="index">
+            <element name="ap_invoice"/>
+        </index>
+        <index name="index2">
+            <element name="attachment_hash"/>
+        </index>
+        <index name="index3">
+            <element name="payment"/>
+        </index>
+        <index name="index4">
+            <element name="remittance"/>
+        </index>
+        <index name="index5">
+            <element name="reviewed_by"/>
+        </index>
     </element>
-    <element name="source_reference" type="string" active="true" array="false" audit="false" unique="false" label="Source Reference" max_length="200" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Source References" hint="Free-text origin reference — e.g. an email message ID — used alongside attachment_hash for Phase 10 duplicate-intake detection."/>
-    <element name="document_type" type="choice" active="true" array="false" audit="false" default_value="unknown" unique="false" label="Document Type" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Document Types">
-      <choice>
-        <element value="unknown" label="Unknown" sequence="1" language="en"/>
-        <element value="ap_invoice" label="AP Invoice" sequence="2" language="en"/>
-        <element value="ar_payment_advice" label="AR Payment Advice" sequence="3" language="en"/>
-        <element value="ar_remittance" label="AR Remittance" sequence="4" language="en"/>
-      </choice>
-    </element>
-    <element name="processing_status" type="choice" active="true" array="false" audit="false" default_value="new" unique="false" label="Processing Status" mandatory="true" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Processing Status">
-      <choice>
-        <element value="new" label="New" sequence="1" language="en"/>
-        <element value="classifying" label="Classifying" sequence="2" language="en"/>
-        <element value="extracting" label="Extracting" sequence="3" language="en"/>
-        <element value="review_required" label="Review Required" sequence="4" language="en"/>
-        <element value="processing" label="Processing" sequence="5" language="en"/>
-        <element value="completed" label="Completed" sequence="6" language="en"/>
-        <element value="failed" label="Failed" sequence="7" language="en"/>
-      </choice>
-    </element>
-    <element name="classification_confidence" type="decimal" active="true" array="false" audit="false" unique="false" label="Classification Confidence" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="scale=2" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Classification Confidences"/>
-    <element name="classification_reason" type="string" active="true" array="false" audit="false" unique="false" label="Classification Reason" max_length="1000" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Classification Reasons" hint="Claude's stated reason for the document_type it returned. Advisory only, shown for reviewer context."/>
-    <element name="extraction_confidence" type="decimal" active="true" array="false" audit="false" unique="false" label="Extraction Confidence" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="scale=2" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Extraction Confidences"/>
-    <element name="company_code" type="string" active="true" array="false" audit="false" unique="false" label="Company Code" max_length="10" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Company Codes"/>
-    <element name="currency" type="string" active="true" array="false" audit="false" unique="false" label="Currency" max_length="3" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Currencies"/>
-    <element name="correlation_id" type="string" active="true" array="false" audit="false" unique="false" label="Correlation ID" max_length="64" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Correlation IDs"/>
-    <element name="claude_request_id" type="string" active="true" array="false" audit="false" unique="false" label="Claude Request ID" max_length="100" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Claude Request IDs"/>
-    <element name="attachment_hash" type="string" active="true" array="false" audit="false" unique="false" label="Attachment Hash" max_length="64" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Attachment Hashes" hint="SHA-256 of the primary attachment content, computed at classification time. Phase 10 duplicate-intake detection key, independent of the existing AP Invoice duplicate_key check (vendor+invoice_number+amount), which only runs after a transaction already exists."/>
-    <element name="ap_invoice" type="reference" active="true" array="false" audit="false" unique="false" label="AP Invoice" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" reference="x_695068_bcfa_ap_invoice" plural="AP Invoices"/>
-    <element name="payment" type="reference" active="true" array="false" audit="false" unique="false" label="Payment" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" reference="x_695068_bcfa_payment" plural="Payments"/>
-    <element name="remittance" type="reference" active="true" array="false" audit="false" unique="false" label="Remittance" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" reference="x_695068_bcfa_remittance" plural="Remittances"/>
-    <element name="processing_error" type="string" active="true" array="false" audit="false" unique="false" label="Processing Error" max_length="4000" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Processing Errors" hint="Human-readable failure description only — never exception internals or credential material (same discipline as ai_interaction.safe_error)."/>
-    <element name="extraction_json" type="json" active="true" array="false" audit="false" unique="false" label="Extraction JSON" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Extraction JSONs" hint="Full, unedited structured result Claude returned (classification + extraction). Retained verbatim for audit even after a reviewer corrects a value — see Phase 9/11."/>
-    <element name="requires_review" type="boolean" active="true" array="false" audit="false" default_value="false" unique="false" label="Requires Review" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Requires Reviews"/>
-    <element name="reviewed_by" type="reference" active="true" array="false" audit="false" unique="false" label="Reviewed By" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" reference="sys_user" plural="Reviewed Bys"/>
-    <element name="reviewed_at" type="glide_date_time" active="true" array="false" audit="false" unique="false" label="Reviewed At" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Reviewed Ats"/>
-    <index unique="false">
-      <element name="attachment_hash"/>
-    </index>
-  </element>
 </database>

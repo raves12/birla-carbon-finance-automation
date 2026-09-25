@@ -1,19 +1,15 @@
-<?xml version="1.0"?>
-<record_update table="sys_script_include">
-  <sys_script_include action="INSERT_OR_UPDATE" apply_defaults="true">
-    <sys_id>1c7b870db61a4e3388acbf09d0575157</sys_id>
-    <sys_scope display_value="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_scope>
-    <sys_update_name>sys_script_include_1c7b870db61a4e3388acbf09d0575157</sys_update_name>
-    <access>package_private</access>
-    <active>true</active>
-    <api_name>x_695068_bcfa.FinanceDocumentIntakeService</api_name>
-    <caller_access/>
-    <client_callable>false</client_callable>
-    <description>Orchestrates true document-to-transaction processing: reads an uploaded attachment on Finance Document Intake, classifies and extracts it via BCClaudeClient, resolves master data deterministically, and hands the resulting AP Invoice / Payment / Remittance to the existing ApDomainService/ArDomainService pipelines. Never sets approval_state/posting_state/state/decision directly and never calls ApprovalEngine or IntegrationService.</description>
-    <mobile_callable>false</mobile_callable>
-    <name>FinanceDocumentIntakeService</name>
-    <sandbox_callable>false</sandbox_callable>
-    <script><![CDATA[// Orchestrates TRUE document-to-transaction processing: a raw uploaded
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>x_695068_bcfa.FinanceDocumentIntakeService</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description>Orchestrates true document-to-transaction processing: reads an uploaded attachment on Finance Document Intake, classifies and extracts it via BCClaudeClient, resolves master data deterministically, and hands the resulting AP Invoice / Payment / Remittance to the existing ApDomainService/ArDomainService pipelines. Never sets approval_state/posting_state/state/decision directly and never calls ApprovalEngine or IntegrationService.</description>
+        <mobile_callable>false</mobile_callable>
+        <name>FinanceDocumentIntakeService</name>
+        <sandbox_callable>false</sandbox_callable>
+        <script><![CDATA[// Orchestrates TRUE document-to-transaction processing: a raw uploaded
 // PDF/image becomes an AP Invoice or Payment/Remittance, which is then
 // handed to the EXISTING ApDomainService/ArDomainService pipelines exactly
 // as if it had been created any other way. This class never sets
@@ -694,6 +690,17 @@ FinanceDocumentIntakeService.prototype = {
     type: 'FinanceDocumentIntakeService',
 };
 ]]></script>
-    <sys_name>FinanceDocumentIntakeService</sys_name>
-  </sys_script_include>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>RaviMAdmin</sys_created_by>
+        <sys_created_on>2026-09-25 11:44:36</sys_created_on>
+        <sys_id>1c7b870db61a4e3388acbf09d0575157</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>FinanceDocumentIntakeService</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_script_include_1c7b870db61a4e3388acbf09d0575157</sys_update_name>
+        <sys_updated_by>RaviMAdmin</sys_updated_by>
+        <sys_updated_on>2026-09-25 11:44:36</sys_updated_on>
+    </sys_script_include>
 </record_update>
