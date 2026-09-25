@@ -14,7 +14,7 @@ passes its own verification.
 | 1 | ServiceNow native AI readiness | **DONE** (tentative — see readiness doc) | Entitlement unconfirmed, non-blocking |
 | 2 | Stabilize the custom application (build + install to parity) | **DONE** | None |
 | 3 | Rebuild lost reference and demo data | **DONE** | None — see `docs/DEMO_DATA.md` |
-| 4 | Generate synthetic document fixtures | Queued | Depends on Phase 2 |
+| 4 | Generate synthetic document fixtures | **DONE** | None — see `docs/DOCUMENT_FIXTURES.md` |
 | 5 | Content Understanding / Document Intelligence configuration | Queued | Entitlement check on first use |
 | 6 | ServiceNow generative AI skills | Queued | Entitlement check on first use |
 | 7 | AI agent tools (least-privilege) | Queued | Depends on Phase 5/6 data shape |
