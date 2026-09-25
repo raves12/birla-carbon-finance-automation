@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<record_update table="sys_documentation">
+  <sys_documentation action="INSERT_OR_UPDATE" apply_defaults="true">
+    <sys_id>aacfcb77edae461c83f4f41410a0b209</sys_id>
+    <sys_scope display_value="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_scope>
+    <sys_update_name>sys_documentation_x_695068_bcfa_finance_intake_correlation_id_en</sys_update_name>
+    <element>correlation_id</element>
+    <help/>
+    <hint/>
+    <label>Correlation ID</label>
+    <language>en</language>
+    <name>x_695068_bcfa_finance_intake</name>
+    <plural>Correlation IDs</plural>
+    <url/>
+    <url_target/>
+  </sys_documentation>
+</record_update>

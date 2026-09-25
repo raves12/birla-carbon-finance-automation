@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<record_update table="sys_documentation">
+  <sys_documentation action="INSERT_OR_UPDATE" apply_defaults="true">
+    <sys_id>878e51d7c8a64cb5aebffe46fadf571c</sys_id>
+    <sys_scope display_value="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_scope>
+    <sys_update_name>sys_documentation_x_695068_bcfa_finance_intake_source_en</sys_update_name>
+    <element>source</element>
+    <help/>
+    <hint/>
+    <label>Source</label>
+    <language>en</language>
+    <name>x_695068_bcfa_finance_intake</name>
+    <plural>Sources</plural>
+    <url/>
+    <url_target/>
+  </sys_documentation>
+</record_update>

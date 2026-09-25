@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<record_update table="sys_ui_action">
+  <sys_ui_action action="INSERT_OR_UPDATE" apply_defaults="true">
+    <sys_id>18d525d32dce47ce959ada18613b9a06</sys_id>
+    <sys_scope display_value="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_scope>
+    <sys_update_name>sys_ui_action_18d525d32dce47ce959ada18613b9a06</sys_update_name>
+    <action_name>process_with_claude_intake</action_name>
+    <active>true</active>
+    <client>false</client>
+    <client_script_v2/>
+    <comments/>
+    <condition>current.processing_status == 'new'</condition>
+    <form_action>true</form_action>
+    <form_button>true</form_button>
+    <form_button_v2>true</form_button_v2>
+    <form_context_menu>false</form_context_menu>
+    <form_link>false</form_link>
+    <form_menu_button_v2>false</form_menu_button_v2>
+    <form_style>primary-ai</form_style>
+    <format_for_configurable_workspace>true</format_for_configurable_workspace>
+    <hint>Classifies the attached document with Claude and, once a document type is known, extracts it and creates the corresponding AP Invoice or Payment/Remittance.</hint>
+    <isolate_script>false</isolate_script>
+    <list_action>false</list_action>
+    <list_banner_button>false</list_banner_button>
+    <list_button>false</list_button>
+    <list_choice>false</list_choice>
+    <list_context_menu>false</list_context_menu>
+    <list_link>false</list_link>
+    <list_save_with_form_button>false</list_save_with_form_button>
+    <list_style/>
+    <messages/>
+    <name>Process with Claude</name>
+    <onclick/>
+    <order>100</order>
+    <script><![CDATA[
+        var service = new FinanceDocumentIntakeService();
+        service.processDocument(current.getUniqueValue());
+        action.setRedirectURL(current);
+    ]]></script>
+    <show_form_icon_only>false</show_form_icon_only>
+    <show_insert>true</show_insert>
+    <show_list_icon_only>false</show_list_icon_only>
+    <show_multiple_update>false</show_multiple_update>
+    <show_query>false</show_query>
+    <show_update>true</show_update>
+    <sys_name>Process with Claude</sys_name>
+    <sys_overrides/>
+    <table>x_695068_bcfa_finance_intake</table>
+    <ui11_compatible>false</ui11_compatible>
+    <ui16_compatible>false</ui16_compatible>
+  </sys_ui_action>
+</record_update>

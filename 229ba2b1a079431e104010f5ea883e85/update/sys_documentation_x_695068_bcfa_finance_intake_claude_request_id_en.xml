@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<record_update table="sys_documentation">
+  <sys_documentation action="INSERT_OR_UPDATE" apply_defaults="true">
+    <sys_id>c062f6ae2d64478ab1a7e0613052c225</sys_id>
+    <sys_scope display_value="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_scope>
+    <sys_update_name>sys_documentation_x_695068_bcfa_finance_intake_claude_request_id_en</sys_update_name>
+    <element>claude_request_id</element>
+    <help/>
+    <hint/>
+    <label>Claude Request ID</label>
+    <language>en</language>
+    <name>x_695068_bcfa_finance_intake</name>
+    <plural>Claude Request IDs</plural>
+    <url/>
+    <url_target/>
+  </sys_documentation>
+</record_update>

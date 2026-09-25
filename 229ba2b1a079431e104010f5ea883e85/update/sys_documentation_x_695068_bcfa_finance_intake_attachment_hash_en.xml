@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<record_update table="sys_documentation">
+  <sys_documentation action="INSERT_OR_UPDATE" apply_defaults="true">
+    <sys_id>345104f9284a48a3ac84e724cd2dddb2</sys_id>
+    <sys_scope display_value="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_scope>
+    <sys_update_name>sys_documentation_x_695068_bcfa_finance_intake_attachment_hash_en</sys_update_name>
+    <element>attachment_hash</element>
+    <help/>
+    <hint>SHA-256 of the primary attachment content, computed at classification time. Phase 10 duplicate-intake detection key, independent of the existing AP Invoice duplicate_key check (vendor+invoice_number+amount), which only runs after a transaction already exists.</hint>
+    <label>Attachment Hash</label>
+    <language>en</language>
+    <name>x_695068_bcfa_finance_intake</name>
+    <plural>Attachment Hashes</plural>
+    <url/>
+    <url_target/>
+  </sys_documentation>
+</record_update>
