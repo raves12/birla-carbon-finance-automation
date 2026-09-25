@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element audit="true" db_object_id="410557f2835f43103d769be0deaad38e" label="AP Approval" max_length="40" name="x_695068_bcfa_ap_approval" type="collection">
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Requested By" max_length="32" name="requested_by" reference="sys_user" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" default="pending" label="Decision" max_length="40" name="decision" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Approved" sequence="2" value="approved"/>
+                <element inactive_on_update="false" label="Pending" sequence="1" value="pending"/>
+                <element inactive_on_update="false" label="Rejected" sequence="3" value="rejected"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Approver" max_length="32" name="approver" reference="sys_user" type="reference"/>
+        <element label="Decision Notes" max_length="4000" name="decision_notes" type="string"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" display="true" label="AP Invoice" mandatory="true" max_length="32" name="ap_invoice" reference="x_695068_bcfa_ap_invoice" type="reference"/>
+        <element label="Decided At" max_length="40" name="decided_at" type="glide_date_time"/>
+        <index name="index">
+            <element name="ap_invoice"/>
+        </index>
+        <index name="index2">
+            <element name="approver"/>
+        </index>
+        <index name="index3">
+            <element name="requested_by"/>
+        </index>
+    </element>
+</database>

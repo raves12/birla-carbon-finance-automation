@@ -34,7 +34,6 @@
         <next_element/>
         <primary>false</primary>
         <read_only>false</read_only>
-        <read_only_option/>
         <read_roles/>
         <reference/>
         <reference_cascade_rule/>
@@ -48,7 +47,6 @@
         <sys_class_name>sys_dictionary</sys_class_name>
         <sys_created_by>Ravi_MCP_Admin</sys_created_by>
         <sys_created_on>2026-09-17 07:10:22</sys_created_on>
-        <sys_id>a50597f2835f43103d769be0deaad3d4</sys_id>
         <sys_name>x_695068_bcfa_purchase_order</sys_name>
         <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
         <sys_policy/>

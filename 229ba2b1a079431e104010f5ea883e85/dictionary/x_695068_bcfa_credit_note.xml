@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element db_object_id="840593f2835f43103d769be0deaad3ab" label="Credit Note (Mock SAP)" max_length="40" name="x_695068_bcfa_credit_note" type="collection">
+        <element display="true" label="Credit Note Number" mandatory="true" max_length="20" name="credit_note_number" type="string" unique="true"/>
+        <element attributes="edge_encryption_enabled=true,scale=2" label="Amount" max_length="15" name="amount" type="decimal"/>
+        <element label="Issue Date" max_length="40" name="issue_date" type="glide_date"/>
+        <element attributes="edge_encryption_enabled=true,scale=2" label="Open Amount" max_length="15" name="open_amount" type="decimal"/>
+        <element attributes="edge_encryption_enabled=true" default="open" label="Status" max_length="40" name="status" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Closed" sequence="3" value="closed"/>
+                <element inactive_on_update="false" label="Open" sequence="1" value="open"/>
+                <element inactive_on_update="false" label="Applied" sequence="2" value="applied"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Customer" mandatory="true" max_length="32" name="customer" reference="x_695068_bcfa_customer" type="reference"/>
+        <index name="index" unique="true">
+            <element name="credit_note_number"/>
+        </index>
+        <index name="index2">
+            <element name="customer"/>
+        </index>
+    </element>
+</database>

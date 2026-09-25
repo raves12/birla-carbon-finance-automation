@@ -5,7 +5,6 @@
         <extension_point/>
         <fields/>
         <icon/>
-        <interoperable>false</interoperable>
         <name>List Page</name>
         <optional_parameters>listId</optional_parameters>
         <order>0</order>

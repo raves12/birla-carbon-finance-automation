@@ -4,6 +4,7 @@
         <can_delegate>true</can_delegate>
         <description>Can retry/reconcile Integration Transactions. Cannot alter AP/AR financial source values.</description>
         <elevated_privilege>false</elevated_privilege>
+        <encryption_context/>
         <federated_id>L6ap//n0jGeJw4gykmKXfrHHnGmCVp2yXACjxT8iHas=</federated_id>
         <grantable>true</grantable>
         <includes_roles/>

@@ -4,7 +4,6 @@
         <app_config display_value="Birla Carbon Finance Automation">a31c27cbf9474e3f93e47c8ac7a7cbe1</app_config>
         <description/>
         <disable_auto_reflow>false</disable_auto_reflow>
-        <disable_interoperable>false</disable_interoperable>
         <event_mappings/>
         <macroponent display_value="Dashboards">163a913b532c0110aab9ddeeff7b1241</macroponent>
         <macroponent_config>{"bare":{"type":"JSON_LITERAL","value":true},"headerLevel":{"type":"JSON_LITERAL","value":"1"},"headingOnlyVisibleToScreenReaders":{"type":"JSON_LITERAL","value":false},"interceptNotifications":{"type":"JSON_LITERAL","value":false},"label":{"type":"TRANSLATION_LITERAL","value":{"code":null,"comment":"","message":""}},"propagateNotifications":{"type":"JSON_LITERAL","value":false},"scrollable":{"type":"JSON_LITERAL","value":"y"}}</macroponent_config>

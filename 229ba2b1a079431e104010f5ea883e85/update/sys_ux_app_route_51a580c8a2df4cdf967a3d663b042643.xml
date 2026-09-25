@@ -5,7 +5,6 @@
         <extension_point/>
         <fields>table,sysId</fields>
         <icon/>
-        <interoperable>false</interoperable>
         <name>Record Default</name>
         <optional_parameters>query,extraParams,views,selectedTab</optional_parameters>
         <order>0</order>

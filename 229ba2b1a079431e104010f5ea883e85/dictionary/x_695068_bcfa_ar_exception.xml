@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element audit="true" db_object_id="050557f2835f43103d769be0deaad312" label="AR Exception" max_length="40" name="x_695068_bcfa_ar_exception" type="collection">
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Assigned To" max_length="32" name="assigned_to" reference="sys_user" type="reference"/>
+        <element hint="Simulated-AI output only. Never read by deterministic rules or approval/clearing logic." label="AI Recommendation (advisory)" max_length="4000" name="ai_recommendation" type="string"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Payment" mandatory="true" max_length="32" name="payment" reference="x_695068_bcfa_payment" type="reference"/>
+        <element label="Description" max_length="4000" name="description" type="string"/>
+        <element attributes="edge_encryption_enabled=true" display="true" label="Reason Code" mandatory="true" max_length="40" name="reason_code" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Over Pay" sequence="4" value="over_pay"/>
+                <element inactive_on_update="false" label="Short Pay" sequence="3" value="short_pay"/>
+                <element inactive_on_update="false" label="Customer Ambiguous" sequence="2" value="customer_ambiguous"/>
+                <element inactive_on_update="false" label="Duplicate Payment" sequence="5" value="duplicate"/>
+                <element inactive_on_update="false" label="Other" sequence="7" value="other"/>
+                <element inactive_on_update="false" label="Unmatched Payment" sequence="1" value="unmatched"/>
+                <element inactive_on_update="false" label="Currency Mismatch" sequence="6" value="currency_mismatch"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" default="open" label="Status" max_length="40" name="status" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="In Review" sequence="2" value="in_review"/>
+                <element inactive_on_update="false" label="Open" sequence="1" value="open"/>
+                <element inactive_on_update="false" label="Resolved" sequence="3" value="resolved"/>
+                <element inactive_on_update="false" label="Closed" sequence="4" value="closed"/>
+            </choice>
+        </element>
+        <element label="Resolution Notes" max_length="4000" name="resolution_notes" type="string"/>
+        <index name="index">
+            <element name="assigned_to"/>
+        </index>
+        <index name="index2">
+            <element name="payment"/>
+        </index>
+    </element>
+</database>

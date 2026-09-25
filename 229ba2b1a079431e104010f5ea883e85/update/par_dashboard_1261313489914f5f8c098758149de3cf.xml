@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="par_dashboard">
     <par_dashboard action="INSERT_OR_UPDATE">
         <active>true</active>
-        <base_dashboard/>
         <certified>false</certified>
         <description/>
         <experience/>
         <grid>48</grid>
         <name>BCFA Overview</name>
-        <ready_to_migrate>Not Applicable</ready_to_migrate>
         <sys_class_name>par_dashboard</sys_class_name>
         <sys_created_by>Ravi_MCP_Admin</sys_created_by>
         <sys_created_on>2026-09-17 14:27:33</sys_created_on>

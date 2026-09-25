@@ -4,6 +4,7 @@
         <can_delegate>true</can_delegate>
         <description>Read/comment access across AP and AR for oversight, without processing or approval authority.</description>
         <elevated_privilege>false</elevated_privilege>
+        <encryption_context/>
         <federated_id>ZluGjtvBgi7QH1Y6OKzl2pQFiIL+7vrh+r7emplrY3k=</federated_id>
         <grantable>true</grantable>
         <includes_roles/>

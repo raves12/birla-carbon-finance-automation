@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element db_object_id="9e055bf2835f43103d769be0deaad370" label="AP Match" max_length="40" name="x_695068_bcfa_ap_match" type="collection">
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Receipt" max_length="32" name="receipt" reference="x_695068_bcfa_receipt" type="reference"/>
+        <element attributes="edge_encryption_enabled=true,scale=2" label="Price Variance" max_length="15" name="price_variance" type="decimal"/>
+        <element attributes="edge_encryption_enabled=true" label="Within Tolerance" max_length="40" name="within_tolerance" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" display="true" label="AP Invoice" mandatory="true" max_length="32" name="ap_invoice" reference="x_695068_bcfa_ap_invoice" type="reference"/>
+        <element label="Evaluated At" max_length="40" name="evaluated_at" type="glide_date_time"/>
+        <element attributes="edge_encryption_enabled=true" label="Match Result" max_length="40" name="match_result" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Mismatch" sequence="3" value="mismatch"/>
+                <element inactive_on_update="false" label="Partial" sequence="2" value="partial"/>
+                <element inactive_on_update="false" label="Matched" sequence="1" value="matched"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="PO Line" max_length="32" name="po_line" reference="x_695068_bcfa_po_line" type="reference"/>
+        <element attributes="edge_encryption_enabled=true,scale=2" label="Quantity Variance" max_length="15" name="quantity_variance" type="decimal"/>
+        <element attributes="edge_encryption_enabled=true,scale=2" label="Tax Variance" max_length="15" name="tax_variance" type="decimal"/>
+        <index name="index">
+            <element name="ap_invoice"/>
+        </index>
+        <index name="index2">
+            <element name="po_line"/>
+        </index>
+        <index name="index3">
+            <element name="receipt"/>
+        </index>
+    </element>
+</database>

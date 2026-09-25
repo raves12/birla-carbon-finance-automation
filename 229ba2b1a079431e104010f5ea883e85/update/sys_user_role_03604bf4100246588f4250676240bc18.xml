@@ -4,6 +4,7 @@
         <can_delegate>true</can_delegate>
         <description>Read-only access to Audit Event, Integration Transaction and Decision Log for evidence review.</description>
         <elevated_privilege>false</elevated_privilege>
+        <encryption_context/>
         <federated_id>6lCHZJ0dTDoPDqenFNqrpHb5Zv9HP358cAtikoZOcOA=</federated_id>
         <grantable>true</grantable>
         <includes_roles/>

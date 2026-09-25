@@ -4,6 +4,7 @@
         <can_delegate>true</can_delegate>
         <description>Read-only access across all Birla Carbon Finance Automation tables.</description>
         <elevated_privilege>false</elevated_privilege>
+        <encryption_context/>
         <federated_id>T7hqVPTurFY/IciGQSBAoaYD/YmG25p9hR+YM1D/rnQ=</federated_id>
         <grantable>true</grantable>
         <includes_roles/>

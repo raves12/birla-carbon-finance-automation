@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element audit="true" db_object_id="23f413f2835f43103d769be0deaad3f1" label="AP Exception" max_length="40" name="x_695068_bcfa_ap_exception" type="collection">
+        <element attributes="edge_encryption_enabled=true" default="open" label="Status" max_length="40" name="status" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Closed" sequence="4" value="closed"/>
+                <element inactive_on_update="false" label="Resolved" sequence="3" value="resolved"/>
+                <element inactive_on_update="false" label="Open" sequence="1" value="open"/>
+                <element inactive_on_update="false" label="In Review" sequence="2" value="in_review"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" display="true" label="Reason Code" mandatory="true" max_length="40" name="reason_code" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Other" sequence="9" value="other"/>
+                <element inactive_on_update="false" label="Duplicate Invoice" sequence="1" value="duplicate"/>
+                <element inactive_on_update="false" label="Quantity Tolerance Failure" sequence="3" value="quantity_tolerance"/>
+                <element inactive_on_update="false" label="Price Tolerance Failure" sequence="4" value="price_tolerance"/>
+                <element inactive_on_update="false" label="Vendor Invalid" sequence="8" value="vendor_invalid"/>
+                <element inactive_on_update="false" label="PO Mismatch" sequence="2" value="po_mismatch"/>
+                <element inactive_on_update="false" label="Low-Confidence Extraction" sequence="6" value="low_confidence"/>
+                <element inactive_on_update="false" label="Missing Mandatory Field" sequence="7" value="missing_field"/>
+                <element inactive_on_update="false" label="Tax Validation Failure" sequence="5" value="tax_validation"/>
+            </choice>
+        </element>
+        <element hint="Simulated-AI output only. Never read by deterministic rules or approval/posting logic." label="AI Recommendation (advisory)" max_length="4000" name="ai_recommendation" type="string"/>
+        <element label="Description" max_length="4000" name="description" type="string"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Assigned To" max_length="32" name="assigned_to" reference="sys_user" type="reference"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="AP Invoice" mandatory="true" max_length="32" name="ap_invoice" reference="x_695068_bcfa_ap_invoice" type="reference"/>
+        <element label="Resolution Notes" max_length="4000" name="resolution_notes" type="string"/>
+        <index name="index">
+            <element name="ap_invoice"/>
+        </index>
+        <index name="index2">
+            <element name="assigned_to"/>
+        </index>
+    </element>
+</database>

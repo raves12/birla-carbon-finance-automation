@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element db_object_id="67f413f2835f43103d769be0deaad3a2" label="Match Candidate" max_length="40" name="x_695068_bcfa_match_candidate" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Match Type" mandatory="true" max_length="40" name="match_type" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Exact" sequence="1" value="exact"/>
+                <element inactive_on_update="false" label="AI Suggested (advisory)" sequence="3" value="ai_suggested"/>
+                <element inactive_on_update="false" label="Fuzzy (deterministic)" sequence="2" value="fuzzy"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Rank" max_length="40" name="rank" type="integer"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="AR Open Item" max_length="32" name="ar_open_item" reference="x_695068_bcfa_ar_open_item" type="reference"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" display="true" label="Payment" mandatory="true" max_length="32" name="payment" reference="x_695068_bcfa_payment" type="reference"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Customer Candidate" max_length="32" name="customer_candidate" reference="x_695068_bcfa_customer" type="reference"/>
+        <element attributes="edge_encryption_enabled=true,scale=2" label="Confidence" max_length="15" name="confidence" type="decimal"/>
+        <element attributes="edge_encryption_enabled=true" label="Selected" max_length="40" name="selected" type="boolean"/>
+        <index name="index">
+            <element name="ar_open_item"/>
+        </index>
+        <index name="index2">
+            <element name="customer_candidate"/>
+        </index>
+        <index name="index3">
+            <element name="payment"/>
+        </index>
+    </element>
+</database>

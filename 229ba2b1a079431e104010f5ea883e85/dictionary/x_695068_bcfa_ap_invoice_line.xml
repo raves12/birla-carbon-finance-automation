@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element db_object_id="4c0593f2835f43103d769be0deaad33b" label="AP Invoice Line" max_length="40" name="x_695068_bcfa_ap_invoice_line" type="collection">
+        <element attributes="edge_encryption_enabled=true,scale=2" label="Quantity" max_length="15" name="quantity" type="decimal"/>
+        <element attributes="edge_encryption_enabled=true,scale=2" label="Unit Price" max_length="15" name="unit_price" type="decimal"/>
+        <element attributes="edge_encryption_enabled=true,scale=2" label="Amount" max_length="15" name="amount" type="decimal"/>
+        <element attributes="edge_encryption_enabled=true" label="Line Number" mandatory="true" max_length="40" name="line_number" type="integer"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Receipt Reference" max_length="32" name="receipt_reference" reference="x_695068_bcfa_receipt" type="reference"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="AP Invoice" mandatory="true" max_length="32" name="ap_invoice" reference="x_695068_bcfa_ap_invoice" type="reference"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="PO Line" max_length="32" name="po_line" reference="x_695068_bcfa_po_line" type="reference"/>
+        <element display="true" label="Material / Service" max_length="200" name="material_or_service" type="string"/>
+        <element label="Unit" max_length="10" name="unit" type="string"/>
+        <element attributes="edge_encryption_enabled=true,scale=2" label="Tax" max_length="15" name="tax" type="decimal"/>
+        <index name="index">
+            <element name="ap_invoice"/>
+        </index>
+        <index name="index2">
+            <element name="po_line"/>
+        </index>
+        <index name="index3">
+            <element name="receipt_reference"/>
+        </index>
+    </element>
+</database>

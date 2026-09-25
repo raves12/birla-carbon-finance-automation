@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element db_object_id="fe059bf2835f43103d769be0deaad37f" label="Remittance" max_length="40" name="x_695068_bcfa_remittance" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Extracted Fields" max_length="4000" name="extracted_fields" type="json"/>
+        <element label="Received Date" max_length="40" name="received_date" type="glide_date"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Payment" max_length="32" name="payment" reference="x_695068_bcfa_payment" type="reference"/>
+        <element display="true" label="Remittance Reference" max_length="60" name="remittance_reference" type="string"/>
+        <element attributes="edge_encryption_enabled=true,scale=2" label="Confidence" max_length="15" name="confidence" type="decimal"/>
+        <element attributes="edge_encryption_enabled=true" default="email" label="Source" max_length="40" name="source" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Document Upload" sequence="2" value="document"/>
+                <element inactive_on_update="false" label="Bank Advice" sequence="3" value="bank_advice"/>
+                <element inactive_on_update="false" label="Email" sequence="1" value="email"/>
+            </choice>
+        </element>
+        <index name="index">
+            <element name="payment"/>
+        </index>
+    </element>
+</database>

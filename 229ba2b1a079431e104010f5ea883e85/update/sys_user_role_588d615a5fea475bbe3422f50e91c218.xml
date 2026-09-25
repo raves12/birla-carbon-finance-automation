@@ -4,6 +4,7 @@
         <can_delegate>true</can_delegate>
         <description>Processes Cash Application: payment/remittance review, allocation, exception resolution. Cannot approve clearing.</description>
         <elevated_privilege>false</elevated_privilege>
+        <encryption_context/>
         <federated_id>NNBM6muf+1hwYE8OO4g2MwUaD1JkPQbK1YKzyBLCwG0=</federated_id>
         <grantable>true</grantable>
         <includes_roles/>

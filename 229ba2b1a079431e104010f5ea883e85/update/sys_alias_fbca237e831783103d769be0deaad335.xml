@@ -2,7 +2,6 @@
     <sys_alias action="INSERT_OR_UPDATE">
         <configuration_template display_value="API Key Demo Configuration">711fa567b70333008321e916de11a9cf</configuration_template>
         <connection_type>http_connection</connection_type>
-        <description/>
         <id>x_695068_bcfa.BC_Claude_API_Credentials</id>
         <is_internal>false</is_internal>
         <multiple_connections>false</multiple_connections>
@@ -23,5 +22,4 @@
         <sys_updated_on>2026-09-17 08:47:00</sys_updated_on>
         <type>connection</type>
     </sys_alias>
-    <sys_translated_text action="delete_multiple" query="documentkey=fbca237e831783103d769be0deaad335"/>
 </record_update>

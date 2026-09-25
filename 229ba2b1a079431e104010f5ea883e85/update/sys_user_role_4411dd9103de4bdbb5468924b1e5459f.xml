@@ -4,6 +4,7 @@
         <can_delegate>true</can_delegate>
         <description>Full administrative access to the Birla Carbon Finance Automation app.</description>
         <elevated_privilege>false</elevated_privilege>
+        <encryption_context/>
         <federated_id>L+7r0gmyST9ns05ZHHdlTa3fsV8WigO6xFmkDbXI0U0=</federated_id>
         <grantable>true</grantable>
         <includes_roles/>

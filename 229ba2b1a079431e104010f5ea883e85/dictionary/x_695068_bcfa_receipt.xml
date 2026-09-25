@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element db_object_id="ea055bf2835f43103d769be0deaad3df" label="Receipt / GRN-SRN (Mock SAP)" max_length="40" name="x_695068_bcfa_receipt" type="collection">
+        <element attributes="edge_encryption_enabled=true,scale=2" label="Quantity" max_length="15" name="quantity" type="decimal"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="PO Line" max_length="32" name="po_line" reference="x_695068_bcfa_po_line" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Receipt Type" mandatory="true" max_length="40" name="receipt_type" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Goods Receipt (GRN)" sequence="1" value="grn"/>
+                <element inactive_on_update="false" label="Service Receipt (SRN)" sequence="2" value="srn"/>
+            </choice>
+        </element>
+        <element label="Receipt Date" max_length="40" name="receipt_date" type="glide_date"/>
+        <element display="true" label="Receipt Number" mandatory="true" max_length="20" name="receipt_number" type="string" unique="true"/>
+        <element label="SAP Document ID" max_length="20" name="sap_document_id" type="string"/>
+        <index name="index">
+            <element name="po_line"/>
+        </index>
+        <index name="index2" unique="true">
+            <element name="receipt_number"/>
+        </index>
+    </element>
+</database>

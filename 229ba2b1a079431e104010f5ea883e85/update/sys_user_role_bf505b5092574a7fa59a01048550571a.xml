@@ -4,6 +4,7 @@
         <can_delegate>true</can_delegate>
         <description>Processes AP invoices: intake, extraction review, matching exception resolution. Cannot approve postings.</description>
         <elevated_privilege>false</elevated_privilege>
+        <encryption_context/>
         <federated_id>aVxs6EZ//5j7XZ7PIMJmmJzItTHRSPSRypcqXqJUD8g=</federated_id>
         <grantable>true</grantable>
         <includes_roles/>

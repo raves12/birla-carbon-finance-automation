@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element db_object_id="5ff413f2835f43103d769be0deaad31d" label="Decision Log" max_length="40" name="x_695068_bcfa_decision_log" type="collection">
+        <element label="Correlation ID" max_length="64" name="correlation_id" type="string"/>
+        <element label="Rule Version" max_length="40" name="rule_version" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Input Snapshot" max_length="4000" name="input_snapshot" type="json"/>
+        <element attributes="edge_encryption_enabled=true" label="Passed" max_length="40" name="passed" type="boolean"/>
+        <element label="Executed At" max_length="40" name="executed_at" type="glide_date_time"/>
+        <element display="true" label="Rule Name" mandatory="true" max_length="100" name="rule_name" type="string"/>
+        <element hint="sys_id of the AP Invoice or Payment this decision was evaluated for" label="Transaction Reference" max_length="32" name="transaction_reference" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Domain" mandatory="true" max_length="40" name="domain" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Accounts Payable" sequence="1" value="ap"/>
+                <element inactive_on_update="false" label="Accounts Receivable" sequence="2" value="ar"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Result" max_length="4000" name="result" type="json"/>
+    </element>
+</database>

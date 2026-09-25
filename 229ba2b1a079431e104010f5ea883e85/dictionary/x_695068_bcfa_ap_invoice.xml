@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element audit="true" db_object_id="ce051bf2835f43103d769be0deaad306" label="AP Invoice" max_length="40" name="x_695068_bcfa_ap_invoice" type="collection">
+        <element label="Company Code" max_length="10" name="company_code" type="string"/>
+        <element attributes="edge_encryption_enabled=true,scale=2" label="Net Amount" max_length="15" name="net_amount" type="decimal"/>
+        <element attributes="edge_encryption_enabled=true" default="not_posted" label="Posting State" max_length="40" name="posting_state" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Not Posted" sequence="1" value="not_posted"/>
+                <element inactive_on_update="false" label="Posted" sequence="3" value="posted"/>
+                <element inactive_on_update="false" label="Failed" sequence="4" value="failed"/>
+                <element inactive_on_update="false" label="Unknown Outcome" sequence="5" value="unknown_outcome"/>
+                <element inactive_on_update="false" label="Posting" sequence="2" value="posting"/>
+            </choice>
+        </element>
+        <element label="Invoice Date" max_length="40" name="invoice_date" type="glide_date"/>
+        <element hint="Managed by the AP Invoice StateModel" label="State" max_length="40" name="state" type="string"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Purchase Order" max_length="32" name="purchase_order" reference="x_695068_bcfa_purchase_order" type="reference"/>
+        <element label="Correlation ID" max_length="64" name="correlation_id" type="string"/>
+        <element display="true" label="Invoice Number" mandatory="true" max_length="40" name="invoice_number" type="string"/>
+        <element attributes="edge_encryption_enabled=true,scale=2" label="Gross Amount" max_length="15" name="gross_amount" type="decimal"/>
+        <element hint="Hash of vendor+invoice_number+amount used for duplicate detection" label="Duplicate Key" max_length="100" name="duplicate_key" type="string"/>
+        <element hint="Kept generic pending clarification of what &quot;SO&quot; means in AP invoice processing (workbook D-08 — open item)" label="Sales Order Reference" max_length="40" name="sales_order_reference" type="string"/>
+        <element label="External Reference" max_length="64" name="external_reference" type="string"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Vendor" max_length="32" name="vendor" reference="x_695068_bcfa_vendor" type="reference"/>
+        <element attributes="edge_encryption_enabled=true,scale=2" label="Tax Amount" max_length="15" name="tax_amount" type="decimal"/>
+        <element attributes="edge_encryption_enabled=true" default="not_required" label="Approval State" max_length="40" name="approval_state" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Approved" sequence="3" value="approved"/>
+                <element inactive_on_update="false" label="Not Required" sequence="1" value="not_required"/>
+                <element inactive_on_update="false" label="Pending" sequence="2" value="pending"/>
+                <element inactive_on_update="false" label="Rejected" sequence="4" value="rejected"/>
+            </choice>
+        </element>
+        <element label="Currency" max_length="3" name="currency" type="string"/>
+        <element attributes="edge_encryption_enabled=true,scale=2" label="Extraction Confidence" max_length="15" name="extraction_confidence" type="decimal"/>
+        <element label="SAP Document ID" max_length="20" name="sap_document_id" type="string"/>
+        <element label="Posting Date" max_length="40" name="posting_date" type="glide_date"/>
+        <element attributes="edge_encryption_enabled=true" default="email" label="Source" max_length="40" name="source" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Email" sequence="1" value="email"/>
+                <element inactive_on_update="false" label="Shared Drive" sequence="2" value="shared_drive"/>
+                <element inactive_on_update="false" label="Manual Entry" sequence="3" value="manual"/>
+            </choice>
+        </element>
+        <index name="index">
+            <element name="purchase_order"/>
+        </index>
+        <index name="index2">
+            <element name="vendor"/>
+        </index>
+    </element>
+</database>
