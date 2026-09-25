@@ -13,7 +13,7 @@ passes its own verification.
 | 0 | Current state and environment assessment | **DONE** | — |
 | 1 | ServiceNow native AI readiness | **DONE** (tentative — see readiness doc) | Entitlement unconfirmed, non-blocking |
 | 2 | Stabilize the custom application (build + install to parity) | **DONE** | None |
-| 3 | Rebuild lost reference and demo data | Queued | Depends on Phase 2 |
+| 3 | Rebuild lost reference and demo data | **DONE** | None — see `docs/DEMO_DATA.md` |
 | 4 | Generate synthetic document fixtures | Queued | Depends on Phase 2 |
 | 5 | Content Understanding / Document Intelligence configuration | Queued | Entitlement check on first use |
 | 6 | ServiceNow generative AI skills | Queued | Entitlement check on first use |
@@ -37,7 +37,7 @@ passes its own verification.
 | 24 | Finance Operations workspace enhancement | Queued | Depends on Phase 20 relabeling |
 | 25 | Automated flows | Partial — 2 of ~16 listed flows exist (AP/AR exception aging); rest run as direct script orchestration by design (`docs/ARTIFACT_STRATEGY.md`) — evaluate case by case, do not force Flow Designer where direct orchestration already works | None |
 | 26 | State models | **ALREADY WORKING** — verify post-Phase-2 deploy | None |
-| 27 | Demo transaction data | Depends on Phase 3 | — |
+| 27 | Demo transaction data | **DONE** — all 10 AP + 10 AR scenarios seeded and verified live, see `docs/DEMO_DATA.md` | — |
 | 28 | Demo reset | Queued — `DemoDataSeeder` is idempotent by design; add an explicit reset method scoped to `is_demo=true` | None |
 | 29 | Automated testing | Partial — `core_correctness` ATF/job suite exists and is Claude-independent; extend for native-AI paths | Depends on Phase 8–13 |
 | 30 | POC success metrics | Queued | Depends on Phase 24 dashboard |
