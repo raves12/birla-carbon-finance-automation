@@ -12,7 +12,7 @@ passes its own verification.
 |---|---|---|---|
 | 0 | Current state and environment assessment | **DONE** | — |
 | 1 | ServiceNow native AI readiness | **DONE** (tentative — see readiness doc) | Entitlement unconfirmed, non-blocking |
-| 2 | Stabilize the custom application (build + install to parity) | NEXT | None |
+| 2 | Stabilize the custom application (build + install to parity) | **DONE** | None |
 | 3 | Rebuild lost reference and demo data | Queued | Depends on Phase 2 |
 | 4 | Generate synthetic document fixtures | Queued | Depends on Phase 2 |
 | 5 | Content Understanding / Document Intelligence configuration | Queued | Entitlement check on first use |
@@ -47,18 +47,59 @@ passes its own verification.
 | 34 | Remove external AI dependencies | Queued — full scan complete (see repo inventory), removal scoped and ready | Depends on Phase 5–13 replacement being functional first (do not remove before the replacement works) |
 | 35 | Git and change control | **IN PROGRESS** — branch created, this commit is phase 0/1 | — |
 
-## Phase 2 detail — Stabilize (next action)
+## Phase 2 detail — Stabilize (completed 2026-09-25)
 
-1. `now-sdk build` from `C:\Projects\birla-carbon-finance-automation`.
-2. `now-sdk install` against `pwcmanagementservicesdemo01`.
-3. Re-run the live MCP inventory queries from Phase 0 to confirm
-   `finance_intake` table, `FinanceDocumentIntakeService`,
-   `ApLineResolutionService`, `FinanceIntakeAutoNumber`, and the 6 Finance
-   Document Intake UI Actions now exist.
-4. Verify workspace, StateModels, flows, and ATF tests are present and
-   loadable.
-5. Commit: `chore: assess new BCFA instance` (Phase 0/1 docs, this commit)
-   then `fix: stabilize BCFA deployment` (Phase 2, once verified).
+**`now-sdk install` does not work against this instance and should not be
+retried without first fixing the underlying issue.** Diagnosis: the CLI's
+install path uploads to a legacy session/CSRF-dependent endpoint
+(`sn_appclient_upload_processor.do`) that returns an empty 200 response
+instead of the expected execution-tracker payload when authenticated via
+the OAuth credential type this instance requires (Basic Auth is rejected
+instance-wide, so there is no fallback auth type for the CLI to use either).
+Reproduced twice with identical results; confirmed via live query that
+nothing was applied by either attempt.
+
+**Working deployment path used instead** (fully supported, no unsupported
+internal metadata manipulation):
+1. Linked the existing app to source control via Studio's native
+   **Source Control > Link to Source Control** (not "Import Application",
+   which would create a duplicate app). Studio auto-created branch
+   `sn_instances/pwcmanagementservicesdemo01` in the GitHub repo, seeded
+   with the *instance's own* current metadata as a "historical commit."
+2. Merged `feature/bcfa-native-ai-completion` into that branch — confirmed
+   conflict-free, since both diverge from `0f2224e` with no overlapping
+   files.
+3. This alone was insufficient: Studio's native "Apply Remote Changes" only
+   understands the classic raw per-record XML representation it exports
+   itself, **not** the Fluent/TypeScript source under `src/`. Since Finance
+   Document Intake was authored purely in Fluent and never round-tripped
+   through Studio, no raw XML existed for it anywhere in that branch.
+4. Fix: ran `now-sdk build` locally (this step already worked fine — only
+   `install` is broken), then surgically copied the 71 build-output XML
+   files corresponding to the missing components (the `finance_intake`
+   table + all 21 fields + choices + docs, `FinanceDocumentIntakeService`,
+   `ApLineResolutionService`, the `FinanceIntakeAutoNumber` business rule,
+   6 UI Actions + their workspace form-action pairs, and the
+   `GlideSysAttachment` cross-scope privilege) into the branch's
+   `229ba2b1a079431e104010f5ea883e85/` tracked folder, alongside — not
+   replacing — the existing content. Verified first that sys_ids for
+   already-existing components (e.g. `ApDomainService`,
+   `sys_id=5d8f9a6cb8f340a49220bf64557ab807`) matched exactly between the
+   local build and the live instance, confirming Fluent's id generation is
+   stable and this introduces zero drift.
+5. Pushed, then ran Studio's **Apply Remote Changes** again — succeeded
+   ("Success with warning", 16 non-blocking warnings), and live MCP queries
+   confirmed every component now exists and is active.
+
+**For all future phases**: the working deploy loop is (a) commit to
+`feature/bcfa-native-ai-completion`, (b) `now-sdk build` locally, (c) merge
+into `sn_instances/pwcmanagementservicesdemo01`, (d) for any genuinely new
+component, copy its corresponding files from the fresh `dist/app/` build
+output into `229ba2b1a079431e104010f5ea883e85/` on that branch before
+pushing, (e) push, (f) run Apply Remote Changes in Studio. Revisit
+`now-sdk install` only if ServiceNow/now-sdk fixes OAuth support for the
+legacy upload endpoint, or if Basic Auth is ever re-enabled on this
+instance.
 
 ## Ordering rationale for Phase 34 (Claude removal)
 

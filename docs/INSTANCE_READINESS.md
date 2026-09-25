@@ -64,16 +64,36 @@ Not confirmed present:
 - Basic Auth is rejected instance-wide (confirmed via the ServiceNow-specific
   401 "User Not Authenticated" signature, independent of account).
 
-## Action items before Phase 2 can complete
+## Phase 2 completion (2026-09-25)
 
-1. Run `now-sdk build` then `now-sdk install` against
-   `pwcmanagementservicesdemo01` to deploy `finance_intake` table,
-   `FinanceDocumentIntakeService`, `ApLineResolutionService`,
-   `FinanceIntakeAutoNumber` Business Rule, and the 6 Finance Document Intake
-   UI Actions.
-2. Re-verify the BCFA workspace, the 2 StateModels, the 2 Flow Designer
-   flows, and the ATF tests render/exist post-deployment (not independently
-   confirmed in this pass).
-3. Confirm licensing/entitlement for AI Agent Studio, Now Assist, and
+`now-sdk install` does not work against this instance (see
+`IMPLEMENTATION_BACKLOG.md` Phase 2 detail for full diagnosis — a legacy
+CSRF-dependent endpoint doesn't cooperate with the OAuth-only auth this
+instance requires). Deployed instead via Studio's native **Link to Source
+Control** + **Apply Remote Changes**, supplemented with a surgical copy of
+`now-sdk build`'s raw XML output for the components Studio's own export
+never captured (Finance Document Intake was Fluent-only, never
+round-tripped through Studio). Confirmed live via MCP, post-deployment:
+
+- `x_695068_bcfa_finance_intake` table — present, all 21 fields correct.
+- `FinanceDocumentIntakeService`, `ApLineResolutionService` — present, active.
+- `Finance Document Intake - Assign Number` business rule — present, active.
+- All 6 Finance Document Intake UI Actions — present, active.
+- `GlideSysAttachment` cross-scope privilege — present, `execute`/`allowed`.
+- Every previously-existing component (`ApDomainService`, `BCClaudeClient`,
+  etc.) unchanged — sys_ids matched exactly between the local build and the
+  live instance, confirming zero drift.
+
+Not yet independently re-verified: BCFA workspace rendering, the 2
+StateModels, the 2 Flow Designer flows, and the ATF tests — these were
+already present pre-Phase-2 per the original inventory and are not expected
+to have been affected, but a visual/functional check is still worth doing
+before Phase 12/13 (the actual AP/AR journey testing) rather than assumed.
+
+## Remaining action items
+
+1. Confirm licensing/entitlement for AI Agent Studio, Now Assist, and
    Document Intelligence directly in the instance UI (manual admin action —
    cannot be automated via the Table API).
+2. Visually confirm the BCFA workspace still renders correctly (Document
+   Intake list category, dashboard) now that `finance_intake` exists.
