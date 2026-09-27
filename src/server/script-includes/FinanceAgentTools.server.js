@@ -1,0 +1,537 @@
+// Least-privilege tool surface for the BCFA native AI agents (AI Agent
+// Studio, Phases 8-9). Every public method is one agent tool.
+//
+// Rules this file enforces (see docs/AI_AGENT_TOOLS.md):
+//  - Every tool checks the caller's roles first, using the same role sets
+//    the Now Assist skills themselves are restricted to, and validates its
+//    arguments before touching any record.
+//  - Reads go through GlideRecordSecure, so the calling user's own ACLs
+//    still apply — a tool can never see more than its caller could.
+//  - Lookup and context tools only read. Skill tools call one published
+//    Now Assist skill (NowAssistSkillClient) and return its advisory text;
+//    they write nothing.
+//  - The single write tool, recordExceptionAdvice, may set ONLY the advisory
+//    ai_recommendation field on an AP/AR Exception, and audits the change.
+//  - No tool touches state, approval, posting, allocation or clearing
+//    fields, and no tool calls ApprovalEngine, IntegrationService or any
+//    SAP/bank adapter. AI recommends; humans decide.
+var FinanceAgentTools = Class.create();
+
+FinanceAgentTools.SCOPE_ADMIN = 'x_695068_bcfa.admin';
+FinanceAgentTools.ROLES = {
+    ap_read: ['x_695068_bcfa.ap_processor', 'x_695068_bcfa.finance_reviewer', 'x_695068_bcfa.finance_approver', 'x_695068_bcfa.auditor'],
+    ap_draft: ['x_695068_bcfa.ap_processor', 'x_695068_bcfa.finance_reviewer', 'x_695068_bcfa.finance_approver'],
+    ap_advice_write: ['x_695068_bcfa.ap_processor', 'x_695068_bcfa.finance_reviewer'],
+    ar_read: ['x_695068_bcfa.ar_processor', 'x_695068_bcfa.finance_reviewer', 'x_695068_bcfa.finance_approver', 'x_695068_bcfa.auditor'],
+    ar_draft: ['x_695068_bcfa.ar_processor', 'x_695068_bcfa.finance_reviewer', 'x_695068_bcfa.finance_approver'],
+    ar_advice_write: ['x_695068_bcfa.ar_processor', 'x_695068_bcfa.finance_reviewer']
+};
+
+FinanceAgentTools.EXCEPTION_TABLES = {
+    ap: 'x_695068_bcfa_ap_exception',
+    ar: 'x_695068_bcfa_ar_exception'
+};
+
+FinanceAgentTools.MAX_LIST = 10;
+FinanceAgentTools.MAX_ADVICE_CHARS = 4000;
+
+FinanceAgentTools.prototype = {
+    initialize: function() {
+        this.skillClient = new NowAssistSkillClient();
+        this.auditEngine = new AuditEngine();
+    },
+
+    // ---------------------------------------------------------------
+    // Lookup tools (read-only)
+    // ---------------------------------------------------------------
+
+    findApInvoice: function(invoiceNumber) {
+        var denied = this._requireRoles('ap_read');
+        if (denied) return denied;
+        if (!invoiceNumber) return this._error('invalid_argument', 'An invoice number is required.');
+
+        var invoices = [];
+        var invoice = new GlideRecordSecure('x_695068_bcfa_ap_invoice');
+        invoice.addQuery('invoice_number', String(invoiceNumber).trim());
+        invoice.orderByDesc('sys_created_on');
+        invoice.setLimit(FinanceAgentTools.MAX_LIST);
+        invoice.query();
+        while (invoice.next()) {
+            invoices.push({
+                sysId: invoice.getUniqueValue(),
+                invoiceNumber: invoice.getValue('invoice_number'),
+                vendor: invoice.getDisplayValue('vendor'),
+                grossAmount: invoice.getValue('gross_amount'),
+                currency: invoice.getValue('currency'),
+                state: invoice.getValue('state'),
+                approvalState: invoice.getValue('approval_state'),
+                postingState: invoice.getValue('posting_state')
+            });
+        }
+        return { ok: true, count: invoices.length, invoices: invoices };
+    },
+
+    findPayment: function(bankReference) {
+        var denied = this._requireRoles('ar_read');
+        if (denied) return denied;
+        if (!bankReference) return this._error('invalid_argument', 'A bank reference is required.');
+
+        var payments = [];
+        var payment = new GlideRecordSecure('x_695068_bcfa_payment');
+        payment.addQuery('bank_reference', String(bankReference).trim());
+        payment.orderByDesc('sys_created_on');
+        payment.setLimit(FinanceAgentTools.MAX_LIST);
+        payment.query();
+        while (payment.next()) {
+            payments.push({
+                sysId: payment.getUniqueValue(),
+                bankReference: payment.getValue('bank_reference'),
+                customer: payment.getDisplayValue('customer'),
+                amount: payment.getValue('amount'),
+                currency: payment.getValue('currency'),
+                state: payment.getValue('state')
+            });
+        }
+        return { ok: true, count: payments.length, payments: payments };
+    },
+
+    listOpenApExceptions: function(apInvoiceSysId) {
+        var denied = this._requireRoles('ap_read') || this._requireSysId(apInvoiceSysId);
+        if (denied) return denied;
+        return { ok: true, exceptions: this._openExceptions('x_695068_bcfa_ap_exception', 'ap_invoice', apInvoiceSysId) };
+    },
+
+    listOpenArExceptions: function(paymentSysId) {
+        var denied = this._requireRoles('ar_read') || this._requireSysId(paymentSysId);
+        if (denied) return denied;
+        return { ok: true, exceptions: this._openExceptions('x_695068_bcfa_ar_exception', 'payment', paymentSysId) };
+    },
+
+    // ---------------------------------------------------------------
+    // Context tools (read-only) — the exact text the skills receive
+    // ---------------------------------------------------------------
+
+    getApInvoiceContext: function(apInvoiceSysId) {
+        var denied = this._requireRoles('ap_read') || this._requireSysId(apInvoiceSysId);
+        if (denied) return denied;
+        var context = this._buildApInvoiceContext(apInvoiceSysId);
+        return context ? { ok: true, context: context } : this._notFound('AP invoice');
+    },
+
+    getApExceptionContext: function(apExceptionSysId) {
+        var denied = this._requireRoles('ap_read') || this._requireSysId(apExceptionSysId);
+        if (denied) return denied;
+        var context = this._buildApExceptionContext(apExceptionSysId);
+        return context ? { ok: true, context: context } : this._notFound('AP exception');
+    },
+
+    getPaymentContext: function(paymentSysId) {
+        var denied = this._requireRoles('ar_read') || this._requireSysId(paymentSysId);
+        if (denied) return denied;
+        var context = this._buildPaymentContext(paymentSysId);
+        return context ? { ok: true, context: context } : this._notFound('payment');
+    },
+
+    getArExceptionContext: function(arExceptionSysId) {
+        var denied = this._requireRoles('ar_read') || this._requireSysId(arExceptionSysId);
+        if (denied) return denied;
+        var context = this._buildArExceptionContext(arExceptionSysId);
+        return context ? { ok: true, context: context } : this._notFound('AR exception');
+    },
+
+    // ---------------------------------------------------------------
+    // Skill tools (advisory text only, no writes)
+    // ---------------------------------------------------------------
+
+    summarizeApInvoice: function(apInvoiceSysId) {
+        return this._runSkill('ap_read', 'ap_invoice_summary', 'x_695068_bcfa_ap_invoice', apInvoiceSysId,
+            this._buildApInvoiceContext, 'AP invoice');
+    },
+
+    explainApException: function(apExceptionSysId) {
+        return this._runSkill('ap_read', 'ap_match_exception_explanation', 'x_695068_bcfa_ap_exception', apExceptionSysId,
+            this._buildApExceptionContext, 'AP exception');
+    },
+
+    recommendApNextAction: function(apExceptionSysId) {
+        return this._runSkill('ap_read', 'ap_recommended_next_action', 'x_695068_bcfa_ap_exception', apExceptionSysId,
+            this._buildApExceptionContext, 'AP exception');
+    },
+
+    draftVendorClarification: function(apExceptionSysId) {
+        return this._runSkill('ap_draft', 'ap_clarification_draft', 'x_695068_bcfa_ap_exception', apExceptionSysId,
+            this._buildApExceptionContext, 'AP exception');
+    },
+
+    summarizePayment: function(paymentSysId) {
+        return this._runSkill('ar_read', 'cash_application_summary', 'x_695068_bcfa_payment', paymentSysId,
+            this._buildPaymentContext, 'payment');
+    },
+
+    explainArMatch: function(paymentSysId) {
+        return this._runSkill('ar_read', 'ar_match_explanation', 'x_695068_bcfa_payment', paymentSysId,
+            this._buildPaymentContext, 'payment');
+    },
+
+    explainArResidual: function(paymentSysId) {
+        return this._runSkill('ar_read', 'ar_residual_explanation', 'x_695068_bcfa_payment', paymentSysId,
+            this._buildPaymentContext, 'payment');
+    },
+
+    recommendArNextAction: function(arExceptionSysId) {
+        return this._runSkill('ar_read', 'ar_recommended_next_action', 'x_695068_bcfa_ar_exception', arExceptionSysId,
+            this._buildArExceptionContext, 'AR exception');
+    },
+
+    draftCustomerClarification: function(arExceptionSysId) {
+        return this._runSkill('ar_draft', 'customer_clarification_draft', 'x_695068_bcfa_ar_exception', arExceptionSysId,
+            this._buildArExceptionContext, 'AR exception');
+    },
+
+    // ---------------------------------------------------------------
+    // The one write tool: advisory field only
+    // ---------------------------------------------------------------
+
+    // domain: 'ap' | 'ar'. Writes adviceText to the exception's
+    // ai_recommendation field and nothing else. Deterministic rules,
+    // approvals, posting and clearing never read that field.
+    recordExceptionAdvice: function(domain, exceptionSysId, adviceText) {
+        var table = FinanceAgentTools.EXCEPTION_TABLES[domain];
+        if (!table) return this._error('invalid_argument', 'Domain must be "ap" or "ar".');
+        var denied = this._requireRoles(domain + '_advice_write') || this._requireSysId(exceptionSysId);
+        if (denied) return denied;
+
+        var advice = adviceText ? String(adviceText).trim() : '';
+        if (!advice) return this._error('invalid_argument', 'Advice text is required.');
+        if (advice.length > FinanceAgentTools.MAX_ADVICE_CHARS) {
+            advice = advice.substring(0, FinanceAgentTools.MAX_ADVICE_CHARS);
+        }
+
+        var exception = new GlideRecordSecure(table);
+        if (!exception.get(exceptionSysId)) return this._notFound(domain.toUpperCase() + ' exception');
+        if (!exception.canWrite()) return this._error('forbidden', 'You are not allowed to update this exception.');
+
+        var before = exception.getValue('ai_recommendation');
+        exception.setValue('ai_recommendation', advice);
+        if (!exception.update()) return this._error('write_failed', 'The advisory note could not be saved.');
+
+        this.auditEngine.logEvent({
+            sourceTable: table,
+            sourceRecord: exceptionSysId,
+            eventType: 'ai_recommendation',
+            actor: gs.getUserID(),
+            actorType: 'now_assist_ai',
+            description: 'Now Assist advisory note recorded on ' + domain.toUpperCase() + ' exception (advisory field only)',
+            beforeValue: { ai_recommendation: before },
+            afterValue: { ai_recommendation: advice }
+        });
+        return { ok: true, exceptionSysId: exceptionSysId, field: 'ai_recommendation' };
+    },
+
+    // ---------------------------------------------------------------
+    // Internals
+    // ---------------------------------------------------------------
+
+    _runSkill: function(roleSet, skillKey, sourceTable, sysId, contextBuilder, label) {
+        var denied = this._requireRoles(roleSet) || this._requireSysId(sysId);
+        if (denied) return denied;
+
+        var context = contextBuilder.call(this, sysId);
+        if (!context) return this._notFound(label);
+
+        var result = this.skillClient.invoke(skillKey, context);
+        this.auditEngine.logEvent({
+            sourceTable: sourceTable,
+            sourceRecord: sysId,
+            eventType: 'ai_recommendation',
+            actor: gs.getUserID(),
+            actorType: 'now_assist_ai',
+            description: 'Now Assist skill ' + skillKey + (result.ok ? ' returned advisory text' : ' failed: ' + result.error),
+            afterValue: { skill: skillKey, ok: result.ok, latencyMs: result.latencyMs, provider: result.provider || '' }
+        });
+        if (!result.ok) return this._error(result.error, result.message);
+        return { ok: true, skill: skillKey, advisory: true, text: result.text, provider: result.provider };
+    },
+
+    _buildApInvoiceContext: function(apInvoiceSysId) {
+        var invoice = new GlideRecordSecure('x_695068_bcfa_ap_invoice');
+        if (!invoice.get(apInvoiceSysId)) return '';
+
+        var lines = [];
+        this._add(lines, 'Invoice Number', invoice.getValue('invoice_number'));
+        var vendor = invoice.vendor.getRefRecord();
+        if (vendor && vendor.isValidRecord()) {
+            this._add(lines, 'Vendor', vendor.getValue('name') + ' (' + vendor.getValue('vendor_code') + ')');
+            this._add(lines, 'Vendor Country', vendor.getValue('country'));
+            this._add(lines, 'Vendor Active', vendor.getValue('active') === '1' ? 'yes' : 'no');
+        } else {
+            lines.push('Vendor: not resolved to a vendor master record');
+        }
+        this._add(lines, 'Company Code', invoice.getValue('company_code'));
+        this._add(lines, 'Invoice Date', invoice.getValue('invoice_date'));
+        this._add(lines, 'Posting Date', invoice.getValue('posting_date'));
+        this._add(lines, 'Currency', invoice.getValue('currency'));
+        this._add(lines, 'Gross Amount', invoice.getValue('gross_amount'));
+        this._add(lines, 'Net Amount', invoice.getValue('net_amount'));
+        this._add(lines, 'Tax Amount', invoice.getValue('tax_amount'));
+        this._add(lines, 'Purchase Order', invoice.getDisplayValue('purchase_order') || 'none referenced');
+        this._add(lines, 'Invoice State', invoice.getValue('state'));
+        this._add(lines, 'Approval State', invoice.getDisplayValue('approval_state'));
+        this._add(lines, 'Posting State', invoice.getDisplayValue('posting_state'));
+        this._add(lines, 'Extraction Confidence', invoice.getValue('extraction_confidence'));
+        this._add(lines, 'Source', invoice.getDisplayValue('source'));
+
+        var invoiceLine = new GlideRecordSecure('x_695068_bcfa_ap_invoice_line');
+        invoiceLine.addQuery('ap_invoice', apInvoiceSysId);
+        invoiceLine.orderBy('line_number');
+        invoiceLine.setLimit(FinanceAgentTools.MAX_LIST);
+        invoiceLine.query();
+        while (invoiceLine.next()) {
+            var text = 'Invoice Line ' + invoiceLine.getValue('line_number') + ': ' +
+                (invoiceLine.getValue('material_or_service') || 'unspecified item') +
+                ', quantity ' + invoiceLine.getValue('quantity') + ' ' + (invoiceLine.getValue('unit') || '') +
+                ' at unit price ' + invoiceLine.getValue('unit_price') +
+                ', amount ' + invoiceLine.getValue('amount') +
+                ', tax ' + (invoiceLine.getValue('tax') || '0');
+            var poLine = invoiceLine.po_line.getRefRecord();
+            if (poLine && poLine.isValidRecord()) {
+                text += '; PO line ordered quantity ' + poLine.getValue('quantity') +
+                    ', received quantity ' + poLine.getValue('received_quantity') +
+                    ', PO unit price ' + poLine.getValue('unit_price');
+            }
+            lines.push(text);
+        }
+
+        var match = new GlideRecordSecure('x_695068_bcfa_ap_match');
+        match.addQuery('ap_invoice', apInvoiceSysId);
+        match.orderByDesc('evaluated_at');
+        match.setLimit(FinanceAgentTools.MAX_LIST);
+        match.query();
+        while (match.next()) {
+            lines.push('Match Result: ' + match.getDisplayValue('match_result') +
+                ', quantity variance ' + (match.getValue('quantity_variance') || '0') +
+                ', price variance ' + (match.getValue('price_variance') || '0') +
+                ', tax variance ' + (match.getValue('tax_variance') || '0') +
+                ', within tolerance ' + (match.getValue('within_tolerance') === '1' ? 'yes' : 'no'));
+        }
+
+        var exceptions = this._openExceptions('x_695068_bcfa_ap_exception', 'ap_invoice', apInvoiceSysId);
+        for (var i = 0; i < exceptions.length; i++) {
+            lines.push('Open Exception: ' + exceptions[i].reason + ' (' + exceptions[i].status + ')' +
+                (exceptions[i].description ? ': ' + exceptions[i].description : ''));
+        }
+        return lines.join('\n');
+    },
+
+    _buildApExceptionContext: function(apExceptionSysId) {
+        var exception = new GlideRecordSecure('x_695068_bcfa_ap_exception');
+        if (!exception.get(apExceptionSysId)) return '';
+
+        // The existing ai_recommendation is deliberately left out so an
+        // earlier AI opinion never feeds into the next one.
+        var lines = [];
+        this._add(lines, 'Exception Reason', exception.getDisplayValue('reason_code'));
+        this._add(lines, 'Exception Status', exception.getDisplayValue('status'));
+        this._add(lines, 'Exception Description', exception.getValue('description'));
+        this._add(lines, 'Resolution Notes', exception.getValue('resolution_notes'));
+        var invoiceContext = this._buildApInvoiceContext(exception.getValue('ap_invoice'));
+        return lines.join('\n') + (invoiceContext ? '\n' + invoiceContext : '\nAP Invoice: not available');
+    },
+
+    _buildPaymentContext: function(paymentSysId) {
+        var payment = new GlideRecordSecure('x_695068_bcfa_payment');
+        if (!payment.get(paymentSysId)) return '';
+
+        var lines = [];
+        this._add(lines, 'Bank Reference', payment.getValue('bank_reference'));
+        var customer = payment.customer.getRefRecord();
+        if (customer && customer.isValidRecord()) {
+            this._add(lines, 'Customer', customer.getValue('name') + ' (' + customer.getValue('customer_code') + ')');
+        } else {
+            lines.push('Customer: not identified');
+        }
+        this._add(lines, 'Payment Amount', payment.getValue('amount'));
+        this._add(lines, 'Currency', payment.getValue('currency'));
+        this._add(lines, 'Value Date', payment.getValue('value_date'));
+        this._add(lines, 'Posting Date', payment.getValue('posting_date'));
+        this._add(lines, 'Remitter Bank Account', this._mask(payment.getValue('bank_account')));
+        this._add(lines, 'Source', payment.getDisplayValue('source'));
+        this._add(lines, 'Payment State', payment.getValue('state'));
+
+        var remittance = new GlideRecordSecure('x_695068_bcfa_remittance');
+        remittance.addQuery('payment', paymentSysId);
+        remittance.setLimit(FinanceAgentTools.MAX_LIST);
+        remittance.query();
+        while (remittance.next()) {
+            lines.push('Remittance: reference ' + (remittance.getValue('remittance_reference') || 'none') +
+                ', received ' + (remittance.getValue('received_date') || 'unknown') +
+                ', extraction confidence ' + (remittance.getValue('confidence') || 'unknown') +
+                this._remittanceDetails(remittance.getValue('extracted_fields')));
+        }
+
+        var candidate = new GlideRecordSecure('x_695068_bcfa_match_candidate');
+        candidate.addQuery('payment', paymentSysId);
+        candidate.orderBy('rank');
+        candidate.setLimit(FinanceAgentTools.MAX_LIST);
+        candidate.query();
+        while (candidate.next()) {
+            lines.push('Match Candidate: ' + candidate.getDisplayValue('match_type') +
+                ', open item ' + (this._openItemText(candidate.getValue('ar_open_item')) || 'none') +
+                ', customer candidate ' + (candidate.getDisplayValue('customer_candidate') || 'none') +
+                ', confidence ' + (candidate.getValue('confidence') || 'unknown') +
+                ', selected ' + (candidate.getValue('selected') === '1' ? 'yes' : 'no'));
+        }
+
+        var totalAllocated = 0;
+        var totalResidual = 0;
+        var allocation = new GlideRecordSecure('x_695068_bcfa_payment_allocation');
+        allocation.addQuery('payment', paymentSysId);
+        allocation.setLimit(FinanceAgentTools.MAX_LIST);
+        allocation.query();
+        while (allocation.next()) {
+            totalAllocated += parseFloat(allocation.getValue('allocated_amount') || '0');
+            totalResidual += parseFloat(allocation.getValue('residual_amount') || '0');
+            lines.push('Allocation: open item ' + (this._openItemText(allocation.getValue('ar_open_item')) || 'none') +
+                ', allocated ' + (allocation.getValue('allocated_amount') || '0') +
+                ', discount ' + (allocation.getValue('discount') || '0') +
+                ', bank charge ' + (allocation.getValue('bank_charge') || '0') +
+                ', TCS ' + (allocation.getValue('tcs') || '0') +
+                ', residual ' + (allocation.getValue('residual_amount') || '0') +
+                ', allocation state ' + allocation.getDisplayValue('allocation_state') +
+                this._deductionText(allocation.getUniqueValue()));
+        }
+        if (allocation.getRowCount() > 0) {
+            lines.push('Allocation Totals: allocated ' + totalAllocated.toFixed(2) + ', residual ' + totalResidual.toFixed(2));
+        }
+
+        var exceptions = this._openExceptions('x_695068_bcfa_ar_exception', 'payment', paymentSysId);
+        for (var i = 0; i < exceptions.length; i++) {
+            lines.push('Open Exception: ' + exceptions[i].reason + ' (' + exceptions[i].status + ')' +
+                (exceptions[i].description ? ': ' + exceptions[i].description : ''));
+        }
+
+        if (customer && customer.isValidRecord()) {
+            var openItem = new GlideRecordSecure('x_695068_bcfa_ar_open_item');
+            openItem.addQuery('customer', customer.getUniqueValue());
+            openItem.addQuery('open_amount', '>', 0);
+            openItem.orderBy('due_date');
+            openItem.setLimit(FinanceAgentTools.MAX_LIST);
+            openItem.query();
+            while (openItem.next()) {
+                lines.push('Customer Open Item: ' + openItem.getValue('item_number') +
+                    ', invoice amount ' + openItem.getValue('invoice_amount') +
+                    ', open amount ' + openItem.getValue('open_amount') +
+                    ' ' + (openItem.getValue('currency') || '') +
+                    ', due ' + (openItem.getValue('due_date') || 'unknown'));
+            }
+        }
+        return lines.join('\n');
+    },
+
+    _buildArExceptionContext: function(arExceptionSysId) {
+        var exception = new GlideRecordSecure('x_695068_bcfa_ar_exception');
+        if (!exception.get(arExceptionSysId)) return '';
+
+        var lines = [];
+        this._add(lines, 'Exception Reason', exception.getDisplayValue('reason_code'));
+        this._add(lines, 'Exception Status', exception.getDisplayValue('status'));
+        this._add(lines, 'Exception Description', exception.getValue('description'));
+        this._add(lines, 'Resolution Notes', exception.getValue('resolution_notes'));
+        var paymentContext = this._buildPaymentContext(exception.getValue('payment'));
+        return lines.join('\n') + (paymentContext ? '\n' + paymentContext : '\nPayment: not available');
+    },
+
+    _openExceptions: function(table, parentField, parentSysId) {
+        var results = [];
+        var exception = new GlideRecordSecure(table);
+        exception.addQuery(parentField, parentSysId);
+        exception.addQuery('status', 'IN', 'open,in_review');
+        exception.setLimit(FinanceAgentTools.MAX_LIST);
+        exception.query();
+        while (exception.next()) {
+            results.push({
+                sysId: exception.getUniqueValue(),
+                reasonCode: exception.getValue('reason_code'),
+                reason: exception.getDisplayValue('reason_code'),
+                status: exception.getDisplayValue('status'),
+                description: exception.getValue('description')
+            });
+        }
+        return results;
+    },
+
+    _openItemText: function(openItemSysId) {
+        if (!openItemSysId) return '';
+        var item = new GlideRecordSecure('x_695068_bcfa_ar_open_item');
+        if (!item.get(openItemSysId)) return '';
+        return item.getValue('item_number') + ' (invoice amount ' + item.getValue('invoice_amount') +
+            ', open amount ' + item.getValue('open_amount') + ')';
+    },
+
+    _deductionText: function(allocationSysId) {
+        var parts = [];
+        var deduction = new GlideRecordSecure('x_695068_bcfa_deduction');
+        deduction.addQuery('payment_allocation', allocationSysId);
+        deduction.setLimit(FinanceAgentTools.MAX_LIST);
+        deduction.query();
+        while (deduction.next()) {
+            parts.push(deduction.getDisplayValue('deduction_type') + ' ' + (deduction.getValue('amount') || '0') +
+                ' (' + deduction.getDisplayValue('status') + ')');
+        }
+        return parts.length ? '; deductions: ' + parts.join(', ') : '';
+    },
+
+    // Remittance extraction output is JSON; pass only a bounded, flattened
+    // view of it to the model.
+    _remittanceDetails: function(extractedFields) {
+        if (!extractedFields) return '';
+        try {
+            var parsed = JSON.parse(extractedFields);
+            var parts = [];
+            for (var key in parsed) {
+                if (!parsed.hasOwnProperty(key)) continue;
+                var value = parsed[key];
+                parts.push(key + ' ' + (typeof value === 'object' ? JSON.stringify(value) : value));
+            }
+            var text = parts.join('; ');
+            return text ? '; extracted: ' + text.substring(0, 1500) : '';
+        } catch (e) {
+            return '';
+        }
+    },
+
+    // Bank account numbers are never needed verbatim for an explanation.
+    _mask: function(value) {
+        if (!value) return '';
+        var text = String(value);
+        return text.length <= 4 ? '****' : '****' + text.substring(text.length - 4);
+    },
+
+    _add: function(lines, label, value) {
+        if (value !== null && value !== undefined && value !== '') lines.push(label + ': ' + value);
+    },
+
+    _requireRoles: function(roleSet) {
+        var roles = FinanceAgentTools.ROLES[roleSet] || [];
+        if (gs.hasRole(FinanceAgentTools.SCOPE_ADMIN)) return null;
+        for (var i = 0; i < roles.length; i++) {
+            if (gs.hasRole(roles[i])) return null;
+        }
+        return this._error('forbidden', 'You do not have a role that allows this tool.');
+    },
+
+    _requireSysId: function(sysId) {
+        return /^[0-9a-f]{32}$/.test(String(sysId || '')) ? null :
+            this._error('invalid_argument', 'A valid record sys_id is required.');
+    },
+
+    _notFound: function(label) {
+        return this._error('not_found', 'The ' + label + ' was not found or you cannot read it.');
+    },
+
+    _error: function(code, message) {
+        return { ok: false, error: code, message: message };
+    },
+
+    type: 'FinanceAgentTools'
+};

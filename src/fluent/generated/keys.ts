@@ -1291,6 +1291,10 @@ declare global {
                         table: 'sys_script_include'
                         id: '7bbff4295d974545a9726e9e6dc65ed2'
                     }
+                    'si-finance-agent-tools': {
+                        table: 'sys_script_include'
+                        id: 'bc901948251a4cb4909b3f48e6271118'
+                    }
                     'si-finance-document-intake-service': {
                         table: 'sys_script_include'
                         id: '1c7b870db61a4e3388acbf09d0575157'
@@ -1314,6 +1318,10 @@ declare global {
                     'si-mock-sap-adapter': {
                         table: 'sys_script_include'
                         id: '8cf56e81999b42d5b95b6163c0e6e265'
+                    }
+                    'si-now-assist-skill-client': {
+                        table: 'sys_script_include'
+                        id: 'be780efcc33c467e9fa5fee08d8baa2c'
                     }
                     'src_server_business-rules_ApInvoiceApprovalCascade_server_js': {
                         table: 'sys_module'
@@ -1363,6 +1371,10 @@ declare global {
                         table: 'sys_module'
                         id: '002a997e82d441c8a4a8c3efe8da4b6c'
                     }
+                    'src_server_script-includes_FinanceAgentTools_server_js': {
+                        table: 'sys_module'
+                        id: 'c2a73b1eb8bd45dd8c96627178a02f11'
+                    }
                     'src_server_script-includes_FinanceDocumentIntakeService_server_js': {
                         table: 'sys_module'
                         id: 'a021a8f270c349a2aad0ca03485a8bc4'
@@ -1386,6 +1398,10 @@ declare global {
                     'src_server_script-includes_MockSAPAdapter_server_js': {
                         table: 'sys_module'
                         id: '00c8fcb17124498f8f07569c9bcce76d'
+                    }
+                    'src_server_script-includes_NowAssistSkillClient_server_js': {
+                        table: 'sys_module'
+                        id: '77f4aee9c1ec423dba67bbfc1bf910b2'
                     }
                     'test-idempotency': {
                         table: 'sys_atf_test'
@@ -8524,6 +8540,17 @@ declare global {
                                     name: 'x_695068_bcfa.ar_processor'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'a421b9ede2844d179a2dfcc027eb5544'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'actor_type'
+                            value: 'now_assist_ai'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
