@@ -116,12 +116,27 @@ specifics.
    **All** menu → search "Now Assist Skill Kit" again, or just navigate
    the URL from step 1 again) and repeat for the next skill.
 
-## 5. Status: all 9 skills built (Draft), 2026-09-27
+## 5. Status: all 9 skills built and published, 2026-09-27
 
 All 9 skills below exist in `sys_one_extend_capability`, scoped to the BCFA
-app (`229ba2b1a079431e104010f5ea883e85`), each with the roles, a single
-mandatory `context` String input, and the prompt text listed in section 6.
-Not yet published; publishing and runtime verification happen with Phase 7.
+app (`229ba2b1a079431e104010f5ea883e85`), each with the roles and the prompt
+text listed in section 6. Each prompt was finalized (v1) and the skill
+published on 2026-09-27. Runtime verification happens in Phase 7.
+
+**Input shape exception:** `bcfaApInvoiceSummary` was the first skill
+built. It takes a **Record** input (`ap_invoice` → `x_695068_bcfa_ap_invoice`)
+whose prompt references record fields (`{{ap_invoice.vendor}}` etc.), not
+the String `context` input. The other 8 skills take a single mandatory
+String input named `context`, which the calling script pre-formats.
+
+**Publishing steps (per skill):** in the prompt editor, click the lock icon
+left of **Manage prompt** → **Finalize prompt**. Then **Publish skill** (top
+right), tick the finalized prompt under "Now LLM Service (Now LLM Generic)",
+and click **Publish**. Without a finalized prompt, publishing fails with
+"Finalize at least one prompt to publish". The Skill Kit list still shows
+"Inactive" for published skills; activation for end-user UI surfaces is a
+separate step in Now Assist Admin. Whether script or agent invocation also
+needs that activation is verified in Phase 7.
 
 | Skill | Capability sys_id |
 |---|---|
