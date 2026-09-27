@@ -13,7 +13,7 @@ from the instance's own Store/entitlement UI (which MCP cannot reach).
 |---|---|---|---|---|---|
 | **AI Agent Studio** (`sn_aia_*`, scope "ServiceNow Otto AI Agents") | Yes | Yes | Unconfirmed | No (no BCFA agents created yet) | Confirm entitlement in AI Agent Studio UI; then Phases 8–9 (create 7 agents) |
 | **Now Assist / AI Admin Hub** (`sn_nowassist_*`, `sn_na_*`) | Yes | Yes | Unconfirmed | No (no BCFA skills configured) | Confirm entitlement in Now Assist Admin Console; then Phase 6 (generative AI skills) |
-| **Document Intelligence** (`di_admin_template`, `sys_di_metrics_*`) — current name for "Content Understanding" | Yes | Yes | Unconfirmed | No (no BCFA document types configured) | Confirm entitlement; then Phase 5 (AP invoice + AR remittance extraction) |
+| **Document Intelligence / Now Assist DocIntel** (`sys_di_task_definition`, `sys_di_key`) — current name for "Content Understanding" | Yes | Yes | **Confirmed working (2026-09-27)** | **Yes** — 2 use cases live (AP: 13 fields, AR: 10 fields), see `docs/CONTENT_UNDERSTANDING.md` | None — Phase 5 complete |
 | **Decision Tables** (`sys_decision`, global scope) | Yes | Yes (core platform) | Yes (not a separately licensed plugin) | No (no BCFA decision tables created yet) | None blocking — proceed directly to Phase 15 |
 | **Now Assist Guardian** | Not independently confirmed | Unconfirmed | Unconfirmed | No | Check for `sn_naguardian_*`/similar tables in a follow-up pass before Phase 21 |
 | **AI Control Tower** | Not independently confirmed | Unconfirmed | Unconfirmed | No | Check before Phase 23; treat as license-gated until confirmed, do not block core POC on it |

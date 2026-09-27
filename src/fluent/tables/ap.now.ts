@@ -162,7 +162,7 @@ export const x_695068_bcfa_ap_exception = Table({
         ai_recommendation: StringColumn({
             label: 'AI Recommendation (advisory)',
             maxLength: 4000,
-            hint: 'Simulated-AI output only. Never read by deterministic rules or approval/posting logic.',
+            hint: 'Advisory AI output only (Now Assist, or the legacy simulation). Never read by deterministic rules or approval/posting logic.',
         }),
     },
 })

@@ -1,0 +1,101 @@
+// Thin wrapper over the platform's native generative AI skill runtime
+// (sn_one_extend.OneExtendUtil — the same API Now Assist Skill Kit skills are
+// invoked through). Calls one of the 9 published BCFA skills with a single
+// pre-formatted `context` string and returns the model's plain-text output.
+//
+// Every skill runs on Now LLM Service (Now LLM Generic) — no external LLM is
+// involved. This client never throws and never writes to any business record:
+// it returns advisory text, and callers (FinanceAgentTools) decide what, if
+// anything, to do with it. See docs/GENERATIVE_AI_SKILLS_BUILD_GUIDE.md for
+// the skills themselves.
+var NowAssistSkillClient = Class.create();
+
+// Skill key -> sys_one_extend_capability sys_id of the published skill.
+NowAssistSkillClient.SKILLS = {
+    ap_invoice_summary: 'bf551f4a3b2f03104035a50864e45a39',
+    ap_match_exception_explanation: '9e56ef863bef03104035a50864e45af8',
+    ap_recommended_next_action: '3f822056eb2b4310311dff0dcad0cda4',
+    ap_clarification_draft: 'd325e8daeb2b4310311dff0dcad0cd56',
+    cash_application_summary: 'f707a812eb6b4310311dff0dcad0cdb4',
+    ar_match_explanation: 'f78e64d2ebab4310311dff0dcad0cd40',
+    ar_residual_explanation: '96afe496ebab4310311dff0dcad0cd50',
+    ar_recommended_next_action: 'e860f81aebab4310311dff0dcad0cd20',
+    customer_clarification_draft: '3d2130daebab4310311dff0dcad0cd48'
+};
+
+// Hard cap on the context sent to the model. The skills also allow
+// platform-side truncation, but trimming here keeps prompts predictable.
+NowAssistSkillClient.MAX_CONTEXT_CHARS = 12000;
+
+NowAssistSkillClient.prototype = {
+    initialize: function() {},
+
+    isKnownSkill: function(skillKey) {
+        return NowAssistSkillClient.SKILLS.hasOwnProperty(skillKey);
+    },
+
+    // Returns { ok: true, skill, text, provider, latencyMs } on success, or
+    // { ok: false, skill, error, message, latencyMs } on any failure. The
+    // message is safe to show a user: never exception internals or payloads.
+    invoke: function(skillKey, context) {
+        if (!this.isKnownSkill(skillKey)) {
+            return this._fail(skillKey, 'unknown_skill', 'Unknown Now Assist skill: ' + skillKey, 0);
+        }
+        if (!context) {
+            return this._fail(skillKey, 'empty_context', 'No context was supplied to the skill.', 0);
+        }
+
+        var capabilityId = NowAssistSkillClient.SKILLS[skillKey];
+        var payloadContext = String(context).substring(0, NowAssistSkillClient.MAX_CONTEXT_CHARS);
+        var started = new Date().getTime();
+        try {
+            var result = sn_one_extend.OneExtendUtil.execute({
+                executionRequests: [{
+                    payload: { context: payloadContext },
+                    capabilityId: capabilityId
+                }],
+                mode: 'sync'
+            });
+            var latencyMs = new Date().getTime() - started;
+            var capability = result && result.capabilities ? result.capabilities[capabilityId] : null;
+            if (!capability || capability.status !== 'success') {
+                var reason = (result && result.message) || (capability && capability.status) || 'no response';
+                gs.warn('NowAssistSkillClient: skill ' + skillKey + ' did not succeed: ' + reason);
+                return this._fail(skillKey, 'skill_error', 'The Now Assist skill did not return a result.', latencyMs);
+            }
+
+            var text = this._extractText(capability.response);
+            if (!text) {
+                return this._fail(skillKey, 'invalid_response', 'The Now Assist skill returned an empty result.', latencyMs);
+            }
+            return {
+                ok: true,
+                skill: skillKey,
+                text: text,
+                provider: capability.provider || 'Now LLM',
+                latencyMs: latencyMs
+            };
+        } catch (e) {
+            gs.warn('NowAssistSkillClient: skill ' + skillKey + ' threw: ' + e);
+            return this._fail(skillKey, 'exception', 'The Now Assist skill could not be invoked.', new Date().getTime() - started);
+        }
+    },
+
+    // The runtime returns the skill response as a JSON string of the form
+    // {"model_output": "..."}; fall back to the raw string if it isn't JSON.
+    _extractText: function(response) {
+        if (!response) return '';
+        try {
+            var parsed = typeof response === 'string' ? JSON.parse(response) : response;
+            return String(parsed.model_output || '').trim();
+        } catch (e) {
+            return String(response).trim();
+        }
+    },
+
+    _fail: function(skillKey, error, message, latencyMs) {
+        return { ok: false, skill: skillKey, error: error, message: message, latencyMs: latencyMs };
+    },
+
+    type: 'NowAssistSkillClient'
+};
