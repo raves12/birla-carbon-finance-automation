@@ -123,11 +123,13 @@ app (`229ba2b1a079431e104010f5ea883e85`), each with the roles and the prompt
 text listed in section 6. Each prompt was finalized (v1) and the skill
 published on 2026-09-27. Runtime verification happens in Phase 7.
 
-**Input shape exception:** `bcfaApInvoiceSummary` was the first skill
-built. It takes a **Record** input (`ap_invoice` → `x_695068_bcfa_ap_invoice`)
-whose prompt references record fields (`{{ap_invoice.vendor}}` etc.), not
-the String `context` input. The other 8 skills take a single mandatory
-String input named `context`, which the calling script pre-formats.
+**Input shape:** all 9 skills take a single mandatory String input named
+`context`, which the calling script (`FinanceAgentTools`) pre-formats.
+`bcfaApInvoiceSummary` originally used a Record input (`ap_invoice`), and its
+v1 prompt referenced raw record fields. Live testing showed poor output from
+that shape, so a v2 prompt using `{{context}}` was finalized, made the default
+and published. The unused `AP Invoice` input stays on the skill only because
+v1 still references it.
 
 **Publishing steps (per skill):** in the prompt editor, click the lock icon
 left of **Manage prompt** → **Finalize prompt**. Then **Publish skill** (top
