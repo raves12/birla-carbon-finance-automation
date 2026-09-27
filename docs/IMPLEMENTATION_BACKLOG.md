@@ -15,7 +15,7 @@ passes its own verification.
 | 2 | Stabilize the custom application (build + install to parity) | **DONE** | None |
 | 3 | Rebuild lost reference and demo data | **DONE** | None — see `docs/DEMO_DATA.md` |
 | 4 | Generate synthetic document fixtures | **DONE** | None — see `docs/DOCUMENT_FIXTURES.md` |
-| 5 | Content Understanding / Document Intelligence configuration | Queued | Entitlement check on first use |
+| 5 | Content Understanding / Document Intelligence configuration | **DONE** | None — confirmed on Now Assist DocIntel (GenAI), not legacy ML; see `docs/CONTENT_UNDERSTANDING.md` |
 | 6 | ServiceNow generative AI skills | Queued | Entitlement check on first use |
 | 7 | AI agent tools (least-privilege) | Queued | Depends on Phase 5/6 data shape |
 | 8 | Native AP AI agents (3) | Queued | Depends on Phase 7 |
