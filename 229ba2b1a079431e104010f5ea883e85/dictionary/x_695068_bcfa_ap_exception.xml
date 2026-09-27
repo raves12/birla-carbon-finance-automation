@@ -1,36 +1,31 @@
-<?xml version="1.0" encoding="UTF-8"?><database>
-    <element audit="true" db_object_id="23f413f2835f43103d769be0deaad3f1" label="AP Exception" max_length="40" name="x_695068_bcfa_ap_exception" type="collection">
-        <element attributes="edge_encryption_enabled=true" default="open" label="Status" max_length="40" name="status" type="choice">
-            <choice>
-                <element inactive_on_update="false" label="Closed" sequence="4" value="closed"/>
-                <element inactive_on_update="false" label="Resolved" sequence="3" value="resolved"/>
-                <element inactive_on_update="false" label="Open" sequence="1" value="open"/>
-                <element inactive_on_update="false" label="In Review" sequence="2" value="in_review"/>
-            </choice>
-        </element>
-        <element attributes="edge_encryption_enabled=true" display="true" label="Reason Code" mandatory="true" max_length="40" name="reason_code" type="choice">
-            <choice>
-                <element inactive_on_update="false" label="Other" sequence="9" value="other"/>
-                <element inactive_on_update="false" label="Duplicate Invoice" sequence="1" value="duplicate"/>
-                <element inactive_on_update="false" label="Quantity Tolerance Failure" sequence="3" value="quantity_tolerance"/>
-                <element inactive_on_update="false" label="Price Tolerance Failure" sequence="4" value="price_tolerance"/>
-                <element inactive_on_update="false" label="Vendor Invalid" sequence="8" value="vendor_invalid"/>
-                <element inactive_on_update="false" label="PO Mismatch" sequence="2" value="po_mismatch"/>
-                <element inactive_on_update="false" label="Low-Confidence Extraction" sequence="6" value="low_confidence"/>
-                <element inactive_on_update="false" label="Missing Mandatory Field" sequence="7" value="missing_field"/>
-                <element inactive_on_update="false" label="Tax Validation Failure" sequence="5" value="tax_validation"/>
-            </choice>
-        </element>
-        <element hint="Simulated-AI output only. Never read by deterministic rules or approval/posting logic." label="AI Recommendation (advisory)" max_length="4000" name="ai_recommendation" type="string"/>
-        <element label="Description" max_length="4000" name="description" type="string"/>
-        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Assigned To" max_length="32" name="assigned_to" reference="sys_user" type="reference"/>
-        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="AP Invoice" mandatory="true" max_length="32" name="ap_invoice" reference="x_695068_bcfa_ap_invoice" type="reference"/>
-        <element label="Resolution Notes" max_length="4000" name="resolution_notes" type="string"/>
-        <index name="index">
-            <element name="ap_invoice"/>
-        </index>
-        <index name="index2">
-            <element name="assigned_to"/>
-        </index>
+<?xml version="1.0"?>
+<database>
+  <element name="x_695068_bcfa_ap_exception" type="collection" label="AP Exception" is_extendable="false" text_index="false" read_only="false" audit="true" display="reason_code" access="public" caller_access="0" scriptable_table="false" attributes="">
+    <element name="ap_invoice" type="reference" active="true" array="false" audit="false" unique="false" label="AP Invoice" mandatory="true" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" reference="x_695068_bcfa_ap_invoice" plural="AP Invoices"/>
+    <element name="reason_code" type="choice" active="true" array="false" audit="false" unique="false" label="Reason Code" mandatory="true" read_only="false" choice="0" display="true" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Reason Codes">
+      <choice>
+        <element value="duplicate" label="Duplicate Invoice" sequence="1" language="en"/>
+        <element value="po_mismatch" label="PO Mismatch" sequence="2" language="en"/>
+        <element value="quantity_tolerance" label="Quantity Tolerance Failure" sequence="3" language="en"/>
+        <element value="price_tolerance" label="Price Tolerance Failure" sequence="4" language="en"/>
+        <element value="tax_validation" label="Tax Validation Failure" sequence="5" language="en"/>
+        <element value="low_confidence" label="Low-Confidence Extraction" sequence="6" language="en"/>
+        <element value="missing_field" label="Missing Mandatory Field" sequence="7" language="en"/>
+        <element value="vendor_invalid" label="Vendor Invalid" sequence="8" language="en"/>
+        <element value="other" label="Other" sequence="9" language="en"/>
+      </choice>
     </element>
+    <element name="description" type="string" active="true" array="false" audit="false" unique="false" label="Description" max_length="4000" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Descriptions"/>
+    <element name="status" type="choice" active="true" array="false" audit="false" default_value="open" unique="false" label="Status" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Status">
+      <choice>
+        <element value="open" label="Open" sequence="1" language="en"/>
+        <element value="in_review" label="In Review" sequence="2" language="en"/>
+        <element value="resolved" label="Resolved" sequence="3" language="en"/>
+        <element value="closed" label="Closed" sequence="4" language="en"/>
+      </choice>
+    </element>
+    <element name="assigned_to" type="reference" active="true" array="false" audit="false" unique="false" label="Assigned To" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" reference="sys_user" plural="Assigned Tos"/>
+    <element name="resolution_notes" type="string" active="true" array="false" audit="false" unique="false" label="Resolution Notes" max_length="4000" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Resolution Notes"/>
+    <element name="ai_recommendation" type="string" active="true" array="false" audit="false" unique="false" label="AI Recommendation (advisory)" max_length="4000" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="AI Recommendation (advisory)" hint="Advisory AI output only (Now Assist, or the legacy simulation). Never read by deterministic rules or approval/posting logic."/>
+  </element>
 </database>

@@ -1,95 +1,60 @@
-<?xml version="1.0" encoding="UTF-8"?><record_update>
-    <sys_choice action="INSERT_OR_UPDATE" field="actor_type" table="x_695068_bcfa_audit_event" version="3">
-        <sys_choice_set action="INSERT_OR_UPDATE">
-            <element>actor_type</element>
-            <name>x_695068_bcfa_audit_event</name>
-            <sys_class_name>sys_choice_set</sys_class_name>
-            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
-            <sys_created_on>2026-09-17 07:10:25</sys_created_on>
-            <sys_mod_count>0</sys_mod_count>
-            <sys_name>actor_type</sys_name>
-            <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
-            <sys_policy/>
-            <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
-            <sys_update_name>sys_choice_x_695068_bcfa_audit_event_actor_type</sys_update_name>
-            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
-            <sys_updated_on>2026-09-17 07:10:25</sys_updated_on>
-        </sys_choice_set>
-        <sys_choice action="INSERT_OR_UPDATE">
-            <dependent_value/>
-            <element>actor_type</element>
-            <hint/>
-            <inactive>false</inactive>
-            <label>User</label>
-            <language>en</language>
-            <name>x_695068_bcfa_audit_event</name>
-            <sequence>1</sequence>
-            <synonyms/>
-            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
-            <sys_created_on>2026-09-17 14:59:06</sys_created_on>
-            <sys_domain>global</sys_domain>
-            <sys_domain_path>/</sys_domain_path>
-            <sys_mod_count>0</sys_mod_count>
-            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
-            <sys_updated_on>2026-09-17 14:59:06</sys_updated_on>
-            <value>user</value>
-        </sys_choice>
-        <sys_choice action="INSERT_OR_UPDATE">
-            <dependent_value/>
-            <element>actor_type</element>
-            <hint/>
-            <inactive>false</inactive>
-            <label>System</label>
-            <language>en</language>
-            <name>x_695068_bcfa_audit_event</name>
-            <sequence>2</sequence>
-            <synonyms/>
-            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
-            <sys_created_on>2026-09-17 14:59:06</sys_created_on>
-            <sys_domain>global</sys_domain>
-            <sys_domain_path>/</sys_domain_path>
-            <sys_mod_count>0</sys_mod_count>
-            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
-            <sys_updated_on>2026-09-17 14:59:06</sys_updated_on>
-            <value>system</value>
-        </sys_choice>
-        <sys_choice action="INSERT_OR_UPDATE">
-            <dependent_value/>
-            <element>actor_type</element>
-            <hint/>
-            <inactive>false</inactive>
-            <label>Simulated AI (advisory, legacy)</label>
-            <language>en</language>
-            <name>x_695068_bcfa_audit_event</name>
-            <sequence>3</sequence>
-            <synonyms/>
-            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
-            <sys_created_on>2026-09-17 14:59:06</sys_created_on>
-            <sys_domain>global</sys_domain>
-            <sys_domain_path>/</sys_domain_path>
-            <sys_mod_count>0</sys_mod_count>
-            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
-            <sys_updated_on>2026-09-17 14:59:06</sys_updated_on>
-            <value>simulated_ai</value>
-        </sys_choice>
-        <sys_choice action="INSERT_OR_UPDATE">
-            <dependent_value/>
-            <element>actor_type</element>
-            <hint/>
-            <inactive>false</inactive>
-            <label>Claude (advisory)</label>
-            <language>en</language>
-            <name>x_695068_bcfa_audit_event</name>
-            <sequence>4</sequence>
-            <synonyms/>
-            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
-            <sys_created_on>2026-09-17 14:59:06</sys_created_on>
-            <sys_domain>global</sys_domain>
-            <sys_domain_path>/</sys_domain_path>
-            <sys_mod_count>0</sys_mod_count>
-            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
-            <sys_updated_on>2026-09-17 14:59:06</sys_updated_on>
-            <value>claude_ai</value>
-        </sys_choice>
+<?xml version="1.0"?>
+<record_update>
+  <sys_choice_set action="INSERT_OR_UPDATE" field="actor_type" table="x_695068_bcfa_audit_event" version="3" apply_defaults="true">
+    <sys_choice_set action="INSERT_OR_UPDATE" apply_defaults="true">
+      <sys_id>027ec274fd754dff8350faf02affcf7f</sys_id>
+      <element>actor_type</element>
+      <sys_update_name>sys_choice_x_695068_bcfa_audit_event_actor_type</sys_update_name>
+      <name>x_695068_bcfa_audit_event</name>
+      <sys_class_name>sys_choice_set</sys_class_name>
+      <sys_scope display_value="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_scope>
+      <sys_package display_value="x_695068_bcfa" source="229ba2b1a079431e104010f5ea883e85">229ba2b1a079431e104010f5ea883e85</sys_package>
+      <sys_name>actor_type</sys_name>
+    </sys_choice_set>
+    <sys_choice action="INSERT_OR_UPDATE" apply_defaults="true">
+      <sys_id>e61ee9afc19d48af878b1dc5d926bebc</sys_id>
+      <name>x_695068_bcfa_audit_event</name>
+      <element>actor_type</element>
+      <label>User</label>
+      <value>user</value>
+      <sequence>1</sequence>
+      <language>en</language>
     </sys_choice>
+    <sys_choice action="INSERT_OR_UPDATE" apply_defaults="true">
+      <sys_id>44615e132744446984d3029e885479dd</sys_id>
+      <name>x_695068_bcfa_audit_event</name>
+      <element>actor_type</element>
+      <label>System</label>
+      <value>system</value>
+      <sequence>2</sequence>
+      <language>en</language>
+    </sys_choice>
+    <sys_choice action="INSERT_OR_UPDATE" apply_defaults="true">
+      <sys_id>9c2b4c00adfc46b9a5d5810bb9416fe2</sys_id>
+      <name>x_695068_bcfa_audit_event</name>
+      <element>actor_type</element>
+      <label>Simulated AI (advisory, legacy)</label>
+      <value>simulated_ai</value>
+      <sequence>3</sequence>
+      <language>en</language>
+    </sys_choice>
+    <sys_choice action="INSERT_OR_UPDATE" apply_defaults="true">
+      <sys_id>b668046ff64b47c0b751bcb1596540cc</sys_id>
+      <name>x_695068_bcfa_audit_event</name>
+      <element>actor_type</element>
+      <label>Claude (advisory)</label>
+      <value>claude_ai</value>
+      <sequence>4</sequence>
+      <language>en</language>
+    </sys_choice>
+    <sys_choice action="INSERT_OR_UPDATE" apply_defaults="true">
+      <sys_id>a421b9ede2844d179a2dfcc027eb5544</sys_id>
+      <name>x_695068_bcfa_audit_event</name>
+      <element>actor_type</element>
+      <label>Now Assist (advisory)</label>
+      <value>now_assist_ai</value>
+      <sequence>5</sequence>
+      <language>en</language>
+    </sys_choice>
+  </sys_choice_set>
 </record_update>

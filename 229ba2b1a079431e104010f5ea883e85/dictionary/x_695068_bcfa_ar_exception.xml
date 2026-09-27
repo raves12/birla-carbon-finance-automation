@@ -1,34 +1,29 @@
-<?xml version="1.0" encoding="UTF-8"?><database>
-    <element audit="true" db_object_id="050557f2835f43103d769be0deaad312" label="AR Exception" max_length="40" name="x_695068_bcfa_ar_exception" type="collection">
-        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Assigned To" max_length="32" name="assigned_to" reference="sys_user" type="reference"/>
-        <element hint="Simulated-AI output only. Never read by deterministic rules or approval/clearing logic." label="AI Recommendation (advisory)" max_length="4000" name="ai_recommendation" type="string"/>
-        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Payment" mandatory="true" max_length="32" name="payment" reference="x_695068_bcfa_payment" type="reference"/>
-        <element label="Description" max_length="4000" name="description" type="string"/>
-        <element attributes="edge_encryption_enabled=true" display="true" label="Reason Code" mandatory="true" max_length="40" name="reason_code" type="choice">
-            <choice>
-                <element inactive_on_update="false" label="Over Pay" sequence="4" value="over_pay"/>
-                <element inactive_on_update="false" label="Short Pay" sequence="3" value="short_pay"/>
-                <element inactive_on_update="false" label="Customer Ambiguous" sequence="2" value="customer_ambiguous"/>
-                <element inactive_on_update="false" label="Duplicate Payment" sequence="5" value="duplicate"/>
-                <element inactive_on_update="false" label="Other" sequence="7" value="other"/>
-                <element inactive_on_update="false" label="Unmatched Payment" sequence="1" value="unmatched"/>
-                <element inactive_on_update="false" label="Currency Mismatch" sequence="6" value="currency_mismatch"/>
-            </choice>
-        </element>
-        <element attributes="edge_encryption_enabled=true" default="open" label="Status" max_length="40" name="status" type="choice">
-            <choice>
-                <element inactive_on_update="false" label="In Review" sequence="2" value="in_review"/>
-                <element inactive_on_update="false" label="Open" sequence="1" value="open"/>
-                <element inactive_on_update="false" label="Resolved" sequence="3" value="resolved"/>
-                <element inactive_on_update="false" label="Closed" sequence="4" value="closed"/>
-            </choice>
-        </element>
-        <element label="Resolution Notes" max_length="4000" name="resolution_notes" type="string"/>
-        <index name="index">
-            <element name="assigned_to"/>
-        </index>
-        <index name="index2">
-            <element name="payment"/>
-        </index>
+<?xml version="1.0"?>
+<database>
+  <element name="x_695068_bcfa_ar_exception" type="collection" label="AR Exception" is_extendable="false" text_index="false" read_only="false" audit="true" display="reason_code" access="public" caller_access="0" scriptable_table="false" attributes="">
+    <element name="payment" type="reference" active="true" array="false" audit="false" unique="false" label="Payment" mandatory="true" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" reference="x_695068_bcfa_payment" plural="Payments"/>
+    <element name="reason_code" type="choice" active="true" array="false" audit="false" unique="false" label="Reason Code" mandatory="true" read_only="false" choice="0" display="true" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Reason Codes">
+      <choice>
+        <element value="unmatched" label="Unmatched Payment" sequence="1" language="en"/>
+        <element value="customer_ambiguous" label="Customer Ambiguous" sequence="2" language="en"/>
+        <element value="short_pay" label="Short Pay" sequence="3" language="en"/>
+        <element value="over_pay" label="Over Pay" sequence="4" language="en"/>
+        <element value="duplicate" label="Duplicate Payment" sequence="5" language="en"/>
+        <element value="currency_mismatch" label="Currency Mismatch" sequence="6" language="en"/>
+        <element value="other" label="Other" sequence="7" language="en"/>
+      </choice>
     </element>
+    <element name="description" type="string" active="true" array="false" audit="false" unique="false" label="Description" max_length="4000" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Descriptions"/>
+    <element name="status" type="choice" active="true" array="false" audit="false" default_value="open" unique="false" label="Status" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Status">
+      <choice>
+        <element value="open" label="Open" sequence="1" language="en"/>
+        <element value="in_review" label="In Review" sequence="2" language="en"/>
+        <element value="resolved" label="Resolved" sequence="3" language="en"/>
+        <element value="closed" label="Closed" sequence="4" language="en"/>
+      </choice>
+    </element>
+    <element name="assigned_to" type="reference" active="true" array="false" audit="false" unique="false" label="Assigned To" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" reference="sys_user" plural="Assigned Tos"/>
+    <element name="resolution_notes" type="string" active="true" array="false" audit="false" unique="false" label="Resolution Notes" max_length="4000" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="Resolution Notes"/>
+    <element name="ai_recommendation" type="string" active="true" array="false" audit="false" unique="false" label="AI Recommendation (advisory)" max_length="4000" mandatory="false" read_only="false" choice="0" display="false" function_field="false" attributes="" spell_check="false" xml_view="false" table_reference="false" text_index="false" element_reference="false" primary="false" plural="AI Recommendation (advisory)" hint="Advisory AI output only (Now Assist, or the legacy simulation). Never read by deterministic rules or approval/clearing logic."/>
+  </element>
 </database>
