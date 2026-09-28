@@ -36,7 +36,7 @@ definitions live in the Fluent source — this document is the index and the cro
 | `x_695068_bcfa_decision_log` | One row per deterministic rule evaluation (rule name/version, input snapshot, result, pass/fail) — the audit trail for Stage 13 Decision Tables. |
 | `x_695068_bcfa_reference_mapping` | Generic external-id↔internal-id mapping (vendor/customer/material/GL/currency/payment-terms) for future real-SAP reconciliation. |
 | `x_695068_bcfa_customer_alias` | Known name variants for AR fuzzy customer resolution (`CA-07`). |
-| `x_695068_bcfa_audit_event` | The single end-to-end evidence chain — every state transition, approval decision, integration call, and AI recommendation, tagged with `actor_type` (`user` / `system` / `simulated_ai`). |
+| `x_695068_bcfa_audit_event` | The append-only, end-to-end evidence chain: one row per business event (Phase 19 vocabulary), with process, record, before/after, actor and actor type, AI agent, reason, correlation ID, time and event sequence. See `docs/AUDIT_FRAMEWORK.md`. |
 | `x_695068_bcfa_integration_profile` | Per-adapter behavior configuration: failure mode, response delay, retry policy name — this is what makes the mock adapters deterministic and testable (Stage 7). |
 
 ## Mock SAP/bank master data (`src/fluent/tables/master_data.now.ts`)
