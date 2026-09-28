@@ -178,10 +178,12 @@ ApExceptionDecisionService.prototype = {
 
         this.auditEngine.logEvent({
             sourceTable: 'x_695068_bcfa_ap_exception',
+            correlationId: exception.getValue('correlation_id'),
             sourceRecord: exception.getUniqueValue(),
-            eventType: 'human_decision',
+            eventType: decision === 'approve_override' ? 'override' : 'human_review',
             actor: userId,
             actorType: 'user',
+            reason: reason,
             description: 'AP exception decision "' + decision + '" by ' + gs.getUserDisplayName() + ': ' + reason,
             beforeValue: before,
             afterValue: { status: newStatus, decision: decision, reason: reason }

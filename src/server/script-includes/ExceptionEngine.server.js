@@ -102,6 +102,7 @@ ExceptionEngine.prototype = {
             sourceRecord: sysId,
             eventType: 'exception_created',
             actorType: 'system',
+            reason: gr.getValue('rule_result') || gr.getValue('description'),
             description: ExceptionEngine.PROCESS[process].label + ' exception ' + gr.getValue('number') + ' raised: ' + gr.getValue('reason_code') +
                 ', severity ' + gr.getValue('severity') + ', priority ' + gr.getValue('priority') + ', SLA due ' + gr.getValue('sla_due') +
                 '. ' + (gr.getValue('rule_result') || ''),
@@ -151,7 +152,21 @@ ExceptionEngine.prototype = {
         gr.setValue('status', options.status || 'resolved');
         if (options.notes !== undefined && options.notes !== null) gr.setValue('resolution_notes', options.notes);
         this.stampResolution(gr, options.code, options.resolvedBy);
-        return gr.update() ? true : false;
+        if (!gr.update()) return false;
+        this.audit.logEvent({
+            correlationId: gr.getValue('correlation_id'),
+            sourceTable: ExceptionEngine.PROCESS[process].table,
+            sourceRecord: exceptionSysId,
+            eventType: 'exception_resolved',
+            actor: gr.getValue('resolved_by'),
+            actorType: 'user',
+            reason: options.notes || '',
+            description: ExceptionEngine.PROCESS[process].label + ' exception ' + gr.getValue('number') + ' ' + gr.getValue('status') +
+                ' (' + gr.getValue('resolution_code') + ', SLA ' + gr.getValue('sla_status') + ').',
+            afterValue: { status: gr.getValue('status'), resolution_code: gr.getValue('resolution_code'), resolved_by: gr.getValue('resolved_by'),
+                resolved_at: gr.getValue('resolved_at'), sla_status: gr.getValue('sla_status') }
+        });
+        return true;
     },
 
     // Sets the resolution fields on a GlideRecord the caller will update:
@@ -236,8 +251,9 @@ ExceptionEngine.prototype = {
             correlationId: gr.getValue('correlation_id'),
             sourceTable: ExceptionEngine.PROCESS[process].table,
             sourceRecord: gr.getUniqueValue(),
-            eventType: 'state_transition',
+            eventType: 'exception_escalated',
             actorType: 'system',
+            reason: 'SLA ' + gr.getValue('sla_status') + ', open ' + Math.round(ageHours) + 'h',
             description: ExceptionEngine.PROCESS[process].label + ' exception ' + gr.getValue('number') + ' escalated to level ' + toLevel +
                 ' (SLA ' + gr.getValue('sla_status') + ', open ' + Math.round(ageHours) + 'h, priority ' + before.priority + ' -> ' + priority + ').',
             beforeValue: before,

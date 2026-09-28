@@ -33,7 +33,7 @@ AISimulationService.prototype = {
         this.auditEngine.logEvent({
             sourceTable: 'x_695068_bcfa_ap_invoice',
             sourceRecord: apInvoiceSysId,
-            eventType: 'ai_recommendation',
+            eventType: 'document_extracted',
             actorType: 'simulated_ai',
             description: 'Simulated Document Intelligence extraction, confidence ' + confidence,
             afterValue: { confidence: confidence, requiresReview: requiresReview }
@@ -55,7 +55,7 @@ AISimulationService.prototype = {
         this.auditEngine.logEvent({
             sourceTable: 'x_695068_bcfa_remittance',
             sourceRecord: remittanceSysId,
-            eventType: 'ai_recommendation',
+            eventType: 'document_extracted',
             actorType: 'simulated_ai',
             description: 'Simulated Document Intelligence remittance extraction, confidence ' + confidence,
             afterValue: { confidence: confidence }

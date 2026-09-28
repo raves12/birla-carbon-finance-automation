@@ -34,21 +34,28 @@ ApDomainService.prototype = {
         return saved.ok ? { ok: true, recommendation: note } : saved;
     },
 
-    _setState: function(apInvoiceSysId, newState, correlationId, description) {
+    // audit (optional): { eventType, reason, after } — the business event
+    // this transition records; by default derived from the new state
+    // (AuditEngine.EVENT_BY_STATE), e.g. MATCHED is a match event.
+    _setState: function(apInvoiceSysId, newState, correlationId, description, audit) {
         var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
         if (!invoice.get(apInvoiceSysId)) return false;
         var previous = invoice.getValue('state');
         invoice.setValue('state', newState);
         invoice.update();
+        audit = audit || {};
+        var after = { state: newState };
+        for (var k in (audit.after || {})) after[k] = audit.after[k];
         this.auditEngine.logEvent({
             correlationId: correlationId || invoice.getValue('correlation_id'),
             sourceTable: 'x_695068_bcfa_ap_invoice',
             sourceRecord: apInvoiceSysId,
-            eventType: 'state_transition',
+            eventType: audit.eventType || AuditEngine.eventForState(newState),
             actorType: 'system',
+            reason: audit.reason,
             description: description || ('AP Invoice ' + previous + ' -> ' + newState),
             beforeValue: { state: previous },
-            afterValue: { state: newState }
+            afterValue: after
         });
         return true;
     },
@@ -103,9 +110,11 @@ ApDomainService.prototype = {
             correlationId: correlationId,
             sourceTable: 'x_695068_bcfa_ap_invoice',
             sourceRecord: sysId,
-            eventType: 'state_transition',
-            description: 'AP Invoice received (intake)',
-            afterValue: { state: 'RECEIVED' }
+            eventType: 'record_created',
+            actorType: 'system',
+            description: 'AP Invoice ' + fields.invoiceNumber + ' created (intake, source ' + (fields.source || 'email') + ')',
+            afterValue: { state: 'RECEIVED', invoice_number: fields.invoiceNumber, vendor: fields.vendor || '', gross_amount: fields.grossAmount || 0,
+                currency: fields.currency || '', purchase_order: fields.purchaseOrder || '' }
         });
         return { apInvoiceSysId: sysId, correlationId: correlationId };
     },
@@ -182,7 +191,7 @@ ApDomainService.prototype = {
         this.auditEngine.logEvent({
             sourceTable: 'x_695068_bcfa_ap_invoice',
             sourceRecord: apInvoiceSysId,
-            eventType: 'ai_recommendation',
+            eventType: 'document_extracted',
             actorType: 'claude_ai',
             description: 'Claude invoice extraction, confidence ' + confidence + (data.warnings && data.warnings.length ? '; warnings: ' + data.warnings.join('; ') : ''),
             afterValue: { confidence: confidence, requiresReview: requiresReview }
@@ -231,11 +240,13 @@ ApDomainService.prototype = {
                     'Purchase order: ' + (invoice.getDisplayValue('purchase_order') || invoice.getValue('purchase_order') || 'none')
             });
             this._explainApException(exceptionSysId);
-            this._setState(apInvoiceSysId, 'EXCEPTION', null, 'Validation failed: ' + failure.reasonCode);
+            this._setState(apInvoiceSysId, 'EXCEPTION', null, 'Validation failed: ' + failure.reasonCode,
+                { eventType: 'rule_evaluated', reason: failure.description, after: { rule: 'validation', result: 'FAIL', reason_code: failure.reasonCode, confidence: confidence } });
             return { validated: false, reasonCode: failure.reasonCode, exceptionSysId: exceptionSysId };
         }
 
-        this._setState(apInvoiceSysId, 'VALIDATED', null, 'Validation passed');
+        this._setState(apInvoiceSysId, 'VALIDATED', null, 'Validation passed',
+            { reason: 'Confidence ' + confidence + ' >= ' + confidenceThreshold + '; mandatory fields present; vendor active; PO valid.', after: { rule: 'validation', result: 'PASS', confidence: confidence } });
         return { validated: true };
     },
 
@@ -261,7 +272,9 @@ ApDomainService.prototype = {
                     '\nThis invoice: gross ' + thisInvoice.getValue('gross_amount') + ' ' + thisInvoice.getValue('currency')
             });
             this._explainApException(dupExceptionSysId);
-            this._setState(apInvoiceSysId, 'EXCEPTION', null, 'Duplicate invoice detected');
+            this._setState(apInvoiceSysId, 'EXCEPTION', null, 'Duplicate invoice detected',
+                { eventType: 'match', reason: 'Duplicate of AP invoice ' + original.getValue('invoice_number'),
+                    after: { rule: 'duplicate_check', result: 'FAIL', matched_invoice: duplicateResult.matchedInvoiceSysId, same_amount: duplicateResult.sameAmount } });
             return { matched: false, reasonCode: 'duplicate', exceptionSysId: dupExceptionSysId };
         }
 
@@ -280,12 +293,21 @@ ApDomainService.prototype = {
                 'Match result: ' + match.matchResult + '. Quantity variance ' + (match.quantityVariancePct * 100).toFixed(1) + '%, price variance ' + (match.priceVariancePct * 100).toFixed(1) + '%.',
                 this._matchExceptionDetails(reasonCode, match));
             this._explainApException(exceptionSysId2);
-            this._setState(apInvoiceSysId, 'EXCEPTION', null, 'Match failed: ' + reasonCode);
+            this._setState(apInvoiceSysId, 'EXCEPTION', null, 'Match failed: ' + reasonCode,
+                { eventType: 'match', reason: this._matchExceptionDetails(reasonCode, match).ruleResult, after: this._matchSummary(match, 'FAIL') });
             return { matched: false, reasonCode: reasonCode, exceptionSysId: exceptionSysId2, match: match };
         }
 
-        this._setState(apInvoiceSysId, 'MATCHED', null, 'Matched within tolerance');
+        this._setState(apInvoiceSysId, 'MATCHED', null, 'Matched within tolerance',
+            { reason: 'Duplicate check, PO linkage, receipt, quantity, price, tax and line total within tolerance.', after: this._matchSummary(match, 'PASS') });
         return { matched: true, match: match };
+    },
+
+    // Audit summary of a 3-way match: result, variances and the tolerances
+    // (with their source) that were applied.
+    _matchSummary: function(match, result) {
+        return { rule: '3_way_match', result: result, match_result: match.matchResult, quantity_variance_pct: match.quantityVariancePct,
+            price_variance_pct: match.priceVariancePct, tax_variance: match.taxVariance, line_total_ok: match.lineTotalOk, tolerances: match.tolerancesUsed };
     },
 
     // Deterministic rule result, evidence and variance for a failed 3-way
@@ -359,9 +381,10 @@ ApDomainService.prototype = {
             correlationId: invoice.getValue('correlation_id'),
             sourceTable: 'x_695068_bcfa_ap_invoice',
             sourceRecord: apInvoiceSysId,
-            eventType: 'approval_decision',
+            eventType: 'rule_evaluated',
             actorType: 'system',
-            description: 'Approval rule evaluated (POC ASSUMPTION): ' + rule.rule,
+            reason: rule.rule,
+            description: 'Approval rule evaluated (BCFA AP Approval decision table): ' + (rule.required ? 'approval required' : 'no approval required'),
             afterValue: rule
         });
         var approval = this.requestApproval(apInvoiceSysId, requestedBy, { group: rule.group, type: rule.required ? 'standard' : 'rule' });
@@ -383,8 +406,9 @@ ApDomainService.prototype = {
             this.auditEngine.logEvent({
                 sourceTable: 'x_695068_bcfa_ap_exception',
                 sourceRecord: exceptionSysId,
-                eventType: 'ai_recommendation',
+                eventType: 'ai_invocation',
                 actorType: 'system',
+                aiAgent: 'BCFA AP Invoice Review (agentic workflow)',
                 description: 'AI review handed to the BCFA AP Invoice Review agentic workflow (Now Assist), which starts on exception creation and records an advisory note.'
             });
             return { deferred: true, workflow: 'BCFA AP Invoice Review' };
@@ -544,18 +568,18 @@ ApDomainService.prototype = {
             invoice.setValue('posting_state', 'posted');
             invoice.setValue('sap_document_id', resolution.sapDocumentId);
             invoice.update();
-            this._setState(apInvoiceSysId, 'POSTED', null, 'Reconciliation confirmed the posting committed: ' + resolution.sapDocumentId);
+            this._setState(apInvoiceSysId, 'POSTED', null, 'Reconciliation confirmed the posting committed: ' + resolution.sapDocumentId, { eventType: 'reconciliation', reason: resolution.reason || resolution.resolution });
             this.reconcileAndClose(apInvoiceSysId);
             return { posted: true, sapDocumentId: resolution.sapDocumentId };
         }
 
         if (resolution.resolution === 'RETRY') {
-            this._setState(apInvoiceSysId, 'POSTING', null, 'Reconciliation confirmed nothing committed — safe to retry.');
+            this._setState(apInvoiceSysId, 'POSTING', null, 'Reconciliation confirmed nothing committed — safe to retry.', { eventType: 'reconciliation', reason: resolution.reason || resolution.resolution });
             return this.postInvoice(apInvoiceSysId);
         }
 
         var exceptionSysId = this.exceptionEngine.createApException(apInvoiceSysId, 'other', 'Integration exception: ' + resolution.reason);
-        this._setState(apInvoiceSysId, 'FAILED', null, 'Reconciliation could not confirm outcome — integration exception.');
+        this._setState(apInvoiceSysId, 'FAILED', null, 'Reconciliation could not confirm outcome — integration exception.', { eventType: 'reconciliation', reason: resolution.reason || resolution.resolution });
         return { posted: false, failed: true, exceptionSysId: exceptionSysId };
     },
 

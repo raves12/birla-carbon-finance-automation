@@ -37,9 +37,12 @@ export const apInvoiceToAuditEventRel = Record({
         basic_query_from: 'x_695068_bcfa_audit_event',
         advanced: false,
         simple_reference: false,
+        // Phase 19: the whole evidence chain of the transaction: its own
+        // events plus every event sharing its correlation ID (intake,
+        // exceptions, approvals, integration, reconciliation).
         query_with: `(function refineQuery(current, parent) {
-    current.addQuery('source_table', 'x_695068_bcfa_ap_invoice');
-    current.addQuery('source_record', parent.sys_id);
+    var q = current.addQuery('source_record', parent.sys_id);
+    if (parent.getValue('correlation_id')) q.addOrCondition('correlation_id', parent.getValue('correlation_id'));
 })(current, parent);`,
     },
 })
@@ -118,9 +121,12 @@ export const paymentToAuditEventRel = Record({
         basic_query_from: 'x_695068_bcfa_audit_event',
         advanced: false,
         simple_reference: false,
+        // Phase 19: the whole evidence chain of the transaction: its own
+        // events plus every event sharing its correlation ID (intake,
+        // exceptions, approvals, integration, reconciliation).
         query_with: `(function refineQuery(current, parent) {
-    current.addQuery('source_table', 'x_695068_bcfa_payment');
-    current.addQuery('source_record', parent.sys_id);
+    var q = current.addQuery('source_record', parent.sys_id);
+    if (parent.getValue('correlation_id')) q.addOrCondition('correlation_id', parent.getValue('correlation_id'));
 })(current, parent);`,
     },
 })

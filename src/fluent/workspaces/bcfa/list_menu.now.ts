@@ -192,7 +192,7 @@ export const bcfaListConfig = UxListMenuConfig({
                     order: 20,
                     condition: '',
                     table: 'x_695068_bcfa_audit_event',
-                    columns: 'event_type,actor_type,source_table,description,occurred_at',
+                    columns: 'occurred_at,process,event_type,actor,actor_type,ai_agent,description,reason,correlation_id',
                     applicabilities: [{ $id: Now.ID['bcfa-list-audit-event-app'], applicability: bcfaWorkspaceApplicability }],
                 },
             ],

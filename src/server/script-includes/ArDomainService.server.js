@@ -45,21 +45,28 @@ ArDomainService.prototype = {
         return this._explainArException(arExceptionSysId, candidateCustomers);
     },
 
-    _setState: function(paymentSysId, newState, correlationId, description) {
+    // audit (optional): { eventType, reason, after, actorType } — the business
+    // event this transition records; by default derived from the new state
+    // (AuditEngine.EVENT_BY_STATE), e.g. CLEARED is a SAP / mock result.
+    _setState: function(paymentSysId, newState, correlationId, description, audit) {
         var payment = new GlideRecord('x_695068_bcfa_payment');
         if (!payment.get(paymentSysId)) return false;
         var previous = payment.getValue('state');
         payment.setValue('state', newState);
         payment.update();
+        audit = audit || {};
+        var after = { state: newState };
+        for (var k in (audit.after || {})) after[k] = audit.after[k];
         this.auditEngine.logEvent({
             correlationId: correlationId || payment.getValue('correlation_id'),
             sourceTable: 'x_695068_bcfa_payment',
             sourceRecord: paymentSysId,
-            eventType: 'state_transition',
-            actorType: 'system',
+            eventType: audit.eventType || AuditEngine.eventForState(newState),
+            actorType: audit.actorType || 'system',
+            reason: audit.reason,
             description: description || ('Payment ' + previous + ' -> ' + newState),
             beforeValue: { state: previous },
-            afterValue: { state: newState }
+            afterValue: after
         });
         return true;
     },
@@ -112,9 +119,11 @@ ArDomainService.prototype = {
             correlationId: correlationId,
             sourceTable: 'x_695068_bcfa_payment',
             sourceRecord: sysId,
-            eventType: 'state_transition',
-            description: 'Payment received (bank intake)',
-            afterValue: { state: 'RECEIVED' }
+            eventType: 'record_created',
+            actorType: 'system',
+            description: 'Payment ' + fields.bankReference + ' created (intake, source ' + (fields.source || 'bank_statement') + ')',
+            afterValue: { state: 'RECEIVED', bank_reference: fields.bankReference, amount: fields.amount || 0, currency: fields.currency || '',
+                customer: fields.customer || '' }
         });
         return { paymentSysId: sysId, correlationId: correlationId };
     },
@@ -135,6 +144,16 @@ ArDomainService.prototype = {
             if (fields.confidence !== undefined) remittance.setValue('confidence', fields.confidence);
         }
         var sysId = remittance.insert();
+        var parentPayment = new GlideRecord('x_695068_bcfa_payment');
+        this.auditEngine.logEvent({
+            correlationId: parentPayment.get(paymentSysId) ? parentPayment.getValue('correlation_id') : '',
+            sourceTable: 'x_695068_bcfa_remittance',
+            sourceRecord: sysId,
+            eventType: 'record_created',
+            actorType: 'system',
+            description: 'Remittance ' + (fields.remittanceReference || '') + ' created for payment (source ' + (fields.source || 'email') + ')',
+            afterValue: { payment: paymentSysId, remittance_reference: fields.remittanceReference || '', confidence: fields.confidence }
+        });
         if (!fields.extractedFields && fields.seedFields) {
             var claudeResult = this.policy.aiProvider() === 'claude' ? this._runClaudeRemittanceExtraction(sysId, fields.seedFields, fields.options) : null;
             if (!claudeResult) this.aiSimulation.simulateArExtraction(sysId, fields.seedFields, fields.options);
@@ -164,7 +183,7 @@ ArDomainService.prototype = {
         this.auditEngine.logEvent({
             sourceTable: 'x_695068_bcfa_remittance',
             sourceRecord: remittanceSysId,
-            eventType: 'ai_recommendation',
+            eventType: 'document_extracted',
             actorType: 'claude_ai',
             description: 'Claude remittance extraction, confidence ' + confidence + (data.warnings && data.warnings.length ? '; warnings: ' + data.warnings.join('; ') : ''),
             afterValue: { confidence: confidence }
@@ -235,8 +254,9 @@ ArDomainService.prototype = {
             correlationId: payment.getValue('correlation_id'),
             sourceTable: 'x_695068_bcfa_payment',
             sourceRecord: payment.getUniqueValue(),
-            eventType: 'state_transition',
+            eventType: 'rule_evaluated',
             actorType: 'system',
+            reason: 'Customer identified from ' + how,
             description: 'Customer identified from ' + how + '.',
             afterValue: { customer: customerSysId }
         });
@@ -276,18 +296,18 @@ ArDomainService.prototype = {
                     evidence: this._remittanceEvidence(remittance)
                 });
             this._explainArException(currencyExceptionSysId);
-            this._setState(paymentSysId, 'EXCEPTION', null, 'Currency mismatch between payment and remittance invoices');
+            this._setState(paymentSysId, 'EXCEPTION', null, 'Currency mismatch between payment and remittance invoices', { eventType: 'match', reason: 'Remittance invoices in another currency: ' + remittance.currencyMismatch.join(', ') });
             return { matched: false, reasonCode: 'currency_mismatch', exceptionSysId: currencyExceptionSysId };
         }
         if (remittance.available && remittance.usable) {
             this.matchingEngine.recordRemittanceCandidates(paymentSysId, remittance);
-            this._setState(paymentSysId, 'MATCHED', null, 'Matched to the ' + remittance.items.length + ' invoice(s) referenced on the remittance');
+            this._setState(paymentSysId, 'MATCHED', null, 'Matched to the ' + remittance.items.length + ' invoice(s) referenced on the remittance', { reason: 'Remittance references', after: { mode: 'remittance', items: remittance.items.map(function(i) { return i.itemNumber; }) } });
             return { matched: true, mode: 'remittance', remittance: remittance };
         }
 
         var exact = this.matchingEngine.exactMatch(paymentSysId);
         if (exact.matched) {
-            this._setState(paymentSysId, 'MATCHED', null, 'Exact match found');
+            this._setState(paymentSysId, 'MATCHED', null, 'Exact match found', { reason: 'Single open item equal to the payment amount', after: { mode: 'exact' } });
             return { matched: true, mode: 'exact' };
         }
 
@@ -313,12 +333,12 @@ ArDomainService.prototype = {
                         (remittance.available ? '\n' + this._remittanceEvidence(remittance) : '\nNo remittance references.')
                 });
             this._explainArException(ambiguousSysId);
-            this._setState(paymentSysId, 'EXCEPTION', null, 'Ambiguous match: several exact options');
+            this._setState(paymentSysId, 'EXCEPTION', null, 'Ambiguous match: several exact options', { eventType: 'match', reason: 'More than one exact option; the engine does not choose', after: { mode: 'ambiguous', options: options } });
             return { matched: false, reasonCode: 'ambiguous_match', exceptionSysId: ambiguousSysId };
         }
         if (combinations.solutions.length === 1) {
             this.matchingEngine.recordCombinationCandidates(paymentSysId, payment.getValue('customer'), combinations.solutions, true);
-            this._setState(paymentSysId, 'MATCHED', null, 'Unique exact combination of ' + combinations.solutions[0].length + ' open items');
+            this._setState(paymentSysId, 'MATCHED', null, 'Unique exact combination of ' + combinations.solutions[0].length + ' open items', { reason: 'Unique exact combination', after: { mode: 'combination', items: combinations.solutions[0].map(function(i) { return i.itemNumber; }) } });
             return { matched: true, mode: 'combination', items: combinations.solutions[0] };
         }
 
@@ -427,8 +447,9 @@ ArDomainService.prototype = {
             this.auditEngine.logEvent({
                 sourceTable: 'x_695068_bcfa_ar_exception',
                 sourceRecord: exceptionSysId,
-                eventType: 'ai_recommendation',
+                eventType: 'ai_invocation',
                 actorType: 'system',
+                aiAgent: 'BCFA Cash Application Review (agentic workflow)',
                 description: 'AI review handed to the BCFA Cash Application Review agentic workflow (Now Assist), which starts on exception creation and records an advisory note.'
             });
             return { deferred: true, workflow: 'BCFA Cash Application Review' };
@@ -532,7 +553,7 @@ ArDomainService.prototype = {
 
         if (selectedItems.length === 0) {
             var noItemExceptionSysId = this.exceptionEngine.createArException(paymentSysId, 'unmatched', 'No selected open items available to allocate.');
-            this._setState(paymentSysId, 'EXCEPTION', null, 'Allocation failed: nothing to allocate');
+            this._setState(paymentSysId, 'EXCEPTION', null, 'Allocation failed: nothing to allocate', { eventType: 'allocation', reason: 'No selected open items available to allocate' });
             return { balanced: false, exceptionSysId: noItemExceptionSysId };
         }
 
@@ -572,7 +593,8 @@ ArDomainService.prototype = {
 
         var difference = Math.round((paymentAmount - allocatedTotal) * 100) / 100;
         if (Math.abs(difference) <= this.BALANCE_TOLERANCE) {
-            this._setState(paymentSysId, 'PENDING_APPROVAL', null, 'Allocation balances (' + allocationEvidence.length + ' item(s), total ' + allocatedTotal + ' = payment ' + paymentAmount + '); ready for approval');
+            this._setState(paymentSysId, 'PENDING_APPROVAL', null, 'Allocation balances (' + allocationEvidence.length + ' item(s), total ' + allocatedTotal + ' = payment ' + paymentAmount + '); ready for approval', { eventType: 'allocation', reason: 'Allocation balances within tolerance ' + this.BALANCE_TOLERANCE,
+                after: { candidate_type: candidateType, allocated_total: allocatedTotal, payment_amount: paymentAmount, allocations: allocationEvidence } });
             if (selectedItems.length > 1) this._adviseOnAllocation(paymentSysId);
             return { balanced: true, allocationSysIds: allocationSysIds, allocatedTotal: allocatedTotal, candidateType: candidateType };
         }
@@ -600,7 +622,8 @@ ArDomainService.prototype = {
                 creditNote: suggestion.creditNoteSysId
             });
         this._explainArException(exceptionSysId);
-        this._setState(paymentSysId, 'EXCEPTION', null, 'Allocation does not balance: ' + reasonCode);
+        this._setState(paymentSysId, 'EXCEPTION', null, 'Allocation does not balance: ' + reasonCode, { eventType: 'allocation', reason: reasonCode + ': payment ' + paymentAmount + ' vs allocated ' + allocatedTotal + ' (difference ' + difference + ')',
+            after: { candidate_type: candidateType, allocated_total: allocatedTotal, payment_amount: paymentAmount, difference: difference, suggested_deduction: suggestion.type, allocations: allocationEvidence } });
         return { balanced: false, reasonCode: reasonCode, exceptionSysId: exceptionSysId, allocationSysIds: allocationSysIds, difference: difference };
     },
 
@@ -625,6 +648,7 @@ ArDomainService.prototype = {
                 eventType: 'ai_recommendation',
                 actor: gs.getUserID(),
                 actorType: 'now_assist_ai',
+                aiAgent: 'Now Assist skill: explain AR match',
                 description: 'Now Assist explanation of the multi-invoice allocation recorded on the payment (advisory field only)'
             });
             return { ok: true };
@@ -647,9 +671,10 @@ ArDomainService.prototype = {
             correlationId: payment.getValue('correlation_id'),
             sourceTable: 'x_695068_bcfa_payment',
             sourceRecord: paymentSysId,
-            eventType: 'approval_decision',
+            eventType: 'rule_evaluated',
             actorType: 'system',
-            description: 'Approval rule evaluated (POC ASSUMPTION): ' + rule.rule,
+            reason: rule.rule,
+            description: 'Approval rule evaluated (POC ASSUMPTION): ' + (rule.required ? 'approval required' : 'no approval required'),
             afterValue: rule
         });
         var approval = this.requestApproval(paymentSysId, requestedBy, {
@@ -701,9 +726,10 @@ ArDomainService.prototype = {
             this.auditEngine.logEvent({
                 sourceTable: 'x_695068_bcfa_payment',
                 sourceRecord: paymentSysId,
-                eventType: 'state_transition',
+                eventType: 'closure',
                 actorType: 'system',
-                description: 'Open items settled after clearing: ' + settled.join('; ')
+                description: 'Open items settled after clearing: ' + settled.join('; '),
+                afterValue: { settled: settled }
             });
         }
         return settled;
@@ -747,7 +773,8 @@ ArDomainService.prototype = {
         var netAllocated = Math.round((allocatedTotal - deductionTotal) * 100) / 100;
         var difference = Math.round((paymentAmount - netAllocated) * 100) / 100;
         if (Math.abs(difference) <= this.BALANCE_TOLERANCE) {
-            this._setState(paymentSysId, 'PENDING_APPROVAL', null, 'Allocation balances after approved deductions; ready for approval');
+            this._setState(paymentSysId, 'PENDING_APPROVAL', null, 'Allocation balances after approved deductions; ready for approval', { eventType: 'deduction', reason: 'Approved deductions ' + deductionTotal + ' bring the allocation to the payment amount',
+                after: { allocated_total: allocatedTotal, approved_deductions: deductionTotal, net_allocated: netAllocated, payment_amount: paymentAmount } });
             return { balanced: true, netAllocated: netAllocated };
         }
         return { balanced: false, netAllocated: netAllocated, difference: difference };
@@ -758,7 +785,7 @@ ArDomainService.prototype = {
     // future credit memo) — moves it forward on a human decision rather than
     // silently forcing the numbers to match.
     forceProceedDespiteImbalance: function(paymentSysId, reason) {
-        this._setState(paymentSysId, 'PENDING_APPROVAL', null, reason || 'Manually approved to proceed despite allocation imbalance.');
+        this._setState(paymentSysId, 'PENDING_APPROVAL', null, reason || 'Manually approved to proceed despite allocation imbalance.', { eventType: 'override', actorType: 'user', reason: reason || 'No reason given' });
         return { balanced: false, forced: true };
     },
 
@@ -868,7 +895,7 @@ ArDomainService.prototype = {
                 allocation.update();
             }
             this._settleOpenItems(paymentSysId);
-            this._setState(paymentSysId, 'CLEARED', null, 'Reconciliation confirmed clearing committed: ' + resolution.sapDocumentId);
+            this._setState(paymentSysId, 'CLEARED', null, 'Reconciliation confirmed clearing committed: ' + resolution.sapDocumentId, { eventType: 'reconciliation', reason: resolution.resolution });
             this.reconcileAndClose(paymentSysId);
             return { cleared: true, sapDocumentId: resolution.sapDocumentId };
         }
@@ -880,12 +907,12 @@ ArDomainService.prototype = {
             // setting CLEARING here would make the retry fail its own gate
             // and get stuck forever. clearPayment() sets CLEARING itself
             // once past the gate.
-            this._setState(paymentSysId, 'APPROVED', null, 'Reconciliation confirmed nothing committed — safe to retry.');
+            this._setState(paymentSysId, 'APPROVED', null, 'Reconciliation confirmed nothing committed — safe to retry.', { eventType: 'reconciliation', reason: resolution.resolution });
             return this.clearPayment(paymentSysId);
         }
 
         var exceptionSysId = this.exceptionEngine.createArException(paymentSysId, 'other', 'Integration exception: ' + resolution.reason);
-        this._setState(paymentSysId, 'FAILED', null, 'Reconciliation could not confirm outcome — integration exception.');
+        this._setState(paymentSysId, 'FAILED', null, 'Reconciliation could not confirm outcome — integration exception.', { eventType: 'reconciliation', reason: resolution.reason || resolution.resolution });
         return { cleared: false, failed: true, exceptionSysId: exceptionSysId };
     },
 

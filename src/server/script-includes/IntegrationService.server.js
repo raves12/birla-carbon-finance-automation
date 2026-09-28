@@ -92,6 +92,17 @@ IntegrationService.prototype = {
         var response = null;
         try { response = payload ? JSON.parse(payload) : null; } catch (e) { response = null; }
         if (!response && txn.getValue('external_document_id')) response = { sapDocumentId: txn.getValue('external_document_id') };
+        this.audit.logEvent({
+            correlationId: txn.getValue('correlation_id'),
+            sourceTable: txn.getValue('source_table') || 'x_695068_bcfa_integration_txn',
+            sourceRecord: txn.getValue('source_record') || txn.getUniqueValue(),
+            eventType: 'integration_call',
+            actorType: 'system',
+            reason: 'Idempotent replay by ' + how,
+            description: 'Integration ' + txn.getValue('operation') + ' NOT re-sent: replayed the committed transaction ' + txn.getValue('idempotency_key') +
+                ' (' + how + ')' + (txn.getValue('external_document_id') ? ', SAP document ' + txn.getValue('external_document_id') : '') + '.',
+            afterValue: { transaction: txn.getUniqueValue(), operation: txn.getValue('operation'), replayed_by: how, external_document_id: txn.getValue('external_document_id') }
+        });
         return { status: 'success', response: response, transactionSysId: txn.getUniqueValue(), unknownOutcome: false, idempotentReplay: true, replayedBy: how };
     },
 
@@ -256,7 +267,40 @@ IntegrationService.prototype = {
         txn.setValue('completed_at', new GlideDateTime().getValue());
         result.transactionSysId = existing ? (txn.update() && txn.getUniqueValue()) : txn.insert();
         result.attempt = attempt;
+        this.audit.logEvent({
+            correlationId: txn.getValue('correlation_id'),
+            sourceTable: params.sourceTable || 'x_695068_bcfa_integration_txn',
+            sourceRecord: params.sourceRecord || result.transactionSysId,
+            eventType: 'integration_call',
+            actorType: 'system',
+            reason: txn.getValue('error_message') || '',
+            description: 'Integration ' + operation + ' via ' + adapterName + ' (attempt ' + attempt + '): ' + result.status +
+                (txn.getValue('external_document_id') ? ', document ' + txn.getValue('external_document_id') : '') +
+                (txn.getValue('error_code') ? ', ' + txn.getValue('error_code') : '') + '.',
+            beforeValue: { operation: operation, idempotency_key: txn.getValue('idempotency_key'), request_hash: txn.getValue('request_hash'),
+                external_reference: txn.getValue('external_reference') },
+            afterValue: { transaction: result.transactionSysId, status: result.status, attempt: attempt, external_document_id: txn.getValue('external_document_id'),
+                error_code: txn.getValue('error_code'), reconciliation_state: txn.getValue('reconciliation_state') }
+        });
         return result;
+    },
+
+    // Audit of an Unknown Outcome reconciliation on the business record.
+    _auditReconciliation: function(txn, resolution, outcome) {
+        this.audit.logEvent({
+            correlationId: txn.getValue('correlation_id'),
+            sourceTable: txn.getValue('source_table') || 'x_695068_bcfa_integration_txn',
+            sourceRecord: txn.getValue('source_record') || txn.getUniqueValue(),
+            eventType: 'reconciliation',
+            actorType: 'system',
+            reason: resolution.reason || ('Status query outcome ' + outcome),
+            description: 'Unknown outcome of ' + txn.getValue('operation') + ' ' + txn.getValue('idempotency_key') + ' reconciled: ' + resolution.resolution +
+                (resolution.sapDocumentId ? ' (' + resolution.sapDocumentId + ')' : '') + '.',
+            beforeValue: { reconciliation_state: 'pending', attempt: txn.getValue('attempt') },
+            afterValue: { resolution: resolution.resolution, status_query: outcome, reconciliation_state: txn.getValue('reconciliation_state'),
+                status: txn.getValue('status'), external_document_id: txn.getValue('external_document_id') }
+        });
+        return resolution;
     },
 
     _blocked: function(params, operation, txn, kind, reason) {
@@ -266,6 +310,7 @@ IntegrationService.prototype = {
             sourceRecord: params.sourceRecord || txn.getUniqueValue(),
             eventType: 'integration_call',
             actorType: 'system',
+            reason: reason,
             description: 'Integration ' + operation + ' NOT sent: ' + reason,
             afterValue: { operation: operation, idempotencyKey: params.idempotencyKey, externalReference: params.externalReference, blockingTransaction: txn.getUniqueValue() }
         });
@@ -312,22 +357,22 @@ IntegrationService.prototype = {
             if (status.sapDocumentId) txn.setValue('external_document_id', status.sapDocumentId);
             txn.setValue('unknown_outcome_flag', false);
             txn.update();
-            return { resolution: 'POSTED', sapDocumentId: status.sapDocumentId };
+            return this._auditReconciliation(txn, { resolution: 'POSTED', sapDocumentId: status.sapDocumentId }, status.outcome);
         }
         if (status.outcome === 'NOT_FOUND') {
             txn.setValue('unknown_outcome_flag', false);
             if (attempt < IntegrationService.MAX_ATTEMPTS) {
                 txn.setValue('reconciliation_state', 'confirmed_not_committed');
                 txn.update();
-                return { resolution: 'RETRY' };
+                return this._auditReconciliation(txn, { resolution: 'RETRY' }, status.outcome);
             }
             txn.setValue('reconciliation_state', 'escalated');
             txn.setValue('status', 'failed');
             txn.update();
-            return { resolution: 'INTEGRATION_EXCEPTION', reason: 'Retry limit reached with no confirmed outcome.' };
+            return this._auditReconciliation(txn, { resolution: 'INTEGRATION_EXCEPTION', reason: 'Retry limit reached with no confirmed outcome.' }, status.outcome);
         }
         // The status could not be determined: stays pending, nothing re-sent.
-        return { resolution: 'INTEGRATION_EXCEPTION', reason: 'Status could not be determined (' + (status.message || status.outcome) + '); the transaction stays pending reconciliation.' };
+        return this._auditReconciliation(txn, { resolution: 'INTEGRATION_EXCEPTION', reason: 'Status could not be determined (' + (status.message || status.outcome) + '); the transaction stays pending reconciliation.' }, status.outcome);
     },
 
     type: 'IntegrationService'

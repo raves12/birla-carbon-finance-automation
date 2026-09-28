@@ -1049,6 +1049,30 @@ declare global {
                         table: 'sys_script'
                         id: 'e39de90e641547018027fa21d9745b30'
                     }
+                    'br-audit-event-append-only': {
+                        table: 'sys_script'
+                        id: '82c433386d2f47d5a910a0910fe38169'
+                    }
+                    'br-audit-field-corrections-ap-invoice': {
+                        table: 'sys_script'
+                        id: 'd7fa77ca47c54e9a9cf5613afcff6d65'
+                    }
+                    'br-audit-field-corrections-ap-invoice-line': {
+                        table: 'sys_script'
+                        id: 'e58ebf72f575487cad37c9a1e26b27d5'
+                    }
+                    'br-audit-field-corrections-finance-intake': {
+                        table: 'sys_script'
+                        id: 'd0af91de7ecc4582aa69008c88b5099b'
+                    }
+                    'br-audit-field-corrections-payment': {
+                        table: 'sys_script'
+                        id: 'a52e7f3a1bf046cf9641d5b3289a3a92'
+                    }
+                    'br-audit-field-corrections-remittance': {
+                        table: 'sys_script'
+                        id: 'da3c3d23188e41448afc209a96d1c9f8'
+                    }
                     'br-finance-intake-auto-number': {
                         table: 'sys_script'
                         id: '02e3ad1ac8084ff3b5fc039b9b900023'
@@ -1639,6 +1663,14 @@ declare global {
                         table: 'sys_module'
                         id: '1b355af8c6894d7e953beb08898f8d20'
                     }
+                    'src_server_business-rules_AuditEventAppendOnly_server_js': {
+                        table: 'sys_module'
+                        id: '949cde37b5d841f586ebe5bf475a9460'
+                    }
+                    'src_server_business-rules_AuditFieldCorrections_server_js': {
+                        table: 'sys_module'
+                        id: '30ae5338d6c4482f87cad7f51e02ee91'
+                    }
                     'src_server_business-rules_FinanceIntakeAutoNumber_server_js': {
                         table: 'sys_module'
                         id: '658b4329ad42400abd7c9c21b50885f1'
@@ -2047,6 +2079,17 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_audit_event'
                             element: 'actor_type'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '032e1f15539f4e3c8c58598116176d71'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'event_type'
+                            value: 'approval_requested'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -2805,6 +2848,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '0c8ec9f8591247ab833ede837493c355'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'event_type'
+                            value: 'allocation'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '0c97a9958d354816a9e7c8ea127d4dbd'
                         key: {
@@ -2882,6 +2936,17 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ar_approval'
                             element: 'approval_type'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '0ddd26b1161d41a294a03d96824edc9d'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'event_type'
+                            value: 'ai_invocation'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -3025,6 +3090,17 @@ declare global {
                             name: 'x_695068_bcfa_integration_profile'
                             element: 'failure_code'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '10a59c9d8dd4487e95a4d50e6fc1c842'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'event_type'
+                            value: 'exception_escalated'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -4008,6 +4084,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '22684e3e0bab4170a30dab7e2a1c5e6f'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'event_type'
+                            value: 'document_uploaded'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'ua_table_licensing_config'
                         id: '226c4937b2924092afc9db2ac1ea60e4'
                         key: {
@@ -4090,6 +4177,17 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_audit_event'
                             element: 'source_record'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '23b4c9e251c14bc292454d53def225ac'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'event_type'
+                            value: 'integration_result'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -4276,6 +4374,17 @@ declare global {
                     },
                     {
                         table: 'sys_choice'
+                        id: '2774dd117f5147c79ee1990d39c70d6f'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'process'
+                            value: 'ap'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
                         id: '27a6c0a2be564ea78f70d9d8f75b27be'
                         key: {
                             name: 'x_695068_bcfa_decision_log'
@@ -4339,6 +4448,17 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_receipt'
                             element: 'sap_document_id'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '293aba08c37d4eb4bfb8d217202fcb88'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'event_type'
+                            value: 'human_review'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -5607,6 +5727,17 @@ declare global {
                     },
                     {
                         table: 'sys_choice'
+                        id: '3edb023ee7fc4e7391bd0c3af4de16cb'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'event_type'
+                            value: 'closure'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
                         id: '3efc915a6b864719b2da4d49eec8565e'
                         key: {
                             name: 'x_695068_bcfa_ap_exception'
@@ -5789,6 +5920,17 @@ declare global {
                         id: '4196797b292e478caf676236ada8cb3b'
                         key: {
                             name: 'x_695068_bcfa_payment_allocation'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '41df3f35dbc54becbd6fba69188827c1'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'event_type'
+                            value: 'field_corrected'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -6077,6 +6219,14 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_po_line'
                             element: 'line_number'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '4700eb92eb694aa9994af9bdd45478b9'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'ai_agent'
                         }
                     },
                     {
@@ -6580,6 +6730,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '521146108ba74626bd6131ca47df8b00'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'process'
+                            value: 'ar'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '522762b37f5049179d8d95b8d14335cb'
                         key: {
@@ -7027,6 +7188,15 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ar_approval'
                             element: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '585e7b9641d44cf7b46b60a292213850'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'reason'
+                            language: 'en'
                         }
                     },
                     {
@@ -7998,6 +8168,17 @@ declare global {
                             name: 'x_695068_bcfa_ap_exception'
                             element: 'correlation_id'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '6707fb7886544f158f8a5e17017257d7'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'event_type'
+                            value: 'record_created'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -9175,6 +9356,17 @@ declare global {
                     },
                     {
                         table: 'sys_choice'
+                        id: '795e0e90de6144e4952e8bdc5b8454c6'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'event_type'
+                            value: 'override'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
                         id: '7982a6302391486c95402e8456a16d90'
                         key: {
                             name: 'x_695068_bcfa_ap_exception'
@@ -9303,6 +9495,14 @@ declare global {
                                     name: 'x_695068_bcfa.finance_reviewer'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '7bb6d621f05040e9a15edeab9341f4ff'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'process'
                         }
                     },
                     {
@@ -9485,6 +9685,17 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ai_interaction'
                             element: 'status'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '7ed7d2e4d6814dada7326bce5955df18'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'process'
+                            value: 'platform'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -11370,6 +11581,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: 'a11914774f3f4f08b5410bab4e5cb77f'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'process'
+                            value: 'intake'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: 'a1220ad6ead34cafb3f9b28db26b7ca5'
                         key: {
@@ -11471,6 +11693,17 @@ declare global {
                             name: 'x_695068_bcfa_deduction'
                             element: 'credit_note'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'a2e69a10ab454c37963c86c1f3b444f1'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'event_type'
+                            value: 'deduction'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -11677,6 +11910,23 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: 'a71720e8cadf448ab232b942d20fcccd'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'process'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: 'a741bd47a3e24d0aab6e80f10651f51f'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'reason'
+                        }
+                    },
+                    {
                         table: 'sys_ux_form_action'
                         id: 'a79e6675728a490ab0b3773e92bf33fa'
                         key: {
@@ -11769,6 +12019,15 @@ declare global {
                                     name: 'x_695068_bcfa.ap_processor'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'a8d9e36db57248e49ca71311e0a7c0f8'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'ai_agent'
+                            language: 'en'
                         }
                     },
                     {
@@ -13345,6 +13604,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: 'c42637f0d9884f6497fc44c9f9cef227'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'process'
+                            value: 'integration'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: 'c42bcebfbfdf4eb7b8db3f98c6696553'
                         key: {
@@ -14172,6 +14442,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: 'd243ed838d484e228c2610776780ddb7'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'event_type'
+                            value: 'match'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_ui_action_role'
                         id: 'd24f3dcb664c49a69fede46f6a2e922a'
                         key: {
@@ -14923,6 +15204,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: 'de82650703624e47bf513f0f33ce3efa'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'event_type'
+                            value: 'document_extracted'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_ui_action_role'
                         id: 'de8f576f1e6c4bacb586369264dfacda'
                         key: {
@@ -15159,6 +15451,14 @@ declare global {
                             name: 'x_695068_bcfa_finance_intake'
                             element: 'extraction_json'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice_set'
+                        id: 'e223291f4d3d4031aa25ddd472763b2d'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'process'
                         }
                     },
                     {
@@ -15624,6 +15924,17 @@ declare global {
                                     name: 'x_695068_bcfa.ar_processor'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'e916e62d5a104b6eb2f9fc48fb77d412'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'event_type'
+                            value: 'rule_evaluated'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -16476,6 +16787,17 @@ declare global {
                                     name: 'x_695068_bcfa.admin'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'f62d8be01262487d9fbd9fda7c11e47e'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'event_type'
+                            value: 'reconciliation'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {

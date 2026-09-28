@@ -292,6 +292,7 @@ FinanceAgentTools.prototype = {
             eventType: 'ai_recommendation',
             actor: gs.getUserID(),
             actorType: 'now_assist_ai',
+            aiAgent: this._isAiSession() ? 'BCFA ' + (domain === 'ap' ? 'AP Invoice' : 'Cash Application') + ' Review (agentic workflow)' : 'Now Assist skills (Explain with Now Assist)',
             description: 'Now Assist advisory note recorded on ' + domain.toUpperCase() + ' exception (advisory field only)',
             beforeValue: { ai_recommendation: before },
             afterValue: { ai_recommendation: advice }
@@ -302,6 +303,13 @@ FinanceAgentTools.prototype = {
     // ---------------------------------------------------------------
     // Internals
     // ---------------------------------------------------------------
+
+    // True when the session user is an AI agent identity (the agentic
+    // workflows run as one); a person using Explain with Now Assist is not.
+    _isAiSession: function() {
+        var user = new GlideRecord('sys_user');
+        return user.get(gs.getUserID()) && user.getValue('identity_type') === 'ai_agent';
+    },
 
     _runSkill: function(roleSet, skillKey, sourceTable, sysId, contextBuilder, label) {
         var denied = this._requireRoles(roleSet) || this._requireSysId(sysId);
@@ -314,9 +322,11 @@ FinanceAgentTools.prototype = {
         this.auditEngine.logEvent({
             sourceTable: sourceTable,
             sourceRecord: sysId,
-            eventType: 'ai_recommendation',
+            eventType: 'ai_invocation',
             actor: gs.getUserID(),
             actorType: 'now_assist_ai',
+            aiAgent: 'Now Assist skill: ' + skillKey,
+            reason: result.ok ? '' : String(result.message || result.error || ''),
             description: 'Now Assist skill ' + skillKey + (result.ok ? ' returned advisory text' : ' failed: ' + result.error),
             afterValue: { skill: skillKey, ok: result.ok, latencyMs: result.latencyMs, provider: result.provider || '' }
         });

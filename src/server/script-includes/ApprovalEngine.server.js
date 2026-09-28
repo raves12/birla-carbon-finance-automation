@@ -75,7 +75,26 @@ ApprovalEngine.prototype = {
         approval.setValue('decision', 'pending');
         var parent = new GlideRecord(p.parentTable);
         if (parent.get(parentSysId)) approval.setValue('state_before', parent.getValue('state'));
-        return approval.insert();
+        var approvalSysId = approval.insert();
+        this.audit.logEvent({
+            correlationId: parent.isValidRecord() ? parent.getValue('correlation_id') : '',
+            sourceTable: p.table,
+            sourceRecord: approvalSysId,
+            eventType: 'approval_requested',
+            actor: requestedBy || '',
+            actorType: requestedBy ? 'user' : 'system',
+            reason: options.overrideReason || '',
+            description: (options.type || 'standard') + ' approval requested for ' + (parent.isValidRecord() ? parent.getDisplayValue() : parentSysId) +
+                (options.group ? ' (group ' + approval.getDisplayValue('approval_group') + ')' : ''),
+            afterValue: { approval_type: options.type || 'standard', approval_group: options.group || '', requested_by: requestedBy || '',
+                state_before: approval.getValue('state_before') }
+        });
+        return approvalSysId;
+    },
+
+    _parentCorrelation: function(p, approval) {
+        var parent = new GlideRecord(p.parentTable);
+        return parent.get(approval.getValue(p.parentField)) ? parent.getValue('correlation_id') : '';
     },
 
     // ---- Segregation of duties --------------------------------------------------
@@ -198,11 +217,13 @@ ApprovalEngine.prototype = {
         var sod = this.checkSegregation({ process: process, approvalSysId: approvalSysId }, approver);
         if (!sod.ok) {
             this.audit.logEvent({
+                correlationId: this._parentCorrelation(p, approval),
                 sourceTable: p.table,
                 sourceRecord: approvalSysId,
                 eventType: 'approval_decision',
                 actor: approver || '',
                 actorType: 'user',
+                reason: sod.reason,
                 description: 'Approval decision "' + decision + '" refused. ' + sod.reason,
                 afterValue: { decision: decision, approver: approver, checks: sod.checks }
             });
@@ -217,11 +238,13 @@ ApprovalEngine.prototype = {
         approval.update();
 
         this.audit.logEvent({
+            correlationId: this._parentCorrelation(p, approval),
             sourceTable: p.table,
             sourceRecord: approvalSysId,
             eventType: 'approval_decision',
             actor: approver || '',
             actorType: approver ? 'user' : 'system',
+            reason: notes || approval.getValue('override_reason') || '',
             description: 'Approval ' + decision + (approver ? ' by ' + approval.getDisplayValue('approver') : ' by configured rule') +
                 (notes ? ': ' + notes : '') + ' [SoD passed: ' + sod.checks.join('; ') + ']',
             afterValue: { decision: decision, approver: approver, approval_type: approval.getValue('approval_type'),

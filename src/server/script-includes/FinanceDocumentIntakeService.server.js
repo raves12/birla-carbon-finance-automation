@@ -48,10 +48,13 @@ FinanceDocumentIntakeService.prototype = {
 
         // Phase 10 — duplicate-intake guard, before anything else runs.
         var hash = this.computeAttachmentHash(intakeSysId);
+        // A new (or replaced) document: first processing, or a new hash.
+        var newDocument = hash ? intake.getValue('attachment_hash') !== hash : intake.getValue('processing_status') === 'new';
         if (hash && intake.getValue('attachment_hash') !== hash) {
             intake.setValue('attachment_hash', hash);
             intake.update();
         }
+        if (newDocument) this._auditUpload(intake, hash);
         if (hash) {
             var duplicate = this._findDuplicateIntake(intakeSysId, hash, intake.getValue('source_reference'));
             if (duplicate) {
@@ -64,8 +67,9 @@ FinanceDocumentIntakeService.prototype = {
                 this.auditEngine.logEvent({
                     sourceTable: 'x_695068_bcfa_finance_intake',
                     sourceRecord: intakeSysId,
-                    eventType: 'exception_created',
+                    eventType: 'rule_evaluated',
                     actorType: 'system',
+                    reason: 'Duplicate intake: same attachment hash as ' + duplicate.getValue('number'),
                     description: 'Duplicate intake detected (attachment_hash match) — reused ' + duplicate.getValue('number') + ' instead of creating a new transaction.',
                 });
                 return { duplicate: true, originalIntakeSysId: duplicate.getUniqueValue() };
@@ -77,6 +81,17 @@ FinanceDocumentIntakeService.prototype = {
 
         if (status === 'review_required') {
             if (documentType && documentType !== 'unknown') {
+                this.auditEngine.logEvent({
+                    correlationId: intake.getValue('correlation_id'),
+                    sourceTable: 'x_695068_bcfa_finance_intake',
+                    sourceRecord: intakeSysId,
+                    eventType: 'human_review',
+                    actorType: 'user',
+                    reason: intake.getValue('processing_error') || 'Manual review',
+                    description: 'Reviewed intake ' + intake.getValue('number') + ' released for processing as ' + intake.getDisplayValue('document_type') + '.',
+                    beforeValue: { processing_status: 'review_required' },
+                    afterValue: { document_type: documentType }
+                });
                 return this._dispatchByDocumentType(intakeSysId, documentType);
             }
             return { requiresReview: true, reason: 'document_type is still unknown — set it manually, then run Process with Claude again.' };
@@ -192,6 +207,7 @@ FinanceDocumentIntakeService.prototype = {
 
         var data = envelope.data;
         intake.setValue('extraction_json', JSON.stringify(data));
+        this._auditExtraction(intake, data);
         intake.setValue('extraction_confidence', data.confidence);
         if (useClaude) intake.setValue('claude_request_id', envelope.requestId || intake.getValue('claude_request_id'));
         intake.update();
@@ -244,7 +260,7 @@ FinanceDocumentIntakeService.prototype = {
             correlationId: intakeResult.correlationId,
             sourceTable: 'x_695068_bcfa_finance_intake',
             sourceRecord: intakeSysId,
-            eventType: 'state_transition',
+            eventType: 'record_created',
             actorType: 'system',
             description: 'Finance Document Intake created AP Invoice ' + data.invoice_number + ' from the uploaded document (vendor resolved by ' + vendorResolution.method + ').',
             afterValue: { ap_invoice: apInvoiceSysId },
@@ -412,6 +428,7 @@ FinanceDocumentIntakeService.prototype = {
 
         var data = envelope.data;
         intake.setValue('extraction_json', JSON.stringify(data));
+        this._auditExtraction(intake, data);
         intake.setValue('extraction_confidence', data.confidence);
         intake.setValue('claude_request_id', envelope.requestId || intake.getValue('claude_request_id'));
         intake.update();
@@ -449,7 +466,7 @@ FinanceDocumentIntakeService.prototype = {
             correlationId: paymentIntake.correlationId,
             sourceTable: 'x_695068_bcfa_finance_intake',
             sourceRecord: intakeSysId,
-            eventType: 'state_transition',
+            eventType: 'record_created',
             actorType: 'system',
             description: 'Finance Document Intake created Payment ' + data.bank_reference + ' from the uploaded document.',
             afterValue: { payment: paymentSysId },
@@ -529,6 +546,7 @@ FinanceDocumentIntakeService.prototype = {
 
         var data = envelope.data;
         intake.setValue('extraction_json', JSON.stringify(data));
+        this._auditExtraction(intake, data);
         intake.setValue('extraction_confidence', data.confidence);
         if (useClaude) intake.setValue('claude_request_id', envelope.requestId || intake.getValue('claude_request_id'));
         intake.update();
@@ -594,7 +612,7 @@ FinanceDocumentIntakeService.prototype = {
         this.auditEngine.logEvent({
             sourceTable: 'x_695068_bcfa_finance_intake',
             sourceRecord: intakeSysId,
-            eventType: 'state_transition',
+            eventType: 'record_created',
             actorType: 'system',
             description: 'Finance Document Intake linked Remittance to Payment ' + found + ' from the uploaded document.',
             afterValue: { remittance: remittanceIntake.remittanceSysId, payment: found },
@@ -659,6 +677,7 @@ FinanceDocumentIntakeService.prototype = {
             sourceRecord: intakeSysId,
             eventType: 'exception_created',
             actorType: 'system',
+            reason: reason || '',
             description: 'Routed to manual review: ' + (reason || ''),
         });
         return { requiresReview: true, reason: reason };
@@ -706,6 +725,50 @@ FinanceDocumentIntakeService.prototype = {
 
     // ==== Internal status/audit helpers =====================================
 
+    // document_uploaded: the first time processing sees an attachment (or a
+    // replaced one), with its name, type, size and content hash.
+    _auditUpload: function(intake, hash) {
+        var attachment = new GlideRecord('sys_attachment');
+        attachment.addQuery('table_name', 'x_695068_bcfa_finance_intake');
+        attachment.addQuery('table_sys_id', intake.getUniqueValue());
+        attachment.orderByDesc('sys_created_on');
+        attachment.setLimit(1);
+        attachment.query();
+        var file = attachment.next()
+            ? { file_name: attachment.getValue('file_name'), content_type: attachment.getValue('content_type'), size_bytes: attachment.getValue('size_bytes'),
+                uploaded_by: attachment.getValue('sys_created_by'), uploaded_on: attachment.getValue('sys_created_on') }
+            : {};
+        this.auditEngine.logEvent({
+            correlationId: intake.getValue('correlation_id'),
+            sourceTable: 'x_695068_bcfa_finance_intake',
+            sourceRecord: intake.getUniqueValue(),
+            eventType: 'document_uploaded',
+            actorType: 'user',
+            description: 'Document ' + (file.file_name || '') + ' uploaded to intake ' + intake.getValue('number') + ' (' + intake.getDisplayValue('source') +
+                (intake.getValue('document_type') !== 'unknown' ? ', type ' + intake.getDisplayValue('document_type') : '') + ').',
+            afterValue: { attachment_hash: hash, source: intake.getValue('source'), source_reference: intake.getValue('source_reference'),
+                file_name: file.file_name, content_type: file.content_type, size_bytes: file.size_bytes, uploaded_by: file.uploaded_by, uploaded_on: file.uploaded_on }
+        });
+    },
+
+    // document_extracted: the structured fields read from the document and
+    // the confidence (the full result stays in extraction_json).
+    _auditExtraction: function(intake, data) {
+        var claude = this.policy.aiProvider() === 'claude';
+        var fields = [];
+        for (var k in data) if (k !== 'confidence' && k !== 'warnings' && data[k] !== null && data[k] !== '' && typeof data[k] !== 'object') fields.push(k);
+        this.auditEngine.logEvent({
+            correlationId: intake.getValue('correlation_id'),
+            sourceTable: 'x_695068_bcfa_finance_intake',
+            sourceRecord: intake.getUniqueValue(),
+            eventType: 'document_extracted',
+            actorType: claude ? 'claude_ai' : 'simulated_ai',
+            description: (claude ? 'Claude' : 'Simulated Document Intelligence') + ' extraction of ' + intake.getDisplayValue('document_type') + ' ' +
+                intake.getValue('number') + ', confidence ' + data.confidence + '; fields: ' + fields.join(', '),
+            afterValue: { confidence: data.confidence, fields: fields, warnings: data.warnings || [] }
+        });
+    },
+
     _setStatus: function(intakeSysId, status, description) {
         var intake = new GlideRecord('x_695068_bcfa_finance_intake');
         if (!intake.get(intakeSysId)) return false;
@@ -737,7 +800,8 @@ FinanceDocumentIntakeService.prototype = {
             sourceRecord: intakeSysId,
             eventType: 'exception_created',
             actorType: 'system',
-            description: message,
+            reason: message,
+            description: 'Processing failed: ' + message,
         });
         return { ok: false, failed: true, safeError: message };
     },
