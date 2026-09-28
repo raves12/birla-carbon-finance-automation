@@ -80,21 +80,19 @@ if (gs.getCurrentScopeName() !== 'rhino.global') {
         has.addQuery('sys_ui_section', section);
         has.addQuery('element', 'review_summary');
         has.query();
-        if (has.hasNext()) { report.push(SECTIONS[section] + ' already has it'); continue; }
-        var shift = new GlideRecord('sys_ui_element');
-        shift.addQuery('sys_ui_section', section);
-        shift.query();
-        while (shift.next()) {
-            shift.setValue('position', parseInt(shift.getValue('position') || '0', 10) + 1);
-            shift.update();
-        }
+        // Creating the column makes the platform append it at the end of the
+        // form; position -1 puts it above the first split (full width, top).
         var el = new GlideRecord('sys_ui_element');
-        el.initialize();
-        el.setValue('sys_ui_section', section);
-        el.setValue('element', 'review_summary');
-        el.setValue('position', 0);
-        el.insert();
-        report.push(SECTIONS[section] + ' form: Review Summary added at the top');
+        if (has.next()) {
+            el = has;
+        } else {
+            el.initialize();
+            el.setValue('sys_ui_section', section);
+            el.setValue('element', 'review_summary');
+        }
+        el.setValue('position', -1);
+        if (el.isNewRecord()) el.insert(); else el.update();
+        report.push(SECTIONS[section] + ' form: Review Summary at the top');
     }
     out.push('PHASE24 ' + report.join(' | '));
 })();
