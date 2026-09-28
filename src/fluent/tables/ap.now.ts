@@ -207,6 +207,12 @@ export const x_695068_bcfa_ap_approval = Table({
         ap_invoice: ReferenceColumn({ label: 'AP Invoice', referenceTable: 'x_695068_bcfa_ap_invoice', mandatory: true }),
         requested_by: ReferenceColumn({ label: 'Requested By', referenceTable: 'sys_user' }),
         approver: ReferenceColumn({ label: 'Approver', referenceTable: 'sys_user' }),
+        approval_group: ReferenceColumn({
+            label: 'Approval Group',
+            referenceTable: 'sys_user_group',
+            readOnly: true,
+            hint: 'Group the BCFA AP Approval decision table routed this approval to (Phase 15). Membership is enforced from Phase 17.',
+        }),
         decision: ChoiceColumn({
             label: 'Decision',
             default: 'pending',

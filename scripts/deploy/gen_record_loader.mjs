@@ -42,6 +42,7 @@ const DEMO = {
     { sysId: '6c3107e75eeec3146f95ff49b9011def', name: 'BCFA AP Operations', description: 'Demo group: AP processors who own AP exceptions (POC).' },
     { sysId: 'e34ee8a159fd504893d4fc248a6632a7', name: 'BCFA Finance Approvers', description: 'Demo group: finance approvers for AP posting and overrides (POC).' },
     { sysId: 'a42557739c621c40c2570c9fa414cc46', name: 'BCFA Cash Application', description: 'Demo group: AR processors who own cash application exceptions (POC).' },
+    { sysId: 'f1c12aaee7e9ac7e31fc871b0eca266b', name: 'BCFA Finance Controllers', description: 'Demo group: approves high-value invoices and overrides above 10% variance (POC decision table routing).' },
   ],
   users: [
     { sysId: '6fe2fbfa188d7aa5829b61d52b3202c9', userName: 'bcfa.ap.processor', first: 'BCFA Demo', last: 'AP Processor', role: 'x_695068_bcfa.ap_processor', group: '6c3107e75eeec3146f95ff49b9011def' },

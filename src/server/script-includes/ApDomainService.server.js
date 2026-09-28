@@ -310,7 +310,7 @@ ApDomainService.prototype = {
         }
         evidence.push('Net ' + match.netAmount + ', tax ' + match.taxAmount +
             (match.expectedTax !== null ? ', expected tax ' + match.expectedTax + ' (' + match.vendorCountry + ' rate ' + pct(match.expectedTaxRate) + ')' : ', no expected tax rate for vendor country'));
-        evidence.push('Tolerances are POC ASSUMPTIONS (x_695068_bcfa.ap.tolerance.*).');
+        evidence.push('Tolerances (POC ASSUMPTION) from ' + (t.source || 'x_695068_bcfa.ap.tolerance.* properties') + '.');
 
         var varianceAmount = match.priceVarianceValue;
         var variancePct = match.priceVariancePct;
@@ -340,10 +340,20 @@ ApDomainService.prototype = {
     // amount is within the configured auto-approve limit, records a
     // rule-based approval. Either way posting only happens through the
     // approval cascade and IntegrationService.
-    routeForApproval: function(apInvoiceSysId, requestedBy) {
+    // Phase 15: the BCFA AP Approval decision table decides whether approval
+    // is needed and which group approves (inputs: amount, exception type,
+    // variance %, company). context (optional): { exceptionType, variancePct }
+    // for an invoice approved after an exception; a clean invoice is 'none'.
+    routeForApproval: function(apInvoiceSysId, requestedBy, context) {
         var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
         if (!invoice.get(apInvoiceSysId)) return { error: 'AP Invoice not found' };
-        var rule = this.policy.apApprovalRule(invoice.getValue('gross_amount'));
+        context = context || {};
+        var rule = this.policy.apApprovalDecision({
+            amount: parseFloat(invoice.getValue('gross_amount') || '0'),
+            exceptionType: context.exceptionType || 'none',
+            variancePct: context.variancePct || 0,
+            company: invoice.getValue('company_code')
+        });
         this.auditEngine.logEvent({
             correlationId: invoice.getValue('correlation_id'),
             sourceTable: 'x_695068_bcfa_ap_invoice',
@@ -353,7 +363,7 @@ ApDomainService.prototype = {
             description: 'Approval rule evaluated (POC ASSUMPTION): ' + rule.rule,
             afterValue: rule
         });
-        var approval = this.requestApproval(apInvoiceSysId, requestedBy);
+        var approval = this.requestApproval(apInvoiceSysId, requestedBy, rule.group);
         if (rule.required) return { approvalRequired: true, approvalSysId: approval.approvalSysId, rule: rule.rule };
         var decision = this.decideApproval(apInvoiceSysId, approval.approvalSysId, 'approved', null, 'Approved by configured rule: ' + rule.rule);
         return { approvalRequired: false, approvalSysId: approval.approvalSysId, rule: rule.rule, decision: decision };
@@ -418,9 +428,9 @@ ApDomainService.prototype = {
         return match;
     },
 
-    requestApproval: function(apInvoiceSysId, requestedBy) {
+    requestApproval: function(apInvoiceSysId, requestedBy, approvalGroup) {
         this._setState(apInvoiceSysId, 'PENDING_APPROVAL', null, 'Requesting posting approval');
-        var approvalSysId = this.approvalEngine.requestApInvoiceApproval(apInvoiceSysId, requestedBy);
+        var approvalSysId = this.approvalEngine.requestApInvoiceApproval(apInvoiceSysId, requestedBy, approvalGroup);
         return { approvalSysId: approvalSysId };
     },
 

@@ -54,13 +54,19 @@ MatchingEngine.prototype = {
     //   total     |sum of line amounts - header net| <= absolute band
     //                                                            -> line_total_mismatch
     threeWayMatch: function(apInvoiceSysId, toleranceOverrides) {
-        var tolerances = this._mergeTolerances(toleranceOverrides);
-
         var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
         if (!invoice.get(apInvoiceSysId)) {
             return { error: 'AP Invoice not found' };
         }
         var invoicePo = invoice.getValue('purchase_order');
+        // Phase 15: tolerances from the BCFA AP Tolerance decision table for
+        // this company / vendor country / vendor type / invoice type.
+        var tolerances = this._mergeTolerances(toleranceOverrides, {
+            company: invoice.getValue('company_code'),
+            country: this._vendorCountry(invoice.getValue('vendor')) || '',
+            vendorType: 'standard',
+            invoiceType: invoicePo ? 'po' : 'non_po'
+        });
 
         var maxQuantityVariancePct = 0;
         var maxPriceVariancePct = 0;
@@ -579,17 +585,18 @@ MatchingEngine.prototype = {
         return (vendorSysId || '') + '|' + (invoiceNumber || '') + '|' + (grossAmount || '');
     },
 
-    _mergeTolerances: function(overrides) {
+    _mergeTolerances: function(overrides, context) {
         var merged = {};
         var configured = {};
         try {
-            configured = new FinancePolicy().apTolerances();
+            configured = new FinancePolicy().apTolerances(context);
         } catch (e) {
             configured = {};
         }
         for (var k in this.DEFAULT_TOLERANCES) {
             merged[k] = configured.hasOwnProperty(k) ? configured[k] : this.DEFAULT_TOLERANCES[k];
         }
+        merged.source = configured.source || 'engine defaults';
         if (overrides) {
             for (var k2 in overrides) {
                 merged[k2] = overrides[k2];

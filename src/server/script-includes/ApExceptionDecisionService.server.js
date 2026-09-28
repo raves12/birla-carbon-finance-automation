@@ -81,7 +81,15 @@ ApExceptionDecisionService.prototype = {
         // Maker/checker: the override is requested in the exception owner's
         // name and approved by the current user (checked in _overrideBlocker
         // and again by ApprovalEngine). Approval fires the posting cascade.
-        var approval = this.apService.requestApproval(invoiceSysId, requester);
+        // The approval decision table routes the override (exception type
+        // and variance are inputs); an override always needs this approval.
+        var route = this.policy.apApprovalDecision({
+            amount: parseFloat(invoice.getValue('gross_amount') || '0'),
+            exceptionType: exception.getValue('reason_code'),
+            variancePct: parseFloat(exception.getValue('variance_pct') || '0'),
+            company: invoice.getValue('company_code')
+        });
+        var approval = this.apService.requestApproval(invoiceSysId, requester, route.group);
         var result = this.apService.decideApproval(invoiceSysId, approval.approvalSysId, 'approved', userId,
             'Tolerance override (' + exception.getValue('reason_code') + '): ' + reason);
         if (result.error) return this._error(result.error);

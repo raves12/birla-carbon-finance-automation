@@ -70,9 +70,6 @@ ArExceptionDecisionService.prototype = {
         }
         var type = exception.getValue('deduction_type');
         if (!type) return this._error('Choose the Deduction Type on the exception (for example Bank Charge) before approving the deduction.');
-        if (!this.policy.arDeductionTypeAllowed(type)) {
-            return this._error('Deduction type ' + exception.getDisplayValue('deduction_type') + ' is not allowed (x_695068_bcfa.ar.deduction.allowed_types).');
-        }
 
         var balance = this._balance(payment);
         if (balance.allocations.length === 0) return this._error('The payment has no allocations to attach a deduction to.');
@@ -96,9 +93,17 @@ ArExceptionDecisionService.prototype = {
             }
         }
 
-        var threshold = this.policy.arDeductionApprovalThreshold();
-        if (amount > threshold && !gs.hasRole('x_695068_bcfa.finance_approver') && !gs.hasRole('x_695068_bcfa.admin')) {
-            return this._error('A deduction of ' + amount + ' exceeds ' + threshold + ' (x_695068_bcfa.ar.deduction.approval_threshold) and needs a finance approver.');
+        // Phase 15: the BCFA AR Deduction decision table (type, amount,
+        // company) says whether this deduction is allowed and whether it
+        // needs a finance approver (properties are the fallback).
+        var policyDecision = this.policy.arDeductionDecision({
+            deductionType: type, amount: amount, company: payment.customer.company_code.toString()
+        });
+        if (!policyDecision.allowed) {
+            return this._error('Deduction type ' + exception.getDisplayValue('deduction_type') + ' of ' + amount + ' is not allowed. ' + policyDecision.rule);
+        }
+        if (policyDecision.approvalRequired && !gs.hasRole('x_695068_bcfa.finance_approver') && !gs.hasRole('x_695068_bcfa.admin')) {
+            return this._error('This deduction needs a finance approver. ' + policyDecision.rule);
         }
 
         // Attach to the allocation the remittance short-paid, else the last.
@@ -134,7 +139,7 @@ ArExceptionDecisionService.prototype = {
         }
 
         this._recordDecision(exception, 'approve_deduction', reason, userId, 'resolved',
-            'Deduction ' + type + ' ' + amount + ' approved by ' + gs.getUserDisplayName() + ': ' + reason);
+            'Deduction ' + type + ' ' + amount + ' approved by ' + gs.getUserDisplayName() + ': ' + reason + ' [' + policyDecision.rule + ']');
 
         // Deterministic re-check: allocation - approved deductions = payment.
         var advance = this.arService.advanceAfterDeduction(payment.getUniqueValue());
@@ -149,6 +154,7 @@ ArExceptionDecisionService.prototype = {
             decision: 'approve_deduction',
             deductionSysId: deductionSysId,
             deductionType: type,
+            policy: policyDecision.source,
             amount: amount,
             netAllocated: advance.netAllocated,
             approvalRequired: approval.approvalRequired,

@@ -7700,6 +7700,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '6f2f0a75a8ed479183ef036ae1e06ba0'
+                        key: {
+                            name: 'x_695068_bcfa_ap_approval'
+                            element: 'approval_group'
+                        }
+                    },
+                    {
                         table: 'par_dashboard_visibility'
                         id: '6f7410588668400ea0e43e069a81d616'
                         key: {
@@ -9955,6 +9963,15 @@ declare global {
                         id: '9d6e0aefd44a403ba372fb0e90cc9afb'
                         key: {
                             ui_action: 'ed3b151ee7784f2988224662eba5e6b2'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '9dadf8b1af244d048a9b35496d24b4fb'
+                        key: {
+                            name: 'x_695068_bcfa_ap_approval'
+                            element: 'approval_group'
+                            language: 'en'
                         }
                     },
                     {

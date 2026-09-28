@@ -58,8 +58,86 @@ FinancePolicy.AP_BASE_SEVERITY = {
     other: 'medium'
 };
 
+// Phase 15: native Decision Tables (Decision Builder) hold the policy that
+// depends on several inputs. They are created through the supported
+// sn_dt Decision Table API (scripts/deploy/phase15_decision_tables_bg.js),
+// found by name in the app scope and evaluated with sn_dt.DecisionTableAPI.
+// If a table is missing, returns no row, or cannot be read, the matching
+// x_695068_bcfa.* properties apply instead, so a control is never off.
+FinancePolicy.APP_SCOPE = '229ba2b1a079431e104010f5ea883e85';
+FinancePolicy.DECISION_TABLES = {
+    apTolerance: 'BCFA AP Tolerance',
+    apApproval: 'BCFA AP Approval',
+    arDeduction: 'BCFA AR Deduction'
+};
+// Fallback approval group when no decision table row applies.
+FinancePolicy.DEFAULT_APPROVAL_GROUP = 'e34ee8a159fd504893d4fc248a6632a7'; // BCFA Finance Approvers
+
 FinancePolicy.prototype = {
-    initialize: function() {},
+    initialize: function() {
+        this._tableIds = {};
+    },
+
+    // ---- Decision tables ---------------------------------------------------
+
+    // Evaluates a BCFA decision table. Returns { source:'decision_table',
+    // table, values:{output: value} } for the first matching row, or null
+    // (no table, no row, or an error) so the caller uses its property
+    // fallback.
+    decide: function(tableKey, inputs, outputs) {
+        var tableId = this._decisionTableId(tableKey);
+        if (!tableId) return null;
+        try {
+            var answer = new sn_dt.DecisionTableAPI().getDecision(tableId, inputs);
+            if (!answer || (answer.isValidRecord && !answer.isValidRecord())) return null;
+            var values = {};
+            for (var i = 0; i < outputs.length; i++) {
+                var value = this._answerValue(answer, outputs[i]);
+                if (value === null || value === undefined || value === '') return null;
+                values[outputs[i]] = value;
+            }
+            return { source: 'decision_table', table: FinancePolicy.DECISION_TABLES[tableKey], answer: answer.getDisplayValue(), values: values };
+        } catch (e) {
+            gs.warn('BCFA FinancePolicy: decision table ' + FinancePolicy.DECISION_TABLES[tableKey] + ' could not be evaluated, using properties: ' + e);
+            return null;
+        }
+    },
+
+    _decisionTableId: function(tableKey) {
+        if (this._tableIds.hasOwnProperty(tableKey)) return this._tableIds[tableKey];
+        var table = new GlideRecord('sys_decision');
+        table.addQuery('name', FinancePolicy.DECISION_TABLES[tableKey]);
+        table.addQuery('sys_scope', FinancePolicy.APP_SCOPE);
+        table.addQuery('active', true);
+        table.setLimit(1);
+        table.query();
+        this._tableIds[tableKey] = table.next() ? table.getUniqueValue() : null;
+        return this._tableIds[tableKey];
+    },
+
+    // Reads one result value of a multi-result answer: through the answer's
+    // result elements, else from the stored variable value.
+    _answerValue: function(answer, name) {
+        try {
+            if (answer.result_elements && answer.result_elements[name] !== undefined && answer.result_elements[name] !== null) {
+                var direct = String(answer.result_elements[name]);
+                if (direct !== '' && direct !== 'undefined') return direct;
+            }
+        } catch (e) {
+            // fall through to the stored value
+        }
+        var stored = new GlideRecord('sys_variable_value');
+        stored.addQuery('document', 'sys_decision_multi_result');
+        stored.addQuery('document_key', answer.getUniqueValue());
+        stored.addQuery('variable.element', name);
+        stored.setLimit(1);
+        stored.query();
+        return stored.next() ? stored.getValue('value') : null;
+    },
+
+    _bool: function(value) {
+        return value === true || value === 'true' || value === '1';
+    },
 
     // 'native' (ServiceNow AI: Now Assist skills/agents, simulated document
     // extraction until DocIntel extraction is licensed), 'claude' (legacy,
@@ -69,12 +147,78 @@ FinancePolicy.prototype = {
         return value === 'claude' || value === 'simulated' ? value : 'native';
     },
 
-    apTolerances: function() {
-        return {
+    // context (optional): { company, country, vendorType, invoiceType }.
+    // With a context the BCFA AP Tolerance decision table decides; the
+    // x_695068_bcfa.ap.tolerance.* properties are the fallback.
+    apTolerances: function(context) {
+        var fallback = {
             quantityPct: this._number('ap.tolerance.quantity_pct'),
             pricePct: this._number('ap.tolerance.price_pct'),
             taxAbsolute: this._number('ap.tolerance.tax_absolute'),
-            taxRelativePct: this._number('ap.tolerance.tax_relative_pct')
+            taxRelativePct: this._number('ap.tolerance.tax_relative_pct'),
+            source: 'properties'
+        };
+        if (!context) return fallback;
+        var decision = this.decide('apTolerance', {
+            company: context.company || '', country: context.country || '',
+            vendor_type: context.vendorType || 'standard', invoice_type: context.invoiceType || 'po'
+        }, ['quantity_tolerance_pct', 'price_tolerance_pct', 'tax_tolerance_abs', 'tax_tolerance_pct']);
+        if (!decision) return fallback;
+        var values = {
+            quantityPct: parseFloat(decision.values.quantity_tolerance_pct),
+            pricePct: parseFloat(decision.values.price_tolerance_pct),
+            taxAbsolute: parseFloat(decision.values.tax_tolerance_abs),
+            taxRelativePct: parseFloat(decision.values.tax_tolerance_pct),
+            source: 'decision table ' + decision.table + ' (' + decision.answer + ')'
+        };
+        for (var k in values) {
+            if (k !== 'source' && (isNaN(values[k]) || values[k] < 0)) return fallback;
+        }
+        return values;
+    },
+
+    // BCFA AP Approval decision table: context { amount, exceptionType
+    // ('none' for a clean invoice), variancePct (percent), company }.
+    // Returns { required, group, rule, source }.
+    apApprovalDecision: function(context) {
+        var decision = this.decide('apApproval', {
+            amount: context.amount || 0, exception_type: context.exceptionType || 'none',
+            variance_pct: context.variancePct || 0, company: context.company || ''
+        }, ['approval_required', 'approval_group']);
+        if (decision) {
+            var required = this._bool(decision.values.approval_required);
+            return { required: required, group: decision.values.approval_group, source: 'decision table ' + decision.table,
+                rule: (required ? 'Approval required' : 'No approval required') + ' by decision table ' + decision.table + ' (' + decision.answer + ') for amount ' +
+                    context.amount + ', exception ' + (context.exceptionType || 'none') + ', variance ' + (context.variancePct || 0) + '%.' };
+        }
+        var fallback = this.apApprovalRule(context.amount);
+        fallback.group = FinancePolicy.DEFAULT_APPROVAL_GROUP;
+        fallback.source = 'properties';
+        return fallback;
+    },
+
+    // BCFA AR Deduction decision table: context { deductionType, amount,
+    // company }. Returns { allowed, approvalRequired, group, rule, source }.
+    arDeductionDecision: function(context) {
+        var decision = this.decide('arDeduction', {
+            deduction_type: context.deductionType || '', amount: context.amount || 0, company: context.company || ''
+        }, ['allowed', 'approval_required', 'approval_group']);
+        if (decision) {
+            return {
+                allowed: this._bool(decision.values.allowed),
+                approvalRequired: this._bool(decision.values.approval_required),
+                group: decision.values.approval_group,
+                source: 'decision table ' + decision.table,
+                rule: 'Decision table ' + decision.table + ' (' + decision.answer + ') for ' + context.deductionType + ' ' + context.amount + '.'
+            };
+        }
+        var threshold = this.arDeductionApprovalThreshold();
+        return {
+            allowed: this.arDeductionTypeAllowed(context.deductionType),
+            approvalRequired: parseFloat(context.amount || '0') > threshold,
+            group: FinancePolicy.DEFAULT_APPROVAL_GROUP,
+            source: 'properties',
+            rule: 'Properties: allowed types ' + this._string('ar.deduction.allowed_types') + ', finance approver above ' + threshold + '.'
         };
     },
 

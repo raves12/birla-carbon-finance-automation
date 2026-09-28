@@ -2,11 +2,15 @@ var ApprovalEngine = Class.create();
 ApprovalEngine.prototype = {
     initialize: function() {},
 
-    requestApInvoiceApproval: function(apInvoiceSysId, requestedBy) {
+    // approvalGroup (optional, Phase 15): the group the approval decision
+    // table routed this approval to. Recorded on the approval; membership is
+    // enforced from Phase 17.
+    requestApInvoiceApproval: function(apInvoiceSysId, requestedBy, approvalGroup) {
         var approval = new GlideRecord('x_695068_bcfa_ap_approval');
         approval.initialize();
         approval.setValue('ap_invoice', apInvoiceSysId);
         if (requestedBy) approval.setValue('requested_by', requestedBy);
+        if (approvalGroup) approval.setValue('approval_group', approvalGroup);
         approval.setValue('decision', 'pending');
         var sysId = approval.insert();
 
