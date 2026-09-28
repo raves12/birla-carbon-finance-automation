@@ -79,17 +79,12 @@ ApExceptionDecisionService.prototype = {
         this.apService._setState(invoiceSysId, 'RESOLUTION', null, 'Finance approver accepted the ' + exception.getValue('reason_code') + ' variance by override');
 
         // Maker/checker: the override is requested in the exception owner's
-        // name and approved by the current user (checked in _overrideBlocker
-        // and again by ApprovalEngine). Approval fires the posting cascade.
-        // The approval decision table routes the override (exception type
-        // and variance are inputs); an override always needs this approval.
-        var route = this.policy.apApprovalDecision({
-            amount: parseFloat(invoice.getValue('gross_amount') || '0'),
-            exceptionType: exception.getValue('reason_code'),
-            variancePct: parseFloat(exception.getValue('variance_pct') || '0'),
-            company: invoice.getValue('company_code')
-        });
-        var approval = this.apService.requestApproval(invoiceSysId, requester, route.group);
+        // name and approved by the current user. The route (approval group
+        // from the approval decision table) and the segregation-of-duties
+        // pre-check were done in _overrideBlocker, before anything changed;
+        // ApprovalEngine checks again when the decision is recorded.
+        var route = this._overrideRoute;
+        var approval = this.apService.requestApproval(invoiceSysId, requester, { group: route.group, type: 'override', overrideReason: reason });
         var result = this.apService.decideApproval(invoiceSysId, approval.approvalSysId, 'approved', userId,
             'Tolerance override (' + exception.getValue('reason_code') + '): ' + reason);
         if (result.error) return this._error(result.error);
@@ -147,6 +142,22 @@ ApExceptionDecisionService.prototype = {
         if (other.next()) {
             return 'The invoice has another open exception (' + other.getDisplayValue('reason_code') + '). Resolve it first.';
         }
+
+        // Phase 17: route the override through the approval decision table
+        // and run the full segregation-of-duties gate for the decider now,
+        // so a refusal changes nothing.
+        var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
+        invoice.get(invoiceSysId);
+        this._overrideRoute = this.policy.apApprovalDecision({
+            amount: parseFloat(invoice.getValue('gross_amount') || '0'),
+            exceptionType: reasonCode,
+            variancePct: parseFloat(exception.getValue('variance_pct') || '0'),
+            company: invoice.getValue('company_code')
+        });
+        var sod = new ApprovalEngine().checkSegregation({
+            process: 'ap', parentSysId: invoiceSysId, requestedBy: requester, group: this._overrideRoute.group, type: 'override'
+        }, userId);
+        if (!sod.ok) return sod.reason;
         return null;
     },
 

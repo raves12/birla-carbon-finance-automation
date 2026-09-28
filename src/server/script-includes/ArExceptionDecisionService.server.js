@@ -146,7 +146,8 @@ ArExceptionDecisionService.prototype = {
         if (!advance.balanced) {
             return this._error('The deduction was recorded but the payment still does not balance (difference ' + advance.difference + '). It stays in exception.');
         }
-        var approval = this.arService.routeForApproval(payment.getUniqueValue(), userId);
+        var approval = this.arService.routeForApproval(payment.getUniqueValue(), userId,
+            { overrideReason: 'Deduction ' + type + ' ' + amount + ' accepted: ' + reason });
         var after = new GlideRecord('x_695068_bcfa_payment');
         after.get(payment.getUniqueValue());
         return {

@@ -637,7 +637,9 @@ ArDomainService.prototype = {
     // requests approval (requester = requestedBy) or, within the
     // auto-approve limit, records a rule-based approval. Clearing only ever
     // happens through the approval cascade and IntegrationService.
-    routeForApproval: function(paymentSysId, requestedBy) {
+    // options (optional): { overrideReason } recorded on the approval (e.g.
+    // the approved deduction).
+    routeForApproval: function(paymentSysId, requestedBy, options) {
         var payment = new GlideRecord('x_695068_bcfa_payment');
         if (!payment.get(paymentSysId)) return { error: 'Payment not found' };
         var rule = this.policy.arApprovalRule(payment.getValue('amount'));
@@ -650,7 +652,8 @@ ArDomainService.prototype = {
             description: 'Approval rule evaluated (POC ASSUMPTION): ' + rule.rule,
             afterValue: rule
         });
-        var approval = this.requestApproval(paymentSysId, requestedBy);
+        var approval = this.requestApproval(paymentSysId, requestedBy, {
+            type: rule.required ? 'standard' : 'rule', overrideReason: options && options.overrideReason });
         if (rule.required) return { approvalRequired: true, approvalSysId: approval.approvalSysId, rule: rule.rule };
         var decision = this.decideApproval(paymentSysId, approval.approvalSysId, 'approved', null, 'Approved by configured rule: ' + rule.rule);
         return { approvalRequired: false, approvalSysId: approval.approvalSysId, rule: rule.rule, decision: decision };
@@ -774,12 +777,18 @@ ArDomainService.prototype = {
         return match;
     },
 
-    requestApproval: function(paymentSysId, requestedBy) {
-        var approvalSysId = this.approvalEngine.requestPaymentApproval(paymentSysId, requestedBy);
+    // options (optional): { group, type ('standard'|'rule'), overrideReason }.
+    // Without a group the approval goes to BCFA Finance Approvers.
+    requestApproval: function(paymentSysId, requestedBy, options) {
+        options = options || {};
+        if (!options.group) options.group = FinancePolicy.DEFAULT_APPROVAL_GROUP;
+        var approvalSysId = this.approvalEngine.requestPaymentApproval(paymentSysId, requestedBy, options);
         return { approvalSysId: approvalSysId };
     },
 
     decideApproval: function(paymentSysId, approvalSysId, decision, approver, notes) {
+        // Phase 17: the engine's segregation-of-duties gate runs before the
+        // payment state changes (a refusal is audited and changes nothing).
         var result = this.approvalEngine.decidePaymentApproval(approvalSysId, decision, approver, notes);
         if (result.error) return result;
 
@@ -790,6 +799,7 @@ ArDomainService.prototype = {
             this._setState(paymentSysId, 'EXCEPTION', null, 'Approval rejected');
             result.exceptionSysId = exceptionSysId;
         }
+        this.approvalEngine.recordStateAfter('ar', approvalSysId);
         return result;
     },
 

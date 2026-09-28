@@ -48,6 +48,7 @@ const DEMO = {
     { sysId: '6fe2fbfa188d7aa5829b61d52b3202c9', userName: 'bcfa.ap.processor', first: 'BCFA Demo', last: 'AP Processor', role: 'x_695068_bcfa.ap_processor', group: '6c3107e75eeec3146f95ff49b9011def' },
     { sysId: 'd33f6290d7533660937e25a599602b2c', userName: 'bcfa.finance.approver', first: 'BCFA Demo', last: 'Finance Approver', role: 'x_695068_bcfa.finance_approver', group: 'e34ee8a159fd504893d4fc248a6632a7' },
     { sysId: 'a9f827de8d254b4150e07ac76dd9cef6', userName: 'bcfa.ar.processor', first: 'BCFA Demo', last: 'AR Processor', role: 'x_695068_bcfa.ar_processor', group: 'a42557739c621c40c2570c9fa414cc46' },
+    { sysId: 'cb581f804d6a9110922aaa08a64c3292', userName: 'bcfa.finance.controller', first: 'BCFA Demo', last: 'Finance Controller', role: 'x_695068_bcfa.finance_approver', group: 'f1c12aaee7e9ac7e31fc871b0eca266b', groups: ['f1c12aaee7e9ac7e31fc871b0eca266b', 'e34ee8a159fd504893d4fc248a6632a7'] },
   ],
 };
 const demoPreamble = `
@@ -77,11 +78,13 @@ const demoPreamble = `
     grant.addQuery('role', role.getUniqueValue());
     grant.query();
     if (!grant.hasNext()) { grant.initialize(); grant.setValue('user', u.sysId); grant.setValue('role', role.getUniqueValue()); grant.insert(); }
-    var member = new GlideRecord('sys_user_grmember');
-    member.addQuery('user', u.sysId);
-    member.addQuery('group', u.group);
-    member.query();
-    if (!member.hasNext()) { member.initialize(); member.setValue('user', u.sysId); member.setValue('group', u.group); member.insert(); }
+    (u.groups || [u.group]).forEach(function(groupId) {
+      var member = new GlideRecord('sys_user_grmember');
+      member.addQuery('user', u.sysId);
+      member.addQuery('group', groupId);
+      member.query();
+      if (!member.hasNext()) { member.initialize(); member.setValue('user', u.sysId); member.setValue('group', groupId); member.insert(); }
+    });
   });
   out.push('demo users: ' + demo.users.map(function(u) {
     return u.userName + ' ' + u.role.split('.')[1] + '=' + gs.getUser().getUserByID(u.sysId).hasRole(u.role);

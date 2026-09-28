@@ -37,7 +37,14 @@ DemoDataSeeder.prototype = {
         return { masterData: masterData, apScenarios: apResults, arScenarios: arResults };
     },
 
+    // [requester, approver]. Phase 17: approvals pass the segregation-of-
+    // duties gate (approver role, not the requester, not the processor, in
+    // the approval group), so the demo processor requests and the demo
+    // finance approver approves when those users exist.
     _twoUsers: function() {
+        var processor = this._lookupSysId('sys_user', 'user_name', 'bcfa.ap.processor');
+        var approver = this._lookupSysId('sys_user', 'user_name', 'bcfa.finance.approver');
+        if (processor && approver) return [processor, approver];
         var users = [];
         var gr = new GlideRecord('sys_user');
         gr.addQuery('active', true);

@@ -5,6 +5,8 @@ import {
     bcfaArProcessor,
     bcfaFinanceReviewer,
     bcfaFinanceApprover,
+    bcfaApApprover,
+    bcfaArApprover,
     bcfaIntegrationOperator,
     bcfaAuditor,
     bcfaReadOnly,
@@ -619,10 +621,10 @@ Acl({
     type: 'record',
     table: 'x_695068_bcfa_ap_approval',
     operation: 'write',
-    roles: [bcfaFinanceApprover, bcfaAdmin],
+    roles: [bcfaApApprover, bcfaAdmin],
     field: 'decision',
     script: `current.requested_by != gs.getUserID()`,
-    description: 'A finance approver may set the decision field on any AP Approval they did not request themselves — blocks self-approval.',
+    description: 'An AP approver may set the decision field on any AP Approval they did not request themselves — blocks self-approval. ApprovalEngine applies the full segregation-of-duties gate (Phase 17).',
 })
 
 Acl({
@@ -638,10 +640,10 @@ Acl({
     type: 'record',
     table: 'x_695068_bcfa_ar_approval',
     operation: 'write',
-    roles: [bcfaFinanceApprover, bcfaAdmin],
+    roles: [bcfaArApprover, bcfaAdmin],
     field: 'decision',
     script: `current.requested_by != gs.getUserID()`,
-    description: 'A finance approver may set the decision field on any AR Approval they did not request themselves — blocks self-approval.',
+    description: 'An AR approver may set the decision field on any AR Approval they did not request themselves — blocks self-approval. ApprovalEngine applies the full segregation-of-duties gate (Phase 17).',
 })
 
 // --- Finance Document Intake -------------------------------------------------

@@ -262,5 +262,16 @@ export const x_695068_bcfa_ap_approval = Table({
         }),
         decision_notes: StringColumn({ label: 'Decision Notes', maxLength: 4000 }),
         decided_at: DateTimeColumn({ label: 'Decided At' }),
+        // Phase 17 decision record (ApprovalEngine).
+        approval_type: ChoiceColumn({
+            label: 'Approval Type',
+            default: 'standard',
+            readOnly: true,
+            choices: { standard: 'Standard', override: 'Tolerance Override', rule: 'Configured Rule (no approver)' },
+        }),
+        override_reason: StringColumn({ label: 'Override Reason', maxLength: 4000, readOnly: true, hint: 'Why the variance or deduction was accepted (from the finance user decision).' }),
+        state_before: StringColumn({ label: 'State Before', maxLength: 40, readOnly: true }),
+        state_after: StringColumn({ label: 'State After', maxLength: 40, readOnly: true, hint: 'Transaction state after the decision and any posting/clearing.' }),
+        sod_check: StringColumn({ label: 'SoD Check', maxLength: 1000, readOnly: true, hint: 'Segregation-of-duties checks the decision passed.' }),
     },
 })

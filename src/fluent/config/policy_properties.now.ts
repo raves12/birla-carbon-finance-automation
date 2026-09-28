@@ -181,3 +181,32 @@ export const arBankChargeMax = Property({
     value: '1000',
     description: 'POC ASSUMPTION. Short-pay residuals up to this amount (payment currency) are suggested as a bank charge by the matching engine. A suggestion only: the reviewer confirms the deduction.',
 })
+
+// ---- Segregation of duties (Phase 17) ----------------------------------------
+// Enforced by ApprovalEngine. The AI-identity refusal and the approver-role
+// requirement are always on; these three are configurable ("where
+// configured" in the brief) and default to on.
+
+export const sodRequesterCannotApprove = Property({
+    $id: Now.ID['prop-sod-requester-cannot-approve'],
+    name: 'x_695068_bcfa.sod.requester_cannot_approve',
+    type: 'boolean',
+    value: 'true',
+    description: 'POC ASSUMPTION. The user who requested an approval cannot decide it.',
+})
+
+export const sodProcessorCannotApprove = Property({
+    $id: Now.ID['prop-sod-processor-cannot-approve'],
+    name: 'x_695068_bcfa.sod.processor_cannot_approve',
+    type: 'boolean',
+    value: 'true',
+    description: 'POC ASSUMPTION. The processor of a transaction cannot approve it: the user who created the invoice or payment, or who made a processor decision (hold, request correction or clarification, reject, approve deduction) on one of its exceptions.',
+})
+
+export const sodApproverInGroup = Property({
+    $id: Now.ID['prop-sod-approver-in-group'],
+    name: 'x_695068_bcfa.sod.approver_in_group',
+    type: 'boolean',
+    value: 'true',
+    description: 'POC ASSUMPTION. The approver must be a member of the approval group the approval decision table routed the approval to (BCFA Finance Approvers or BCFA Finance Controllers).',
+})

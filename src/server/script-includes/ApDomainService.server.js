@@ -364,7 +364,7 @@ ApDomainService.prototype = {
             description: 'Approval rule evaluated (POC ASSUMPTION): ' + rule.rule,
             afterValue: rule
         });
-        var approval = this.requestApproval(apInvoiceSysId, requestedBy, rule.group);
+        var approval = this.requestApproval(apInvoiceSysId, requestedBy, { group: rule.group, type: rule.required ? 'standard' : 'rule' });
         if (rule.required) return { approvalRequired: true, approvalSysId: approval.approvalSysId, rule: rule.rule };
         var decision = this.decideApproval(apInvoiceSysId, approval.approvalSysId, 'approved', null, 'Approved by configured rule: ' + rule.rule);
         return { approvalRequired: false, approvalSysId: approval.approvalSysId, rule: rule.rule, decision: decision };
@@ -429,9 +429,11 @@ ApDomainService.prototype = {
         return match;
     },
 
-    requestApproval: function(apInvoiceSysId, requestedBy, approvalGroup) {
+    // options (optional): { group, type ('standard'|'override'|'rule'),
+    // overrideReason }; a bare group sys_id is accepted too.
+    requestApproval: function(apInvoiceSysId, requestedBy, options) {
         this._setState(apInvoiceSysId, 'PENDING_APPROVAL', null, 'Requesting posting approval');
-        var approvalSysId = this.approvalEngine.requestApInvoiceApproval(apInvoiceSysId, requestedBy, approvalGroup);
+        var approvalSysId = this.approvalEngine.requestApInvoiceApproval(apInvoiceSysId, requestedBy, options);
         return { approvalSysId: approvalSysId };
     },
 
@@ -445,6 +447,12 @@ ApDomainService.prototype = {
     // again afterward — doing so previously clobbered whatever state the
     // cascade had already legitimately advanced to.
     decideApproval: function(apInvoiceSysId, approvalSysId, decision, approver, notes) {
+        // Phase 17: segregation of duties is checked before any state
+        // changes; a refused decision is audited by the engine and leaves the
+        // invoice untouched.
+        var sod = this.approvalEngine.checkSegregation({ process: 'ap', approvalSysId: approvalSysId }, approver);
+        if (!sod.ok) return this.approvalEngine.decideApInvoiceApproval(approvalSysId, decision, approver, notes);
+
         if (decision === 'approved') {
             this._setState(apInvoiceSysId, 'APPROVED', null, 'Approving — posting cascade will follow');
         }
@@ -452,7 +460,7 @@ ApDomainService.prototype = {
         var result = this.approvalEngine.decideApInvoiceApproval(approvalSysId, decision, approver, notes);
         if (result.error) {
             if (decision === 'approved') {
-                this._setState(apInvoiceSysId, 'PENDING_APPROVAL', null, 'Approval rejected by service layer (segregation of duties)');
+                this._setState(apInvoiceSysId, 'PENDING_APPROVAL', null, 'Approval refused by the service layer: ' + result.error);
             }
             return result;
         }
@@ -462,6 +470,7 @@ ApDomainService.prototype = {
             this._setState(apInvoiceSysId, 'EXCEPTION', null, 'Approval rejected');
             result.exceptionSysId = exceptionSysId;
         }
+        this.approvalEngine.recordStateAfter('ap', approvalSysId);
         return result;
     },
 

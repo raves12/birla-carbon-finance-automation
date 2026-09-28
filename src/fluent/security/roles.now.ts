@@ -25,9 +25,24 @@ export const bcfaFinanceReviewer = Role({
     description: 'Read/comment access across AP and AR for oversight, without processing or approval authority.',
 })
 
+// Phase 17: separate approver roles per process. ApprovalEngine requires
+// ap_approver to decide AP posting approvals and ar_approver for AR clearing
+// approvals. AI identities must never hold either (enforced in
+// ApprovalEngine regardless of roles, and checked by the verification).
+export const bcfaApApprover = Role({
+    name: 'x_695068_bcfa.ap_approver',
+    description: 'Approves AP posting and AP tolerance overrides. Never the processor of the same invoice (segregation of duties).',
+})
+
+export const bcfaArApprover = Role({
+    name: 'x_695068_bcfa.ar_approver',
+    description: 'Approves AR clearing. Never the processor of the same payment (segregation of duties).',
+})
+
 export const bcfaFinanceApprover = Role({
     name: 'x_695068_bcfa.finance_approver',
-    description: 'Approves AP posting and AR clearing. Cannot modify source transaction data after approval.',
+    description: 'Approves AP posting and AR clearing (contains AP Approver and AR Approver). Cannot modify source transaction data after approval.',
+    containsRoles: [bcfaApApprover, bcfaArApprover],
 })
 
 export const bcfaIntegrationOperator = Role({
