@@ -10,7 +10,7 @@
 // RUN 2 (MODE = 'close'), a few minutes later: prints the saved AI note,
 // then closes the test case the way a reviewer would (Bank Charge
 // deduction, approval by the demo approver, clearing).
-var MODE = 'create'; // change to 'close' for the second run
+var MODE = 'close'; // change to 'close' for the second run
 var DEMO_APPROVER = 'd33f6290d7533660937e25a599602b2c';
 var out = [];
 

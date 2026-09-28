@@ -36,12 +36,17 @@ work should move into a real Decision Table so it becomes configurable without a
 
 | Rule | Current implementation | Reason code on failure |
 |---|---|---|
+| Remittance match (Phase 13, first) | `MatchingEngine.resolveRemittanceReferences`: every invoice reference on the remittance must resolve to exactly one not-cleared open item of one customer, in the payment currency; otherwise it falls back below | `currency_mismatch` if a referenced item is in another currency |
+| Customer identification (Phase 13) | Remitter name via alias/exact name only at or above `x_695068_bcfa.ar.match.auto_confidence` (0.95); else the single owner of every referenced invoice | `customer_ambiguous` |
 | Exact match | `MatchingEngine.exactMatch`: exactly one open item for the resolved customer with `\|open_amount - payment.amount\| ≤ 0.01` | — (success path) |
 | Multi-invoice allocation | `MatchingEngine.multiInvoiceSuggestion`: greedy accumulation of open items ordered by due date until the running total reaches the payment amount | — (success path if residual ≈ 0) |
 | Customer alias resolution | `MatchingEngine.resolveCustomerByAlias`: exact match against `x_695068_bcfa_customer_alias.alias_name`, falling back to an exact customer-name match | `customer_ambiguous` if neither resolves |
 | Unmatched payment | No open item combination found | `unmatched` |
 | Allocation balance | `ArDomainService.allocatePayment`: `SUM(allocated_amount) ` must equal `payment.amount` within `0.01` (Section 8's balance rule) | `short_pay` (allocated < payment) or `over_pay` (allocated > payment) |
 | Approval / clearing eligibility | Payment must have `state = 'APPROVED'` before `ArDomainService.clearPayment` will call SAP | — (hard gate, not an exception) |
+| Approval rule (Phase 13) | `ArDomainService.routeForApproval`: human approval unless amount ≤ `ar.approval.auto_approve_limit` (0, so always); requester ≠ approver | — |
+| Deduction (Phase 13) | `ArExceptionDecisionService`: short pay only; type in `ar.deduction.allowed_types`; amount = computed residual; > `ar.deduction.approval_threshold` (5,000) needs `finance_approver`; balance re-checked as allocated − approved deductions = payment | — |
+| Open-item settlement (Phase 13) | On clearing, each allocated open item's open amount is reduced by its allocation (cleared at 0) | — |
 
 Deductions (bank charge, TCS, credit-note netting) are modeled in the data layer
 (`x_695068_bcfa_deduction`) but not yet auto-populated by a deterministic rule — they are currently
