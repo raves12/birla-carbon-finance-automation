@@ -320,6 +320,14 @@ ExceptionEngine.prototype = {
                     changed = true;
                 }
                 if (!gr.getValue('escalation_level')) { gr.setValue('escalation_level', 0); changed = true; }
+                // Open exceptions from before Phase 12 have no group or owner,
+                // so escalations would notify nobody: apply the policy defaults.
+                if (gr.getValue('status') === 'open' || gr.getValue('status') === 'in_review') {
+                    var group = process === 'ap' ? policy.apExceptionAssignmentGroup() : policy.arExceptionAssignmentGroup();
+                    var owner = process === 'ap' ? policy.apExceptionDefaultOwner() : policy.arExceptionDefaultOwner();
+                    if (!gr.getValue('assignment_group') && group) { gr.setValue('assignment_group', group); changed = true; }
+                    if (!gr.getValue('assigned_to') && owner) { gr.setValue('assigned_to', owner); changed = true; }
+                }
                 if (gr.getValue('ai_recommendation') && !gr.getValue('ai_confidence') && !gr.getValue('ai_explanation')) {
                     var split = this.splitAdvice(gr.getValue('ai_recommendation'));
                     if (split.explanation || split.confidence) {

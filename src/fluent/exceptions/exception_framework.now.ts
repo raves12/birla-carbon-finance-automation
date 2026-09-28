@@ -90,8 +90,9 @@ export const exceptionSweepJob = ScheduledScript({
     name: 'BCFA - Exception SLA and Escalation Sweep',
     frequency: 'periodically',
     executionInterval: Duration({ hours: 1 }),
-    executionStart: '2026-09-28 00:00:00',
-    timeZone: 'UTC',
+    // No explicit time zone: with timeZone 'UTC' the platform's 'Adjust Time
+    // Based on Time Zone' rule refused to create the job trigger (confirmed live).
+    executionStart: '2026-09-28 10:00:00',
     active: true,
     script: `
         var result = new ExceptionEngine().sweep();
