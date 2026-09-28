@@ -494,6 +494,9 @@ ApDomainService.prototype = {
             adapter: 'mock_sap',
             correlationId: invoice.getValue('correlation_id'),
             idempotencyKey: idempotencyKey,
+            // Business reference: the same vendor invoice number is never
+            // posted twice, even under another key (Phase 18).
+            externalReference: invoice.getValue('vendor') + '|' + new MatchingEngine().normalizeInvoiceNumber(invoice.getValue('invoice_number')),
             sourceTable: 'x_695068_bcfa_ap_invoice',
             sourceRecord: apInvoiceSysId,
             payload: { invoiceNumber: invoice.getValue('invoice_number'), vendor: invoice.getValue('vendor'), amount: invoice.getValue('net_amount') },

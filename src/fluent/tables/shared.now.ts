@@ -27,14 +27,14 @@ export const x_695068_bcfa_integration_txn = Table({
             label: 'Operation',
             mandatory: true,
             maxLength: 64,
-            hint: 'Canonical business-level operation name, e.g. postVendorInvoice, clearPayment, getVendor',
+            hint: 'Canonical operation: getVendor, getCustomer, getPurchaseOrder, getReceipt, getOpenItems, postVendorInvoice, clearCustomerPayment, queryTransactionStatus (older records may show clearPayment / getPO / getOpenARItems)',
         }),
         source_table: StringColumn({ label: 'Source Table', maxLength: 80 }),
         source_record: StringColumn({ label: 'Source Record', maxLength: 32, hint: 'sys_id of the AP/AR record this call was made for' }),
         adapter: ChoiceColumn({
             label: 'Adapter',
             mandatory: true,
-            choices: { mock_sap: 'Mock SAP Adapter', mock_bank: 'Mock Bank Adapter', mock_archive: 'Mock Archive Adapter' },
+            choices: { mock_sap: 'Mock SAP Adapter', mock_bank: 'Mock Bank Adapter', mock_archive: 'Mock Archive Adapter', real_sap: 'Real SAP Adapter (seam, not configured)' },
         }),
         status: ChoiceColumn({
             label: 'Status',
@@ -61,6 +61,21 @@ export const x_695068_bcfa_integration_txn = Table({
         unknown_outcome_flag: BooleanColumn({ label: 'Unknown Outcome', default: false }),
         requested_at: DateTimeColumn({ label: 'Requested At' }),
         completed_at: DateTimeColumn({ label: 'Completed At' }),
+        // Phase 18
+        request_hash: StringColumn({ label: 'Request Hash', maxLength: 64, readOnly: true, hint: 'SHA-256 of operation + request payload, to show exactly what was sent on each attempt.' }),
+        external_reference: StringColumn({ label: 'External Reference', maxLength: 100, readOnly: true, hint: 'Business reference of the financial write (vendor + invoice number, bank reference); a second successful post/clear for it is blocked.' }),
+        reconciliation_state: ChoiceColumn({
+            label: 'Reconciliation State',
+            default: 'not_required',
+            readOnly: true,
+            choices: {
+                not_required: 'Not Required',
+                pending: 'Pending (outcome unknown)',
+                confirmed_committed: 'Confirmed Committed',
+                confirmed_not_committed: 'Confirmed Not Committed (safe to retry)',
+                escalated: 'Escalated (retry limit)',
+            },
+        }),
     },
 })
 
@@ -209,7 +224,7 @@ export const x_695068_bcfa_integration_profile = Table({
         adapter: ChoiceColumn({
             label: 'Adapter',
             mandatory: true,
-            choices: { mock_sap: 'Mock SAP Adapter', mock_bank: 'Mock Bank Adapter', mock_archive: 'Mock Archive Adapter' },
+            choices: { mock_sap: 'Mock SAP Adapter', mock_bank: 'Mock Bank Adapter', mock_archive: 'Mock Archive Adapter', real_sap: 'Real SAP Adapter (seam, not configured)' },
         }),
         mode: ChoiceColumn({
             label: 'Mode',

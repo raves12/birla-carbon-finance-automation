@@ -1623,6 +1623,10 @@ declare global {
                         table: 'sys_script_include'
                         id: 'be780efcc33c467e9fa5fee08d8baa2c'
                     }
+                    'si-real-sap-adapter': {
+                        table: 'sys_script_include'
+                        id: '264fd5ff7d6d46b488279d6b9f93eba8'
+                    }
                     'si-simulated-document-extraction': {
                         table: 'sys_script_include'
                         id: '0f65eb5f98f54240b63c296e5d892ac7'
@@ -1718,6 +1722,10 @@ declare global {
                     'src_server_script-includes_NowAssistSkillClient_server_js': {
                         table: 'sys_module'
                         id: '77f4aee9c1ec423dba67bbfc1bf910b2'
+                    }
+                    'src_server_script-includes_RealSAPAdapter_server_js': {
+                        table: 'sys_module'
+                        id: '345c9c8de84c4ec9aa89f5b238976289'
                     }
                     'src_server_script-includes_SimulatedDocumentExtraction_server_js': {
                         table: 'sys_module'
@@ -3796,6 +3804,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '1e9d347886f54c1d8998e1063821f97f'
+                        key: {
+                            name: 'x_695068_bcfa_integration_txn'
+                            element: 'reconciliation_state'
+                            value: 'pending'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '1ebd3cf4600344cdb03b72506fa0dfbb'
                         key: {
@@ -4890,6 +4909,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '3419ac13951e414199bef0b267a22dd8'
+                        key: {
+                            name: 'x_695068_bcfa_integration_txn'
+                            element: 'external_reference'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: '344028f55f614df980b62b6eff76fa40'
                         key: {
@@ -5344,6 +5371,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '3b16e306b848413683192fd5d3ab081a'
+                        key: {
+                            name: 'x_695068_bcfa_integration_txn'
+                            element: 'reconciliation_state'
+                            value: 'escalated'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '3b37e352c96e46e0a9aa8e429374b04b'
                         key: {
@@ -5646,6 +5684,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '4035577ce26a414285b577eb86c75be3'
+                        key: {
+                            name: 'x_695068_bcfa_integration_txn'
+                            element: 'adapter'
+                            value: 'real_sap'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '4052f90a121d4dd296c392fff4be664b'
                         key: {
@@ -5908,6 +5957,14 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ap_invoice'
                             element: 'tax_amount'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '454d874bb42e452cac94237693c97cb5'
+                        key: {
+                            name: 'x_695068_bcfa_integration_txn'
+                            element: 'reconciliation_state'
                         }
                     },
                     {
@@ -7234,6 +7291,14 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_receipt'
                             element: 'receipt_date'
+                        }
+                    },
+                    {
+                        table: 'sys_choice_set'
+                        id: '5d6ba176441c426cacc6da414d1ad347'
+                        key: {
+                            name: 'x_695068_bcfa_integration_txn'
+                            element: 'reconciliation_state'
                         }
                     },
                     {
@@ -8572,6 +8637,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '713416f749594c28bd111723c5941cef'
+                        key: {
+                            name: 'x_695068_bcfa_integration_txn'
+                            element: 'external_reference'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'ua_table_licensing_config'
                         id: '7134af92fd3c42ee9a515572a28f75c7'
                         key: {
@@ -8699,6 +8773,15 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_decision_log'
                             element: 'domain'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '73726c7e07e14900b8177f454b5bd2fe'
+                        key: {
+                            name: 'x_695068_bcfa_integration_txn'
+                            element: 'reconciliation_state'
+                            language: 'en'
                         }
                     },
                     {
@@ -12168,6 +12251,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: 'b1ea899cc0a044bb9535c5af66f3e24a'
+                        key: {
+                            name: 'x_695068_bcfa_integration_profile'
+                            element: 'adapter'
+                            value: 'real_sap'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: 'b257b59ea9e2472d9ca3cc2fbfd2995e'
                         key: {
@@ -13692,6 +13786,17 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_remittance'
                             element: 'confidence'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'cb2efae85dc146009459d426b453150a'
+                        key: {
+                            name: 'x_695068_bcfa_integration_txn'
+                            element: 'reconciliation_state'
+                            value: 'not_required'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -15865,6 +15970,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: 'ee158fd3dec54e00a70ab16aa0e3dc2b'
+                        key: {
+                            name: 'x_695068_bcfa_integration_txn'
+                            element: 'reconciliation_state'
+                            value: 'confirmed_committed'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: 'ee47593a3711452eb80d83f8e1da40fa'
                         key: {
@@ -15971,6 +16087,14 @@ declare global {
                             value: 'credit_note_netting'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: 'f018820cf6d44b8295b82b48211adcfb'
+                        key: {
+                            name: 'x_695068_bcfa_integration_txn'
+                            element: 'request_hash'
                         }
                     },
                     {
@@ -16355,6 +16479,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: 'f65a4980b1354e038f7162109c6be67b'
+                        key: {
+                            name: 'x_695068_bcfa_integration_txn'
+                            element: 'request_hash'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: 'f67dc2fefb80455bb76c7946ef0118d3'
                         key: {
@@ -16622,6 +16755,17 @@ declare global {
                             name: 'x_695068_bcfa_integration_profile'
                             element: 'failure_mode'
                             value: 'duplicate'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'fb3e7d5e3b7245f5ae8e2c92a10bfadd'
+                        key: {
+                            name: 'x_695068_bcfa_integration_txn'
+                            element: 'reconciliation_state'
+                            value: 'confirmed_not_committed'
                             language: 'en'
                             dependent_value: 'NULL'
                         }

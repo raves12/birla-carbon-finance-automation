@@ -18,6 +18,17 @@ export const mockSapAdapter = ScriptInclude({
     script: Now.include('../../server/script-includes/MockSAPAdapter.server.js'),
 })
 
+// Phase 18: the seam for a real SAP connection. Same canonical interface as
+// the mock; returns NOT_CONFIGURED (sends nothing) until SAP is connected.
+export const realSapAdapter = ScriptInclude({
+    $id: Now.ID['si-real-sap-adapter'],
+    name: 'RealSAPAdapter',
+    active: true,
+    apiName: 'x_695068_bcfa.RealSAPAdapter',
+    description: 'Seam for a real SAP connection (e.g. via SAP Integration Suite). Implements the canonical SAP operations; returns NOT_CONFIGURED and sends nothing until a connection is defined. Mock SAP stays authoritative for the POC.',
+    script: Now.include('../../server/script-includes/RealSAPAdapter.server.js'),
+})
+
 export const mockBankAdapter = ScriptInclude({
     $id: Now.ID['si-mock-bank-adapter'],
     name: 'MockBankAdapter',

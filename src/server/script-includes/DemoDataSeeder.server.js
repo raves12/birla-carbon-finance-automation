@@ -572,7 +572,7 @@ DemoDataSeeder.prototype = {
             this._setAdapterFailureMode('mock_sap', 'timeout');
             this.arService.decideApproval(ar010.paymentSysId, ar010Approval.approvalSysId, 'approved', approver, 'Approved — will time out for demo AR-010.');
             this._setAdapterFailureMode('mock_sap', 'success');
-            var ar010TxnSysId = this._latestIntegrationTxn('x_695068_bcfa_payment', ar010.paymentSysId, 'clearPayment');
+            var ar010TxnSysId = this._latestIntegrationTxn('x_695068_bcfa_payment', ar010.paymentSysId, 'clearCustomerPayment');
             results['AR-010'] = { intake: ar010, transactionSysId: ar010TxnSysId };
             if (ar010TxnSysId) {
                 results['AR-010'].reconciliation = this.arService.reconcileClearing(ar010.paymentSysId, ar010TxnSysId);

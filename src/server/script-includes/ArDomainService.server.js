@@ -814,10 +814,12 @@ ArDomainService.prototype = {
 
         var idempotencyKey = payment.getValue('idempotency_key') || ('AR-CLEAR-' + paymentSysId);
         var result = this.integrationService.execute({
-            operation: 'clearPayment',
+            operation: 'clearCustomerPayment',
             adapter: 'mock_sap',
             correlationId: payment.getValue('correlation_id'),
             idempotencyKey: idempotencyKey,
+            // Business reference: the same bank payment is never cleared twice.
+            externalReference: payment.getValue('bank_reference'),
             sourceTable: 'x_695068_bcfa_payment',
             sourceRecord: paymentSysId,
             payload: { bankReference: payment.getValue('bank_reference'), customer: payment.getValue('customer'), amount: payment.getValue('amount') },
