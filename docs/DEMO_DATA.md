@@ -28,6 +28,30 @@ allows in place of a literal `is_demo` field:
 - AP scenarios: invoice number `INV-AP-001`–`INV-AP-010`
 - AR scenarios: bank reference `BANK-AR-001`–`BANK-AR-010`
 
+## Demo reset (Phase 28)
+
+`DemoDataSeeder.resetAndReseed('RESET BCFA DEMO DATA')` puts the application's data back to this baseline. Run it with
+`scripts/deploy/phase28_reset_and_reseed_bg.js` (Scripts - Background, scope x_695068_bcfa). It reports each scenario's
+end state against the tables below.
+
+| | What happens |
+|---|---|
+| **Deleted** | Every AP invoice and payment, with their lines, extractions, matches, exceptions, approvals, remittances, match candidates, allocations and deductions. Also integration transactions, document intakes (and their attachments), finance exceptions and KPI rows. Also master rows outside the seeded baseline: POs, PO lines, receipts, open items and credit notes whose code is not in the lists above (test data) |
+| **Restored** | Master data is upserted by business key (vendor code, PO number, item number and so on). Existing rows keep their sys_id, so reference mappings stay valid, and get their seeded values back, for example an open item's open amount after a clearing consumed it. The integration profiles go back to `failure_mode: success` |
+| **Re-seeded** | The 10 AP and 10 AR scenarios (`seedAll`, inline orchestration) |
+| **Kept** | The audit trail (append-only; the reset adds one audit event recording what it deleted) and the decision log. The AI Interaction Log is kept as governance evidence unless `x_695068_bcfa.demo.reset_clears_ai_log` is `true`. Configuration is kept: vendors, customers, aliases, integration profiles, reference mappings |
+
+**Safeguards**
+
+- The reset needs the exact confirmation text `RESET BCFA DEMO DATA`.
+- It runs only while `x_695068_bcfa.demo.reset_enabled` is `true`. That is the default on this POC instance; set it to
+  `false` wherever data must never be reset.
+- A plain `seedAll()` still never re-seeds over existing scenarios. It skips when INV-AP-001 / BANK-AR-001 exist.
+
+Seeding runs inline (Phase 25), so each scenario lands in one call. It also runs under lifecycle enforcement (Phase 26),
+and a refused transition stops the seed with an error. The Phase 25 flows still trigger on the seeded records. Each flow
+stage checks the record's state and skips, because the inline chain has already moved the record on.
+
 ## Master data (confirmed live)
 
 10 vendors, 10 customers, 10 POs (+ 1 line each), 10 receipts, 15 AR open

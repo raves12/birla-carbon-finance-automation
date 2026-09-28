@@ -1947,6 +1947,14 @@ declare global {
                         table: 'sys_properties'
                         id: '732add1fdb044f53b34565facd13fd3a'
                     }
+                    'prop-demo-reset-clears-ai-log': {
+                        table: 'sys_properties'
+                        id: '28f9cc7ed7c744d88eddf954d5be35bf'
+                    }
+                    'prop-demo-reset-enabled': {
+                        table: 'sys_properties'
+                        id: 'c9394f9a4c514aee9e58369e9b3d7546'
+                    }
                     'prop-lifecycle-enforcement': {
                         table: 'sys_properties'
                         id: '6400c19da8e44c8d802556c089e712b2'

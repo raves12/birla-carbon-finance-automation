@@ -20,10 +20,13 @@ DemoDataSeeder.prototype = {
     },
 
     _seedAll: function() {
-        var alreadySeeded = new GlideRecord('x_695068_bcfa_vendor');
-        alreadySeeded.addQuery('vendor_code', 'V001');
-        alreadySeeded.query();
-        var masterData = alreadySeeded.next() ? { skipped: true } : this.seedMasterData();
+        // Phase 28: master data is upserted whenever the AP scenarios are
+        // absent (first seed, or after resetDemoData), so the scenarios start
+        // from the seeded baseline.
+        var scenariosPresent = new GlideRecord('x_695068_bcfa_ap_invoice');
+        scenariosPresent.addQuery('invoice_number', 'INV-AP-001');
+        scenariosPresent.query();
+        var masterData = scenariosPresent.hasNext() ? { skipped: true } : this.seedMasterData();
 
         // AP/AR scenarios use fixed, deterministic keys (INV-AP-001,
         // BANK-AR-001, ...) by design, so re-running this against an instance
@@ -65,6 +68,18 @@ DemoDataSeeder.prototype = {
         return users;
     },
 
+    // Updates the row matching all key fields, or inserts one. Returns sys_id.
+    _upsert: function(table, keys, fields) {
+        var gr = new GlideRecord(table);
+        for (var k in keys) gr.addQuery(k, keys[k]);
+        gr.setLimit(1);
+        gr.query();
+        if (!gr.next()) return this._insert(table, fields);
+        for (var key in fields) gr.setValue(key, fields[key]);
+        gr.update();
+        return gr.getUniqueValue();
+    },
+
     _insert: function(table, fields) {
         var gr = new GlideRecord(table);
         gr.initialize();
@@ -74,6 +89,10 @@ DemoDataSeeder.prototype = {
         return gr.insert();
     },
 
+    // Phase 28: upserts by business key (vendor code, PO number, item number,
+    // ...). Existing rows keep their sys_id (reference mappings point at
+    // them) and get their seeded values back, e.g. an open item's open amount
+    // after a clearing consumed it.
     seedMasterData: function() {
         var vendorDefs = [
             { vendor_code: 'V001', name: 'Rajasthan Carbon Feedstock Pvt Ltd', country: 'India', currency: 'INR', payment_terms: 'NET30', bank_account: 'IN-ACC-0001' },
@@ -91,7 +110,7 @@ DemoDataSeeder.prototype = {
         for (var v = 0; v < vendorDefs.length; v++) {
             var def = vendorDefs[v];
             def.active = true;
-            vendorSysId[def.vendor_code] = this._insert('x_695068_bcfa_vendor', def);
+            vendorSysId[def.vendor_code] = this._upsert('x_695068_bcfa_vendor', { vendor_code: def.vendor_code }, def);
         }
 
         var customerDefs = [
@@ -110,7 +129,7 @@ DemoDataSeeder.prototype = {
         for (var c = 0; c < customerDefs.length; c++) {
             var cdef = customerDefs[c];
             cdef.active = true;
-            customerSysId[cdef.customer_code] = this._insert('x_695068_bcfa_customer', cdef);
+            customerSysId[cdef.customer_code] = this._upsert('x_695068_bcfa_customer', { customer_code: cdef.customer_code }, cdef);
         }
         var customerCurrency = {};
         for (var cc = 0; cc < customerDefs.length; cc++) customerCurrency[customerDefs[cc].customer_code] = customerDefs[cc].currency;
@@ -132,12 +151,12 @@ DemoDataSeeder.prototype = {
         var poSysId = {};
         for (var p = 0; p < poDefs.length; p++) {
             var pdef = poDefs[p];
-            var poId = this._insert('x_695068_bcfa_purchase_order', {
+            var poId = this._upsert('x_695068_bcfa_purchase_order', { po_number: pdef.po }, {
                 po_number: pdef.po, vendor: vendorSysId[pdef.vendorCode], company_code: '1000',
                 currency: 'INR', status: 'open', created_date: new GlideDateTime().getDate()
             });
             poSysId[pdef.po] = poId;
-            poLineSysId[pdef.po] = this._insert('x_695068_bcfa_po_line', {
+            poLineSysId[pdef.po] = this._upsert('x_695068_bcfa_po_line', { purchase_order: poId, line_number: 1 }, {
                 purchase_order: poId, line_number: 1, material_or_service: 'Carbon black feedstock',
                 quantity: pdef.qty, unit: pdef.unit, unit_price: pdef.unitPrice, received_quantity: pdef.qty
             });
@@ -160,7 +179,7 @@ DemoDataSeeder.prototype = {
         var receiptSysId = {};
         for (var r = 0; r < receiptDefs.length; r++) {
             var rdef = receiptDefs[r];
-            receiptSysId[rdef.receipt] = this._insert('x_695068_bcfa_receipt', {
+            receiptSysId[rdef.receipt] = this._upsert('x_695068_bcfa_receipt', { receipt_number: rdef.receipt }, {
                 receipt_number: rdef.receipt, po_line: poLineSysId[rdef.po], receipt_type: 'grn',
                 quantity: rdef.qty, receipt_date: new GlideDateTime().getDate(), sap_document_id: 'MIGO' + rdef.receipt
             });
@@ -196,7 +215,7 @@ DemoDataSeeder.prototype = {
             // demo actually needs.
             var dueDate = new GlideDateTime();
             dueDate.addDaysUTC(-i);
-            itemSysId[idef.item] = this._insert('x_695068_bcfa_ar_open_item', {
+            itemSysId[idef.item] = this._upsert('x_695068_bcfa_ar_open_item', { item_number: idef.item }, {
                 item_number: idef.item, customer: customerSysId[idef.customerCode], company_code: '1000',
                 // Phase 14: the item currency follows the customer (was always
                 // INR, which let EUR/USD payments match INR items).
@@ -214,22 +233,22 @@ DemoDataSeeder.prototype = {
         ];
         for (var n = 0; n < creditNoteDefs.length; n++) {
             var ndef = creditNoteDefs[n];
-            this._insert('x_695068_bcfa_credit_note', {
+            this._upsert('x_695068_bcfa_credit_note', { credit_note_number: ndef.cn }, {
                 credit_note_number: ndef.cn, customer: customerSysId[ndef.customerCode],
                 amount: ndef.amount, open_amount: ndef.amount, issue_date: new GlideDateTime().getDate(), status: 'open'
             });
         }
 
         // Customer alias for AR-004.
-        this._insert('x_695068_bcfa_customer_alias', {
+        this._upsert('x_695068_bcfa_customer_alias', { alias_name: 'LONE STAR TYRE CO' }, {
             customer: customerSysId['C005'], alias_name: 'LONE STAR TYRE CO', alias_type: 'bank_remitter_name', confidence: 0.9, active: true
         });
 
         // Integration Profiles (Section 9) — all default to success; Stage 12
         // resilience tests flip these temporarily.
-        this._insert('x_695068_bcfa_integration_profile', { name: 'Mock SAP - Default', adapter: 'mock_sap', mode: 'simulation', active: true, response_delay_ms: 0, failure_mode: 'success' });
-        this._insert('x_695068_bcfa_integration_profile', { name: 'Mock Bank - Default', adapter: 'mock_bank', mode: 'simulation', active: true, response_delay_ms: 0, failure_mode: 'success' });
-        this._insert('x_695068_bcfa_integration_profile', { name: 'Mock Archive - Default', adapter: 'mock_archive', mode: 'simulation', active: true, response_delay_ms: 0, failure_mode: 'success' });
+        this._upsert('x_695068_bcfa_integration_profile', { name: 'Mock SAP - Default' }, { name: 'Mock SAP - Default', adapter: 'mock_sap', mode: 'simulation', active: true, response_delay_ms: 0, failure_mode: 'success' });
+        this._upsert('x_695068_bcfa_integration_profile', { name: 'Mock Bank - Default' }, { name: 'Mock Bank - Default', adapter: 'mock_bank', mode: 'simulation', active: true, response_delay_ms: 0, failure_mode: 'success' });
+        this._upsert('x_695068_bcfa_integration_profile', { name: 'Mock Archive - Default' }, { name: 'Mock Archive - Default', adapter: 'mock_archive', mode: 'simulation', active: true, response_delay_ms: 0, failure_mode: 'success' });
 
         this._vendorSysId = vendorSysId;
         this._customerSysId = customerSysId;
@@ -783,5 +802,88 @@ DemoDataSeeder.prototype = {
         return results;
     },
 
+    // ---- Demo reset (Phase 28) ---------------------------------------------
+
+    // Puts the application's data back to the seeded demo baseline:
+    //   deletes  every AP invoice and payment with their lines, extractions,
+    //            matches, exceptions, approvals, remittances, match
+    //            candidates, allocations and deductions; integration
+    //            transactions; document intakes (with attachments); finance
+    //            exceptions; KPI rows; and master rows outside the seeded
+    //            baseline (POs, PO lines, receipts, open items, credit notes
+    //            not in seedMasterData, e.g. test data)
+    //   keeps    vendors, customers, aliases, integration profiles,
+    //            reference mappings (configuration); the audit trail
+    //            (append-only) and the decision log; the AI Interaction Log
+    //            unless x_695068_bcfa.demo.reset_clears_ai_log = true
+    // then seedAll() restores the master data values and re-runs the 10 AP
+    // and 10 AR scenarios. The reset itself is audited.
+    //
+    // Refused unless confirm is exactly DemoDataSeeder.RESET_CONFIRMATION and
+    // x_695068_bcfa.demo.reset_enabled is true (set it to false on any
+    // instance whose data must never be reset).
+    resetAndReseed: function(confirm) {
+        var reset = this.resetDemoData(confirm);
+        if (reset.refused) return reset;
+        return { reset: reset, seed: this.seedAll() };
+    },
+
+    resetDemoData: function(confirm) {
+        if (confirm !== DemoDataSeeder.RESET_CONFIRMATION) return { refused: true, reason: 'Pass the confirmation text "' + DemoDataSeeder.RESET_CONFIRMATION + '".' };
+        if (gs.getProperty('x_695068_bcfa.demo.reset_enabled', 'false') !== 'true') return { refused: true, reason: 'x_695068_bcfa.demo.reset_enabled is not true on this instance.' };
+
+        var deleted = {};
+        var wipe = function(table, query) {
+            var gr = new GlideRecord(table);
+            if (query) gr.addEncodedQuery(query);
+            gr.query();
+            var n = gr.getRowCount();
+            if (n) {
+                gr.setWorkflow(false);
+                gr.deleteMultiple();
+            }
+            deleted[table.replace('x_695068_bcfa_', '')] = n;
+        };
+
+        // Document intakes: attachments first.
+        var intake = new GlideRecord('x_695068_bcfa_finance_intake');
+        intake.query();
+        var attachments = new GlideSysAttachment();
+        while (intake.next()) attachments.deleteAll(intake);
+
+        // Children before parents.
+        ['x_695068_bcfa_ap_match', 'x_695068_bcfa_ap_extraction', 'x_695068_bcfa_ap_invoice_line', 'x_695068_bcfa_ap_approval',
+            'x_695068_bcfa_ap_exception', 'x_695068_bcfa_ap_invoice',
+            'x_695068_bcfa_match_candidate', 'x_695068_bcfa_deduction', 'x_695068_bcfa_payment_allocation', 'x_695068_bcfa_remittance',
+            'x_695068_bcfa_ar_approval', 'x_695068_bcfa_ar_exception', 'x_695068_bcfa_payment',
+            'x_695068_bcfa_integration_txn', 'x_695068_bcfa_finance_intake', 'x_695068_bcfa_finance_exception', 'x_695068_bcfa_kpi'
+        ].forEach(function(t) { wipe(t); });
+        if (gs.getProperty('x_695068_bcfa.demo.reset_clears_ai_log', 'false') === 'true') wipe('x_695068_bcfa_ai_interaction');
+
+        // Master rows outside the seeded baseline (test data).
+        var codes = function(prefix, n, width) {
+            var list = [];
+            for (var i = 1; i <= n; i++) list.push(prefix + ('000' + i).slice(-width));
+            return list.join(',');
+        };
+        wipe('x_695068_bcfa_receipt', 'receipt_numberNOT IN' + codes('RCPT', 10, 4));
+        wipe('x_695068_bcfa_po_line', 'purchase_order.po_numberNOT IN' + codes('PO', 10, 4) + '^ORpurchase_orderISEMPTY');
+        wipe('x_695068_bcfa_purchase_order', 'po_numberNOT IN' + codes('PO', 10, 4));
+        wipe('x_695068_bcfa_ar_open_item', 'item_numberNOT IN' + codes('ARI', 15, 4));
+        wipe('x_695068_bcfa_credit_note', 'credit_note_numberNOT IN' + codes('CN', 5, 4));
+
+        new AuditEngine().logEvent({
+            sourceTable: 'x_695068_bcfa_ap_invoice',
+            process: 'platform',
+            eventType: 'closure',
+            actorType: 'user',
+            description: 'Demo data reset: operational data deleted, master data back to the seeded baseline (audit trail kept).',
+            afterValue: { reset: 'demo_data', deleted: deleted }
+        });
+        return { deleted: deleted };
+    },
+
     type: 'DemoDataSeeder'
 };
+
+DemoDataSeeder.RESET_CONFIRMATION = 'RESET BCFA DEMO DATA';
