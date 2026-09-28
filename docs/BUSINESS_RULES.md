@@ -75,6 +75,11 @@ one real difference: changing a tolerance today requires a code deploy, not a bu
 recorded here as the honest gap, and the natural manual next step is building the equivalent grid
 in Decision Table Builder against this same documented rule set.
 
+**Update (Phase 15):** the tolerances, AP approval routing and AR deduction policy are now native
+Decision Builder tables (BCFA AP Tolerance, BCFA AP Approval, BCFA AR Deduction), built through the
+supported `sn_dt` Decision Table API; the properties below are the fallback. See
+`docs/DECISION_TABLES.md`.
+
 **Update (Phase 12):** the AP tolerances, confidence threshold, approval limit, severity, SLA and
 override rules are now system properties read through `FinancePolicy`, so changing them no longer
 needs a code deploy. The country tax-rate table is still a constant in `MatchingEngine`. Decision
