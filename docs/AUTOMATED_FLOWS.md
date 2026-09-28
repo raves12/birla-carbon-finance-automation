@@ -82,6 +82,32 @@ Demo seeding (`DemoDataSeeder.seedAll` and the scenario seeders) always runs inl
 - The Phase 16 scheduled job **BCFA - Exception SLA and Escalation Sweep** is inactive; the aging flows run the same
   ExceptionEngine logic per exception (`ExceptionEngine.sweepOne`).
 
+## Verification (2026-09-28)
+
+`phase25_fix_bg.js`: 15 of 15 flows published, the Phase 16 sweep job's scheduler trigger removed. `phase25_verify_bg.js`:
+all checks PASS. These include orchestration mode `flow`, 15 flows live, the event and script action registered, the
+stage guard (`ap_intake` on a posted invoice is skipped), and an unknown stage rejected.
+
+One AP invoice and one payment were entered in flow mode (intake only). The flows took them the rest of the way; the only
+manual step was the human approval (`phase25_verify2_bg.js`, demo finance approver):
+
+| Record | Flows that ran (all COMPLETE) | Stage results (system log) | End state |
+|---|---|---|---|
+| INV-P25-902939 (INR 59,000) | AP Invoice Intake → AP Validation → AP Approval → *(human approval)* → AP Integration | extraction confidence 0.95; matched within tolerance; approval requested (decision table *BCFA AP Approval (Default)*); posted | CLOSED, posted, SAP MIRO1063219 |
+| BANK-P25-902939 (INR 20,009.39) | AR Payment Intake → AR Match → AR Approval → *(human approval)* → AR Clearing | customer identified; allocated 20,009.39 (exact); approval requested (auto-approve limit 0); cleared | CLOSED, SAP FB051010801 |
+
+- **The approvals passed every segregation-of-duties check:** not an AI identity, holds the approver role, not the
+  requester, not the processor, member of the approval group.
+- **Each record's audit chain** shows every step in order: created, extraction, rule evaluations, match, allocation,
+  and the state transitions.
+- **The AP Integration Flow triggered twice** for the invoice: the approval updates the record more than once while it
+  is APPROVED. The state guard skipped the second run. There is exactly one `postVendorInvoice` transaction (attempt 1)
+  and one "posted" stage result.
+- **Records from the first deploy.** INV-P25-388576 and BANK-P25-388576 had failed intake flows in the first deploy
+  (see Deploy notes). They were re-driven by firing `x_695068_bcfa.flow.stage` directly, which exercises the event →
+  script action path on its own. They then ran through validation / matching to PENDING_APPROVAL, where they remain as
+  test data.
+
 ## Deploy notes
 
 - Loading the flows from update XML leaves them as drafts. The deploy postamble publishes each one with
