@@ -125,6 +125,32 @@ if (gs.getCurrentScopeName() !== 'rhino.global') {
   agent.query();
   var agents = [];
   while (agent.next()) agents.push(agent.getValue('name') + (agent.getValue('sys_scope') === '229ba2b1a079431e104010f5ea883e85' ? '' : ' (WRONG SCOPE ' + agent.getValue('sys_scope') + ')'));
+  // loadXML skips business rules, so a loaded trigger never gets the Flow
+  // Designer flow that actually fires it, and its trigger-to-workflow link is
+  // generated inactive ("Trying to execute a disabled trigger"). Activate both
+  // here, as AI Agent Studio does when a trigger is switched on in its UI:
+  // toggling active through a normal update runs the business rule that
+  // generates the flow.
+  var trigger = new GlideRecord('sn_aia_trigger_configuration');
+  trigger.addEncodedQuery('nameSTARTSWITHBCFA ^active=true');
+  trigger.query();
+  while (trigger.next()) {
+    if (!trigger.getValue('trigger_flow')) {
+      trigger.setValue('active', false);
+      trigger.update();
+      trigger.setValue('active', true);
+      trigger.update();
+    }
+    var link = new GlideRecord('sn_aia_trigger_agent_usecase_m2m');
+    link.addQuery('trigger_configuration', trigger.getUniqueValue());
+    link.addQuery('active', false);
+    link.query();
+    while (link.next()) {
+      link.setValue('active', true);
+      link.update();
+    }
+    out.push('trigger ' + trigger.getValue('name') + (trigger.getValue('trigger_flow') ? ' active with flow' : ' HAS NO FLOW'));
+  }
   var usecase = new GlideRecord('sn_aia_usecase');
   usecase.addEncodedQuery('nameSTARTSWITHBCFA ');
   usecase.query();
