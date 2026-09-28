@@ -18,8 +18,8 @@ passes its own verification.
 | 5 | Content Understanding / Document Intelligence configuration | **DONE** | None — confirmed on Now Assist DocIntel (GenAI), not legacy ML; see `docs/CONTENT_UNDERSTANDING.md` |
 | 6 | ServiceNow generative AI skills | **DONE** — all 9 skills built and published in Now Assist Skill Kit on Now LLM Generic, see `docs/GENERATIVE_AI_SKILLS_BUILD_GUIDE.md` | Skill Kit "Run Test" preview doesn't substitute inputs on this instance — runtime verification moves to Phase 7 |
 | 7 | AI agent tools (least-privilege) | **DONE** — `NowAssistSkillClient` + `FinanceAgentTools` (18 tools) deployed and tested live against demo data; see `docs/AI_AGENT_TOOLS.md` | None. Role-denial test deferred to Phase 29. Studio "Commit Changes" still needed before any Apply Remote Changes |
-| 8 | Native AP AI agents (3) | Queued | Depends on Phase 7 |
-| 9 | Native AR AI agents (4) | Queued | Depends on Phase 7 |
+| 8 | Native AP AI agents (3) | **DONE** — Exception Analysis, Resolution Recommendation, Communication; deployed and tested in AI Agent Studio; see `docs/AI_AGENT_TOOLS.md` | None |
+| 9 | Native AR AI agents (4) | **DONE** — Customer Resolution, Cash Match Recommendation, Deduction Analysis, Cash Application Communication; deployed; 2 of 4 tested live, rest in Phase 13 | Demo data lacks remittances/aliases for a rich customer-resolution demo (Phase 27/28) |
 | 10 | AP agentic workflow | Queued | Depends on Phase 8 |
 | 11 | Cash Application agentic workflow | Queued | Depends on Phase 9 |
 | 12 | POC 1 AP automation (happy path + exception path) | Queued | Depends on Phases 2–11 |
