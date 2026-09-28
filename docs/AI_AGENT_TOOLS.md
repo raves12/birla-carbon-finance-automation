@@ -273,6 +273,54 @@ every loaded BCFA trigger and its links after loading.
 in the AI Agent Studio UI. Re-running a loader resets them, and its
 post-load step re-activates them.
 
+## Phase 11: BCFA Cash Application Review agentic workflow (2026-09-28)
+
+Source: `src/fluent/ai-agents/ar_workflow.now.ts`. Deployed with
+`scripts/deploy/phase11_ar_workflow_bg.js`, then the fixes
+`phase11b_currency_guard_bg.js` and `phase11c_payment_lookup_bg.js`.
+
+- **Trigger.** `BCFA AR Exception Created` fires on record create of
+  `x_695068_bcfa_ar_exception` where `status=open`. The deterministic
+  exact-match path never opens AR exceptions, so clean payments bypass it.
+  It runs as `bcfa.ai.reviewer`. The loader activated it automatically:
+  flow `2ad14356eba3c310311dff0dcad0cdf2`, link active.
+- **Routing by reason.**
+  - `customer_ambiguous`, or `unmatched` without a customer → Customer
+    Resolution, then Cash Match.
+  - `unmatched` with a customer → Cash Match.
+  - `short_pay`, `over_pay`, `currency_mismatch` → Cash Match, then
+    Deduction.
+  - `duplicate` / `other` → Cash Match plus a human-investigation flag.
+  - The Communication agent drafts a customer message only when the
+    customer must be contacted.
+  - Cash Match saves one advisory note, then the workflow stops.
+- **Save tools.** Both AR save tools are now **autopilot**, the same
+  decision as AP.
+- **Loader safety.** `gen_agent_loader.mjs` now skips triggers and trigger
+  links that are already active, so redeploys can't blank a generated flow
+  or create a duplicate one. To change an active trigger, update the live
+  record (as was done for the objective wording) or deactivate it first.
+
+**Tests and fixes:**
+
+| # | Run | Result |
+|---|---|---|
+| 1 | Manual, BANK-AR-002 short pay (EUR payment, INR invoice) | ✗ Right path (Cash Match → Deduction → save), but the note recommended "6000 EUR" against the INR invoice and a "3500 EUR" residual |
+| fix | **Deterministic currency guard** in `FinanceAgentTools` | The payment context now carries a code-computed "CURRENCY MISMATCH …" line, and open items show their currency. Cash Match and Deduction treat it as a hard rule: no allocation and no residual across currencies |
+| 2 | Manual, BANK-AR-002 again | ✔ "Recommended allocation: none – currency mismatch, human review required", amount "not computable", OTHER / High, human must confirm the currency treatment |
+| 3 | Unattended trigger (test exception on BANK-AR-005) | Trigger fired in 3 s as `bcfa.ai.reviewer`, but `${payment}` resolves to the payment **sys_id** and was labelled a "bank reference". Find Payment returned nothing, and the agent **correctly stopped without saving** |
+| fix | `findPayment` accepts a payment sys_id; objective and instructions say "payment" | Live trigger objective updated in place on both the trigger and its link |
+| 4 | Unattended trigger (new test exception on BANK-AR-005) | ✔ Fired in 2 s. The note was saved 56 s after creation. It covered: customer not resolvable (UNKNOWN REMITTER XYZ) → manual identification; no allocation, with 99,999 INR unallocated (same currency, so valid); a draft customer message marked "NOT sent" with the account masked; the human decision required. The payment was untouched |
+
+Both test exceptions are closed with explanatory notes; the successful
+one's AI note is kept as evidence.
+
+**Minor deviation:** in run 4 the orchestrator didn't call the Customer
+Resolution agent. It wrote the customer section from the Cash Match context.
+The conclusion was still correct, since there's no searchable remitter
+keyword, but the routing instruction wasn't followed exactly. Revisit when
+the demo data has real ambiguous remitters with aliases (Phase 27/28).
+
 ### Findings to act on later
 
 - **Markdown in output.** The model sometimes uses markdown bold (`**…**`)
