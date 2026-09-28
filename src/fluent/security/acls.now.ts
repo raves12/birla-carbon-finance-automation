@@ -10,6 +10,7 @@ import {
     bcfaIntegrationOperator,
     bcfaAuditor,
     bcfaReadOnly,
+    bcfaAiAgent,
 } from './roles.now'
 
 // Segregation-of-duties enforcement (Section 6 of the build brief):
@@ -34,7 +35,7 @@ Acl({
     type: 'record',
     table: 'x_695068_bcfa_ap_invoice',
     operation: 'read',
-    roles: [bcfaApProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin],
+    roles: [bcfaApProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin, bcfaAiAgent],
 })
 
 Acl({
@@ -42,7 +43,7 @@ Acl({
     type: 'record',
     table: 'x_695068_bcfa_ap_invoice_line',
     operation: 'read',
-    roles: [bcfaApProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin],
+    roles: [bcfaApProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin, bcfaAiAgent],
 })
 
 Acl({
@@ -58,7 +59,7 @@ Acl({
     type: 'record',
     table: 'x_695068_bcfa_ap_match',
     operation: 'read',
-    roles: [bcfaApProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin],
+    roles: [bcfaApProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin, bcfaAiAgent],
 })
 
 Acl({
@@ -66,7 +67,7 @@ Acl({
     type: 'record',
     table: 'x_695068_bcfa_ap_exception',
     operation: 'read',
-    roles: [bcfaApProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin],
+    roles: [bcfaApProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin, bcfaAiAgent],
 })
 
 // --- Read access: AR tables -------------------------------------------------
@@ -76,7 +77,7 @@ Acl({
     type: 'record',
     table: 'x_695068_bcfa_payment',
     operation: 'read',
-    roles: [bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin],
+    roles: [bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin, bcfaAiAgent],
 })
 
 Acl({
@@ -84,7 +85,7 @@ Acl({
     type: 'record',
     table: 'x_695068_bcfa_remittance',
     operation: 'read',
-    roles: [bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin],
+    roles: [bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin, bcfaAiAgent],
 })
 
 Acl({
@@ -92,7 +93,7 @@ Acl({
     type: 'record',
     table: 'x_695068_bcfa_payment_allocation',
     operation: 'read',
-    roles: [bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin],
+    roles: [bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin, bcfaAiAgent],
 })
 
 Acl({
@@ -100,7 +101,7 @@ Acl({
     type: 'record',
     table: 'x_695068_bcfa_match_candidate',
     operation: 'read',
-    roles: [bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin],
+    roles: [bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin, bcfaAiAgent],
 })
 
 Acl({
@@ -108,7 +109,7 @@ Acl({
     type: 'record',
     table: 'x_695068_bcfa_deduction',
     operation: 'read',
-    roles: [bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin],
+    roles: [bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin, bcfaAiAgent],
 })
 
 Acl({
@@ -116,7 +117,7 @@ Acl({
     type: 'record',
     table: 'x_695068_bcfa_ar_exception',
     operation: 'read',
-    roles: [bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin],
+    roles: [bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin, bcfaAiAgent],
 })
 
 // --- Read access: Approval tables -------------------------------------------
@@ -145,7 +146,7 @@ Acl({
     type: 'record',
     table: 'x_695068_bcfa_vendor',
     operation: 'read',
-    roles: [bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin],
+    roles: [bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin, bcfaAiAgent],
 })
 
 Acl({
@@ -169,7 +170,7 @@ Acl({
     type: 'record',
     table: 'x_695068_bcfa_customer',
     operation: 'read',
-    roles: [bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin],
+    roles: [bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin, bcfaAiAgent],
 })
 
 Acl({
@@ -193,7 +194,7 @@ Acl({
     type: 'record',
     table: 'x_695068_bcfa_purchase_order',
     operation: 'read',
-    roles: [bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin],
+    roles: [bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin, bcfaAiAgent],
 })
 
 Acl({
@@ -217,7 +218,7 @@ Acl({
     type: 'record',
     table: 'x_695068_bcfa_po_line',
     operation: 'read',
-    roles: [bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin],
+    roles: [bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin, bcfaAiAgent],
 })
 
 Acl({
@@ -241,7 +242,7 @@ Acl({
     type: 'record',
     table: 'x_695068_bcfa_receipt',
     operation: 'read',
-    roles: [bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin],
+    roles: [bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin, bcfaAiAgent],
 })
 
 Acl({
@@ -265,7 +266,7 @@ Acl({
     type: 'record',
     table: 'x_695068_bcfa_ar_open_item',
     operation: 'read',
-    roles: [bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin],
+    roles: [bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin, bcfaAiAgent],
 })
 
 Acl({
@@ -289,7 +290,7 @@ Acl({
     type: 'record',
     table: 'x_695068_bcfa_credit_note',
     operation: 'read',
-    roles: [bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin],
+    roles: [bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin, bcfaAiAgent],
 })
 
 Acl({
@@ -393,7 +394,7 @@ Acl({
     type: 'record',
     table: 'x_695068_bcfa_customer_alias',
     operation: 'read',
-    roles: [bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin],
+    roles: [bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaReadOnly, bcfaAdmin, bcfaAiAgent],
 })
 
 Acl({
@@ -478,6 +479,38 @@ Acl({
     table: 'x_695068_bcfa_ap_exception',
     operation: 'write',
     roles: [bcfaApProcessor, bcfaAdmin],
+})
+
+// Phase 22: the AI agent role may write an AP exception, but only its
+// advisory ai_recommendation field. The wildcard field ACL keeps every other
+// field (status, decision, resolution...) to the processor and admin.
+Acl({
+    $id: Now.ID['acl-write-ap-exception-ai-agent'],
+    type: 'record',
+    table: 'x_695068_bcfa_ap_exception',
+    operation: 'write',
+    roles: [bcfaAiAgent],
+    description: 'AI agent identities: record-level write, narrowed to the advisory field by the field ACLs below.',
+})
+
+Acl({
+    $id: Now.ID['acl-write-ap-exception-fields'],
+    type: 'record',
+    table: 'x_695068_bcfa_ap_exception',
+    field: '*',
+    operation: 'write',
+    roles: [bcfaApProcessor, bcfaAdmin],
+    description: 'Every AP exception field except the advisory note: processor and admin only (not the AI agent role).',
+})
+
+Acl({
+    $id: Now.ID['acl-write-ap-exception-ai-recommendation'],
+    type: 'record',
+    table: 'x_695068_bcfa_ap_exception',
+    field: 'ai_recommendation',
+    operation: 'write',
+    roles: [bcfaApProcessor, bcfaAiAgent, bcfaAdmin],
+    description: 'The advisory AI note: processor, admin and the AI agent role.',
 })
 
 Acl({
@@ -578,6 +611,38 @@ Acl({
     table: 'x_695068_bcfa_ar_exception',
     operation: 'write',
     roles: [bcfaArProcessor, bcfaAdmin],
+})
+
+// Phase 22: the AI agent role may write an AR exception, but only its
+// advisory ai_recommendation field. The wildcard field ACL keeps every other
+// field (status, decision, resolution...) to the processor and admin.
+Acl({
+    $id: Now.ID['acl-write-ar-exception-ai-agent'],
+    type: 'record',
+    table: 'x_695068_bcfa_ar_exception',
+    operation: 'write',
+    roles: [bcfaAiAgent],
+    description: 'AI agent identities: record-level write, narrowed to the advisory field by the field ACLs below.',
+})
+
+Acl({
+    $id: Now.ID['acl-write-ar-exception-fields'],
+    type: 'record',
+    table: 'x_695068_bcfa_ar_exception',
+    field: '*',
+    operation: 'write',
+    roles: [bcfaArProcessor, bcfaAdmin],
+    description: 'Every AR exception field except the advisory note: processor and admin only (not the AI agent role).',
+})
+
+Acl({
+    $id: Now.ID['acl-write-ar-exception-ai-recommendation'],
+    type: 'record',
+    table: 'x_695068_bcfa_ar_exception',
+    field: 'ai_recommendation',
+    operation: 'write',
+    roles: [bcfaArProcessor, bcfaAiAgent, bcfaAdmin],
+    description: 'The advisory AI note: processor, admin and the AI agent role.',
 })
 
 Acl({

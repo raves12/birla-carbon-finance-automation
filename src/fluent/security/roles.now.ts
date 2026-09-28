@@ -59,3 +59,12 @@ export const bcfaReadOnly = Role({
     name: 'x_695068_bcfa.read_only',
     description: 'Read-only access across all Birla Carbon Finance Automation tables.',
 })
+
+// Phase 22: the only BCFA role an AI identity holds (least privilege). It
+// reads the records the agent tools read and writes one field, the advisory
+// ai_recommendation on AP/AR exceptions. It contains no other role and no
+// processor, approver or admin rights; AI identities never hold those.
+export const bcfaAiAgent = Role({
+    name: 'x_695068_bcfa.ai_agent',
+    description: 'AI agent identities only (advisory). Reads the records the BCFA agent tools need and writes only the advisory ai_recommendation field on AP/AR exceptions. No processing, approval, posting or admin rights.',
+})

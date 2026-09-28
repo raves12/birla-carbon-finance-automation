@@ -18,13 +18,14 @@
 var FinanceAgentTools = Class.create();
 
 FinanceAgentTools.SCOPE_ADMIN = 'x_695068_bcfa.admin';
+// Phase 22: x_695068_bcfa.ai_agent is the only BCFA role AI identities hold.
 FinanceAgentTools.ROLES = {
-    ap_read: ['x_695068_bcfa.ap_processor', 'x_695068_bcfa.finance_reviewer', 'x_695068_bcfa.finance_approver', 'x_695068_bcfa.auditor'],
-    ap_draft: ['x_695068_bcfa.ap_processor', 'x_695068_bcfa.finance_reviewer', 'x_695068_bcfa.finance_approver'],
-    ap_advice_write: ['x_695068_bcfa.ap_processor', 'x_695068_bcfa.finance_reviewer'],
-    ar_read: ['x_695068_bcfa.ar_processor', 'x_695068_bcfa.finance_reviewer', 'x_695068_bcfa.finance_approver', 'x_695068_bcfa.auditor'],
-    ar_draft: ['x_695068_bcfa.ar_processor', 'x_695068_bcfa.finance_reviewer', 'x_695068_bcfa.finance_approver'],
-    ar_advice_write: ['x_695068_bcfa.ar_processor', 'x_695068_bcfa.finance_reviewer']
+    ap_read: ['x_695068_bcfa.ai_agent', 'x_695068_bcfa.ap_processor', 'x_695068_bcfa.finance_reviewer', 'x_695068_bcfa.finance_approver', 'x_695068_bcfa.auditor'],
+    ap_draft: ['x_695068_bcfa.ai_agent', 'x_695068_bcfa.ap_processor', 'x_695068_bcfa.finance_reviewer', 'x_695068_bcfa.finance_approver'],
+    ap_advice_write: ['x_695068_bcfa.ai_agent', 'x_695068_bcfa.ap_processor', 'x_695068_bcfa.finance_reviewer'],
+    ar_read: ['x_695068_bcfa.ai_agent', 'x_695068_bcfa.ar_processor', 'x_695068_bcfa.finance_reviewer', 'x_695068_bcfa.finance_approver', 'x_695068_bcfa.auditor'],
+    ar_draft: ['x_695068_bcfa.ai_agent', 'x_695068_bcfa.ar_processor', 'x_695068_bcfa.finance_reviewer', 'x_695068_bcfa.finance_approver'],
+    ar_advice_write: ['x_695068_bcfa.ai_agent', 'x_695068_bcfa.ar_processor', 'x_695068_bcfa.finance_reviewer']
 };
 
 FinanceAgentTools.EXCEPTION_TABLES = {

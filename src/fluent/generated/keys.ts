@@ -209,6 +209,18 @@ declare global {
                         table: 'sys_security_acl'
                         id: '32ba172e87a347538c62c40d953598ea'
                     }
+                    'acl-write-ap-exception-ai-agent': {
+                        table: 'sys_security_acl'
+                        id: '48319d70b4064e85966f25ec5d1f2ac2'
+                    }
+                    'acl-write-ap-exception-ai-recommendation': {
+                        table: 'sys_security_acl'
+                        id: '87b82a5904324b3f87b7e1b35df7b5ee'
+                    }
+                    'acl-write-ap-exception-fields': {
+                        table: 'sys_security_acl'
+                        id: '3b15015efcfd46e59abf66e5fd833359'
+                    }
                     'acl-write-ap-invoice': {
                         table: 'sys_security_acl'
                         id: 'c4fe66868db849a68727cc00bd76381d'
@@ -216,6 +228,18 @@ declare global {
                     'acl-write-ar-approval-decision': {
                         table: 'sys_security_acl'
                         id: 'c226c71d92d74ee6ad4b42d7acc26303'
+                    }
+                    'acl-write-ar-exception-ai-agent': {
+                        table: 'sys_security_acl'
+                        id: 'ae9c16a55c74497cac9f8b1dbd1d956d'
+                    }
+                    'acl-write-ar-exception-ai-recommendation': {
+                        table: 'sys_security_acl'
+                        id: '6d454fc473bd46f3b88b2b3705da4599'
+                    }
+                    'acl-write-ar-exception-fields': {
+                        table: 'sys_security_acl'
+                        id: '49086934609a47e0912805b8c431ed0a'
                     }
                     'acl-write-integration-profile': {
                         table: 'sys_security_acl'
@@ -2071,6 +2095,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: '021c41fe0ceb4a2aa0325cd9473fc00c'
+                        deleted: true
                         key: {
                             sys_security_acl: '6f14b5e030454e698a31342c91718ee8'
                             sys_user_role: '4411dd9103de4bdbb5468924b1e5459f'
@@ -2359,6 +2384,19 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_match_candidate'
                             element: 'match_type'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '05b868d094d643019246316480603dc6'
+                        key: {
+                            sys_security_acl: '6d454fc473bd46f3b88b2b3705da4599'
+                            sys_user_role: {
+                                id: '3820b778bac540099d293cef1520a777'
+                                key: {
+                                    name: 'x_695068_bcfa.ai_agent'
+                                }
+                            }
                         }
                     },
                     {
@@ -2674,6 +2712,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '09c629e326de4678928e1a04dd47a1aa'
+                        key: {
+                            sys_security_acl: 'c35780c44ec443bdaed8ef885daf99a7'
+                            sys_user_role: '3820b778bac540099d293cef1520a777'
+                        }
+                    },
+                    {
                         table: 'sn_aia_agent_config'
                         id: '0a5a2f18f37f465a8592afa11d98166e'
                         key: {
@@ -2788,6 +2834,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: '0b8e359ce5414fdabfbd35ea60d04024'
+                        deleted: true
                         key: {
                             sys_security_acl: '6f14b5e030454e698a31342c91718ee8'
                             sys_user_role: 'e1abbc605ba34cbfb77c584ea689c1b2'
@@ -3225,6 +3272,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: '1168ddaf09ac411bbdc704e5b0ebdad5'
+                        deleted: true
                         key: {
                             sys_security_acl: '723e753574cb41b0a1342e95b84030ca'
                             sys_user_role: '4411dd9103de4bdbb5468924b1e5459f'
@@ -3468,6 +3516,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '161e1bd0ee9b4fdea31c38ef8fec9457'
+                        key: {
+                            sys_security_acl: '94885bdcac5b41028ddda6af46dbdc5f'
+                            sys_user_role: '3820b778bac540099d293cef1520a777'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: '162d1d152e744dd18c3f344420468737'
                         key: {
@@ -3670,6 +3726,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '1ad1588807ae4983a16201da488c9f23'
+                        key: {
+                            sys_security_acl: '3cd32ab37fcb4ac0b26d66f71cc67b56'
+                            sys_user_role: {
+                                id: '3820b778bac540099d293cef1520a777'
+                                key: {
+                                    name: 'x_695068_bcfa.ai_agent'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '1ae22c5f2459409ba224d0f6f0327c59'
                         key: {
@@ -3860,6 +3929,19 @@ declare global {
                             name: 'x_695068_bcfa_ap_invoice'
                             element: 'sales_order_reference'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '1dd3ac3e2a604da59b434b99a28c47a0'
+                        key: {
+                            sys_security_acl: '767651e4e78945b29b70c9fb458937db'
+                            sys_user_role: {
+                                id: '3820b778bac540099d293cef1520a777'
+                                key: {
+                                    name: 'x_695068_bcfa.ai_agent'
+                                }
+                            }
                         }
                     },
                     {
@@ -4217,6 +4299,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '22f3dd4a42124b5ea03814f4ccb212f3'
+                        key: {
+                            sys_security_acl: 'e94b991c4b954494b225f3a86a9a7eb8'
+                            sys_user_role: {
+                                id: '3820b778bac540099d293cef1520a777'
+                                key: {
+                                    name: 'x_695068_bcfa.ai_agent'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sn_aia_tool'
                         id: '22f61c0f0fab43d994254a34c0e6a658'
                         key: {
@@ -4334,11 +4429,32 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '24e59b7ab51b4478a2753a918fd095e7'
+                        key: {
+                            sys_security_acl: '3db09a3171c44718a9796e8ace5d83a1'
+                            sys_user_role: '3820b778bac540099d293cef1520a777'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '25325d773150413b89859e46157f2996'
                         key: {
                             name: 'x_695068_bcfa_integration_txn'
                             element: 'completed_at'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '2579b172b6a84a63802bbe6b168bc448'
+                        key: {
+                            sys_security_acl: '3b15015efcfd46e59abf66e5fd833359'
+                            sys_user_role: {
+                                id: 'bf505b5092574a7fa59a01048550571a'
+                                key: {
+                                    name: 'x_695068_bcfa.ap_processor'
+                                }
+                            }
                         }
                     },
                     {
@@ -4695,6 +4811,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '2b60f1715d7048b5b8d6d77b54df4887'
+                        key: {
+                            sys_security_acl: '87c6a912c317412e9cc92697f62124c3'
+                            sys_user_role: {
+                                id: '3820b778bac540099d293cef1520a777'
+                                key: {
+                                    name: 'x_695068_bcfa.ai_agent'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'ua_table_licensing_config'
                         id: '2b66800fe6af46cd99ed49b2942703ab'
                         key: {
@@ -4894,6 +5023,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: '2e041a209a7a4442a9bfc24855dd9d35'
+                        deleted: true
                         key: {
                             sys_security_acl: 'ddc8714aa5f844578bcc2b309059210c'
                             sys_user_role: 'e1abbc605ba34cbfb77c584ea689c1b2'
@@ -5421,6 +5551,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_user_role'
+                        id: '3820b778bac540099d293cef1520a777'
+                        key: {
+                            name: 'x_695068_bcfa.ai_agent'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '382b8894d6644c968ac7a2cf62e0ae62'
                         key: {
@@ -5502,6 +5639,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: '38decf1752e44bdb8fc00040503934d7'
+                        deleted: true
                         key: {
                             sys_security_acl: '2895fd078be441a3967cb2e4e920a98b'
                             sys_user_role: 'e1abbc605ba34cbfb77c584ea689c1b2'
@@ -5573,6 +5711,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: '398862d778ab425e90cfdf2a89967214'
+                        deleted: true
                         key: {
                             sys_security_acl: 'c35780c44ec443bdaed8ef885daf99a7'
                             sys_user_role: '4411dd9103de4bdbb5468924b1e5459f'
@@ -5979,6 +6118,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: '3fc409dff04f4075af175c00689570f4'
+                        deleted: true
                         key: {
                             sys_security_acl: '4e792e3f193d4045a9116bc35f083513'
                             sys_user_role: 'e1abbc605ba34cbfb77c584ea689c1b2'
@@ -6286,6 +6426,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '443dfaefd97740f0a4ca7b8464577176'
+                        key: {
+                            sys_security_acl: '6d454fc473bd46f3b88b2b3705da4599'
+                            sys_user_role: {
+                                id: '588d615a5fea475bbe3422f50e91c218'
+                                key: {
+                                    name: 'x_695068_bcfa.ar_processor'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: '44615e132744446984d3029e885479dd'
                         key: {
@@ -6354,6 +6507,19 @@ declare global {
                         id: '45d5c252928f440da55367fe312804b1'
                         key: {
                             name: 'x_695068_bcfa_ar_open_item'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '45dfcf7ff77f4868a57fce1060864126'
+                        key: {
+                            sys_security_acl: '809a8beda06447cab66c275294eea951'
+                            sys_user_role: {
+                                id: '3820b778bac540099d293cef1520a777'
+                                key: {
+                                    name: 'x_695068_bcfa.ai_agent'
+                                }
+                            }
                         }
                     },
                     {
@@ -6624,6 +6790,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '4a5fda08dbc44de9ab80cda5e19814d6'
+                        key: {
+                            sys_security_acl: '48658a85a5bd428b916c59a1e8fe5999'
+                            sys_user_role: {
+                                id: '3820b778bac540099d293cef1520a777'
+                                key: {
+                                    name: 'x_695068_bcfa.ai_agent'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '4a81a9b8b2cd4b138afd257a49d96d05'
                         key: {
@@ -6742,6 +6921,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: '4c2866c2fbb045f2a3d35582e42d874b'
+                        deleted: true
                         key: {
                             sys_security_acl: 'c09072c3a2e34a60be3f433e20c58766'
                             sys_user_role: '4411dd9103de4bdbb5468924b1e5459f'
@@ -6859,6 +7039,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '4ee53794707d4147bfac15f7f0d6afb6'
+                        key: {
+                            sys_security_acl: '9772832986ee4b3db736de1a9a377737'
+                            sys_user_role: {
+                                id: '3820b778bac540099d293cef1520a777'
+                                key: {
+                                    name: 'x_695068_bcfa.ai_agent'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '4f0a846b56a9495581a845f932a04fad'
                         key: {
@@ -6891,6 +7084,19 @@ declare global {
                             name: 'x_695068_bcfa_payment'
                             element: 'value_date'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '4fee0eac6d8e4f679a57c4c24657c9e6'
+                        key: {
+                            sys_security_acl: '3b15015efcfd46e59abf66e5fd833359'
+                            sys_user_role: {
+                                id: '4411dd9103de4bdbb5468924b1e5459f'
+                                key: {
+                                    name: 'x_695068_bcfa.admin'
+                                }
+                            }
                         }
                     },
                     {
@@ -7098,6 +7304,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: '53f327d702ae413f9c7a816e0f7148bc'
+                        deleted: true
                         key: {
                             sys_security_acl: '94885bdcac5b41028ddda6af46dbdc5f'
                             sys_user_role: 'e1abbc605ba34cbfb77c584ea689c1b2'
@@ -7725,6 +7932,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '5b5d1dd3f9be4471bf353f901309a8ff'
+                        key: {
+                            sys_security_acl: '2895fd078be441a3967cb2e4e920a98b'
+                            sys_user_role: '3820b778bac540099d293cef1520a777'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '5b5e2efdbd8a47dcb3fd320df026b0c0'
                         key: {
@@ -8002,6 +8217,19 @@ declare global {
                                 id: '3c9a83325cf94296bcf8bba69a8df8c8'
                                 key: {
                                     name: 'BCFA Cash Application Review Team'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '603a4b635da64405841fde50c45e6e0f'
+                        key: {
+                            sys_security_acl: 'ee6e1403798f4fef8533f0abcecd1895'
+                            sys_user_role: {
+                                id: '3820b778bac540099d293cef1520a777'
+                                key: {
+                                    name: 'x_695068_bcfa.ai_agent'
                                 }
                             }
                         }
@@ -8316,6 +8544,14 @@ declare global {
                     },
                     {
                         table: 'sys_security_acl_role'
+                        id: '639b617195ae4ec68da494e26cb62bf8'
+                        key: {
+                            sys_security_acl: 'ddc8714aa5f844578bcc2b309059210c'
+                            sys_user_role: '3820b778bac540099d293cef1520a777'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
                         id: '63ad8d1b6d4f4d899b16d0e569f8bcac'
                         key: {
                             sys_security_acl: 'c39b37d54b874cd5bfe8e3f3ee6d5bba'
@@ -8512,6 +8748,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '66afdfd6002940ffa81116f5757d65a1'
+                        key: {
+                            sys_security_acl: '6d454fc473bd46f3b88b2b3705da4599'
+                            sys_user_role: {
+                                id: '4411dd9103de4bdbb5468924b1e5459f'
+                                key: {
+                                    name: 'x_695068_bcfa.admin'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '66c66d4266ba485897751b204c33e043'
                         key: {
@@ -8673,6 +8922,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '6859999727ca44b0bcbbc7be3a66dc08'
+                        key: {
+                            sys_security_acl: '87b82a5904324b3f87b7e1b35df7b5ee'
+                            sys_user_role: {
+                                id: 'bf505b5092574a7fa59a01048550571a'
+                                key: {
+                                    name: 'x_695068_bcfa.ap_processor'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '6894d58c888f48ccbf4e29b441bdf095'
                         key: {
@@ -8748,6 +9010,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: '69abb9ef333f49dd901bd20c280b2a23'
+                        deleted: true
                         key: {
                             sys_security_acl: '3db09a3171c44718a9796e8ace5d83a1'
                             sys_user_role: 'e1abbc605ba34cbfb77c584ea689c1b2'
@@ -8760,6 +9023,19 @@ declare global {
                             name: 'x_695068_bcfa_decision_log'
                             element: 'correlation_id'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '6a07acda1cb543b1ba39d8f291ec04c3'
+                        key: {
+                            sys_security_acl: '87b82a5904324b3f87b7e1b35df7b5ee'
+                            sys_user_role: {
+                                id: '4411dd9103de4bdbb5468924b1e5459f'
+                                key: {
+                                    name: 'x_695068_bcfa.admin'
+                                }
+                            }
                         }
                     },
                     {
@@ -8925,6 +9201,19 @@ declare global {
                             name: 'x_695068_bcfa_receipt'
                             element: 'quantity'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '6c877e624cb24b968ffd11916f8874ca'
+                        key: {
+                            sys_security_acl: '3bb5f2cb93cb48dfa4cf9a37e20f9946'
+                            sys_user_role: {
+                                id: '3820b778bac540099d293cef1520a777'
+                                key: {
+                                    name: 'x_695068_bcfa.ai_agent'
+                                }
+                            }
                         }
                     },
                     {
@@ -10144,6 +10433,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '7f017be72e8447a8b6089911c4ad5bcd'
+                        key: {
+                            sys_security_acl: '49086934609a47e0912805b8c431ed0a'
+                            sys_user_role: {
+                                id: '4411dd9103de4bdbb5468924b1e5459f'
+                                key: {
+                                    name: 'x_695068_bcfa.admin'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: '7f2d08bc93aa493890c585597b7312a6'
                         key: {
@@ -10271,6 +10573,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: '815a36acf7584b09842344d55453783b'
+                        deleted: true
                         key: {
                             sys_security_acl: '723e753574cb41b0a1342e95b84030ca'
                             sys_user_role: 'e1abbc605ba34cbfb77c584ea689c1b2'
@@ -10757,6 +11060,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '89c34cc664ec4a9f90913c29dbe35e5f'
+                        key: {
+                            sys_security_acl: 'c09072c3a2e34a60be3f433e20c58766'
+                            sys_user_role: '3820b778bac540099d293cef1520a777'
+                        }
+                    },
+                    {
                         table: 'sn_aia_agent_tool_m2m'
                         id: '89d20b70be6048e5b65dd1ed6adae0e9'
                         key: {
@@ -10803,6 +11114,14 @@ declare global {
                             value: 'cash_match_recommendation'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '8a7fa93bd7a34b32a4d7f319172fc0d5'
+                        key: {
+                            sys_security_acl: '6f14b5e030454e698a31342c91718ee8'
+                            sys_user_role: '3820b778bac540099d293cef1520a777'
                         }
                     },
                     {
@@ -10937,6 +11256,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: '8d6adac8f94b444a9b2898ade605275e'
+                        deleted: true
                         key: {
                             sys_security_acl: '2895fd078be441a3967cb2e4e920a98b'
                             sys_user_role: '4411dd9103de4bdbb5468924b1e5459f'
@@ -11218,6 +11538,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '93ade623f45647898a8bfeb78ab826b7'
+                        key: {
+                            sys_security_acl: '446fa06efbe5462186aa643f1c0bdb88'
+                            sys_user_role: {
+                                id: '3820b778bac540099d293cef1520a777'
+                                key: {
+                                    name: 'x_695068_bcfa.ai_agent'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '93d944f07041497783fa490175214536'
                         key: {
@@ -11428,6 +11761,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '97639255b6b44cf58c562a15c353e198'
+                        key: {
+                            sys_security_acl: '2808bd04e43b4244984a91384e6b4694'
+                            sys_user_role: {
+                                id: '3820b778bac540099d293cef1520a777'
+                                key: {
+                                    name: 'x_695068_bcfa.ai_agent'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '97bc7d849e4e47a6812bab051c0d7a9f'
                         key: {
@@ -11442,6 +11788,19 @@ declare global {
                             name: 'x_695068_bcfa_ap_exception'
                             element: 'assignment_group'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '9802766c4b0742c8aee07545b372d319'
+                        key: {
+                            sys_security_acl: '2a4af0c45dbb4bee9f3d9e70f683ca81'
+                            sys_user_role: {
+                                id: '3820b778bac540099d293cef1520a777'
+                                key: {
+                                    name: 'x_695068_bcfa.ai_agent'
+                                }
+                            }
                         }
                     },
                     {
@@ -11475,6 +11834,19 @@ declare global {
                             value: 'at_risk'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '987d915d8b394a378cd87eed4ce0d60e'
+                        key: {
+                            sys_security_acl: '632df7f0b6d246e49946a2cce8c2b8db'
+                            sys_user_role: {
+                                id: '3820b778bac540099d293cef1520a777'
+                                key: {
+                                    name: 'x_695068_bcfa.ai_agent'
+                                }
+                            }
                         }
                     },
                     {
@@ -11753,6 +12125,19 @@ declare global {
                             value: 'simulated_ai'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '9c48bbbef48240fbb276e679b7db06b7'
+                        key: {
+                            sys_security_acl: '49086934609a47e0912805b8c431ed0a'
+                            sys_user_role: {
+                                id: '588d615a5fea475bbe3422f50e91c218'
+                                key: {
+                                    name: 'x_695068_bcfa.ar_processor'
+                                }
+                            }
                         }
                     },
                     {
@@ -12255,6 +12640,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: 'a326c570415a4a3d9986ac9689e9569f'
+                        deleted: true
                         key: {
                             sys_security_acl: '94885bdcac5b41028ddda6af46dbdc5f'
                             sys_user_role: '4411dd9103de4bdbb5468924b1e5459f'
@@ -12774,6 +13160,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: 'ac05d47124ef49acac120963ac315a55'
+                        key: {
+                            sys_security_acl: 'ae9c16a55c74497cac9f8b1dbd1d956d'
+                            sys_user_role: {
+                                id: '3820b778bac540099d293cef1520a777'
+                                key: {
+                                    name: 'x_695068_bcfa.ai_agent'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: 'ac20cf95d45447afbf4eb44c306566d1'
                         key: {
@@ -13106,6 +13505,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: 'b1c2e74ddb29410b8d4e585be43c9c6b'
+                        deleted: true
                         key: {
                             sys_security_acl: 'c09072c3a2e34a60be3f433e20c58766'
                             sys_user_role: 'e1abbc605ba34cbfb77c584ea689c1b2'
@@ -13638,6 +14038,19 @@ declare global {
                                 id: 'e1abbc605ba34cbfb77c584ea689c1b2'
                                 key: {
                                     name: 'x_695068_bcfa.finance_approver'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'b8d260d729184a17907705bacc06b615'
+                        key: {
+                            sys_security_acl: 'f4f04fad2c224be78671c6c12a032003'
+                            sys_user_role: {
+                                id: '3820b778bac540099d293cef1520a777'
+                                key: {
+                                    name: 'x_695068_bcfa.ai_agent'
                                 }
                             }
                         }
@@ -14566,6 +14979,14 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_payment'
                             element: 'customer'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'c856d767cee847d79766de401284cafe'
+                        key: {
+                            sys_security_acl: '723e753574cb41b0a1342e95b84030ca'
+                            sys_user_role: '3820b778bac540099d293cef1520a777'
                         }
                     },
                     {
@@ -15505,6 +15926,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: 'd86a038660124f64a5079d805ad8b8a0'
+                        deleted: true
                         key: {
                             sys_security_acl: '4e792e3f193d4045a9116bc35f083513'
                             sys_user_role: '4411dd9103de4bdbb5468924b1e5459f'
@@ -15751,6 +16173,19 @@ declare global {
                             name: 'x_695068_bcfa_vendor'
                             element: 'NULL'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'dc75669899c74eba89adf19e326b1f74'
+                        key: {
+                            sys_security_acl: 'dbe1a721f3a34d8b8578c5bd66ff82b3'
+                            sys_user_role: {
+                                id: '3820b778bac540099d293cef1520a777'
+                                key: {
+                                    name: 'x_695068_bcfa.ai_agent'
+                                }
+                            }
                         }
                     },
                     {
@@ -16067,6 +16502,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: 'e018bce144174f1e94fdc843fb1c716d'
+                        deleted: true
                         key: {
                             sys_security_acl: '3db09a3171c44718a9796e8ace5d83a1'
                             sys_user_role: '4411dd9103de4bdbb5468924b1e5459f'
@@ -16351,6 +16787,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: 'e3adc4bfe3f842f58e6a627cd17d4399'
+                        deleted: true
                         key: {
                             sys_security_acl: 'ddc8714aa5f844578bcc2b309059210c'
                             sys_user_role: '4411dd9103de4bdbb5468924b1e5459f'
@@ -16665,6 +17102,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: 'e8c6a336a38145dc9f0f36e51138adb1'
+                        deleted: true
                         key: {
                             sys_security_acl: 'c35780c44ec443bdaed8ef885daf99a7'
                             sys_user_role: 'e1abbc605ba34cbfb77c584ea689c1b2'
@@ -16838,6 +17276,19 @@ declare global {
                     },
                     {
                         table: 'sys_security_acl_role'
+                        id: 'eb80b94abd1148268cda8fe58678bfae'
+                        key: {
+                            sys_security_acl: '3366e1b1b362415eb5ca04148fb4aab3'
+                            sys_user_role: {
+                                id: '3820b778bac540099d293cef1520a777'
+                                key: {
+                                    name: 'x_695068_bcfa.ai_agent'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
                         id: 'ebb7b2ee8d934fbbb65488f5c9cd5196'
                         key: {
                             sys_security_acl: 'c8f598159ed2462ebb324cc529b2874f'
@@ -16885,6 +17336,19 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_match_candidate'
                             element: 'ar_open_item'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'ec1ca38a30fe4c66b65aa45d014fe487'
+                        key: {
+                            sys_security_acl: '7cff9e3ec5c84580af58603082596ac2'
+                            sys_user_role: {
+                                id: '3820b778bac540099d293cef1520a777'
+                                key: {
+                                    name: 'x_695068_bcfa.ai_agent'
+                                }
+                            }
                         }
                     },
                     {
@@ -17306,6 +17770,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: 'f269fd43f28246879ccfb84d552f2216'
+                        key: {
+                            sys_security_acl: '4e792e3f193d4045a9116bc35f083513'
+                            sys_user_role: '3820b778bac540099d293cef1520a777'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: 'f2823d17e70441d6afa81b05189c83b1'
                         key: {
@@ -17431,6 +17903,19 @@ declare global {
                             name: 'x_695068_bcfa_receipt'
                             element: 'NULL'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'f40e2b27c0f94b5b8115022cda8b4606'
+                        key: {
+                            sys_security_acl: '87b82a5904324b3f87b7e1b35df7b5ee'
+                            sys_user_role: {
+                                id: '3820b778bac540099d293cef1520a777'
+                                key: {
+                                    name: 'x_695068_bcfa.ai_agent'
+                                }
+                            }
                         }
                     },
                     {
@@ -17602,6 +18087,19 @@ declare global {
                             value: 'in_review'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'f67f034be0b44b00b4932eff0dbe7834'
+                        key: {
+                            sys_security_acl: 'e63e14a739c143dcb4f2761f30e7c0bf'
+                            sys_user_role: {
+                                id: '3820b778bac540099d293cef1520a777'
+                                key: {
+                                    name: 'x_695068_bcfa.ai_agent'
+                                }
+                            }
                         }
                     },
                     {
@@ -17860,6 +18358,19 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_finance_intake'
                             element: 'source_reference'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'fa9ce4e7809e41aeb562b6f4fed597ef'
+                        key: {
+                            sys_security_acl: '48319d70b4064e85966f25ec5d1f2ac2'
+                            sys_user_role: {
+                                id: '3820b778bac540099d293cef1520a777'
+                                key: {
+                                    name: 'x_695068_bcfa.ai_agent'
+                                }
+                            }
                         }
                     },
                     {

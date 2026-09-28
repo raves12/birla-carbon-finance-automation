@@ -29,6 +29,7 @@ const AGENT = {
 }
 
 const ROLE = {
+    aiAgent: '3820b778bac540099d293cef1520a777',
     admin: '4411dd9103de4bdbb5468924b1e5459f',
     arProcessor: '588d615a5fea475bbe3422f50e91c218',
     financeReviewer: '484c56f4217841e298f5752ea6093a3f',
@@ -46,7 +47,9 @@ export const cashApplicationReviewWorkflow = AiAgenticWorkflow({
     securityAcl: {
         $id: Now.ID['bcfa_cash_application_review_workflow_acl'],
         type: 'Specific role',
-        roles: [ROLE.admin, ROLE.arProcessor, ROLE.financeReviewer, ROLE.financeApprover],
+        // Phase 22: the AI identity (trigger run-as user) and the processing
+        // roles; no admin or approver role.
+        roles: [ROLE.aiAgent, ROLE.arProcessor, ROLE.financeReviewer],
     },
     team: {
         $id: Now.ID['bcfa_cash_application_review_team'],

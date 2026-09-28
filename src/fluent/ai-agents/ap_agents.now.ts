@@ -14,6 +14,7 @@ import { AiAgent } from '@servicenow/sdk/core'
 // sys_agent_access_role_mapping table, so roleMap is unavailable).
 
 const ROLE = {
+    aiAgent: '3820b778bac540099d293cef1520a777',
     admin: '4411dd9103de4bdbb5468924b1e5459f',
     apProcessor: 'bf505b5092574a7fa59a01048550571a',
     financeReviewer: '484c56f4217841e298f5752ea6093a3f',
@@ -21,8 +22,10 @@ const ROLE = {
     auditor: '03604bf4100246588f4250676240bc18',
 }
 
-const AP_READ_ROLES = [ROLE.admin, ROLE.apProcessor, ROLE.financeReviewer, ROLE.financeApprover, ROLE.auditor]
-const AP_DRAFT_ROLES = [ROLE.admin, ROLE.apProcessor, ROLE.financeReviewer, ROLE.financeApprover]
+// Phase 22: no admin or approver role in any agent's mask or execute ACL;
+// AI identities hold only ROLE.aiAgent.
+const AP_READ_ROLES = [ROLE.aiAgent, ROLE.apProcessor, ROLE.financeReviewer, ROLE.auditor]
+const AP_DRAFT_ROLES = [ROLE.aiAgent, ROLE.apProcessor, ROLE.financeReviewer]
 
 const SAFETY_RULES = `Hard limits (never break these):
 - You are advisory only. You may recommend an action, but you cannot and must never perform one: never approve, reject, post, pay, hold, release, or change the state of any invoice or exception, and never override a tolerance, approval limit or segregation-of-duties rule. You have no tools for any of that.
