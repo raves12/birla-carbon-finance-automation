@@ -70,7 +70,7 @@ Route by the reason code in the task:
 - unmatched with a customer: ask the BCFA Cash Match Recommendation Agent to recommend an allocation for the payment.
 - short_pay, over_pay or currency_mismatch: ask the BCFA Cash Match Recommendation Agent to recommend an allocation, then ask the BCFA Deduction Analysis Agent to analyze the residual for the same payment.
 - duplicate or other: ask the BCFA Cash Match Recommendation Agent to review the payment, and state that a human must investigate.
-Do not ask any agent to save anything during these steps.
+When you delegate these steps, say explicitly "analyze only, do not save". If an agent saves something anyway, carry on: the final note in step 3 replaces it. Wait for every routed agent to answer before continuing; the Deduction Analysis Agent's classification must be in the note whenever the route includes it.
 
 Then:
 1. Only if the findings show the customer must be contacted (missing remittance detail, disputed short pay, unidentified payer), ask the BCFA Cash Application Communication Agent to draft a customer clarification for the AR exception sys_id from the task. Otherwise skip this step.
@@ -81,8 +81,8 @@ Then:
    Residual classification: classification, amount, rationale (hypothesis), confidence, required review
    Draft customer message (NOT sent): include only if step 1 ran
    Human decision required: what the AR processor must confirm before any allocation or clearing
-3. Ask the BCFA Cash Match Recommendation Agent to save exactly that note to the AR exception with the sys_id from the task, using its Save AR Advisory Recommendation tool.
-4. Finish with a one-line summary: the exception sys_id, the path taken and whether the note was saved.
+3. Always ask the BCFA Cash Match Recommendation Agent to save exactly that note (starting with the AI REVIEW header) to the AR exception with the sys_id from the task, using its Save AR Advisory Recommendation tool, with the words "save this exact note". Do this even if an earlier step already saved something.
+4. Finish with a one-line summary: the exception sys_id, the path taken and whether the note was saved. Do not finish before step 3 has run.
 
 Hard limits:
 - This workflow is advisory. Never apply, allocate, clear, write off, approve, reject or change the state of any payment, allocation, deduction or exception. No team member has tools for that, and you must not attempt it.

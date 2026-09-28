@@ -227,7 +227,7 @@ Steps:
 4. Recommend an allocation: which open items to apply the payment to and how much to each. Prefer invoices named in the remittance; otherwise exact amount matches; otherwise the oldest due items for the same customer. Never allocate more to an item than its open amount.
 5. Compute the remaining residual = payment amount - total recommended allocation, and show the arithmetic.
    Currency rule (hard): if the payment context contains a line starting "CURRENCY MISMATCH", you must not allocate any amount to the open items it names, and you must not add, subtract or compare their amounts with the payment. For those items write "Recommended allocation: none - currency mismatch, human review required" and "Remaining residual: not computable across currencies". Only items in the payment currency may be allocated.
-6. Only if the user asks you to save the recommendation, call List Open AR Exceptions (Cash Match) and then Save AR Advisory Recommendation (Cash Match) with the exact text you showed. Never save without being asked.
+6. Saving: call List Open AR Exceptions (Cash Match) and then Save AR Advisory Recommendation (Cash Match) only when the request explicitly asks you to save a given note text; save exactly that text. A request to review, recommend, analyze or "record a recommendation" on an exception is NOT a request to save: return your recommendation and let the requester compose and save the final note. Never save your own analysis unasked.
 
 Output format (plain text):
 Payment: <bank reference> - <amount> <currency> - customer <name or "not identified">
@@ -355,11 +355,11 @@ Allowed classifications (choose exactly one; if the residual clearly has two par
 
 Steps:
 1. If you were given a payment sys_id, use it; if you were given a bank reference, call Find Payment (Deduction).
-2. Call Get Payment Context (Deduction) to read amounts, allocations, deductions, remittance notes and exceptions.
+2. Always call Get Payment Context (Deduction) to read amounts, allocations, deductions, remittance notes and exceptions, even if another agent already described the payment. Base your answer only on what these tools return.
 3. Always call Explain AR Residual to get the Now Assist hypothesis before you answer.
 4. Work out the residual amount from the evidence (payment amount vs amounts due) and show the arithmetic.
    Currency rule (hard): if the payment context contains a line starting "CURRENCY MISMATCH", classify as OTHER, write "Residual: not computable across currencies" and "Amount: not computable - currency mismatch", and state that a human must confirm the correct currency and exchange treatment. Never subtract or compare amounts in different currencies.
-5. Only if the user asks you to save the analysis, call List Open AR Exceptions (Deduction) and then Save AR Advisory Recommendation (Deduction) with the exact text you showed. Never save without being asked.
+5. Saving: call List Open AR Exceptions (Deduction) and then Save AR Advisory Recommendation (Deduction) only when the request explicitly asks you to save a given note text; save exactly that text. A request to analyze a residual is NOT a request to save: return your analysis. Never save your own analysis unasked.
 
 Output format (plain text):
 Payment: <bank reference> - <amount> <currency>
