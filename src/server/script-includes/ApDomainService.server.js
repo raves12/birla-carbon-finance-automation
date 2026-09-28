@@ -41,6 +41,13 @@ ApDomainService.prototype = {
         var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
         if (!invoice.get(apInvoiceSysId)) return false;
         var previous = invoice.getValue('state');
+        // Phase 26: only transitions of the lifecycle state model (FinanceLifecycle).
+        this._lifecycle = this._lifecycle || new FinanceLifecycle();
+        var gate = this._lifecycle.evaluate('x_695068_bcfa_ap_invoice', previous, newState);
+        if (!gate.allowed && this._lifecycle.enforcing()) {
+            this._lifecycle.record('x_695068_bcfa_ap_invoice', apInvoiceSysId, previous, newState, gate, { correlationId: correlationId || invoice.getValue('correlation_id'), attempt: description });
+            throw new Error('BCFA lifecycle: ' + gate.message);
+        }
         invoice.setValue('state', newState);
         invoice.update();
         audit = audit || {};

@@ -1,6 +1,7 @@
 import { StateModel } from '@servicenow/sdk/core'
 
-// Cash Application lifecycle (Section 8 of the build brief). Same manual-
+// Cash Application lifecycle (Section 8 of the build brief). Enforced since
+// Phase 26 (see docs/STATE_MODELS.md). Same manual-
 // transition philosophy as the AP Invoice lifecycle — see
 // ap_invoice_lifecycle.now.ts for the rationale.
 
@@ -61,5 +62,13 @@ export const cashApplicationLifecycle = StateModel({
         { $id: Now.ID['ca-trans-exception-on-hold'], from: 'exception', to: 'on_hold' },
         { $id: Now.ID['ca-trans-on-hold-pending-approval'], from: 'on_hold', to: 'pending_approval' },
         { $id: Now.ID['ca-trans-on-hold-matching'], from: 'on_hold', to: 'matching' },
+        // Phase 26: transitions the pipeline makes that the model lacked.
+        // Mandatory payment fields missing at normalization.
+        { $id: Now.ID['ca-trans-received-exception'], from: 'received', to: 'exception' },
+        // Ambiguous match (several exact options) or currency mismatch with
+        // the remittance: the engine does not choose, straight to exception.
+        { $id: Now.ID['ca-trans-matching-exception'], from: 'matching', to: 'exception' },
+        // Reconciliation confirmed nothing was committed: safe to clear again.
+        { $id: Now.ID['ca-trans-unknown-outcome-approved'], from: 'unknown_outcome', to: 'approved' },
     ],
 })

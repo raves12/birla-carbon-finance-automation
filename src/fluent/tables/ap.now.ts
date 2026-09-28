@@ -37,7 +37,7 @@ export const x_695068_bcfa_ap_invoice = Table({
         tax_amount: DecimalColumn({ label: 'Tax Amount', scale: 2 }),
         net_amount: DecimalColumn({ label: 'Net Amount', scale: 2 }),
         extraction_confidence: DecimalColumn({ label: 'Extraction Confidence', scale: 2 }),
-        state: StringColumn({ label: 'State', maxLength: 40, hint: 'Managed by the AP Invoice StateModel' }),
+        state: StringColumn({ label: 'State', maxLength: 40, readOnly: true, hint: 'Managed by the AP Invoice Lifecycle state model; only its transitions are allowed (Phase 26).' }),
         source: ChoiceColumn({
             label: 'Source',
             default: 'email',

@@ -1,11 +1,10 @@
 import { BusinessRule } from '@servicenow/sdk/core'
 
-// These two rules are the entire reactive-orchestration surface of the app
-// (see docs/ARTIFACT_STRATEGY.md Stage 15 refinement for why Business Rules
-// rather than Flow Designer actionStep.script drive this cascade). Both
-// react only to a state change our own service made, so each fires exactly
-// once per approval decision — never in response to a raw, uncontrolled
-// field edit.
+// Approval cascades (see docs/ARTIFACT_STRATEGY.md). Since Phase 25 they act
+// only in inline orchestration mode (demo seeding, tests); in flow mode the
+// AP Integration / AR Clearing flows post and clear instead. Both react only
+// to a state change our own service made, so each fires exactly once per
+// approval decision — never in response to a raw, uncontrolled field edit.
 
 export const apInvoiceApprovalCascade = BusinessRule({
     $id: Now.ID['br-ap-invoice-approval-cascade'],

@@ -607,6 +607,10 @@ declare global {
                         table: 'sttrm_state'
                         id: '6c1457c70fae4cceb1196028b1a06f13'
                     }
+                    'ap-trans-approved-pending-approval': {
+                        table: 'sttrm_state_transition'
+                        id: 'af5bfcee6fba475ea84ea2971a12b5f9'
+                    }
                     'ap-trans-approved-posting': {
                         table: 'sttrm_state_transition'
                         id: 'c84af15836d44d76903c68dab54c5251'
@@ -679,9 +683,17 @@ declare global {
                         table: 'sttrm_state_transition'
                         id: 'd701eb9a8ba04d7097557e27550fa714'
                     }
+                    'ap-trans-received-extracted': {
+                        table: 'sttrm_state_transition'
+                        id: '4a013c673754475da5022c2ebe96d95f'
+                    }
                     'ap-trans-received-extracting': {
                         table: 'sttrm_state_transition'
                         id: '6ff4aa6d6b7c4263b14e7d3b459144f1'
+                    }
+                    'ap-trans-received-validating': {
+                        table: 'sttrm_state_transition'
+                        id: '68170720f8424fddbfc8daff79f8b699'
                     }
                     'ap-trans-reconciled-closed': {
                         table: 'sttrm_state_transition'
@@ -1333,6 +1345,10 @@ declare global {
                         table: 'sys_script'
                         id: '6986d6fb2d40494cb71bc8787aac8ad4'
                     }
+                    'br-ap-invoice-lifecycle-enforcement': {
+                        table: 'sys_script'
+                        id: 'c1cbc65042c8481589cd0ecb8fa1597c'
+                    }
                     'br-ar-payment-approval-cascade': {
                         table: 'sys_script'
                         id: 'e39de90e641547018027fa21d9745b30'
@@ -1364,6 +1380,10 @@ declare global {
                     'br-finance-intake-auto-number': {
                         table: 'sys_script'
                         id: '02e3ad1ac8084ff3b5fc039b9b900023'
+                    }
+                    'br-payment-lifecycle-enforcement': {
+                        table: 'sys_script'
+                        id: 'a01002a05bb9443bb9d3f35fd180dd1f'
                     }
                     'ca-state-allocation': {
                         table: 'sttrm_state'
@@ -1493,6 +1513,10 @@ declare global {
                         table: 'sttrm_state_transition'
                         id: '3b46177a12164951b778d7928ed27785'
                     }
+                    'ca-trans-matching-exception': {
+                        table: 'sttrm_state_transition'
+                        id: 'af8b3289933d47798d9116e82291dbc9'
+                    }
                     'ca-trans-matching-matched': {
                         table: 'sttrm_state_transition'
                         id: 'c4c9b5653f28439fbf4d5c8cdc5470ad'
@@ -1529,6 +1553,10 @@ declare global {
                         table: 'sttrm_state_transition'
                         id: '1ae7711323e54f2f95cfaf78766f1f96'
                     }
+                    'ca-trans-received-exception': {
+                        table: 'sttrm_state_transition'
+                        id: '3eb1f446a1884273a87ec29eaed7577c'
+                    }
                     'ca-trans-received-normalized': {
                         table: 'sttrm_state_transition'
                         id: '3ccb86f190cd41ad9feebf9fce799a64'
@@ -1536,6 +1564,10 @@ declare global {
                     'ca-trans-reconciled-closed': {
                         table: 'sttrm_state_transition'
                         id: 'ca5fc865980f485b89400ed1ee20d3b5'
+                    }
+                    'ca-trans-unknown-outcome-approved': {
+                        table: 'sttrm_state_transition'
+                        id: '84dd233f3d4c4424a6699b7114be7bc8'
                     }
                     'ca-trans-unknown-outcome-cleared': {
                         table: 'sttrm_state_transition'
@@ -1915,6 +1947,10 @@ declare global {
                         table: 'sys_properties'
                         id: '732add1fdb044f53b34565facd13fd3a'
                     }
+                    'prop-lifecycle-enforcement': {
+                        table: 'sys_properties'
+                        id: '6400c19da8e44c8d802556c089e712b2'
+                    }
                     'prop-orchestration-mode': {
                         table: 'sys_properties'
                         id: '3cf89aae405c43de85f9b9fa67c0307f'
@@ -2003,6 +2039,10 @@ declare global {
                         table: 'sys_script_include'
                         id: '914d765f605047a59c767d99d7ce099d'
                     }
+                    'si-finance-lifecycle': {
+                        table: 'sys_script_include'
+                        id: 'b14166b6d2944d32b45f46c2a1aed5b4'
+                    }
                     'si-finance-orchestration': {
                         table: 'sys_script_include'
                         id: 'db56861d14944f8b8cd0700828157284'
@@ -2067,6 +2107,10 @@ declare global {
                         table: 'sys_module'
                         id: '658b4329ad42400abd7c9c21b50885f1'
                     }
+                    'src_server_business-rules_LifecycleEnforcement_server_js': {
+                        table: 'sys_module'
+                        id: '65a779f023cd41d5b793b7d0cd20eee8'
+                    }
                     'src_server_script-includes_AiInteractionLog_server_js': {
                         table: 'sys_module'
                         id: 'a8ba9b774fef4ae1b97c58fb3f888aff'
@@ -2130,6 +2174,10 @@ declare global {
                     'src_server_script-includes_FinanceKpiService_server_js': {
                         table: 'sys_module'
                         id: '0b23e2c9ae4b4f29b4d9c1e72d105949'
+                    }
+                    'src_server_script-includes_FinanceLifecycle_server_js': {
+                        table: 'sys_module'
+                        id: 'bdfc2c7762224e9ca8bd90955604aca0'
                     }
                     'src_server_script-includes_FinanceOrchestration_server_js': {
                         table: 'sys_module'

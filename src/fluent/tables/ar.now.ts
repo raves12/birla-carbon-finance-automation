@@ -32,7 +32,7 @@ export const x_695068_bcfa_payment = Table({
             default: 'bank_statement',
             choices: { bank_statement: 'Bank Statement', manual: 'Manual Entry' },
         }),
-        state: StringColumn({ label: 'State', maxLength: 40, hint: 'Managed by the Cash Application StateModel' }),
+        state: StringColumn({ label: 'State', maxLength: 40, readOnly: true, hint: 'Managed by the Cash Application Lifecycle state model; only its transitions are allowed (Phase 26).' }),
         correlation_id: StringColumn({ label: 'Correlation ID', maxLength: 64 }),
         idempotency_key: StringColumn({ label: 'Idempotency Key', maxLength: 128, unique: true }),
         ai_recommendation: StringColumn({

@@ -52,6 +52,13 @@ ArDomainService.prototype = {
         var payment = new GlideRecord('x_695068_bcfa_payment');
         if (!payment.get(paymentSysId)) return false;
         var previous = payment.getValue('state');
+        // Phase 26: only transitions of the lifecycle state model (FinanceLifecycle).
+        this._lifecycle = this._lifecycle || new FinanceLifecycle();
+        var gate = this._lifecycle.evaluate('x_695068_bcfa_payment', previous, newState);
+        if (!gate.allowed && this._lifecycle.enforcing()) {
+            this._lifecycle.record('x_695068_bcfa_payment', paymentSysId, previous, newState, gate, { correlationId: correlationId || payment.getValue('correlation_id'), attempt: description });
+            throw new Error('BCFA lifecycle: ' + gate.message);
+        }
         payment.setValue('state', newState);
         payment.update();
         audit = audit || {};
