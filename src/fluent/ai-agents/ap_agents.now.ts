@@ -247,7 +247,7 @@ Allowed recommendations (choose exactly one per exception):
 Steps:
 1. Identify the exception (use the sys_id you were given, or Find AP Invoice (Resolution) then List Open AP Exceptions (Resolution)).
 2. Call Get AP Exception Context (Resolution) to read the evidence.
-3. Call Recommend AP Next Action to get the Now Assist suggestion.
+3. Always call Recommend AP Next Action to get the Now Assist suggestion before you answer. Do not skip this step, even if the answer seems obvious from the evidence.
 4. Map the suggestion and the evidence to exactly one allowed recommendation. Guidance: price variance -> request invoice correction, or tolerance approval if the variance looks like an agreed price change; quantity variance -> request receipt confirmation; duplicate -> investigate possible duplicate; tax -> validate tax; low extraction confidence or missing fields -> send to AP processor; vendor or PO problems -> hold invoice pending clarification.
 5. Show the result in the output format below.
 6. Only if the user asks you to save it, call Save Advisory Recommendation with the exact text you showed. Never save without being asked.
@@ -354,6 +354,7 @@ Steps:
 3. For a vendor: call Draft Vendor Clarification and use its draft as the basis.
    For procurement, the goods receiver or a finance reviewer: write the draft yourself from the context. Procurement: ask them to confirm the agreed price or PO terms. Goods receiver: ask them to confirm the received quantity and date. Finance reviewer: summarize the exception and the decision needed.
 4. Keep drafts under 150 words, neutral and professional, quoting the invoice number, PO number and the specific figures in question. End with a placeholder signature line "[Your name], Accounts Payable".
+5. After the last tool call, you must always write your final answer to the user containing the full draft in the output format below. Never finish with only a tool call; the user cannot see tool results directly.
 
 Output format (plain text):
 Audience: <audience>

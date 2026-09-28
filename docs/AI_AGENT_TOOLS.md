@@ -139,6 +139,39 @@ Every skill call and the advice write produced an Audit Event with
 **Not yet tested:** a user with no BCFA role getting `forbidden`. That needs
 a dedicated test user and is covered by the Phase 29 automated tests.
 
+## Phase 8: native AP agents (2026-09-28)
+
+Source: `src/fluent/ai-agents/ap_agents.now.ts`, deployed with
+`scripts/deploy/phase8_ap_agents_bg.js`. That script is a global-scope
+background script that loads the 55 now-sdk build records through
+`GlideUpdateManager2.loadXML()`, keeping the build sys_ids.
+
+| Agent | sys_id | Tools |
+|---|---|---|
+| BCFA AP Exception Analysis Agent | `04cf894018b541cc929bdf7895e8e286` | Find AP Invoice, List Open AP Exceptions, Get AP Exception Context, Explain AP Exception |
+| BCFA AP Resolution Recommendation Agent | `ef84e321673c4969b17dea9d03c4dae5` | Same 3 read tools, Recommend AP Next Action, Save Advisory Recommendation (**Supervised**) |
+| BCFA AP Communication Agent | `3c1340425274482fb242410734d781fe` | Same 3 read tools, Draft Vendor Clarification |
+
+- **Identity and access.** All three run as the invoking user (no
+  `runAsUser`). `dataAccess.roleList` limits them to the BCFA AP roles, and
+  each has an execute ACL for the same roles; the Communication agent
+  excludes auditor. Tools are per-agent copies because `sn_aia_tool` records
+  are keyed by name and can't be shared across agents in Fluent.
+- **No control-plane tools.** No agent has a tool that can approve, post,
+  change state or override a tolerance.
+
+**Manual tests (AI Agent Studio → Testing):**
+
+| Agent | Task | Result |
+|---|---|---|
+| Exception Analysis | "Analyze the open exception on AP invoice INV-AP-005" | ✔ Called all 4 tools in order. Output: price_tolerance, 25% ($50 vs $40/MT), **financial variance $3,000**, evidence, hypothesis, High confidence, human decision required |
+| Resolution Recommendation | "Recommend the next action … INV-AP-004" | ✔ "Request receipt confirmation from the goods receiver" (invoice 15 MT vs PO/received 10 MT, 50% variance) with evidence. Did not call the save tool unprompted. ⚠ Skipped the Recommend AP Next Action skill call |
+| Communication | "Draft a clarification to the vendor … INV-AP-005" | ✔ Skill returned a correct vendor draft (invoice, PO0005, $50 vs $40, 25%, placeholder signature). ⚠ Run ended straight after the tool without the final formatting step, so the chat showed only the post-processing message |
+
+Tuning applied in source for the next deploy: the Resolution agent must call
+the skill before answering, and the Communication agent must always present
+the draft in its output format.
+
 ### Findings to act on later
 
 - **Markdown in output.** The model sometimes uses markdown bold (`**…**`)

@@ -95,6 +95,68 @@ FinanceAgentTools.prototype = {
         return { ok: true, count: payments.length, payments: payments };
     },
 
+    // Finds customers whose name or active alias contains nameText (a
+    // distinctive keyword from a remitter or customer name). Returns each
+    // candidate once, with the evidence it matched on and its open-item
+    // exposure. Ranking is left to the caller: this only gathers facts.
+    searchCustomerCandidates: function(nameText) {
+        var denied = this._requireRoles('ar_read');
+        if (denied) return denied;
+        var text = nameText ? String(nameText).trim() : '';
+        if (text.length < 3) return this._error('invalid_argument', 'Provide at least 3 characters of a customer or remitter name.');
+
+        var candidates = {};
+        var order = [];
+        var addEvidence = function(customerRecord, evidence) {
+            var id = customerRecord.getUniqueValue();
+            if (!candidates[id]) {
+                candidates[id] = {
+                    sysId: id,
+                    name: customerRecord.getValue('name'),
+                    customerCode: customerRecord.getValue('customer_code'),
+                    currency: customerRecord.getValue('currency'),
+                    active: customerRecord.getValue('active') === '1',
+                    evidence: []
+                };
+                order.push(id);
+            }
+            candidates[id].evidence.push(evidence);
+        };
+
+        var customer = new GlideRecordSecure('x_695068_bcfa_customer');
+        customer.addQuery('name', 'CONTAINS', text);
+        customer.setLimit(FinanceAgentTools.MAX_LIST);
+        customer.query();
+        while (customer.next()) {
+            addEvidence(customer, { matchedOn: 'customer name', value: customer.getValue('name'), weight: 1 });
+        }
+
+        var alias = new GlideRecordSecure('x_695068_bcfa_customer_alias');
+        alias.addQuery('alias_name', 'CONTAINS', text);
+        alias.addQuery('active', true);
+        alias.setLimit(FinanceAgentTools.MAX_LIST);
+        alias.query();
+        while (alias.next()) {
+            var aliasCustomer = new GlideRecordSecure('x_695068_bcfa_customer');
+            if (!aliasCustomer.get(alias.getValue('customer'))) continue;
+            addEvidence(aliasCustomer, {
+                matchedOn: 'alias (' + alias.getDisplayValue('alias_type') + ')',
+                value: alias.getValue('alias_name'),
+                weight: parseFloat(alias.getValue('confidence') || '1')
+            });
+        }
+
+        var results = [];
+        for (var i = 0; i < order.length; i++) {
+            var candidate = candidates[order[i]];
+            var exposure = this._openItemExposure(candidate.sysId);
+            candidate.openItemCount = exposure.count;
+            candidate.openAmount = exposure.amount;
+            results.push(candidate);
+        }
+        return { ok: true, query: text, count: results.length, candidates: results };
+    },
+
     listOpenApExceptions: function(apInvoiceSysId) {
         var denied = this._requireRoles('ap_read') || this._requireSysId(apInvoiceSysId);
         if (denied) return denied;
@@ -458,6 +520,21 @@ FinanceAgentTools.prototype = {
             });
         }
         return results;
+    },
+
+    _openItemExposure: function(customerSysId) {
+        var count = 0;
+        var amount = 0;
+        var openItem = new GlideRecordSecure('x_695068_bcfa_ar_open_item');
+        openItem.addQuery('customer', customerSysId);
+        openItem.addQuery('open_amount', '>', 0);
+        openItem.setLimit(50);
+        openItem.query();
+        while (openItem.next()) {
+            count++;
+            amount += parseFloat(openItem.getValue('open_amount') || '0');
+        }
+        return { count: count, amount: amount.toFixed(2) };
     },
 
     _openItemText: function(openItemSysId) {

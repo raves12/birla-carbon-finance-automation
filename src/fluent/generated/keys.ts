@@ -565,6 +565,38 @@ declare global {
                         table: 'sys_security_acl'
                         id: '2895fd078be441a3967cb2e4e920a98b'
                     }
+                    bcfa_cash_application_communication_agent: {
+                        table: 'sn_aia_agent'
+                        id: '9fd2181abab54e2eb93dffe220d11d93'
+                    }
+                    bcfa_cash_application_communication_agent_acl: {
+                        table: 'sys_security_acl'
+                        id: '6f14b5e030454e698a31342c91718ee8'
+                    }
+                    bcfa_cash_match_recommendation_agent: {
+                        table: 'sn_aia_agent'
+                        id: '59b6817ef4724c9ea131e5aa57c3f250'
+                    }
+                    bcfa_cash_match_recommendation_agent_acl: {
+                        table: 'sys_security_acl'
+                        id: '723e753574cb41b0a1342e95b84030ca'
+                    }
+                    bcfa_customer_resolution_agent: {
+                        table: 'sn_aia_agent'
+                        id: '132a20eb57aa4ed5971db8a267ce6395'
+                    }
+                    bcfa_customer_resolution_agent_acl: {
+                        table: 'sys_security_acl'
+                        id: 'c35780c44ec443bdaed8ef885daf99a7'
+                    }
+                    bcfa_deduction_analysis_agent: {
+                        table: 'sn_aia_agent'
+                        id: 'ede6a13bfc184c5d981db3b681d43ebf'
+                    }
+                    bcfa_deduction_analysis_agent_acl: {
+                        table: 'sys_security_acl'
+                        id: '94885bdcac5b41028ddda6af46dbdc5f'
+                    }
                     'bcfa-app-menu': {
                         table: 'sys_app_application'
                         id: 'c34b89c19957473da79f8c95aa069e60'
@@ -1618,6 +1650,14 @@ declare global {
                     },
                     {
                         table: 'sys_security_acl_role'
+                        id: '021c41fe0ceb4a2aa0325cd9473fc00c'
+                        key: {
+                            sys_security_acl: '6f14b5e030454e698a31342c91718ee8'
+                            sys_user_role: '4411dd9103de4bdbb5468924b1e5459f'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
                         id: '0247a20e7a6c4c8f94859bcf5c8c5309'
                         key: {
                             sys_security_acl: '6e927aab17524583ac6e3549985e6968'
@@ -1679,6 +1719,20 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_tool'
+                        id: '03756616cf974f6585a02f6dcd88e227'
+                        key: {
+                            name: 'Get Payment Context (Deduction)'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_tool'
+                        id: '03920574fd024ef9a73d4b7d2d0441d8'
+                        key: {
+                            name: 'Get AR Exception Context (Communication)'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '03b8eb00bb6d4ee3ba2235c0878f507b'
                         key: {
@@ -1725,11 +1779,27 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: '041d6c64e6d24228bbcaddffa4c361b9'
+                        key: {
+                            agent: '9fd2181abab54e2eb93dffe220d11d93'
+                            tool: '6cbc9cf89ccb42b0b0abf36bc68a216b'
+                            name: 'Draft Customer Clarification'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '04309561705f42d9b35ec81535c19dc2'
                         key: {
                             name: 'x_695068_bcfa_customer'
                             element: 'name'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_tool'
+                        id: '045485e3d968459abd8caf68d0b6c660'
+                        key: {
+                            name: 'Find Payment (Cash Match)'
                         }
                     },
                     {
@@ -2137,6 +2207,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: '0b156e1eb4cd45978a8905d8bfbf5f00'
+                        key: {
+                            agent: '59b6817ef4724c9ea131e5aa57c3f250'
+                            tool: '0bb917b021dc44abb448ffb9784a262d'
+                            name: 'List Open AR Exceptions (Cash Match)'
+                        }
+                    },
+                    {
                         table: 'sys_db_object'
                         id: '0b3eca5ae228483c8e60f9a488e32314'
                         key: {
@@ -2178,11 +2257,26 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '0b8e359ce5414fdabfbd35ea60d04024'
+                        key: {
+                            sys_security_acl: '6f14b5e030454e698a31342c91718ee8'
+                            sys_user_role: 'e1abbc605ba34cbfb77c584ea689c1b2'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '0b91895246b34062b36e2af3e6c25e02'
                         key: {
                             name: 'x_695068_bcfa_finance_intake'
                             element: 'remittance'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_tool'
+                        id: '0bb917b021dc44abb448ffb9784a262d'
+                        key: {
+                            name: 'List Open AR Exceptions (Cash Match)'
                         }
                     },
                     {
@@ -2357,6 +2451,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: '0f6ad8a0576144c681b4a0317cd341cc'
+                        key: {
+                            agent: '9fd2181abab54e2eb93dffe220d11d93'
+                            tool: '57ee3e4472a04037af78c88d6e8c05cb'
+                            name: 'Find Payment (Communication)'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '0f725a11f89a43aeae412a0464f7212b'
                         key: {
@@ -2478,6 +2581,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '1168ddaf09ac411bbdc704e5b0ebdad5'
+                        key: {
+                            sys_security_acl: '723e753574cb41b0a1342e95b84030ca'
+                            sys_user_role: '4411dd9103de4bdbb5468924b1e5459f'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '11a2ff3379d1490b95d62be917b24d9b'
                         key: {
@@ -2499,6 +2610,15 @@ declare global {
                         id: '12b52e45aa78428fbdd4971901e330bb'
                         key: {
                             name: 'x_695068_bcfa_integration_profile'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: '12ed71cc12c54ccf946b3d6faae509b4'
+                        key: {
+                            agent: '132a20eb57aa4ed5971db8a267ce6395'
+                            tool: 'bba734232b8c4fccb03a8337d622857f'
+                            name: 'Get Payment Context (Customer Resolution)'
                         }
                     },
                     {
@@ -2636,6 +2756,13 @@ declare global {
                             value: 'timeout'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_tool'
+                        id: '162de9d014ed465eaac3e942dc4d2b06'
+                        key: {
+                            name: 'List Open AR Exceptions (Communication)'
                         }
                     },
                     {
@@ -3101,6 +3228,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_tool'
+                        id: '22f61c0f0fab43d994254a34c0e6a658'
+                        key: {
+                            name: 'Find Payment (Deduction)'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '22f7e54fc4cc4113936763a4cc0b8c27'
                         key: {
@@ -3474,6 +3608,15 @@ declare global {
                             value: 'duplicate'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: '2c70a5de6d964170aa8ac6d218a4024e'
+                        key: {
+                            agent: '9fd2181abab54e2eb93dffe220d11d93'
+                            tool: '03920574fd024ef9a73d4b7d2d0441d8'
+                            name: 'Get AR Exception Context (Communication)'
                         }
                     },
                     {
@@ -4082,6 +4225,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '398862d778ab425e90cfdf2a89967214'
+                        key: {
+                            sys_security_acl: 'c35780c44ec443bdaed8ef885daf99a7'
+                            sys_user_role: '4411dd9103de4bdbb5468924b1e5459f'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: '39bf6eeaf5c543b28fa37c209b412497'
                         key: {
@@ -4307,6 +4458,13 @@ declare global {
                         id: '3d99a6b32c914af089ae177750cbfb6d'
                         key: {
                             name: 'x_695068_bcfa_po_line'
+                        }
+                    },
+                    {
+                        table: 'sys_agent_access_role_configuration'
+                        id: '3e377aa16a5b477597d06b7ecccc8026'
+                        key: {
+                            agent: 'ede6a13bfc184c5d981db3b681d43ebf'
                         }
                     },
                     {
@@ -4576,6 +4734,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: '43e4e7d0bd794feb86a4e87cbf53bb8c'
+                        key: {
+                            agent: 'ede6a13bfc184c5d981db3b681d43ebf'
+                            tool: '5e99f24e963b4cc2a700471ea49155be'
+                            name: 'List Open AR Exceptions (Deduction)'
+                        }
+                    },
+                    {
                         table: 'sys_user_role'
                         id: '4411dd9103de4bdbb5468924b1e5459f'
                         key: {
@@ -4643,6 +4810,15 @@ declare global {
                         id: '45d5c252928f440da55367fe312804b1'
                         key: {
                             name: 'x_695068_bcfa_ar_open_item'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: '462ae57edb79427f8e25b7455e30be61'
+                        key: {
+                            agent: 'ede6a13bfc184c5d981db3b681d43ebf'
+                            tool: '6a873479e2764dd2bd4c4f53463f4a26'
+                            name: 'Explain AR Residual'
                         }
                     },
                     {
@@ -4727,6 +4903,14 @@ declare global {
                     },
                     {
                         table: 'sys_security_acl_role'
+                        id: '471404c907504976a518d04365365553'
+                        key: {
+                            sys_security_acl: '94885bdcac5b41028ddda6af46dbdc5f'
+                            sys_user_role: '484c56f4217841e298f5752ea6093a3f'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
                         id: '472d82eb8c634511879a8daba91b4c38'
                         key: {
                             sys_security_acl: 'd641e8a7ecde48d6b7aae9d17768dfd9'
@@ -4791,6 +4975,14 @@ declare global {
                         id: '48dcd30ccb7c400ca7438368657f9bed'
                         key: {
                             name: 'Find AP Invoice (Communication)'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '49134a13ba514234b1b6389806e83b57'
+                        key: {
+                            sys_security_acl: '6f14b5e030454e698a31342c91718ee8'
+                            sys_user_role: '588d615a5fea475bbe3422f50e91c218'
                         }
                     },
                     {
@@ -4948,6 +5140,13 @@ declare global {
                                     name: 'x_695068_bcfa.ap_processor'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sn_aia_agent_config'
+                        id: '4d045c184a9a459189c023a390ebfa43'
+                        key: {
+                            agent: 'ede6a13bfc184c5d981db3b681d43ebf'
                         }
                     },
                     {
@@ -5187,6 +5386,14 @@ declare global {
                     },
                     {
                         table: 'sys_security_acl_role'
+                        id: '53f327d702ae413f9c7a816e0f7148bc'
+                        key: {
+                            sys_security_acl: '94885bdcac5b41028ddda6af46dbdc5f'
+                            sys_user_role: 'e1abbc605ba34cbfb77c584ea689c1b2'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
                         id: '54053952f9824c90a6eb3c9ae2ef5763'
                         key: {
                             sys_security_acl: '3bb5f2cb93cb48dfa4cf9a37e20f9946'
@@ -5288,6 +5495,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_version'
+                        id: '55fbb82cbb88472c9bffd980c4d1d918'
+                        key: {
+                            target_id: '59b6817ef4724c9ea131e5aa57c3f250'
+                            version_name: 'V1'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '563fc6e816ea4c43b6ec9978f3a27520'
                         key: {
@@ -5302,6 +5517,14 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_reference_mapping'
                             element: 'external_value'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '564cc4533d1d424b8031c5fd52935cd3'
+                        key: {
+                            sys_security_acl: '94885bdcac5b41028ddda6af46dbdc5f'
+                            sys_user_role: '03604bf4100246588f4250676240bc18'
                         }
                     },
                     {
@@ -5408,6 +5631,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_tool'
+                        id: '57ee3e4472a04037af78c88d6e8c05cb'
+                        key: {
+                            name: 'Find Payment (Communication)'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '57f6e20bdd594b48910d709e12305e51'
                         key: {
@@ -5477,6 +5707,13 @@ declare global {
                         id: '588d615a5fea475bbe3422f50e91c218'
                         key: {
                             name: 'x_695068_bcfa.ar_processor'
+                        }
+                    },
+                    {
+                        table: 'sys_agent_access_role_configuration'
+                        id: '58cb0240d32446eab25baef8714bd0a3'
+                        key: {
+                            agent: '59b6817ef4724c9ea131e5aa57c3f250'
                         }
                     },
                     {
@@ -5662,6 +5899,13 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_payment_allocation'
                             element: 'allocated_amount'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_tool'
+                        id: '5e99f24e963b4cc2a700471ea49155be'
+                        key: {
+                            name: 'List Open AR Exceptions (Deduction)'
                         }
                     },
                     {
@@ -5915,6 +6159,13 @@ declare global {
                             name: 'x_695068_bcfa_integration_txn'
                             element: 'completed_at'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_tool'
+                        id: '6296e518e68b4bb08e48ca6abdf9885d'
+                        key: {
+                            name: 'Save AR Advisory Recommendation (Cash Match)'
                         }
                     },
                     {
@@ -6358,6 +6609,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_tool'
+                        id: '6a873479e2764dd2bd4c4f53463f4a26'
+                        key: {
+                            name: 'Explain AR Residual'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: '6afba48a1dfd455fa2cd78d114b10781'
                         key: {
@@ -6441,6 +6699,13 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_finance_exception'
                             element: 'status'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_tool'
+                        id: '6cbc9cf89ccb42b0b0abf36bc68a216b'
+                        key: {
+                            name: 'Draft Customer Clarification'
                         }
                     },
                     {
@@ -6702,6 +6967,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_tool'
+                        id: '72b0aa9cd5fa49ea8b8b6dcf20ca04c4'
+                        key: {
+                            name: 'Explain AR Match'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '72c003fbdb534fbc9f76b7ab360eadd0'
                         key: {
@@ -6878,6 +7150,15 @@ declare global {
                         id: '760a896e3d91492f82b077277b40c938'
                         key: {
                             ui_action: '18b2ffb432d943449a162c7a1acfe9b3'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: '762ef6b021444a57961921e33af9a9c6'
+                        key: {
+                            agent: 'ede6a13bfc184c5d981db3b681d43ebf'
+                            tool: '03756616cf974f6585a02f6dcd88e227'
+                            name: 'Get Payment Context (Deduction)'
                         }
                     },
                     {
@@ -7364,6 +7645,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '815a36acf7584b09842344d55453783b'
+                        key: {
+                            sys_security_acl: '723e753574cb41b0a1342e95b84030ca'
+                            sys_user_role: 'e1abbc605ba34cbfb77c584ea689c1b2'
+                        }
+                    },
+                    {
                         table: 'sys_db_object'
                         id: '81726cc569d04c47bd45beac87a3c153'
                         key: {
@@ -7634,6 +7923,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '872d46cd4d684662852c568cb59a891d'
+                        key: {
+                            sys_security_acl: '723e753574cb41b0a1342e95b84030ca'
+                            sys_user_role: '03604bf4100246588f4250676240bc18'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '875ae6a7d813414a9fc841deb73a51c6'
                         key: {
@@ -7756,6 +8053,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: '89f5e0de4ad949f7bd894b3ae3414276'
+                        key: {
+                            agent: 'ede6a13bfc184c5d981db3b681d43ebf'
+                            tool: 'a5698c4c000441568e80d6124c6afc03'
+                            name: 'Save AR Advisory Recommendation (Deduction)'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: '8a1daf2a8f024284adb7b9efb422d29e'
                         key: {
@@ -7784,6 +8090,13 @@ declare global {
                             value: 'timeout'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_agent_config'
+                        id: '8b6635f582324d02823f466a4672b6ed'
+                        key: {
+                            agent: '132a20eb57aa4ed5971db8a267ce6395'
                         }
                     },
                     {
@@ -8337,6 +8650,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: '994309093bf14feab7a9f782a919c7f9'
+                        key: {
+                            agent: '132a20eb57aa4ed5971db8a267ce6395'
+                            tool: 'db6fb33083c849cabe13caf230a7fc94'
+                            name: 'Search Customer Candidates'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '99c076ec8ef5497e85ee83ff773fb522'
                         key: {
@@ -8351,6 +8673,14 @@ declare global {
                             name: 'x_695068_bcfa_receipt'
                             element: 'sap_document_id'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_version'
+                        id: '9a13b0f8cd9a42cc9a9cb3f9660819f6'
+                        key: {
+                            target_id: '9fd2181abab54e2eb93dffe220d11d93'
+                            version_name: 'V1'
                         }
                     },
                     {
@@ -8771,6 +9101,14 @@ declare global {
                     },
                     {
                         table: 'sys_security_acl_role'
+                        id: 'a326c570415a4a3d9986ac9689e9569f'
+                        key: {
+                            sys_security_acl: '94885bdcac5b41028ddda6af46dbdc5f'
+                            sys_user_role: '4411dd9103de4bdbb5468924b1e5459f'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
                         id: 'a333148963284fec962437dc03c1f107'
                         key: {
                             sys_security_acl: 'd32c1b8bcefd4b2894a3ce7ac8036ac2'
@@ -8840,6 +9178,13 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ap_match'
                             element: 'price_variance'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_tool'
+                        id: 'a5698c4c000441568e80d6124c6afc03'
+                        key: {
+                            name: 'Save AR Advisory Recommendation (Deduction)'
                         }
                     },
                     {
@@ -8998,6 +9343,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_agent_config'
+                        id: 'a9c95e66642247339d5118d007697ef6'
+                        key: {
+                            agent: '9fd2181abab54e2eb93dffe220d11d93'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: 'a9d0ce354909456fbba8b6a3c82b2ca6'
                         key: {
@@ -9063,6 +9415,14 @@ declare global {
                         id: 'aaf87f83a182415b955ee77df5673e82'
                         key: {
                             ui_action: '2281a5684eea4af5b8e9850af7186ac9'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'ab5f04b7c4ce46b5aa856192509e9aa4'
+                        key: {
+                            sys_security_acl: 'c35780c44ec443bdaed8ef885daf99a7'
+                            sys_user_role: '588d615a5fea475bbe3422f50e91c218'
                         }
                     },
                     {
@@ -9159,6 +9519,13 @@ declare global {
                                     name: 'x_695068_bcfa.integration_operator'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_agent_access_role_configuration'
+                        id: 'ada646427f2548bd85a52cf14652312b'
+                        key: {
+                            agent: '9fd2181abab54e2eb93dffe220d11d93'
                         }
                     },
                     {
@@ -9359,6 +9726,14 @@ declare global {
                     },
                     {
                         table: 'sys_security_acl_role'
+                        id: 'b257b59ea9e2472d9ca3cc2fbfd2995e'
+                        key: {
+                            sys_security_acl: 'c35780c44ec443bdaed8ef885daf99a7'
+                            sys_user_role: '484c56f4217841e298f5752ea6093a3f'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
                         id: 'b2783fc3ccb444498aff60aa4fe2099e'
                         key: {
                             sys_security_acl: 'f3bea3e6ce79409986fdd080caf698bd'
@@ -9474,6 +9849,14 @@ declare global {
                                     name: 'x_695068_bcfa.finance_reviewer'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sn_aia_version'
+                        id: 'b3778eae667a4e62b2555756ca310dd0'
+                        key: {
+                            target_id: '132a20eb57aa4ed5971db8a267ce6395'
+                            version_name: 'V1'
                         }
                     },
                     {
@@ -9893,6 +10276,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: 'bb182fb005da4ba897ce1b161a7a744e'
+                        key: {
+                            sys_security_acl: '94885bdcac5b41028ddda6af46dbdc5f'
+                            sys_user_role: '588d615a5fea475bbe3422f50e91c218'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: 'bb3c90aa62eb4119b748941c7d62f5b7'
                         key: {
@@ -9916,6 +10307,13 @@ declare global {
                             value: 'ar'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_tool'
+                        id: 'bba734232b8c4fccb03a8337d622857f'
+                        key: {
+                            name: 'Get Payment Context (Customer Resolution)'
                         }
                     },
                     {
@@ -10117,10 +10515,33 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_version'
+                        id: 'c21257ac153a4015ad82b6ffe1e75f87'
+                        key: {
+                            target_id: 'ede6a13bfc184c5d981db3b681d43ebf'
+                            version_name: 'V1'
+                        }
+                    },
+                    {
                         table: 'sn_aia_tool'
                         id: 'c25c19c756e64e3cb07fb398e1340750'
                         key: {
                             name: 'List Open AP Exceptions'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'c272ebcd29184959b07635b5d13e650f'
+                        key: {
+                            sys_security_acl: '6f14b5e030454e698a31342c91718ee8'
+                            sys_user_role: '484c56f4217841e298f5752ea6093a3f'
+                        }
+                    },
+                    {
+                        table: 'sys_agent_access_role_configuration'
+                        id: 'c27cd09871e24b5097d3ec57e99c78b9'
+                        key: {
+                            agent: '132a20eb57aa4ed5971db8a267ce6395'
                         }
                     },
                     {
@@ -10404,6 +10825,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: 'c7507c3c38c3494a9e899f4f1d48efc7'
+                        key: {
+                            agent: '59b6817ef4724c9ea131e5aa57c3f250'
+                            tool: 'caef6ef76ad443a78d040e290eec62c3'
+                            name: 'Get Payment Context (Cash Match)'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: 'c785b057ee6740ea8e3535451360c55a'
                         key: {
@@ -10603,6 +11033,13 @@ declare global {
                         id: 'cac867f7b578405e8f9716d59954fe01'
                         key: {
                             agent: 'ef84e321673c4969b17dea9d03c4dae5'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_tool'
+                        id: 'caef6ef76ad443a78d040e290eec62c3'
+                        key: {
+                            name: 'Get Payment Context (Cash Match)'
                         }
                     },
                     {
@@ -10905,6 +11342,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_agent_config'
+                        id: 'd15b6340e2d4405994dad95747b0774b'
+                        key: {
+                            agent: '59b6817ef4724c9ea131e5aa57c3f250'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: 'd20b7fbce17b4978bcd0ad2128222d75'
                         key: {
@@ -10930,6 +11374,14 @@ declare global {
                         id: 'd290d81703b149f7a7e58f55819e8b8a'
                         key: {
                             agent: 'ef84e321673c4969b17dea9d03c4dae5'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'd2e224e81178459b8078a2db0984d0ed'
+                        key: {
+                            sys_security_acl: '723e753574cb41b0a1342e95b84030ca'
+                            sys_user_role: '484c56f4217841e298f5752ea6093a3f'
                         }
                     },
                     {
@@ -11298,6 +11750,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_tool'
+                        id: 'db6fb33083c849cabe13caf230a7fc94'
+                        key: {
+                            name: 'Search Customer Candidates'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: 'dbd3e267daf34461b76e3b72ececd561'
                         key: {
@@ -11439,6 +11898,15 @@ declare global {
                             name: 'x_695068_bcfa_finance_intake'
                             element: 'classification_confidence'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: 'ddb57080ed764debbfdc6e465d70ed5e'
+                        key: {
+                            agent: '9fd2181abab54e2eb93dffe220d11d93'
+                            tool: '162de9d014ed465eaac3e942dc4d2b06'
+                            name: 'List Open AR Exceptions (Communication)'
                         }
                     },
                     {
@@ -11635,6 +12103,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: 'e2481db95d9f4d8fae79bc89dbb1bc96'
+                        key: {
+                            agent: '59b6817ef4724c9ea131e5aa57c3f250'
+                            tool: '72b0aa9cd5fa49ea8b8b6dcf20ca04c4'
+                            name: 'Explain AR Match'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: 'e2589c707411408181d5bf24b9ea33cb'
                         key: {
@@ -11668,6 +12145,15 @@ declare global {
                         id: 'e279e39a1a464ed388b808db6cacdea7'
                         key: {
                             name: 'List Open AP Exceptions (Resolution)'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: 'e2911b3cb4794a3cac42aed57d7fe2c3'
+                        key: {
+                            agent: '132a20eb57aa4ed5971db8a267ce6395'
+                            tool: 'f1dc57d300fa49a585a752c771293af0'
+                            name: 'Find Payment (Customer Resolution)'
                         }
                     },
                     {
@@ -11706,6 +12192,14 @@ declare global {
                                     name: 'x_695068_bcfa.ar_processor'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'e35bbf44322640baa9dc209cbf576f43'
+                        key: {
+                            sys_security_acl: 'c35780c44ec443bdaed8ef885daf99a7'
+                            sys_user_role: '03604bf4100246588f4250676240bc18'
                         }
                     },
                     {
@@ -11824,6 +12318,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: 'e56a7d879e194370841b5daab25c8926'
+                        key: {
+                            agent: '59b6817ef4724c9ea131e5aa57c3f250'
+                            tool: '045485e3d968459abd8caf68d0b6c660'
+                            name: 'Find Payment (Cash Match)'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: 'e586dc89c0684b5dad2e5fffba32cce0'
                         key: {
@@ -11882,6 +12385,14 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_integration_txn'
                             element: 'request_payload'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'e618ccbf0bc34eea8b91e1dd84c30014'
+                        key: {
+                            sys_security_acl: '723e753574cb41b0a1342e95b84030ca'
+                            sys_user_role: '588d615a5fea475bbe3422f50e91c218'
                         }
                     },
                     {
@@ -11979,6 +12490,14 @@ declare global {
                             name: 'x_695068_bcfa_finance_intake'
                             element: 'payment'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'e8c6a336a38145dc9f0f36e51138adb1'
+                        key: {
+                            sys_security_acl: 'c35780c44ec443bdaed8ef885daf99a7'
+                            sys_user_role: 'e1abbc605ba34cbfb77c584ea689c1b2'
                         }
                     },
                     {
@@ -12251,6 +12770,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: 'edd881ce1cf7464ca3387fbd4d02f701'
+                        key: {
+                            agent: 'ede6a13bfc184c5d981db3b681d43ebf'
+                            tool: '22f61c0f0fab43d994254a34c0e6a658'
+                            name: 'Find Payment (Deduction)'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: 'edd8f642970245e5a21e50b462150aa1'
                         key: {
@@ -12448,6 +12976,13 @@ declare global {
                         key: {
                             sys_security_acl: 'c09072c3a2e34a60be3f433e20c58766'
                             sys_user_role: 'bf505b5092574a7fa59a01048550571a'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_tool'
+                        id: 'f1dc57d300fa49a585a752c771293af0'
+                        key: {
+                            name: 'Find Payment (Customer Resolution)'
                         }
                     },
                     {
@@ -13041,6 +13576,15 @@ declare global {
                                     name: 'x_695068_bcfa.integration_operator'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: 'febd7650ea7c467994f131526eb566ca'
+                        key: {
+                            agent: '59b6817ef4724c9ea131e5aa57c3f250'
+                            tool: '6296e518e68b4bb08e48ca6abdf9885d'
+                            name: 'Save AR Advisory Recommendation (Cash Match)'
                         }
                     },
                     {
