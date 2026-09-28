@@ -20,6 +20,47 @@ Script Include through `atf.form`/`atf.catalog`.
 | Segregation of Duties (self-approval) | `core_correctness.now.ts` → `test-sod-self-approval` | `ApprovalEngine.decideApInvoiceApproval` refuses a decision where `approver === requested_by`, returning an error rather than silently approving. Service-layer mirror of the `acl-write-ap-approval-decision` ACL script. |
 | Unknown Outcome Control | `core_correctness.now.ts` → `test-unknown-outcome-control` | A simulated `timeout` on `postInvoice` is reported as `unknownOutcome: true` and leaves the invoice in `UNKNOWN_OUTCOME` — never silently retried or marked posted — then `reconcilePosting` resolves it via a status query rather than a blind retry. Directly verifies Section 11. |
 
+## Phase 29: controls added in Phases 19-28 (`phase29_controls.now.ts`)
+
+These tests cover the deterministic controls around AI. None of them calls a model. ATF rolls their data back.
+
+| Test | What it verifies |
+|---|---|
+| Lifecycle | RECEIVED → CLOSED through the service throws a lifecycle error, leaves the state unchanged and is audited as REFUSED. A direct update RECEIVED → POSTED is aborted by the backstop rule. Legal and same-state changes pass. The Phase 26 transitions are modelled; the test-run path MATCHED → MATCHING is not |
+| Orchestration | Flow mode by default, and `runInline` scopes inline mode to one call. An unknown stage is rejected. Intake hands off to the AP Invoice Intake Flow. The validation stage is skipped while RECEIVED. The intake stage runs once (EXTRACTED), and a second run is skipped |
+| AI guardrails | 5 injection samples are blocked, while a human override reason is not treated as injection. A completed-action claim is removed (and a guardrail note added) unless the record really is posted. Markdown is removed |
+| AI identity | `bcfa.ai.reviewer` holds only `x_695068_bcfa.ai_agent` among the BCFA roles and is not admin. The segregation check and the approval decision both refuse the AI identity, and the approval stays pending |
+| Audit trail | An update and a delete of an audit event are both refused |
+| Ambiguous match control | Two exact combinations produce an `ambiguous_match` exception, no selected candidate and no allocation. The engine never chooses |
+| Demo reset | Refused without the confirmation text; nothing is deleted |
+| KPIs | `FinanceKpiService.refresh()` computes all 19 KPIs, each with a numeric value |
+
+## Phase 29: AI ranking quality on ambiguous matches (`FinanceAiEvaluation`)
+
+Model output is not deterministic, so ranking quality is measured as a score on labelled cases rather than as a
+pass/fail ATF step. When several sets of open items match a payment exactly, the engine does not choose; a person
+decides, advised by Now Assist.
+
+**The cases.** There are 6, each with two exact combinations totalling 10,000 INR, created through the real pipeline
+(`EVAL-P29-*`):
+
+- **4 hinted cases:** the remittance note is free text the engine does not resolve. It names the month, names invoice
+  numbers, says "oldest", or contradicts the oldest-first habit. The advice should recommend the right combination and
+  not the other.
+- **2 no-hint cases:** a generic note, or no remittance at all. The advice should decline to pick and ask for details.
+
+**How it is scored.** Item numbers are read from the recommending lines (recommend, suggest, likely, appears and so
+on). A combination counts as picked when all its items are named and none of the other combination's are. The score
+also counts any completed-action claim, and confirms the deterministic control: the engine chose nothing.
+
+**Two stages.**
+
+1. `phase29_ai_eval_bg.js` scores the AR next-action skill directly.
+2. `phase29_ai_eval_stage2_bg.js`, a few minutes later, scores the advice the Cash Application Review agentic workflow
+   saved on each exception, then removes the evaluation data. Audit events and AI Interaction Log rows are kept.
+
+Results: see *Phase 29 results* below.
+
 ## Coverage against the brief's Section 18 checklist
 
 | Required coverage | Status |
