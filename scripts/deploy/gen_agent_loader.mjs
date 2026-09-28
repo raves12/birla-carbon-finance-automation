@@ -114,8 +114,21 @@ if (gs.getCurrentScopeName() !== 'rhino.global') {
   gs.info('BCFA_DEPLOY ABORTED: run in scope "global", current scope is ' + gs.getCurrentScopeName());
 } else {${withAiUser ? aiUserPreamble : ''}
   var gum = new GlideUpdateManager2();
-  var ok = 0, failed = 0;
+  var ok = 0, failed = 0, skipped = 0;
+  // Never reload a trigger that is already activated (it has its generated
+  // flow) or a trigger link that is already active: loading the build XML
+  // would blank trigger_flow / deactivate the link, and re-activation could
+  // generate a second flow for the same trigger. To change an activated
+  // trigger, deactivate it in AI Agent Studio first, then redeploy.
+  var alreadyActive = function(name) {
+    var m = name.match(/^(sn_aia_trigger_configuration|sn_aia_trigger_agent_usecase_m2m)_([0-9a-f]{32})$/);
+    if (!m) return false;
+    var existing = new GlideRecord(m[1]);
+    if (!existing.get(m[2])) return false;
+    return m[1] === 'sn_aia_trigger_configuration' ? !!existing.getValue('trigger_flow') : existing.getValue('active') === '1';
+  };
   files.forEach(function(f) {
+    if (alreadyActive(f.name)) { skipped++; return; }
     try { gum.loadXML(f.xml); ok++; }
     catch (e) { failed++; out.push('FAILED ' + f.name + ': ' + e); }
   });
@@ -156,7 +169,7 @@ if (gs.getCurrentScopeName() !== 'rhino.global') {
   usecase.query();
   var workflows = [];
   while (usecase.next()) workflows.push(usecase.getValue('name'));
-  out.unshift('loaded=' + ok + ' failed=' + failed + ' of ' + files.length + ' | ' + agents.length + ' agents: ' + agents.join('; ') +
+  out.unshift('loaded=' + ok + ' failed=' + failed + ' skipped(already active)=' + skipped + ' of ' + files.length + ' | ' + agents.length + ' agents: ' + agents.join('; ') +
     ' | ' + workflows.length + ' workflows: ' + workflows.join('; '));
 }
 gs.info('BCFA_DEPLOY ' + out.join(' | '));

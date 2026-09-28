@@ -581,6 +581,14 @@ declare global {
                         table: 'sys_security_acl'
                         id: '6f14b5e030454e698a31342c91718ee8'
                     }
+                    bcfa_cash_application_review_workflow: {
+                        table: 'sn_aia_usecase'
+                        id: '59bf2aa9400542f2953c44d3af44a164'
+                    }
+                    bcfa_cash_application_review_workflow_acl: {
+                        table: 'sys_security_acl'
+                        id: '3db09a3171c44718a9796e8ace5d83a1'
+                    }
                     bcfa_cash_match_recommendation_agent: {
                         table: 'sn_aia_agent'
                         id: '59b6817ef4724c9ea131e5aa57c3f250'
@@ -2604,6 +2612,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_team_member'
+                        id: '118108ca94924d55abf618a0a4bd875a'
+                        key: {
+                            agent: '9fd2181abab54e2eb93dffe220d11d93'
+                            team: {
+                                id: '3c9a83325cf94296bcf8bba69a8df8c8'
+                                key: {
+                                    name: 'BCFA Cash Application Review Team'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '11a2ff3379d1490b95d62be917b24d9b'
                         key: {
@@ -2807,6 +2828,14 @@ declare global {
                                     name: 'x_695068_bcfa.finance_approver'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '1733413f5f614f4da902f79dbe8cab08'
+                        key: {
+                            sys_security_acl: '3db09a3171c44718a9796e8ace5d83a1'
+                            sys_user_role: '484c56f4217841e298f5752ea6093a3f'
                         }
                     },
                     {
@@ -3018,6 +3047,14 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_finance_intake'
                             element: 'currency'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '1d7e22fa14284e1090413d08fce140d5'
+                        key: {
+                            sys_security_acl: '3db09a3171c44718a9796e8ace5d83a1'
+                            sys_user_role: '588d615a5fea475bbe3422f50e91c218'
                         }
                     },
                     {
@@ -3824,6 +3861,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_usecase_config_override'
+                        id: '2e9b7827074648fda64f6def8f882567'
+                        key: {
+                            usecase_configuration: '59bf2aa9400542f2953c44d3af44a164'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '2f5adb5185b74e8a91112a5ae6c53510'
                         key: {
@@ -4018,6 +4062,14 @@ declare global {
                             name: 'x_695068_bcfa_finance_intake'
                             element: 'attachment_hash'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_trigger_configuration'
+                        id: '3451a56d5bbc41bd90721bcf51505d9b'
+                        key: {
+                            name: 'BCFA AR Exception Created'
+                            usecase: '59bf2aa9400542f2953c44d3af44a164'
                         }
                     },
                     {
@@ -4380,6 +4432,13 @@ declare global {
                                     name: 'x_695068_bcfa.admin'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sn_aia_team'
+                        id: '3c9a83325cf94296bcf8bba69a8df8c8'
+                        key: {
+                            name: 'BCFA Cash Application Review Team'
                         }
                     },
                     {
@@ -6045,6 +6104,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_team_member'
+                        id: '5fdf7068eb604e3a9332628402f8dfed'
+                        key: {
+                            agent: 'ede6a13bfc184c5d981db3b681d43ebf'
+                            team: {
+                                id: '3c9a83325cf94296bcf8bba69a8df8c8'
+                                key: {
+                                    name: 'BCFA Cash Application Review Team'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: '606f77296c7e4585a916f0f7f2950f91'
                         key: {
@@ -6629,6 +6701,14 @@ declare global {
                                     name: 'x_695068_bcfa.admin'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '69abb9ef333f49dd901bd20c280b2a23'
+                        key: {
+                            sys_security_acl: '3db09a3171c44718a9796e8ace5d83a1'
+                            sys_user_role: 'e1abbc605ba34cbfb77c584ea689c1b2'
                         }
                     },
                     {
@@ -7326,6 +7406,14 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ar_approval'
                             element: 'approver'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_version'
+                        id: '788a2a16ba3e4d1aa745bbbd181316f3'
+                        key: {
+                            target_id: '59bf2aa9400542f2953c44d3af44a164'
+                            version_name: 'V1'
                         }
                     },
                     {
@@ -9621,6 +9709,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_team_member'
+                        id: 'ae2ebfedf0434b6fad033850dde95df1'
+                        key: {
+                            agent: '132a20eb57aa4ed5971db8a267ce6395'
+                            team: {
+                                id: '3c9a83325cf94296bcf8bba69a8df8c8'
+                                key: {
+                                    name: 'BCFA Cash Application Review Team'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: 'ae3542736be844499278475b09f03f70'
                         key: {
@@ -11375,6 +11476,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_team_member'
+                        id: 'd069d6695616434cbf3f2fcda8aac53c'
+                        key: {
+                            agent: '59b6817ef4724c9ea131e5aa57c3f250'
+                            team: {
+                                id: '3c9a83325cf94296bcf8bba69a8df8c8'
+                                key: {
+                                    name: 'BCFA Cash Application Review Team'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: 'd07d7652f3d6422991af5abaad02062e'
                         key: {
@@ -11600,6 +11714,20 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_integration_txn'
                             element: 'correlation_id'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_trigger_agent_usecase_m2m'
+                        id: 'd4b54a9abf144501bcfc1511a08b394a'
+                        key: {
+                            trigger_configuration: {
+                                id: '3451a56d5bbc41bd90721bcf51505d9b'
+                                key: {
+                                    name: 'BCFA AR Exception Created'
+                                    usecase: '59bf2aa9400542f2953c44d3af44a164'
+                                }
+                            }
+                            related_resource_record: '59bf2aa9400542f2953c44d3af44a164'
                         }
                     },
                     {
@@ -12082,6 +12210,14 @@ declare global {
                             name: 'x_695068_bcfa_ap_approval'
                             element: 'decision_notes'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'e018bce144174f1e94fdc843fb1c716d'
+                        key: {
+                            sys_security_acl: '3db09a3171c44718a9796e8ace5d83a1'
+                            sys_user_role: '4411dd9103de4bdbb5468924b1e5459f'
                         }
                     },
                     {

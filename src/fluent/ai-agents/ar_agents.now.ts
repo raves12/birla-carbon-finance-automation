@@ -194,10 +194,14 @@ export const cashMatchRecommendationAgent = AiAgent({
         {
             name: 'Save AR Advisory Recommendation (Cash Match)',
             description:
-                'Saves the final recommendation text to an AR exception\'s advisory AI Recommendation field only. Changes nothing else and is audited. Requires the user to confirm.',
+                'Saves the final recommendation text to an AR exception\'s advisory AI Recommendation field only. Changes nothing else and is audited.',
             type: 'script',
             recordType: 'custom',
-            executionMode: 'copilot',
+            // Autopilot so the triggered BCFA Cash Application Review workflow
+            // can record its advisory note unattended (Phase 11, same decision
+            // as the AP workflow). The tool can only write ai_recommendation,
+            // is role-checked and audited; in chat, save only when asked.
+            executionMode: 'autopilot',
             preMessage: 'Saving the advisory recommendation...',
             postMessage: 'Advisory recommendation saved to the exception.',
             inputs: [
@@ -315,10 +319,14 @@ export const deductionAnalysisAgent = AiAgent({
         {
             name: 'Save AR Advisory Recommendation (Deduction)',
             description:
-                'Saves the final analysis text to an AR exception\'s advisory AI Recommendation field only. Changes nothing else and is audited. Requires the user to confirm.',
+                'Saves the final analysis text to an AR exception\'s advisory AI Recommendation field only. Changes nothing else and is audited.',
             type: 'script',
             recordType: 'custom',
-            executionMode: 'copilot',
+            // Autopilot so the triggered BCFA Cash Application Review workflow
+            // can record its advisory note unattended (Phase 11, same decision
+            // as the AP workflow). The tool can only write ai_recommendation,
+            // is role-checked and audited; in chat, save only when asked.
+            executionMode: 'autopilot',
             preMessage: 'Saving the advisory analysis...',
             postMessage: 'Advisory analysis saved to the exception.',
             inputs: [
