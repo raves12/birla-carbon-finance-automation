@@ -148,6 +148,8 @@ export const x_695068_bcfa_ap_exception = Table({
                 low_confidence: 'Low-Confidence Extraction',
                 missing_field: 'Missing Mandatory Field',
                 vendor_invalid: 'Vendor Invalid',
+                grn_missing: 'Goods Receipt Missing',
+                line_total_mismatch: 'Line Total Mismatch',
                 other: 'Other',
             },
         }),

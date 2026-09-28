@@ -138,8 +138,8 @@ export const arDeductionAllowedTypes = Property({
     $id: Now.ID['prop-ar-deduction-allowed-types'],
     name: 'x_695068_bcfa.ar.deduction.allowed_types',
     type: 'string',
-    value: 'bank_charge,tcs,short_pay',
-    description: 'POC ASSUMPTION. Comma-separated deduction reason codes a reviewer may accept to balance a short payment (BANK_CHARGE, TCS, SHORT_PAY).',
+    value: 'bank_charge,tcs,short_pay,credit_note_netting',
+    description: 'POC ASSUMPTION. Comma-separated deduction reason codes a reviewer may accept to balance a short payment (BANK_CHARGE, TCS, SHORT_PAY, CREDIT_NOTE netting against an open credit note of the same customer).',
 })
 
 export const arHighValueResidual = Property({
@@ -172,4 +172,12 @@ export const arExceptionDefaultOwner = Property({
     type: 'string',
     value: BCFA_AR_PROCESSOR_USER,
     description: 'POC ASSUMPTION. sys_id of the user who owns new AR exceptions (demo user bcfa.ar.processor).',
+})
+
+export const arBankChargeMax = Property({
+    $id: Now.ID['prop-ar-bank-charge-max-amount'],
+    name: 'x_695068_bcfa.ar.bank_charge.max_amount',
+    type: 'string',
+    value: '1000',
+    description: 'POC ASSUMPTION. Short-pay residuals up to this amount (payment currency) are suggested as a bank charge by the matching engine. A suggestion only: the reviewer confirms the deduction.',
 })

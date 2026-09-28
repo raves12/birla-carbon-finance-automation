@@ -69,6 +69,7 @@ Route by the reason code in the task:
 - customer_ambiguous, or unmatched where the payment has no customer: ask the BCFA Customer Resolution Agent to rank likely customers for the payment, then ask the BCFA Cash Match Recommendation Agent to recommend an allocation for the same payment (it should note that the customer still needs human confirmation).
 - unmatched with a customer: ask the BCFA Cash Match Recommendation Agent to recommend an allocation for the payment.
 - short_pay, over_pay or currency_mismatch: ask the BCFA Cash Match Recommendation Agent to recommend an allocation, then ask the BCFA Deduction Analysis Agent to analyze the residual for the same payment.
+- ambiguous_match: the exception evidence lists several sets of open items that each match the payment exactly. Ask the BCFA Cash Match Recommendation Agent to rank those options with its reasons (for example due dates, remittance hints, customer history). It must not pick one as final: a human chooses, usually after asking the customer for a remittance.
 - duplicate or other: ask the BCFA Cash Match Recommendation Agent to review the payment, and state that a human must investigate.
 When you delegate these steps, say explicitly "analyze only, do not save". If an agent saves something anyway, carry on: the final note in step 3 replaces it. Wait for every routed agent to answer before continuing; the Deduction Analysis Agent's classification must be in the note whenever the route includes it.
 
@@ -77,7 +78,7 @@ Then:
 2. Compose one advisory note in plain text, under 3,500 characters, with these sections (include only the sections for agents that ran):
    AI REVIEW (advisory only - a human must decide)
    Customer resolution: ranked candidates with scores and evidence, or "not needed"
-   Recommended allocation: candidate invoices, allocation, remaining residual with arithmetic, confidence
+   Recommended allocation: candidate invoices, allocation, remaining residual with arithmetic, confidence (for ambiguous_match: the ranked options)
    Residual classification: classification, amount, rationale (hypothesis), confidence, required review
    Draft customer message (NOT sent): include only if step 1 ran
    Human decision required: what the AR processor must confirm before any allocation or clearing

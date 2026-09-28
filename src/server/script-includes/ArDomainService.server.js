@@ -214,7 +214,9 @@ ArDomainService.prototype = {
 
         var why = resolution.resolved
             ? 'alias match confidence ' + resolution.confidence + ' is below the auto-match threshold ' + threshold
-            : 'remitter name "' + (candidateName || '') + '" did not resolve to a customer';
+            : resolution.ambiguous
+                ? 'remitter name "' + (candidateName || '') + '" matches ' + resolution.candidates.length + ' different customers'
+                : 'remitter name "' + (candidateName || '') + '" did not resolve to a customer';
         var exceptionSysId = this.exceptionEngine.createArException(paymentSysId, 'customer_ambiguous', 'Could not resolve customer from remitter name "' + candidateName + '".', {
             ruleResult: 'FAIL customer resolution: ' + why + (remittance.available ? '; remittance references ' +
                 (remittance.unresolved.length ? 'not all resolved (' + remittance.unresolved.join(', ') + ')' : 'span ' + remittance.customerCount + ' customers') : '; no remittance references') + '.',
@@ -287,6 +289,36 @@ ArDomainService.prototype = {
         if (exact.matched) {
             this._setState(paymentSysId, 'MATCHED', null, 'Exact match found');
             return { matched: true, mode: 'exact' };
+        }
+
+        // Phase 14: exact combinations. One combination is a match; more
+        // than one (or several single items of the exact amount) is
+        // ambiguous and goes to a human, with the options for the AI review
+        // to rank. The engine never picks between equally exact options.
+        var combinations = this.matchingEngine.findExactCombinations(paymentSysId, 3);
+        var payment = new GlideRecord('x_695068_bcfa_payment');
+        payment.get(paymentSysId);
+        if (exact.candidateCount > 1 || combinations.solutions.length > 1) {
+            var options = [];
+            if (exact.candidateCount > 1) options.push(exact.candidateCount + ' single open items each equal to the payment amount');
+            for (var o = 0; o < combinations.solutions.length; o++) {
+                options.push('Option ' + (o + 1) + ': ' + combinations.solutions[o].map(function(i) { return i.itemNumber + ' ' + i.openAmount; }).join(' + '));
+            }
+            this.matchingEngine.recordCombinationCandidates(paymentSysId, payment.getValue('customer'), combinations.solutions, false);
+            var ambiguousSysId = this.exceptionEngine.createArException(paymentSysId, 'ambiguous_match',
+                'More than one set of open items matches the payment amount exactly.', {
+                    ruleResult: 'FAIL matching: the payment amount ' + payment.getValue('amount') + ' is matched exactly by more than one set of open items; the engine does not choose between them.',
+                    evidence: options.join('\n') + (combinations.solutions.length >= 3 ? '\n(search stopped after 3 options)' : '') +
+                        (remittance.available ? '\n' + this._remittanceEvidence(remittance) : '\nNo remittance references.')
+                });
+            this._explainArException(ambiguousSysId);
+            this._setState(paymentSysId, 'EXCEPTION', null, 'Ambiguous match: several exact options');
+            return { matched: false, reasonCode: 'ambiguous_match', exceptionSysId: ambiguousSysId };
+        }
+        if (combinations.solutions.length === 1) {
+            this.matchingEngine.recordCombinationCandidates(paymentSysId, payment.getValue('customer'), combinations.solutions, true);
+            this._setState(paymentSysId, 'MATCHED', null, 'Unique exact combination of ' + combinations.solutions[0].length + ' open items');
+            return { matched: true, mode: 'combination', items: combinations.solutions[0] };
         }
 
         var multi = this.matchingEngine.multiInvoiceSuggestion(paymentSysId);
@@ -437,6 +469,17 @@ ArDomainService.prototype = {
         payment.get(paymentSysId);
         var paymentAmount = parseFloat(payment.getValue('amount') || '0');
 
+        // A re-allocation (after Resolve & Retry) replaces any earlier
+        // proposal: earlier proposed allocations are reversed, not reused.
+        var previous = new GlideRecord('x_695068_bcfa_payment_allocation');
+        previous.addQuery('payment', paymentSysId);
+        previous.addQuery('allocation_state', 'proposed');
+        previous.query();
+        while (previous.next()) {
+            previous.setValue('allocation_state', 'reversed');
+            previous.update();
+        }
+
         // Candidate precedence: remittance references (Phase 13), then the
         // single exact amount match, then the greedy multi-invoice set.
         var candidateType = 'remittance';
@@ -458,6 +501,16 @@ ArDomainService.prototype = {
         }
 
         if (selectedItems.length === 0) {
+            candidateType = 'combination';
+            var combination = new GlideRecord('x_695068_bcfa_match_candidate');
+            combination.addQuery('payment', paymentSysId);
+            combination.addQuery('match_type', 'combination');
+            combination.addQuery('selected', true);
+            combination.query();
+            while (combination.next()) selectedItems.push(combination.getValue('ar_open_item'));
+        }
+
+        if (selectedItems.length === 0) {
             candidateType = 'fuzzy';
             var fuzzy = new GlideRecord('x_695068_bcfa_match_candidate');
             fuzzy.addQuery('payment', paymentSysId);
@@ -467,6 +520,14 @@ ArDomainService.prototype = {
             selectedItems = [];
             while (fuzzy.next()) selectedItems.push(fuzzy.getValue('ar_open_item'));
         }
+
+        // The same open item is never allocated twice (candidates can repeat
+        // across match runs).
+        var unique = [];
+        for (var u = 0; u < selectedItems.length; u++) {
+            if (unique.indexOf(selectedItems[u]) < 0) unique.push(selectedItems[u]);
+        }
+        selectedItems = unique;
 
         if (selectedItems.length === 0) {
             var noItemExceptionSysId = this.exceptionEngine.createArException(paymentSysId, 'unmatched', 'No selected open items available to allocate.');
@@ -522,12 +583,19 @@ ArDomainService.prototype = {
         // this had the two labels swapped.
         var reasonCode = difference > 0 ? 'over_pay' : 'short_pay';
         var remittance = this.matchingEngine.resolveRemittanceReferences(paymentSysId);
+        // Phase 14: deterministic suggestion for a short pay (credit note of
+        // exactly the residual, else bank charge within the limit). Pre-set
+        // on the exception for the reviewer to confirm or change.
+        var suggestion = reasonCode === 'short_pay' ? this.matchingEngine.classifyResidual(paymentSysId, Math.abs(difference)) : { type: null };
         var exceptionSysId = this.exceptionEngine.createArException(paymentSysId, reasonCode,
             'Allocation total ' + allocatedTotal + ' does not match payment amount ' + paymentAmount + ' (difference ' + difference + ').', {
                 ruleResult: 'FAIL allocation balance: payment ' + paymentAmount + ' vs allocated ' + allocatedTotal + ' across ' + selectedItems.length +
-                    ' open item(s); residual ' + Math.abs(difference) + (difference < 0 ? ' short' : ' over') + ' (tolerance ' + this.BALANCE_TOLERANCE + ').',
+                    ' open item(s); residual ' + Math.abs(difference) + (difference < 0 ? ' short' : ' over') + ' (tolerance ' + this.BALANCE_TOLERANCE + ').' +
+                    (suggestion.rule ? ' Rule suggestion: ' + (suggestion.type ? suggestion.type.toUpperCase() + ' - ' : 'none - ') + suggestion.rule + '; a reviewer confirms.' : ''),
                 evidence: allocationEvidence.join('\n') + (remittance.available ? '\n' + this._remittanceEvidence(remittance) : ''),
-                residual: Math.abs(difference)
+                residual: Math.abs(difference),
+                suggestedDeductionType: suggestion.type,
+                creditNote: suggestion.creditNoteSysId
             });
         this._explainArException(exceptionSysId);
         this._setState(paymentSysId, 'EXCEPTION', null, 'Allocation does not balance: ' + reasonCode);
@@ -594,6 +662,7 @@ ArDomainService.prototype = {
         var settled = [];
         var allocation = new GlideRecord('x_695068_bcfa_payment_allocation');
         allocation.addQuery('payment', paymentSysId);
+        allocation.addQuery('allocation_state', '!=', 'reversed');
         allocation.query();
         while (allocation.next()) {
             var item = new GlideRecord('x_695068_bcfa_ar_open_item');
@@ -604,6 +673,24 @@ ArDomainService.prototype = {
             item.setValue('status', after <= this.BALANCE_TOLERANCE ? 'cleared' : 'partially_cleared');
             item.update();
             settled.push(item.getValue('item_number') + ' ' + before + ' -> ' + after);
+
+            // Credit notes netted against this allocation are used up by it.
+            var netting = new GlideRecord('x_695068_bcfa_deduction');
+            netting.addQuery('payment_allocation', allocation.getUniqueValue());
+            netting.addQuery('deduction_type', 'credit_note_netting');
+            netting.addQuery('status', 'approved');
+            netting.addNotNullQuery('credit_note');
+            netting.query();
+            while (netting.next()) {
+                var note = new GlideRecord('x_695068_bcfa_credit_note');
+                if (!note.get(netting.getValue('credit_note'))) continue;
+                var noteBefore = parseFloat(note.getValue('open_amount') || '0');
+                var noteAfter = Math.max(0, Math.round((noteBefore - parseFloat(netting.getValue('amount') || '0')) * 100) / 100);
+                note.setValue('open_amount', noteAfter);
+                if (noteAfter <= this.BALANCE_TOLERANCE) note.setValue('status', 'applied');
+                note.update();
+                settled.push('credit note ' + note.getValue('credit_note_number') + ' ' + noteBefore + ' -> ' + noteAfter);
+            }
         }
         if (settled.length) {
             this.auditEngine.logEvent({
@@ -634,6 +721,7 @@ ArDomainService.prototype = {
         var allocationSysIds = [];
         var allocation = new GlideRecord('x_695068_bcfa_payment_allocation');
         allocation.addQuery('payment', paymentSysId);
+        allocation.addQuery('allocation_state', '!=', 'reversed');
         allocation.query();
         while (allocation.next()) {
             allocatedTotal += parseFloat(allocation.getValue('allocated_amount') || '0');
@@ -669,10 +757,19 @@ ArDomainService.prototype = {
         return { balanced: false, forced: true };
     },
 
+    // Reviewer correction (e.g. the customer sent the missing remittance):
+    // resolve the exception, re-match, re-allocate and, when it balances,
+    // apply the approval rule, the same path as a fresh payment.
     resolveExceptionAndRetry: function(paymentSysId, exceptionSysId, resolutionNotes, resolvedBy) {
         this.exceptionEngine.resolveArException(exceptionSysId, resolutionNotes, resolvedBy);
         this._setState(paymentSysId, 'MATCHING', null, 'Re-matching after correction');
-        return this.matchPayment(paymentSysId);
+        var match = this.matchPayment(paymentSysId);
+        if (!match.matched) return match;
+        var allocation = this.allocatePayment(paymentSysId);
+        match.allocation = allocation;
+        if (!allocation.balanced) return match;
+        match.approval = this.routeForApproval(paymentSysId, resolvedBy);
+        return match;
     },
 
     requestApproval: function(paymentSysId, requestedBy) {
@@ -722,6 +819,7 @@ ArDomainService.prototype = {
         if (result.status === 'success') {
             var allocation = new GlideRecord('x_695068_bcfa_payment_allocation');
             allocation.addQuery('payment', paymentSysId);
+            allocation.addQuery('allocation_state', '!=', 'reversed');
             allocation.query();
             while (allocation.next()) {
                 allocation.setValue('allocation_state', 'cleared');
@@ -749,6 +847,7 @@ ArDomainService.prototype = {
         if (resolution.resolution === 'POSTED') {
             var allocation = new GlideRecord('x_695068_bcfa_payment_allocation');
             allocation.addQuery('payment', paymentSysId);
+            allocation.addQuery('allocation_state', '!=', 'reversed');
             allocation.query();
             while (allocation.next()) {
                 allocation.setValue('allocation_state', 'cleared');

@@ -59,8 +59,12 @@ ApDomainService.prototype = {
     // EXCEPTION). This is the "flow" for automated intake — see
     // docs/ARTIFACT_STRATEGY.md's Stage 15 refinement for why this is a
     // direct call chain rather than a Flow Designer flow.
+    // fields.lines (optional): invoice lines (attachInvoiceLine field shape)
+    // attached before extraction and matching, so the 3-way match sees them.
     intakeAndAutoProcess: function(fields) {
         var intake = this.intakeInvoice(fields);
+        var lines = fields.lines || [];
+        for (var i = 0; i < lines.length; i++) this.attachInvoiceLine(intake.apInvoiceSysId, lines[i]);
         this.runExtraction(intake.apInvoiceSysId, fields.seedExtraction || {}, fields.extractionOptions);
         var validation = this.validateInvoice(intake.apInvoiceSysId);
         if (!validation.validated) {
@@ -210,11 +214,10 @@ ApDomainService.prototype = {
             var vendor = new GlideRecord('x_695068_bcfa_vendor');
             if (!vendor.get(invoice.getValue('vendor')) || vendor.getValue('active') !== '1') {
                 failure = { reasonCode: 'vendor_invalid', description: 'Vendor could not be resolved to an active master record.' };
-            } else if (invoice.getValue('purchase_order')) {
-                var po = new GlideRecord('x_695068_bcfa_purchase_order');
-                if (!po.get(invoice.getValue('purchase_order'))) {
-                    failure = { reasonCode: 'po_mismatch', description: 'Referenced purchase order could not be resolved.' };
-                }
+            } else {
+                // PO exists, belongs to this vendor and is not closed (Phase 14).
+                var poCheck = this.matchingEngine.validatePurchaseOrder(apInvoiceSysId);
+                if (!poCheck.ok) failure = { reasonCode: poCheck.reasonCode, description: poCheck.description };
             }
         }
 
@@ -243,11 +246,18 @@ ApDomainService.prototype = {
         if (duplicateResult.duplicate) {
             var original = new GlideRecord('x_695068_bcfa_ap_invoice');
             original.get(duplicateResult.matchedInvoiceSysId);
+            var thisInvoice = new GlideRecord('x_695068_bcfa_ap_invoice');
+            thisInvoice.get(apInvoiceSysId);
             var dupExceptionSysId = this.exceptionEngine.createApException(apInvoiceSysId, 'duplicate', 'Duplicate of AP Invoice ' + duplicateResult.matchedInvoiceSysId, {
-                ruleResult: 'FAIL duplicate check: same vendor, invoice number and gross amount as AP invoice ' +
-                    original.getValue('invoice_number') + ' (state ' + original.getValue('state') + ').',
-                evidence: 'Duplicate key: ' + duplicateResult.duplicateKey + '\nExisting invoice sys_id: ' + duplicateResult.matchedInvoiceSysId +
-                    '\nExisting invoice state: ' + original.getValue('state') + ', SAP document: ' + (original.getValue('sap_document_id') || 'none')
+                ruleResult: duplicateResult.sameAmount
+                    ? 'FAIL duplicate check: same vendor, invoice number and gross amount as AP invoice ' + original.getValue('invoice_number') + ' (state ' + original.getValue('state') + ').'
+                    : 'FAIL duplicate check: same vendor and invoice number as AP invoice ' + original.getValue('invoice_number') + ' (state ' + original.getValue('state') +
+                        ') but a different gross amount (' + thisInvoice.getValue('gross_amount') + ' vs ' + duplicateResult.matchedGross + '): possible re-bill or correction; confirm with the vendor.',
+                evidence: 'Vendor: ' + thisInvoice.getDisplayValue('vendor') + '; invoice number ' + thisInvoice.getValue('invoice_number') +
+                    ' (normalized ' + this.matchingEngine.normalizeInvoiceNumber(thisInvoice.getValue('invoice_number')) + ')' +
+                    '\nExisting invoice: ' + original.getValue('invoice_number') + ', sys_id ' + duplicateResult.matchedInvoiceSysId + ', gross ' + duplicateResult.matchedGross +
+                    ', state ' + original.getValue('state') + ', SAP document ' + (original.getValue('sap_document_id') || 'none') +
+                    '\nThis invoice: gross ' + thisInvoice.getValue('gross_amount') + ' ' + thisInvoice.getValue('currency')
             });
             this._explainApException(dupExceptionSysId);
             this._setState(apInvoiceSysId, 'EXCEPTION', null, 'Duplicate invoice detected');
@@ -256,9 +266,14 @@ ApDomainService.prototype = {
 
         var match = this.matchingEngine.threeWayMatch(apInvoiceSysId);
         if (!match.withinTolerance) {
+            // One reason per exception, in order of what a reviewer must
+            // fix first: PO linkage, receipt, quantity, price, tax, totals.
             var tolerances = match.tolerancesUsed;
-            var reasonCode = 'price_tolerance';
-            if (match.quantityVariancePct > tolerances.quantityPct) reasonCode = 'quantity_tolerance';
+            var reasonCode = 'line_total_mismatch';
+            if (match.linkIssues.length) reasonCode = 'po_mismatch';
+            else if (match.receiptIssues.length) reasonCode = 'grn_missing';
+            else if (match.quantityVariancePct > tolerances.quantityPct) reasonCode = 'quantity_tolerance';
+            else if (match.priceVariancePct > tolerances.pricePct) reasonCode = 'price_tolerance';
             else if (!match.taxWithinTolerance) reasonCode = 'tax_validation';
             var exceptionSysId2 = this.exceptionEngine.createApException(apInvoiceSysId, reasonCode,
                 'Match result: ' + match.matchResult + '. Quantity variance ' + (match.quantityVariancePct * 100).toFixed(1) + '%, price variance ' + (match.priceVariancePct * 100).toFixed(1) + '%.',
@@ -279,9 +294,12 @@ ApDomainService.prototype = {
         var t = match.tolerancesUsed;
         var pct = function(v) { return (v * 100).toFixed(1) + '%'; };
         var checks = [
+            'PO linkage ' + (match.linkIssues.length ? 'FAIL (' + match.linkIssues.join('; ') + ')' : 'pass'),
+            'receipt ' + (match.receiptIssues.length ? 'FAIL (' + match.receiptIssues.join('; ') + ')' : 'pass'),
             'quantity ' + pct(match.quantityVariancePct) + ' vs tolerance ' + pct(t.quantityPct) + (match.quantityVariancePct > t.quantityPct ? ' FAIL' : ' pass'),
             'price ' + pct(match.priceVariancePct) + ' vs tolerance ' + pct(t.pricePct) + (match.priceVariancePct > t.pricePct ? ' FAIL' : ' pass'),
-            'tax variance ' + match.taxVariance + (match.taxWithinTolerance ? ' pass' : ' FAIL')
+            'tax variance ' + match.taxVariance + (match.taxWithinTolerance ? ' pass' : ' FAIL'),
+            'line total ' + match.lineTotal + ' vs net ' + match.netAmount + (match.lineTotalOk ? ' pass' : ' FAIL (difference ' + match.lineTotalDifference + ')')
         ];
         var evidence = [];
         for (var i = 0; i < match.lines.length; i++) {
@@ -302,6 +320,12 @@ ApDomainService.prototype = {
         } else if (reasonCode === 'tax_validation') {
             varianceAmount = match.taxVariance;
             variancePct = match.expectedTax ? match.taxVariance / match.expectedTax : 0;
+        } else if (reasonCode === 'line_total_mismatch') {
+            varianceAmount = match.lineTotalDifference;
+            variancePct = match.netAmount ? match.lineTotalDifference / match.netAmount : 0;
+        } else if (reasonCode === 'po_mismatch' || reasonCode === 'grn_missing') {
+            varianceAmount = null;
+            variancePct = null;
         }
         return {
             ruleResult: 'FAIL 3-way match (' + reasonCode + '): ' + checks.join('; ') + '.',

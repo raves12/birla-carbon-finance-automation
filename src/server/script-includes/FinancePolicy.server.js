@@ -24,7 +24,8 @@ FinancePolicy.DEFAULTS = {
     'ar.approval.auto_approve_limit': 0,
     'ar.match.auto_confidence': 0.95,
     'ar.deduction.approval_threshold': 5000,
-    'ar.deduction.allowed_types': 'bank_charge,tcs,short_pay',
+    'ar.deduction.allowed_types': 'bank_charge,tcs,short_pay,credit_note_netting',
+    'ar.bank_charge.max_amount': 1000,
     'ar.exception.high_value_residual': 5000,
     'ar.exception.sla_hours': '{"critical":4,"high":8,"medium":24,"low":72}',
     'ar.exception.assignment_group': '',
@@ -135,6 +136,12 @@ FinancePolicy.prototype = {
     // Deductions above this amount need a finance approver to accept them.
     arDeductionApprovalThreshold: function() {
         return this._number('ar.deduction.approval_threshold');
+    },
+
+    // Largest short-pay residual the matching engine suggests as a bank
+    // charge (a suggestion only; the reviewer confirms).
+    arBankChargeMax: function() {
+        return this._number('ar.bank_charge.max_amount');
     },
 
     arDeductionTypeAllowed: function(type) {

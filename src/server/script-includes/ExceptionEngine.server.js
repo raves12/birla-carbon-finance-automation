@@ -48,7 +48,8 @@ ExceptionEngine.prototype = {
         return gr.update() ? true : false;
     },
 
-    // details (optional): { ruleResult, evidence, residual }. Same approach
+    // details (optional): { ruleResult, evidence, residual,
+    // suggestedDeductionType, creditNote }. Same approach
     // as createApException: everything is set in the one insert, because
     // the BCFA Cash Application Review workflow triggers on creation.
     createArException: function(paymentSysId, reasonCode, description, details) {
@@ -68,6 +69,9 @@ ExceptionEngine.prototype = {
         gr.setValue('rule_result', details.ruleResult || description || '');
         if (details.evidence) gr.setValue('evidence', details.evidence);
         if (details.residual !== undefined && details.residual !== null) gr.setValue('residual_amount', details.residual);
+        // Deterministic rule suggestion (Phase 14); the reviewer may change it.
+        if (details.suggestedDeductionType) gr.setValue('deduction_type', details.suggestedDeductionType);
+        if (details.creditNote) gr.setValue('credit_note', details.creditNote);
         gr.setValue('status', 'open');
         var sysId = gr.insert();
 

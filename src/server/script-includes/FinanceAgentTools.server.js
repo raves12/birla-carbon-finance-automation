@@ -531,7 +531,8 @@ FinanceAgentTools.prototype = {
         this._add(lines, 'Residual Amount', exception.getValue('residual_amount'));
         this._add(lines, 'Evidence', exception.getValue('evidence'));
         this._add(lines, 'Human Decision', exception.getDisplayValue('decision'));
-        this._add(lines, 'Deduction Type Chosen', exception.getDisplayValue('deduction_type'));
+        this._add(lines, 'Deduction Type (rule suggestion or reviewer choice)', exception.getDisplayValue('deduction_type'));
+        this._add(lines, 'Credit Note', exception.getDisplayValue('credit_note'));
         this._add(lines, 'Decision Reason', exception.getValue('decision_reason'));
         this._add(lines, 'Resolution Notes', exception.getValue('resolution_notes'));
         var paymentContext = this._buildPaymentContext(exception.getValue('payment'));

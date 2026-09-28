@@ -1395,6 +1395,10 @@ declare global {
                         table: 'sys_properties'
                         id: 'fbb4a906b5e34436a7a32fa56f2b762c'
                     }
+                    'prop-ar-bank-charge-max-amount': {
+                        table: 'sys_properties'
+                        id: '1b35758867b349e28dfa90b5240f9406'
+                    }
                     'prop-ar-deduction-allowed-types': {
                         table: 'sys_properties'
                         id: '6ec72ccb825549a791ae3ec89844b050'
@@ -1642,6 +1646,22 @@ declare global {
                     'test-idempotency-step': {
                         table: 'sys_atf_step'
                         id: '0ed0fbb411da48efa9fa4608fc130842'
+                    }
+                    'test-matching-ap-rules': {
+                        table: 'sys_atf_test'
+                        id: '47534e411d2d4be5975ece66c5e47b03'
+                    }
+                    'test-matching-ap-rules-step': {
+                        table: 'sys_atf_step'
+                        id: '824becdccd78492394550af839afca95'
+                    }
+                    'test-matching-ar-rules': {
+                        table: 'sys_atf_test'
+                        id: '2a4aad791a2f4f1989f5d1ae5a3afa94'
+                    }
+                    'test-matching-ar-rules-step': {
+                        table: 'sys_atf_step'
+                        id: '4df94440c7c84b9382b0e68c441ca2f8'
                     }
                     'test-seed-demo-data': {
                         table: 'sys_atf_test'
@@ -2285,6 +2305,14 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_integration_txn'
                             element: 'unknown_outcome_flag'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '0751487b3bd94247b5bc97176ac6793c'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'credit_note'
                         }
                     },
                     {
@@ -3256,6 +3284,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '1a64b00101804e568acf89fa5ff11663'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'reason_code'
+                            value: 'ambiguous_match'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '1ae22c5f2459409ba224d0f6f0327c59'
                         key: {
@@ -4012,6 +4051,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '2a3c8eccd23f4c27a3d7a734ef6fbc91'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'reason_code'
+                            value: 'grn_missing'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '2a6c9cd011a740fb8ad6ac216a2ecfcc'
                         key: {
@@ -4527,6 +4577,15 @@ declare global {
                                     name: 'x_695068_bcfa.ap_processor'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_element_mapping'
+                        id: '3533157a07514015a803364986b57949'
+                        key: {
+                            id: '4df94440c7c84b9382b0e68c441ca2f8'
+                            table: 'var__m_atf_input_variable_41de4a935332120028bc29cac2dc349a'
+                            field: 'script'
                         }
                     },
                     {
@@ -7779,6 +7838,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '71ef8590752c44fb908c664ef0d856a9'
+                        key: {
+                            name: 'x_695068_bcfa_match_candidate'
+                            element: 'match_type'
+                            value: 'combination'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '72347c4c335540b1b666eb1f576a4e8a'
                         key: {
@@ -8332,6 +8402,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_variable_value'
+                        id: '7c391e259377420d96328b9931b03447'
+                        key: {
+                            document_key: '824becdccd78492394550af839afca95'
+                            variable: '42f2564b73031300440211d8faf6a777'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: '7c4b525bb04045da92be8752e916de7f'
                         key: {
@@ -8542,6 +8620,14 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ar_open_item'
                             element: 'item_number'
+                        }
+                    },
+                    {
+                        table: 'sys_variable_value'
+                        id: '8110832511d940f48f2137d502e89b6a'
+                        key: {
+                            document_key: '4df94440c7c84b9382b0e68c441ca2f8'
+                            variable: '989d9e235324220002c6435723dc3484'
                         }
                     },
                     {
@@ -9044,6 +9130,17 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ap_exception'
                             element: 'reason_code'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '8c01a1eb9e9946618db09285cd63fd06'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'reason_code'
+                            value: 'line_total_mismatch'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -10985,6 +11082,14 @@ declare global {
                             value: 'credential_error'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_variable_value'
+                        id: 'b3ee3701e58e4c5794f8c06cbe4b3b21'
+                        key: {
+                            document_key: '824becdccd78492394550af839afca95'
+                            variable: '989d9e235324220002c6435723dc3484'
                         }
                     },
                     {
@@ -13033,6 +13138,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: 'db311c372da749d4bb268b0bde446d83'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'credit_note'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sn_aia_tool'
                         id: 'db6fb33083c849cabe13caf230a7fc94'
                         key: {
@@ -13219,6 +13333,14 @@ declare global {
                             agent: '9fd2181abab54e2eb93dffe220d11d93'
                             tool: '162de9d014ed465eaac3e942dc4d2b06'
                             name: 'List Open AR Exceptions (Communication)'
+                        }
+                    },
+                    {
+                        table: 'sys_variable_value'
+                        id: 'de6fb26d94fc4c91bfd2566f0e4c8a8c'
+                        key: {
+                            document_key: '4df94440c7c84b9382b0e68c441ca2f8'
+                            variable: '42f2564b73031300440211d8faf6a777'
                         }
                     },
                     {
@@ -14347,6 +14469,15 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ap_exception'
                             element: 'assigned_to'
+                        }
+                    },
+                    {
+                        table: 'sys_element_mapping'
+                        id: 'f12be0b8e3194442934d437662b57431'
+                        key: {
+                            id: '824becdccd78492394550af839afca95'
+                            table: 'var__m_atf_input_variable_41de4a935332120028bc29cac2dc349a'
+                            field: 'script'
                         }
                     },
                     {

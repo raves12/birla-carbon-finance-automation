@@ -19,8 +19,40 @@ MatchingEngine.prototype = {
         'Germany': 0.19
     },
 
-    // ---- AP: 3-way match ----------------------------------------------------
+    // ---- AP: PO validation and 3-way match -----------------------------------
 
+    // Phase 14: the referenced purchase order must exist, belong to the
+    // invoice's vendor and not be closed. Pure check, no writes.
+    // Returns { ok:true } or { ok:false, reasonCode:'po_mismatch', description }.
+    validatePurchaseOrder: function(apInvoiceSysId) {
+        var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
+        if (!invoice.get(apInvoiceSysId)) return { ok: false, reasonCode: 'other', description: 'AP Invoice not found.' };
+        if (!invoice.getValue('purchase_order')) return { ok: true, noPo: true };
+        var po = new GlideRecord('x_695068_bcfa_purchase_order');
+        if (!po.get(invoice.getValue('purchase_order'))) {
+            return { ok: false, reasonCode: 'po_mismatch', description: 'Referenced purchase order could not be resolved.' };
+        }
+        if (invoice.getValue('vendor') && po.getValue('vendor') !== invoice.getValue('vendor')) {
+            return { ok: false, reasonCode: 'po_mismatch', description: 'Purchase order ' + po.getValue('po_number') + ' belongs to vendor ' +
+                po.getDisplayValue('vendor') + ', not the invoice vendor ' + invoice.getDisplayValue('vendor') + '.' };
+        }
+        if (po.getValue('status') === 'closed') {
+            return { ok: false, reasonCode: 'po_mismatch', description: 'Purchase order ' + po.getValue('po_number') + ' is closed.' };
+        }
+        return { ok: true, poNumber: po.getValue('po_number') };
+    },
+
+    // 3-way match: invoice lines vs PO lines vs goods/service receipts, plus
+    // tax and header totals. Checks, all deterministic:
+    //   linkage   (PO invoices) at least one line; every line linked to a
+    //             line of the invoice's PO                      -> po_mismatch
+    //   receipt   (PO invoices) every line has a GRN/SRN for its own PO line
+    //                                                            -> grn_missing
+    //   quantity  |invoice qty - receipt qty| / receipt qty <= tolerance
+    //   price     |invoice price - PO price| / PO price <= tolerance
+    //   tax       |tax - net x country rate| <= max(absolute, relative band)
+    //   total     |sum of line amounts - header net| <= absolute band
+    //                                                            -> line_total_mismatch
     threeWayMatch: function(apInvoiceSysId, toleranceOverrides) {
         var tolerances = this._mergeTolerances(toleranceOverrides);
 
@@ -28,6 +60,7 @@ MatchingEngine.prototype = {
         if (!invoice.get(apInvoiceSysId)) {
             return { error: 'AP Invoice not found' };
         }
+        var invoicePo = invoice.getValue('purchase_order');
 
         var maxQuantityVariancePct = 0;
         var maxPriceVariancePct = 0;
@@ -37,15 +70,25 @@ MatchingEngine.prototype = {
         var lineEvidence = [];
         var quantityVarianceValue = 0;
         var priceVarianceValue = 0;
+        var linkIssues = [];
+        var receiptIssues = [];
+        var lineCount = 0;
+        var lineTotal = 0;
 
         var line = new GlideRecord('x_695068_bcfa_ap_invoice_line');
         line.addQuery('ap_invoice', apInvoiceSysId);
+        line.orderBy('line_number');
         line.query();
         while (line.next()) {
+            lineCount++;
+            lineTotal += parseFloat(line.getValue('amount') || '0');
             var poLineSysId = line.getValue('po_line');
             var receiptSysId = line.getValue('receipt_reference');
             var lineQty = parseFloat(line.getValue('quantity') || '0');
             var lineUnitPrice = parseFloat(line.getValue('unit_price') || '0');
+            var lineLabel = 'line ' + line.getValue('line_number');
+            if (invoicePo && !poLineSysId) linkIssues.push(lineLabel + ' is not linked to a PO line');
+            if (invoicePo && poLineSysId && !receiptSysId) receiptIssues.push(lineLabel + ' has no goods/service receipt');
             var evidence = {
                 lineNumber: line.getValue('line_number'),
                 invoiceQuantity: lineQty,
@@ -60,7 +103,12 @@ MatchingEngine.prototype = {
             if (poLineSysId) {
                 matchedPoLine = poLineSysId;
                 var poLine = new GlideRecord('x_695068_bcfa_po_line');
-                if (poLine.get(poLineSysId)) {
+                if (!poLine.get(poLineSysId)) {
+                    linkIssues.push(lineLabel + ' references a PO line that does not exist');
+                } else {
+                    if (invoicePo && poLine.getValue('purchase_order') !== invoicePo) {
+                        linkIssues.push(lineLabel + ' is linked to a line of PO ' + poLine.getDisplayValue('purchase_order') + ', not the invoice PO');
+                    }
                     var poUnitPrice = parseFloat(poLine.getValue('unit_price') || '0');
                     evidence.poNumber = poLine.getDisplayValue('purchase_order');
                     evidence.poQuantity = parseFloat(poLine.getValue('quantity') || '0');
@@ -76,7 +124,12 @@ MatchingEngine.prototype = {
             if (receiptSysId) {
                 matchedReceipt = receiptSysId;
                 var receipt = new GlideRecord('x_695068_bcfa_receipt');
-                if (receipt.get(receiptSysId)) {
+                if (!receipt.get(receiptSysId)) {
+                    receiptIssues.push(lineLabel + ' references a receipt that does not exist');
+                } else {
+                    if (poLineSysId && receipt.getValue('po_line') !== poLineSysId) {
+                        receiptIssues.push(lineLabel + ' receipt ' + receipt.getValue('receipt_number') + ' belongs to another PO line');
+                    }
                     var receiptQty = parseFloat(receipt.getValue('quantity') || '0');
                     evidence.receiptNumber = receipt.getValue('receipt_number');
                     evidence.receiptQuantity = receiptQty;
@@ -103,9 +156,17 @@ MatchingEngine.prototype = {
             taxWithinTolerance = taxVariance <= taxToleranceBand;
         }
 
-        var withinTolerance = (maxQuantityVariancePct <= tolerances.quantityPct) &&
+        if (invoicePo && lineCount === 0) linkIssues.push('the invoice references PO ' + invoice.getDisplayValue('purchase_order') + ' but has no lines to match');
+        lineTotal = Math.round(lineTotal * 100) / 100;
+        // Header-vs-lines check only when lines exist (a header-only
+        // non-PO invoice has nothing to compare).
+        var lineTotalDifference = lineCount > 0 ? Math.round(Math.abs(lineTotal - netAmount) * 100) / 100 : 0;
+        var lineTotalOk = lineTotalDifference <= tolerances.taxAbsolute;
+
+        var withinTolerance = linkIssues.length === 0 && receiptIssues.length === 0 &&
+            (maxQuantityVariancePct <= tolerances.quantityPct) &&
             (maxPriceVariancePct <= tolerances.pricePct) &&
-            taxWithinTolerance;
+            taxWithinTolerance && lineTotalOk;
 
         var matchResult = withinTolerance ? 'matched' : 'mismatch';
 
@@ -138,10 +199,22 @@ MatchingEngine.prototype = {
             expectedTaxRate: expectedRate,
             expectedTax: expectedTax,
             lines: lineEvidence,
+            lineCount: lineCount,
+            linkIssues: linkIssues,
+            receiptIssues: receiptIssues,
+            lineTotal: lineTotal,
+            lineTotalDifference: lineTotalDifference,
+            lineTotalOk: lineTotalOk,
             tolerancesUsed: tolerances
         };
     },
 
+    // Phase 14: an invoice is a duplicate when another live invoice of the
+    // same vendor has the same invoice number after normalization (case,
+    // spaces and punctuation ignored), whatever the amount. Same amount is
+    // an exact duplicate; a different amount is still flagged (possible
+    // re-bill or correction) and a human decides. FAILED and REJECTED
+    // invoices do not count, so a rejected invoice can be resubmitted.
     detectDuplicateInvoice: function(apInvoiceSysId) {
         var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
         if (!invoice.get(apInvoiceSysId)) return { error: 'AP Invoice not found' };
@@ -151,17 +224,32 @@ MatchingEngine.prototype = {
             invoice.setValue('duplicate_key', duplicateKey);
             invoice.update();
         }
+        if (!invoice.getValue('vendor')) return { duplicate: false, duplicateKey: duplicateKey };
 
+        var number = this.normalizeInvoiceNumber(invoice.getValue('invoice_number'));
+        var gross = parseFloat(invoice.getValue('gross_amount') || '0');
         var other = new GlideRecord('x_695068_bcfa_ap_invoice');
-        other.addQuery('duplicate_key', duplicateKey);
+        other.addQuery('vendor', invoice.getValue('vendor'));
         other.addQuery('sys_id', '!=', apInvoiceSysId);
-        other.addQuery('state', '!=', 'FAILED');
-        other.setLimit(1);
+        other.addQuery('state', 'NOT IN', 'FAILED,REJECTED');
+        other.orderBy('sys_created_on');
         other.query();
-        if (other.next()) {
-            return { duplicate: true, matchedInvoiceSysId: other.getUniqueValue(), duplicateKey: duplicateKey };
+        var sameNumber = null;
+        while (other.next()) {
+            if (this.normalizeInvoiceNumber(other.getValue('invoice_number')) !== number) continue;
+            var otherGross = parseFloat(other.getValue('gross_amount') || '0');
+            var exact = Math.abs(otherGross - gross) <= 0.01;
+            var found = { duplicate: true, matchedInvoiceSysId: other.getUniqueValue(), matchedInvoiceNumber: other.getValue('invoice_number'),
+                matchedState: other.getValue('state'), matchedGross: otherGross, sameAmount: exact, duplicateKey: duplicateKey };
+            if (exact) return found;
+            if (!sameNumber) sameNumber = found;
         }
-        return { duplicate: false, duplicateKey: duplicateKey };
+        return sameNumber || { duplicate: false, duplicateKey: duplicateKey };
+    },
+
+    // Upper case, letters and digits only: "inv-ap 001" == "INVAP001".
+    normalizeInvoiceNumber: function(value) {
+        return String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
     },
 
     // ---- AR: cash application matching --------------------------------------
@@ -271,6 +359,8 @@ MatchingEngine.prototype = {
         var item = new GlideRecord('x_695068_bcfa_ar_open_item');
         item.addQuery('customer', payment.getValue('customer'));
         item.addQuery('status', '!=', 'cleared');
+        // Phase 14: never match across currencies.
+        if (payment.getValue('currency')) item.addQuery('currency', payment.getValue('currency'));
         item.query();
         var candidates = [];
         while (item.next()) {
@@ -299,6 +389,7 @@ MatchingEngine.prototype = {
         var item = new GlideRecord('x_695068_bcfa_ar_open_item');
         item.addQuery('customer', payment.getValue('customer'));
         item.addQuery('status', '!=', 'cleared');
+        if (payment.getValue('currency')) item.addQuery('currency', payment.getValue('currency'));
         item.orderBy('due_date');
         item.query();
 
@@ -318,25 +409,150 @@ MatchingEngine.prototype = {
         return { matched: selected.length > 0, exact: exact, residual: residual, arOpenItemSysIds: selected };
     },
 
+    // Phase 14: remitter name -> customer. Compares normalized names (case,
+    // punctuation and spacing ignored) against active aliases, then active
+    // customer names. A name that points to more than one customer is
+    // ambiguous and never resolved; the candidates are returned for a human.
     resolveCustomerByAlias: function(candidateName) {
-        if (!candidateName) return { resolved: false };
+        var wanted = this.normalizeName(candidateName);
+        if (!wanted) return { resolved: false };
+
+        var byCustomer = {};
         var alias = new GlideRecord('x_695068_bcfa_customer_alias');
-        alias.addQuery('alias_name', candidateName);
         alias.addQuery('active', true);
-        alias.orderByDesc('confidence');
-        alias.setLimit(1);
         alias.query();
-        if (alias.next()) {
-            return { resolved: true, customerSysId: alias.getValue('customer'), confidence: parseFloat(alias.getValue('confidence') || '1') };
+        while (alias.next()) {
+            if (this.normalizeName(alias.getValue('alias_name')) !== wanted) continue;
+            var aliasConfidence = parseFloat(alias.getValue('confidence') || '1');
+            var existing = byCustomer[alias.getValue('customer')];
+            if (!existing || aliasConfidence > existing.confidence) {
+                byCustomer[alias.getValue('customer')] = { confidence: aliasConfidence, method: 'alias' };
+            }
         }
+        var result = this._singleCustomer(byCustomer);
+        if (result) return result;
+
+        byCustomer = {};
         var customer = new GlideRecord('x_695068_bcfa_customer');
-        customer.addQuery('name', candidateName);
-        customer.setLimit(1);
+        customer.addQuery('active', true);
         customer.query();
-        if (customer.next()) {
-            return { resolved: true, customerSysId: customer.getUniqueValue(), confidence: 1.0 };
+        while (customer.next()) {
+            if (this.normalizeName(customer.getValue('name')) === wanted) {
+                byCustomer[customer.getUniqueValue()] = { confidence: 1.0, method: 'exact_name' };
+            }
         }
-        return { resolved: false };
+        return this._singleCustomer(byCustomer) || { resolved: false };
+    },
+
+    _singleCustomer: function(byCustomer) {
+        var ids = [];
+        for (var id in byCustomer) ids.push(id);
+        if (ids.length === 1) {
+            return { resolved: true, customerSysId: ids[0], confidence: byCustomer[ids[0]].confidence, method: byCustomer[ids[0]].method };
+        }
+        if (ids.length > 1) return { resolved: false, ambiguous: true, candidates: ids };
+        return null;
+    },
+
+    // Upper case, letters/digits separated by single spaces:
+    // "Lone Star Tyre Co." == "LONE STAR TYRE CO".
+    normalizeName: function(value) {
+        return String(value || '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+    },
+
+    // Phase 14: exact combinations of the customer's open items (same
+    // currency) that sum to the payment amount, found by an exhaustive,
+    // deterministic search in cents. Stops after maxSolutions. Customers
+    // with more than MAX_COMBINATION_ITEMS open items are not searched (the
+    // result says so) to bound the work.
+    // Returns { searched, solutions: [[{sysId, itemNumber, openAmount}]] }.
+    MAX_COMBINATION_ITEMS: 20,
+
+    findExactCombinations: function(paymentSysId, maxSolutions) {
+        maxSolutions = maxSolutions || 2;
+        var payment = new GlideRecord('x_695068_bcfa_payment');
+        if (!payment.get(paymentSysId) || !payment.getValue('customer')) return { searched: false, reason: 'no customer', solutions: [] };
+        var target = Math.round(parseFloat(payment.getValue('amount') || '0') * 100);
+
+        var items = [];
+        var item = new GlideRecord('x_695068_bcfa_ar_open_item');
+        item.addQuery('customer', payment.getValue('customer'));
+        item.addQuery('status', '!=', 'cleared');
+        item.addQuery('open_amount', '>', 0);
+        if (payment.getValue('currency')) item.addQuery('currency', payment.getValue('currency'));
+        item.orderBy('due_date');
+        item.orderBy('item_number');
+        item.query();
+        while (item.next()) {
+            items.push({ sysId: item.getUniqueValue(), itemNumber: item.getValue('item_number'),
+                openAmount: parseFloat(item.getValue('open_amount') || '0'), cents: Math.round(parseFloat(item.getValue('open_amount') || '0') * 100) });
+        }
+        if (items.length > this.MAX_COMBINATION_ITEMS) {
+            return { searched: false, reason: items.length + ' open items exceed the search limit of ' + this.MAX_COMBINATION_ITEMS, solutions: [] };
+        }
+
+        var solutions = [];
+        var chosen = [];
+        var search = function(index, remaining) {
+            if (solutions.length >= maxSolutions) return;
+            if (remaining === 0 && chosen.length > 1) {
+                solutions.push(chosen.slice());
+                return;
+            }
+            for (var i = index; i < items.length; i++) {
+                if (items[i].cents > remaining) continue;
+                chosen.push(items[i]);
+                search(i + 1, remaining - items[i].cents);
+                chosen.pop();
+                if (solutions.length >= maxSolutions) return;
+            }
+        };
+        search(0, target);
+        return { searched: true, itemCount: items.length, solutions: solutions };
+    },
+
+    // Records one combination as selected candidates, or several as
+    // unselected, ranked candidates (rank = combination number) for review.
+    recordCombinationCandidates: function(paymentSysId, customerSysId, solutions, selected) {
+        for (var s = 0; s < solutions.length; s++) {
+            for (var i = 0; i < solutions[s].length; i++) {
+                this._recordMatchCandidate(paymentSysId, solutions[s][i].sysId, customerSysId, 'combination', selected ? 1.0 : 0.5, s + 1, !!selected);
+            }
+        }
+    },
+
+    // Phase 14: deterministic suggestion for a short-pay residual, for the
+    // reviewer to confirm. A unique open credit note of the customer for
+    // exactly the residual suggests credit-note netting; otherwise a residual
+    // up to ar.bank_charge.max_amount suggests a bank charge. Never applied
+    // automatically.
+    classifyResidual: function(paymentSysId, residual) {
+        residual = Math.round(parseFloat(residual || '0') * 100) / 100;
+        if (residual <= 0.01) return { type: null };
+        var payment = new GlideRecord('x_695068_bcfa_payment');
+        if (!payment.get(paymentSysId)) return { type: null };
+
+        if (payment.getValue('customer')) {
+            var matches = [];
+            var note = new GlideRecord('x_695068_bcfa_credit_note');
+            note.addQuery('customer', payment.getValue('customer'));
+            note.addQuery('status', 'open');
+            note.query();
+            while (note.next()) {
+                if (Math.abs(parseFloat(note.getValue('open_amount') || '0') - residual) <= 0.01) {
+                    matches.push({ sysId: note.getUniqueValue(), number: note.getValue('credit_note_number') });
+                }
+            }
+            if (matches.length === 1) {
+                return { type: 'credit_note_netting', creditNoteSysId: matches[0].sysId,
+                    rule: 'residual ' + residual + ' equals open credit note ' + matches[0].number + ' of the same customer' };
+            }
+        }
+        var bankChargeMax = new FinancePolicy().arBankChargeMax();
+        if (residual <= bankChargeMax) {
+            return { type: 'bank_charge', rule: 'residual ' + residual + ' is within the bank charge limit ' + bankChargeMax + ' (x_695068_bcfa.ar.bank_charge.max_amount)' };
+        }
+        return { type: null, rule: 'residual ' + residual + ' matches no open credit note and exceeds the bank charge limit ' + bankChargeMax };
     },
 
     _recordMatchCandidate: function(paymentSysId, arOpenItemSysId, customerSysId, matchType, confidence, rank, selected) {

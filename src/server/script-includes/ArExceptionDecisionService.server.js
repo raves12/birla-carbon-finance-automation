@@ -80,6 +80,22 @@ ArExceptionDecisionService.prototype = {
         if (amount <= this.arService.BALANCE_TOLERANCE) {
             return this._error('There is no short-pay residual left to deduct (allocated ' + balance.allocated + ', approved deductions ' + balance.deductions + ', payment ' + balance.payment + ').');
         }
+        // Credit-note netting (Phase 14): the credit note chosen on the
+        // exception must be open, belong to the payment's customer and equal
+        // the residual exactly.
+        var creditNoteSysId = null;
+        if (type === 'credit_note_netting') {
+            creditNoteSysId = exception.getValue('credit_note');
+            var note = new GlideRecord('x_695068_bcfa_credit_note');
+            if (!creditNoteSysId || !note.get(creditNoteSysId)) return this._error('Choose the Credit Note on the exception before netting.');
+            if (note.getValue('status') !== 'open') return this._error('Credit note ' + note.getValue('credit_note_number') + ' is ' + note.getValue('status') + ', not open.');
+            if (note.getValue('customer') !== payment.getValue('customer')) return this._error('Credit note ' + note.getValue('credit_note_number') + ' belongs to another customer.');
+            var noteOpen = parseFloat(note.getValue('open_amount') || '0');
+            if (Math.abs(noteOpen - amount) > this.arService.BALANCE_TOLERANCE) {
+                return this._error('Credit note ' + note.getValue('credit_note_number') + ' has ' + noteOpen + ' open, but the residual is ' + amount + '; netting must match exactly.');
+            }
+        }
+
         var threshold = this.policy.arDeductionApprovalThreshold();
         if (amount > threshold && !gs.hasRole('x_695068_bcfa.finance_approver') && !gs.hasRole('x_695068_bcfa.admin')) {
             return this._error('A deduction of ' + amount + ' exceeds ' + threshold + ' (x_695068_bcfa.ar.deduction.approval_threshold) and needs a finance approver.');
@@ -108,6 +124,7 @@ ArExceptionDecisionService.prototype = {
         deduction.setValue('approved_by', userId);
         deduction.setValue('approved_at', new GlideDateTime().getValue());
         deduction.setValue('notes', reason);
+        if (creditNoteSysId) deduction.setValue('credit_note', creditNoteSysId);
         var deductionSysId = deduction.insert();
 
         var allocation = new GlideRecord('x_695068_bcfa_payment_allocation');
@@ -158,6 +175,7 @@ ArExceptionDecisionService.prototype = {
         var result = { payment: parseFloat(payment.getValue('amount') || '0'), allocated: 0, deductions: 0, allocations: [] };
         var allocation = new GlideRecord('x_695068_bcfa_payment_allocation');
         allocation.addQuery('payment', payment.getUniqueValue());
+        allocation.addQuery('allocation_state', '!=', 'reversed');
         allocation.orderBy('sys_created_on');
         allocation.query();
         while (allocation.next()) {

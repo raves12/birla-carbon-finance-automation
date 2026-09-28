@@ -99,6 +99,8 @@ DemoDataSeeder.prototype = {
             cdef.active = true;
             customerSysId[cdef.customer_code] = this._insert('x_695068_bcfa_customer', cdef);
         }
+        var customerCurrency = {};
+        for (var cc = 0; cc < customerDefs.length; cc++) customerCurrency[customerDefs[cc].customer_code] = customerDefs[cc].currency;
 
         // Purchase orders + lines. Each entry describes one PO with one line.
         var poDefs = [
@@ -183,7 +185,9 @@ DemoDataSeeder.prototype = {
             dueDate.addDaysUTC(-i);
             itemSysId[idef.item] = this._insert('x_695068_bcfa_ar_open_item', {
                 item_number: idef.item, customer: customerSysId[idef.customerCode], company_code: '1000',
-                currency: 'INR', invoice_amount: idef.amount, open_amount: idef.amount,
+                // Phase 14: the item currency follows the customer (was always
+                // INR, which let EUR/USD payments match INR items).
+                currency: customerCurrency[idef.customerCode], invoice_amount: idef.amount, open_amount: idef.amount,
                 due_date: dueDate.getDate(), status: 'open'
             });
         }
@@ -277,12 +281,11 @@ DemoDataSeeder.prototype = {
             invoiceNumber: 'INV-AP-001', vendor: this._lookupSysId('x_695068_bcfa_vendor', 'vendor_code', 'V001'),
             companyCode: '1000', currency: 'INR', purchaseOrder: this._lookupSysId('x_695068_bcfa_purchase_order', 'po_number', 'PO0001'),
             grossAmount: 5000, taxAmount: 900, netAmount: 5000,
-            seedExtraction: { invoiceNumber: 'INV-AP-001', vendor: 'V001', amount: 5000 }
+            seedExtraction: { invoiceNumber: 'INV-AP-001', vendor: 'V001', amount: 5000 },
+            lines: [this._seedLine('PO0001', 'RCPT0001', 100, 50, 900, 5000)]
         });
-        this._attachInvoiceLine(ap001.apInvoiceSysId, 'PO0001', 'RCPT0001', 100, 50, 900, 5000);
-        var ap001Rematch = this.apService.matchInvoice(ap001.apInvoiceSysId);
-        results['AP-001'] = { apInvoiceSysId: ap001.apInvoiceSysId, match: ap001Rematch };
-        if (ap001Rematch.matched) {
+        results['AP-001'] = ap001;
+        if (ap001.stoppedAt === 'MATCHED') {
             var ap001Approval = this.apService.requestApproval(ap001.apInvoiceSysId, requester);
             this.apService.decideApproval(ap001.apInvoiceSysId, ap001Approval.approvalSysId, 'approved', approver, 'Approved for demo AP-001 happy path.');
         }
@@ -315,30 +318,30 @@ DemoDataSeeder.prototype = {
             invoiceNumber: 'INV-AP-004', vendor: this._lookupSysId('x_695068_bcfa_vendor', 'vendor_code', 'V004'),
             companyCode: '1000', currency: 'EUR', purchaseOrder: this._lookupSysId('x_695068_bcfa_purchase_order', 'po_number', 'PO0004'),
             grossAmount: 5000, netAmount: 5000, taxAmount: 950,
-            seedExtraction: { invoiceNumber: 'INV-AP-004' }
+            seedExtraction: { invoiceNumber: 'INV-AP-004' },
+            lines: [this._seedLine('PO0004', 'RCPT0004', 15, 500, 950, 5000)]
         });
-        this._attachInvoiceLine(ap004.apInvoiceSysId, 'PO0004', 'RCPT0004', 15, 500, 950, 5000);
-        results['AP-004'] = this.apService.matchInvoice(ap004.apInvoiceSysId);
+        results['AP-004'] = ap004;
 
         // AP-005 Price tolerance failure: unit price far above PO price.
         var ap005 = this.apService.intakeAndAutoProcess({
             invoiceNumber: 'INV-AP-005', vendor: this._lookupSysId('x_695068_bcfa_vendor', 'vendor_code', 'V005'),
             companyCode: '1000', currency: 'USD', purchaseOrder: this._lookupSysId('x_695068_bcfa_purchase_order', 'po_number', 'PO0005'),
             grossAmount: 15000, netAmount: 15000, taxAmount: 0,
-            seedExtraction: { invoiceNumber: 'INV-AP-005' }
+            seedExtraction: { invoiceNumber: 'INV-AP-005' },
+            lines: [this._seedLine('PO0005', 'RCPT0005', 300, 50, 0, 15000)]
         });
-        this._attachInvoiceLine(ap005.apInvoiceSysId, 'PO0005', 'RCPT0005', 300, 50, 0, 15000);
-        results['AP-005'] = this.apService.matchInvoice(ap005.apInvoiceSysId);
+        results['AP-005'] = ap005;
 
         // AP-006 Tax validation failure: India vendor, tax far off 18%.
         var ap006 = this.apService.intakeAndAutoProcess({
             invoiceNumber: 'INV-AP-006', vendor: this._lookupSysId('x_695068_bcfa_vendor', 'vendor_code', 'V006'),
             companyCode: '1000', currency: 'INR', purchaseOrder: this._lookupSysId('x_695068_bcfa_purchase_order', 'po_number', 'PO0006'),
             grossAmount: 2100, netAmount: 2000, taxAmount: 50,
-            seedExtraction: { invoiceNumber: 'INV-AP-006' }
+            seedExtraction: { invoiceNumber: 'INV-AP-006' },
+            lines: [this._seedLine('PO0006', 'RCPT0006', 1000, 2, 50, 2000)]
         });
-        this._attachInvoiceLine(ap006.apInvoiceSysId, 'PO0006', 'RCPT0006', 1000, 2, 50, 2000);
-        results['AP-006'] = this.apService.matchInvoice(ap006.apInvoiceSysId);
+        results['AP-006'] = ap006;
 
         // AP-007 Low-confidence extraction.
         var ap007 = this.apService.intakeInvoice({
@@ -353,23 +356,21 @@ DemoDataSeeder.prototype = {
             invoiceNumber: 'INV-AP-008', vendor: this._lookupSysId('x_695068_bcfa_vendor', 'vendor_code', 'V008'),
             companyCode: '1000', currency: 'EUR', purchaseOrder: this._lookupSysId('x_695068_bcfa_purchase_order', 'po_number', 'PO0008'),
             grossAmount: 6000, netAmount: 6000, taxAmount: 1140,
-            seedExtraction: { invoiceNumber: 'INV-AP-008' }
+            seedExtraction: { invoiceNumber: 'INV-AP-008' },
+            lines: [this._seedLine('PO0008', 'RCPT0008', 75, 80, 1140, 6000)]
         });
-        this._attachInvoiceLine(ap008.apInvoiceSysId, 'PO0008', 'RCPT0008', 75, 80, 1140, 6000);
-        var ap008Match = this.apService.matchInvoice(ap008.apInvoiceSysId);
-        if (ap008Match.matched) this.apService.requestApproval(ap008.apInvoiceSysId, requester);
-        results['AP-008'] = { apInvoiceSysId: ap008.apInvoiceSysId, match: ap008Match };
+        if (ap008.stoppedAt === 'MATCHED') this.apService.requestApproval(ap008.apInvoiceSysId, requester);
+        results['AP-008'] = ap008;
 
         // AP-009 SAP posting failure.
         var ap009 = this.apService.intakeAndAutoProcess({
             invoiceNumber: 'INV-AP-009', vendor: this._lookupSysId('x_695068_bcfa_vendor', 'vendor_code', 'V009'),
             companyCode: '1000', currency: 'USD', purchaseOrder: this._lookupSysId('x_695068_bcfa_purchase_order', 'po_number', 'PO0009'),
             grossAmount: 6750, netAmount: 6750, taxAmount: 0,
-            seedExtraction: { invoiceNumber: 'INV-AP-009' }
+            seedExtraction: { invoiceNumber: 'INV-AP-009' },
+            lines: [this._seedLine('PO0009', 'RCPT0009', 150, 45, 0, 6750)]
         });
-        this._attachInvoiceLine(ap009.apInvoiceSysId, 'PO0009', 'RCPT0009', 150, 45, 0, 6750);
-        var ap009Match = this.apService.matchInvoice(ap009.apInvoiceSysId);
-        if (ap009Match.matched) {
+        if (ap009.stoppedAt === 'MATCHED') {
             var ap009Approval = this.apService.requestApproval(ap009.apInvoiceSysId, requester);
             this._setAdapterFailureMode('mock_sap', 'technical_error');
             this.apService.decideApproval(ap009.apInvoiceSysId, ap009Approval.approvalSysId, 'approved', approver, 'Approved — will fail at SAP for demo AP-009.');
@@ -383,7 +384,7 @@ DemoDataSeeder.prototype = {
                 state: ap009Invoice.getValue('state')
             };
         } else {
-            results['AP-009'] = { error: 'match failed unexpectedly', detail: ap009Match };
+            results['AP-009'] = { error: 'match failed unexpectedly', detail: ap009 };
         }
 
         // AP-010 SAP timeout -> Unknown Outcome -> reconciled to POSTED (Demo 3).
@@ -396,11 +397,10 @@ DemoDataSeeder.prototype = {
             invoiceNumber: 'INV-AP-010', vendor: this._lookupSysId('x_695068_bcfa_vendor', 'vendor_code', 'V010'),
             companyCode: '1000', currency: 'INR', purchaseOrder: this._lookupSysId('x_695068_bcfa_purchase_order', 'po_number', 'PO0010'),
             grossAmount: 6372, netAmount: 5400, taxAmount: 972,
-            seedExtraction: { invoiceNumber: 'INV-AP-010' }
+            seedExtraction: { invoiceNumber: 'INV-AP-010' },
+            lines: [this._seedLine('PO0010', 'RCPT0010', 90, 60, 972, 5400)]
         });
-        this._attachInvoiceLine(ap010.apInvoiceSysId, 'PO0010', 'RCPT0010', 90, 60, 972, 5400);
-        var ap010Match = this.apService.matchInvoice(ap010.apInvoiceSysId);
-        if (ap010Match.matched) {
+        if (ap010.stoppedAt === 'MATCHED') {
             var ap010Approval = this.apService.requestApproval(ap010.apInvoiceSysId, requester);
             this._setAdapterFailureMode('mock_sap', 'timeout');
             this.apService.decideApproval(ap010.apInvoiceSysId, ap010Approval.approvalSysId, 'approved', approver, 'Approved — will time out for demo AP-010.');
@@ -411,20 +411,22 @@ DemoDataSeeder.prototype = {
                 results['AP-010'].reconciliation = this.apService.reconcilePosting(ap010.apInvoiceSysId, ap010TxnSysId);
             }
         } else {
-            results['AP-010'] = { error: 'match failed unexpectedly', detail: ap010Match };
+            results['AP-010'] = { error: 'match failed unexpectedly', detail: ap010 };
         }
 
         return results;
     },
 
-    _attachInvoiceLine: function(apInvoiceSysId, poNumber, receiptNumber, quantity, unitPrice, tax, amount) {
-        var poLine = this._lookupSysId('x_695068_bcfa_po_line', 'purchase_order', this._lookupSysId('x_695068_bcfa_purchase_order', 'po_number', poNumber));
-        var receipt = this._lookupSysId('x_695068_bcfa_receipt', 'receipt_number', receiptNumber);
-        return this._insert('x_695068_bcfa_ap_invoice_line', {
-            ap_invoice: apInvoiceSysId, line_number: 1, material_or_service: 'Carbon black feedstock',
-            quantity: quantity, unit: 'MT', unit_price: unitPrice, tax: tax, amount: amount,
-            po_line: poLine, receipt_reference: receipt
-        });
+    // Invoice line in ApDomainService.attachInvoiceLine field shape, linked
+    // to the PO's (single) line and the given receipt. Phase 14: lines are
+    // attached at intake so the 3-way match sees them (a PO invoice without
+    // linked, received lines now fails matching).
+    _seedLine: function(poNumber, receiptNumber, quantity, unitPrice, tax, amount) {
+        return {
+            lineNumber: 1, materialOrService: 'Carbon black feedstock', quantity: quantity, unit: 'MT', unitPrice: unitPrice, tax: tax, amount: amount,
+            poLine: this._lookupSysId('x_695068_bcfa_po_line', 'purchase_order', this._lookupSysId('x_695068_bcfa_purchase_order', 'po_number', poNumber)),
+            receiptReference: this._lookupSysId('x_695068_bcfa_receipt', 'receipt_number', receiptNumber)
+        };
     },
 
     // ---- AR scenarios (Section 17/19) ---------------------------------------
@@ -680,16 +682,12 @@ DemoDataSeeder.prototype = {
             invoiceNumber: 'INV-BC-1001', vendor: vendor001, companyCode: '1000', currency: 'INR',
             purchaseOrder: po1001, grossAmount: 118000, netAmount: 100000, taxAmount: 18000,
             invoiceDate: new GlideDateTime().getDate(),
-            seedExtraction: { invoiceNumber: 'INV-BC-1001', vendor: 'V001', amount: 118000, invoice_date: todayStr1, posting_date: todayStr1 }
+            seedExtraction: { invoiceNumber: 'INV-BC-1001', vendor: 'V001', amount: 118000, invoice_date: todayStr1, posting_date: todayStr1 },
+            lines: [this._seedLine('PO-BC-1001', 'RCPT-BC-1001', 10, 10000, 18000, 100000)]
         });
         results['AP-BC-1001'] = { apInvoiceSysId: apBc1001.apInvoiceSysId, stoppedAt: apBc1001.stoppedAt };
-        if (apBc1001.stoppedAt !== 'VALIDATION_EXCEPTION') {
-            this._attachInvoiceLine(apBc1001.apInvoiceSysId, 'PO-BC-1001', 'RCPT-BC-1001', 10, 10000, 18000, 100000);
-            var apBc1001Match = this.apService.matchInvoice(apBc1001.apInvoiceSysId);
-            results['AP-BC-1001'].match = apBc1001Match;
-            if (apBc1001Match.matched) {
-                this.apService.requestApproval(apBc1001.apInvoiceSysId, this._twoUsers()[0]);
-            }
+        if (apBc1001.stoppedAt === 'MATCHED') {
+            this.apService.requestApproval(apBc1001.apInvoiceSysId, this._twoUsers()[0]);
         }
 
         // --- AP-BC-1002: Amount-mismatch exception (invoice line price 3% ----
@@ -709,13 +707,10 @@ DemoDataSeeder.prototype = {
             invoiceNumber: 'INV-BC-1002', vendor: vendor002, companyCode: '1000', currency: 'INR',
             purchaseOrder: po1002, grossAmount: 121540, netAmount: 103000, taxAmount: 18540,
             invoiceDate: new GlideDateTime().getDate(),
-            seedExtraction: { invoiceNumber: 'INV-BC-1002', vendor: 'V002', amount: 121540, invoice_date: todayStr2, posting_date: todayStr2 }
+            seedExtraction: { invoiceNumber: 'INV-BC-1002', vendor: 'V002', amount: 121540, invoice_date: todayStr2, posting_date: todayStr2 },
+            lines: [this._seedLine('PO-BC-1002', 'RCPT-BC-1002', 10, 10300, 18540, 103000)]
         });
         results['AP-BC-1002'] = { apInvoiceSysId: apBc1002.apInvoiceSysId, stoppedAt: apBc1002.stoppedAt };
-        if (apBc1002.stoppedAt !== 'VALIDATION_EXCEPTION') {
-            this._attachInvoiceLine(apBc1002.apInvoiceSysId, 'PO-BC-1002', 'RCPT-BC-1002', 10, 10300, 18540, 103000);
-            results['AP-BC-1002'].match = this.apService.matchInvoice(apBc1002.apInvoiceSysId);
-        }
 
         // --- CASH-BC-0001: Exact match ------------------------------------------
         var dueDate1 = new GlideDateTime();
