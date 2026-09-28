@@ -9,6 +9,7 @@ export const flowStageEvent = Record({
     $id: Now.ID['event-flow-stage'],
     table: 'sysevent_register',
     data: {
+        suffix: 'flow.stage',
         event_name: 'x_695068_bcfa.flow.stage',
         description: 'A BCFA flow requests one deterministic pipeline stage on the event record (parm1 = stage, parm2 = flow).',
         fired_by: 'BCFA flows (Flow Designer)',

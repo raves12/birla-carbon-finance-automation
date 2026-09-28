@@ -38,15 +38,30 @@
     // A stage refused outside its state (the guard that keeps a stage from
     // running twice): an invoice that is not RECEIVED is not re-extracted.
     var anyPosted = new GlideRecord('x_695068_bcfa_ap_invoice');
-    anyPosted.addQuery('state', 'POSTED');
+    anyPosted.addQuery('posting_state', 'posted');
     anyPosted.setLimit(1);
     anyPosted.query();
     if (anyPosted.next()) {
         var g = new FinanceOrchestration().run('ap_intake', anyPosted.getUniqueValue());
-        check('stage guard: ap_intake on a POSTED invoice is skipped', g.outcome === 'skipped', g.detail);
-    }
+        check('stage guard: ap_intake on a posted invoice is skipped', g.outcome === 'skipped', g.detail);
+    } else check('stage guard: a posted invoice to test with', false, 'none found');
     var bad = new FinanceOrchestration().run('ap_everything', anyPosted.getUniqueValue());
     check('unknown stage rejected', bad.outcome === 'error', bad.detail);
+
+    // Earlier test records still at RECEIVED (a flow run that failed) are
+    // re-driven by firing the stage event directly.
+    var redriven = [];
+    [['x_695068_bcfa_ap_invoice', 'invoice_number', 'INV-P25-', 'ap_intake'], ['x_695068_bcfa_payment', 'bank_reference', 'BANK-P25-', 'ar_intake']].forEach(function(t) {
+        var old = new GlideRecord(t[0]);
+        old.addQuery(t[1], 'STARTSWITH', t[2]);
+        old.addQuery('state', 'RECEIVED');
+        old.query();
+        while (old.next()) {
+            gs.eventQueue('x_695068_bcfa.flow.stage', old, t[3], 'Phase 25 verification re-drive');
+            redriven.push(old.getValue(t[1]));
+        }
+    });
+    if (redriven.length) out.push('re-driven through the stage event: ' + redriven.join(', '));
 
     // --- one AP invoice and one payment, flow mode ------------------------------
     var seeder = new DemoDataSeeder();

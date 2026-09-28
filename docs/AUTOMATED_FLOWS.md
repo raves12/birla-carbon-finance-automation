@@ -88,3 +88,7 @@ Demo seeding (`DemoDataSeeder.seedAll` and the scenario seeders) always runs inl
   `sn_fd.FlowAPI.publish` (the call the platform itself uses) under the BCFA application.
 - The postamble also saves the Script Action once with business rules on, and toggles the retired sweep job so its
   scheduler trigger is removed.
+- **Fire Event needs the event's sys_id.** Its `event_name` input is a reference to `sysevent_register`. The first
+  deploy passed the event name as a string, as one SDK guide suggests. At runtime every flow then failed with "Event
+  Name is nil or empty". The flows now pass the registration's build sys_id (`716381fad463458492887fa27bddcc0e`);
+  `phase25_fix_bg.js` redeploys the flows with it.

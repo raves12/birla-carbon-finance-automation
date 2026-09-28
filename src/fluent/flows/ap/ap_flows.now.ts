@@ -1,5 +1,11 @@
 import { Flow, wfa, trigger, action } from '@servicenow/sdk/automation'
 
+// The Fire Event input is a reference to sysevent_register: it needs the
+// sys_id of the x_695068_bcfa.flow.stage registration (build sys_id of
+// Now.ID['event-flow-stage'] in ../shared/orchestration.now.ts). A plain
+// event name is read as empty at runtime ("Event Name is nil or empty").
+const FLOW_STAGE_EVENT = '716381fad463458492887fa27bddcc0e'
+
 // Phase 25: Accounts Payable flows (Flow Designer). Each flow owns one hand-off of the
 // pipeline: its record trigger fires the event x_695068_bcfa.flow.stage with
 // the stage name, and the script action "BCFA - Run Flow Stage" runs that
@@ -29,7 +35,7 @@ Flow(
             action.core.fireEvent,
             { $id: Now.ID['act-ap-invoice-intake-stage'], annotation: 'Run the deterministic stage: extraction (AI extraction point)' },
             {
-                event_name: 'x_695068_bcfa.flow.stage',
+                event_name: FLOW_STAGE_EVENT,
                 record: `${wfa.dataPill(params.trigger.current, 'reference')}`,
                 table: 'x_695068_bcfa_ap_invoice',
                 parm1: 'ap_intake',
@@ -69,7 +75,7 @@ Flow(
             action.core.fireEvent,
             { $id: Now.ID['act-ap-validation-stage'], annotation: 'Run the deterministic stage: validation and 3-way match' },
             {
-                event_name: 'x_695068_bcfa.flow.stage',
+                event_name: FLOW_STAGE_EVENT,
                 record: `${wfa.dataPill(params.trigger.current, 'reference')}`,
                 table: 'x_695068_bcfa_ap_invoice',
                 parm1: 'ap_validation',
@@ -109,7 +115,7 @@ Flow(
             action.core.fireEvent,
             { $id: Now.ID['act-ap-exception-stage'], annotation: 'Run the deterministic stage: re-validate and re-match after correction' },
             {
-                event_name: 'x_695068_bcfa.flow.stage',
+                event_name: FLOW_STAGE_EVENT,
                 record: `${wfa.dataPill(params.trigger.current, 'reference')}`,
                 table: 'x_695068_bcfa_ap_exception',
                 parm1: 'ap_exception',
@@ -149,7 +155,7 @@ Flow(
             action.core.fireEvent,
             { $id: Now.ID['act-ap-approval-stage'], annotation: 'Run the deterministic stage: approval routing' },
             {
-                event_name: 'x_695068_bcfa.flow.stage',
+                event_name: FLOW_STAGE_EVENT,
                 record: `${wfa.dataPill(params.trigger.current, 'reference')}`,
                 table: 'x_695068_bcfa_ap_invoice',
                 parm1: 'ap_approval',
@@ -189,7 +195,7 @@ Flow(
             action.core.fireEvent,
             { $id: Now.ID['act-ap-integration-stage'], annotation: 'Run the deterministic stage: SAP posting' },
             {
-                event_name: 'x_695068_bcfa.flow.stage',
+                event_name: FLOW_STAGE_EVENT,
                 record: `${wfa.dataPill(params.trigger.current, 'reference')}`,
                 table: 'x_695068_bcfa_ap_invoice',
                 parm1: 'ap_integration',
@@ -229,7 +235,7 @@ Flow(
             action.core.fireEvent,
             { $id: Now.ID['act-ap-reconciliation-stage'], annotation: 'Run the deterministic stage: status query and reconciliation' },
             {
-                event_name: 'x_695068_bcfa.flow.stage',
+                event_name: FLOW_STAGE_EVENT,
                 record: `${wfa.dataPill(params.trigger.current, 'reference')}`,
                 table: 'x_695068_bcfa_ap_invoice',
                 parm1: 'ap_reconciliation',
@@ -277,7 +283,7 @@ Flow(
                     action.core.fireEvent,
                     { $id: Now.ID['act-ap-aging-stage'], annotation: 'Run the deterministic aging / escalation step (FinanceOrchestration ap_aging)' },
                     {
-                        event_name: 'x_695068_bcfa.flow.stage',
+                        event_name: FLOW_STAGE_EVENT,
                         record: `${wfa.dataPill(exception.sys_id, 'reference')}`,
                         table: 'x_695068_bcfa_ap_exception',
                         parm1: 'ap_aging',
