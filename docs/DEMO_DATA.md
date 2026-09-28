@@ -78,6 +78,19 @@ alias with confidence 1.0. The threshold control itself is unchanged.
 
 AR-006/007/008 still end at PENDING_APPROVAL, as noted above.
 
+### Second reset and re-seed (2026-09-28, with the alias fix)
+
+**All 20 scenarios landed as documented:** 9 of 9 AP invoice numbers (10 scenarios) and 10 of 10 AR scenarios.
+
+**The flows add approval requests after seeding.** The seeder leaves AR-004, 006, 007 and 008 at PENDING_APPROVAL
+without an approval request. The AR Approval Flow, triggered by that state, routes each one through the configured
+approval rule and creates one pending approval request (created by `system`). So after a reset, every payment waiting
+for approval has exactly one pending request for a presenter to act on. There are no duplicates: the flow step skips a
+payment that already has a pending approval, which is how AR-009's request from the seeder is left alone.
+
+After a reset, the audit trail keeps the earlier runs' events, and the AI Interaction Log is kept by default. Filter
+the audit list by date, or by the correlation IDs of the current records, to see only the current run.
+
 ## Master data (confirmed live)
 
 10 vendors, 10 customers, 10 POs (+ 1 line each), 10 receipts, 15 AR open
