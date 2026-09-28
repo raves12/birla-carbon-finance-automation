@@ -15,7 +15,7 @@
         gs.info('BCFA_P26PKG ABORTED: run in scope "global", current scope is ' + gs.getCurrentScopeName());
         return;
     }
-    var byClass = {}, moved = 0, missing = 0;
+    var byClass = {}, refused = {}, moved = 0, missing = 0;
     var md = new GlideRecord('sys_metadata');
     md.addQuery('sys_scope', APP);
     md.addQuery('sys_package', '!=', APP).addOrCondition('sys_package', '');
@@ -27,11 +27,14 @@
         if (!rec.isValid() || !rec.get(md.getUniqueValue())) { missing++; continue; }
         rec.setValue('sys_package', APP);
         rec.setWorkflow(false);
-        rec.update();
+        // The UX list tables refuse writes from another scope (cross-scope
+        // access policy): update() then returns nothing.
+        if (!rec.update()) { refused[cls] = (refused[cls] || 0) + 1; continue; }
         moved++;
         byClass[cls] = (byClass[cls] || 0) + 1;
     }
     for (var c in byClass) out.push(c + '=' + byClass[c]);
+    for (var r in refused) out.push('REFUSED ' + r + '=' + refused[r]);
     var left = new GlideAggregate('sys_metadata');
     left.addQuery('sys_scope', APP);
     left.addQuery('sys_package', '!=', APP);
