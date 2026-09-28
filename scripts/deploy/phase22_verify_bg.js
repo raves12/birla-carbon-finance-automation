@@ -91,7 +91,9 @@ try {
 
     // 3 no regression for the AP processor
     var proc = asUser('bcfa.ap.processor', function() {
-        return matrix({ x_695068_bcfa_ap_exception: { read: true, write: true, fields: { ai_recommendation: true, status: true, decision: true, resolution_notes: true } },
+        // decision is read-only in the dictionary for everyone (set only by
+        // ApExceptionDecisionService), so false is expected.
+        return matrix({ x_695068_bcfa_ap_exception: { read: true, write: true, fields: { ai_recommendation: true, status: true, decision: false, resolution_notes: true } },
             x_695068_bcfa_ap_invoice: { read: true, write: true, create: true } });
     });
     out.push('3 AP processor (' + (proc.fail ? proc.fail + ' FAIL' : 'all PASS') + '):\n' + proc.rows.join('\n'));

@@ -113,4 +113,52 @@ explanation said "Both invoices are fully settled" while the payment was only pe
   covers the semantic cases once it runs synchronously.
 - Output sanitizing works sentence by sentence. A removed sentence can take neutral content with it; the appended
   note makes that visible.
-- Least-privilege review of AI agents, identities and tools is Phase 22.
+- Least-privilege review of AI agents, identities and tools: see section 5 (Phase 22).
+
+## 5. Least privilege for AI (Phase 22)
+
+Verified live on 2026-09-28 (`scripts/deploy/phase22_verify_bg.js` as global with impersonation,
+`phase22_verify2_bg.js`, and a query of the resulting agentic workflow runs).
+
+An AI agent can see and change only what these allow: ACLs, roles, the agent identity and the tool
+permissions.
+
+### Review
+
+| Area | Before | Finding |
+|---|---|---|
+| Agent identity | The agentic workflows' triggers run as **`bcfa.ai.reviewer`** (identity type *AI agent*). Agents have no run-as user of their own, so a directly invoked agent runs as the person invoking it | Correct pattern |
+| Roles of the AI identity | `ap_processor`, `ar_processor`, `snc_internal`. No admin, security_admin or approver role; nothing inherited; no groups | Too broad. The processor roles grant write / create ACLs on invoices, payments, allocations, deductions, intake and **approval records**. No tool used them, and code refuses AI identities, but the identity held them |
+| Role masking (`sys_agent_access_role_configuration`, *Limit To Roles*) | Present on all 7 agents and all 9 skills | The agent masks allowed `x_695068_bcfa.admin` and `finance_approver`: an agent invoked by an approver or admin could act with those roles |
+| Agent / workflow execute ACLs (`gen_ai_agent`) | Specific BCFA roles, including admin and finance_approver; none public | Admin and approver removed (below) |
+| Tools | 31 agent tools, all BCFA script tools over `FinanceAgentTools`. No platform record tools. One write tool: the advisory note | Correct. The tools also check roles themselves and read through `GlideRecordSecure` |
+
+### Changes
+
+- **New role `x_695068_bcfa.ai_agent`**, for AI identities only. It contains no other role and grants:
+  - **Read**, and nothing else, on the tables the tools read: AP invoice / line / match / exception, payment,
+    remittance, allocation, match candidate, deduction, AR exception, vendor, customer, customer alias, PO, PO line,
+    receipt, AR open item and credit note.
+  - **Write** on AP / AR exceptions, narrowed by field ACLs to **`ai_recommendation` only**. The wildcard field ACL
+    (`*`) keeps every other exception field with the processor and admin.
+  - Nothing on approvals, audit events, integration transactions, document intake or the AI Interaction Log.
+- **`bcfa.ai.reviewer`** now holds only `x_695068_bcfa.ai_agent` (plus `snc_internal`). Both processor roles were
+  removed.
+- **Agent role masks and agent / workflow execute ACLs**: `ai_agent` plus the processor, finance_reviewer and auditor
+  (read) roles. `x_695068_bcfa.admin` and `finance_approver` were removed; 18 role rows were deleted. **No agent can
+  act with an admin or approver role, whoever invokes it.**
+- **The 9 Now Assist skills**: `ai_agent` was added to their masks and execute ACLs. The skills only turn a context into
+  text and read no records.
+- **Tools**: `FinanceAgentTools` role checks accept `ai_agent`.
+- **Temporary elevated access**: none was used. The AI identity never held admin, security_admin or an approver role,
+  so there is nothing to remove.
+
+### Verification (live)
+
+| Test | Result |
+|---|---|
+| AI identity roles | Grants: `snc_internal`, `x_695068_bcfa.ai_agent`. Of admin, security_admin and every BCFA role, it effectively holds only `ai_agent`. **PASS** |
+| ACL matrix as `bcfa.ai.reviewer` (14 tables) | Reads invoices, payments, allocations, deductions, exceptions, vendors and open items. Creates or writes none of them, except the exception record, where only `ai_recommendation` is writable (status, decision, resolution notes, reason code and deduction type are not). No read on approvals, audit, AI log, integration or intake. **All PASS** |
+| AP processor (no regression) | Exception status, resolution notes and AI note writable; invoice read / write / create. `decision` is read-only for everyone by design (set only by the decision service) |
+| Agent / workflow execute ACLs and masks | All 7 agents and 2 workflows: `ai_agent` present, no admin or approver. All 9 skill ACLs accept `ai_agent`. **PASS** |
+| End to end with the reduced identity | *BCFA AP Invoice Review*: explanation and next-action skills succeeded as the AI user; the note was saved (53.7 s, confidence 0.9). *BCFA Cash Application Review*: match and residual skills succeeded; the note was saved on AREX0001016 by `bcfa.ai.reviewer` (44.7 s, confidence 0.6). The exception's status and decision were untouched |
