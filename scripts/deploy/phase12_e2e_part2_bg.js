@@ -41,7 +41,7 @@ function show(label, result) {
 }
 
 try {
-    var svc = new ApExceptionDecisionService();
+    var decisionService = new ApExceptionDecisionService();
     ['B', 'C', 'D'].forEach(function(key) {
         var e = openException(INTAKE[key]);
         if (!e) { out.push(key + ': no exception found (run part 1 first)'); return; }
@@ -52,24 +52,24 @@ try {
 
     var b = openException(INTAKE.B);
     if (b) {
-        show('B no reason', svc.decide(b.getUniqueValue(), 'hold', ''));
-        show('B hold', svc.decide(b.getUniqueValue(), 'hold', 'Phase 12 E2E: checking with the warehouse whether 5 extra units were received.'));
-        show('B approve override', svc.decide(b.getUniqueValue(), 'approve_override',
+        show('B no reason', decisionService.decide(b.getUniqueValue(), 'hold', ''));
+        show('B hold', decisionService.decide(b.getUniqueValue(), 'hold', 'Phase 12 E2E: checking with the warehouse whether 5 extra units were received.'));
+        show('B approve override', decisionService.decide(b.getUniqueValue(), 'approve_override',
             'Phase 12 E2E: warehouse confirmed 15 EA received; GRN RCPT0004 to be amended. Variance accepted.'));
         out.push('B final: ' + state(b));
     }
 
     var c = openException(INTAKE.C);
     if (c) {
-        show('C request correction', svc.decide(c.getUniqueValue(), 'request_correction',
+        show('C request correction', decisionService.decide(c.getUniqueValue(), 'request_correction',
             'Phase 12 E2E: vendor to reissue INV-AP-006 with GST at 18% (INR 360.00), not INR 50.00.'));
         out.push('C final: ' + state(c));
     }
 
     var d = openException(INTAKE.D);
     if (d) {
-        show('D approve override', svc.decide(d.getUniqueValue(), 'approve_override', 'Phase 12 E2E: attempting to override a duplicate.'));
-        show('D reject', svc.decide(d.getUniqueValue(), 'reject', 'Phase 12 E2E: resubmission of INV-AP-001, already posted. Do not pay twice.'));
+        show('D approve override', decisionService.decide(d.getUniqueValue(), 'approve_override', 'Phase 12 E2E: attempting to override a duplicate.'));
+        show('D reject', decisionService.decide(d.getUniqueValue(), 'reject', 'Phase 12 E2E: resubmission of INV-AP-001, already posted. Do not pay twice.'));
         out.push('D final: ' + state(d));
     }
 } catch (err) {

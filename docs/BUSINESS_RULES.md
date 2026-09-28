@@ -8,17 +8,25 @@ here is deterministic — no AI/simulated-AI input ever reaches these checks (se
 
 ## AP rules
 
+Since Phase 12 the AP thresholds are `x_695068_bcfa.*` system properties read through
+`FinancePolicy` (initial values are **POC ASSUMPTIONS**, not Birla Carbon production rules), so a
+business admin can change them without a code deploy. Phase 15 moves them into Decision Tables.
+
+
 | Rule | Current implementation | Reason code on failure |
 |---|---|---|
-| Low-confidence extraction | `ApDomainService.validateInvoice`: confidence (from latest `AP Extraction`) `< 0.85` | `low_confidence` |
+| Low-confidence extraction | `ApDomainService.validateInvoice`: confidence (from latest `AP Extraction`) below `x_695068_bcfa.ap.extraction.confidence_threshold` (0.85) | `low_confidence` |
 | Mandatory fields | `invoice_number`, `vendor`, `gross_amount` must be present | `missing_field` |
 | Vendor validation | Vendor must resolve to an active `x_695068_bcfa_vendor` record | `vendor_invalid` |
 | PO validation | If `purchase_order` is set, it must resolve | `po_mismatch` |
-| Duplicate detection | `MatchingEngine.detectDuplicateInvoice`: `duplicate_key = vendor + invoice_number + gross_amount`; another non-`FAILED` invoice with the same key is a duplicate | `duplicate` |
-| Quantity tolerance | `MatchingEngine.threeWayMatch`: `\|invoiceLine.qty - receipt.qty\| / receipt.qty ≤ 5%` (`DEFAULT_TOLERANCES.quantityPct`) | `quantity_tolerance` |
-| Price tolerance | `\|invoiceLine.unitPrice - poLine.unitPrice\| / poLine.unitPrice ≤ 2%` (`DEFAULT_TOLERANCES.pricePct`) | `price_tolerance` |
-| Tax validation | `\|invoice.tax_amount - (net_amount × expectedRateByVendorCountry)\| ≤ max(1.0, expectedTax × 2%)` | `tax_validation` |
+| Duplicate detection | `MatchingEngine.detectDuplicateInvoice`: `duplicate_key = vendor + invoice_number + gross_amount`; another non-`FAILED` invoice with the same key is a duplicate. Known gap (Phase 14): the same vendor and invoice number with a different amount is not flagged | `duplicate` |
+| Quantity tolerance | `MatchingEngine.threeWayMatch`: `\|invoiceLine.qty - receipt.qty\| / receipt.qty ≤ 2%` (`x_695068_bcfa.ap.tolerance.quantity_pct`) | `quantity_tolerance` |
+| Price tolerance | `\|invoiceLine.unitPrice - poLine.unitPrice\| / poLine.unitPrice ≤ 2%` (`x_695068_bcfa.ap.tolerance.price_pct`) | `price_tolerance` |
+| Tax validation | `\|invoice.tax_amount - (net_amount × expectedRateByVendorCountry)\| ≤ max(tax_absolute 1.0, expectedTax × tax_relative_pct 2%)` (`x_695068_bcfa.ap.tolerance.tax_*`) | `tax_validation` |
+| Approval rule | `ApDomainService.routeForApproval`: human approval unless gross ≤ `x_695068_bcfa.ap.approval.auto_approve_limit` (0, so always required); requester ≠ approver | — |
 | Approval / posting eligibility | AP Invoice must have `approval_state = 'approved'` before `ApDomainService.postInvoice` will call SAP | — (hard gate, not an exception) |
+| Exception severity / SLA | `FinancePolicy`: base severity by reason; quantity, price or tax variance ≥ `ap.exception.high_value_variance` (1000) → high. SLA hours by severity from `ap.exception.sla_hours` (critical 4, high 8, medium 24, low 72) | — |
+| Override policy | `ApExceptionDecisionService`: only `ap.override.allowed_reasons` (quantity, price, tax) can be approved by override, only by `finance_approver`, never by the exception owner | — |
 
 **Country tax rate table** (`MatchingEngine.TAX_RATE_BY_COUNTRY`, illustrative POC values):
 India 18%, Hungary 27%, United States 0%, Germany 19%. This is the first thing Stage-13-successor
@@ -57,6 +65,11 @@ in `docs/TEST_PLAN.md`, and functionally equivalent to a Decision Table for this
 one real difference: changing a tolerance today requires a code deploy, not a business-user edit —
 recorded here as the honest gap, and the natural manual next step is building the equivalent grid
 in Decision Table Builder against this same documented rule set.
+
+**Update (Phase 12):** the AP tolerances, confidence threshold, approval limit, severity, SLA and
+override rules are now system properties read through `FinancePolicy`, so changing them no longer
+needs a code deploy. The country tax-rate table is still a constant in `MatchingEngine`. Decision
+Tables remain the Phase 15 target.
 
 ## Rule execution logging
 
