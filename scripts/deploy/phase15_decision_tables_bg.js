@@ -98,8 +98,15 @@ function isSuccess(response) {
     return response && String(response.status).toLowerCase() === 'success';
 }
 function errorsOf(response) {
-    try { return JSON.stringify(response && (response.errors || response.status || response)); } catch (e) { return String(response); }
+    if (!response) return 'no response';
+    var parts = [];
+    ['status', 'errors', 'errorCode', 'errorMessage', 'message', 'results'].forEach(function(key) {
+        if (response[key] === undefined) return;
+        try { parts.push(key + '=' + JSON.stringify(response[key])); } catch (e) { parts.push(key + '=' + response[key]); }
+    });
+    return parts.join(' ');
 }
+var builder = new sn_dt.DecisionTableBuilderAPI();
 function existingTable(name) {
     var table = new GlideRecord('sys_decision');
     table.addQuery('name', name);
@@ -117,7 +124,8 @@ function questionCount(tableId) {
 
 function build(spec) {
     var tableId = existingTable(spec.name);
-    if (tableId && REBUILD) {
+    // A table without rows is an incomplete earlier build: rebuild it.
+    if (tableId && (REBUILD || questionCount(tableId) === 0)) {
         out.push(spec.name + ': deleted for rebuild (' + errorsOf(api.deleteDecisionTable(tableId)) + ')');
         tableId = null;
     }
@@ -130,20 +138,19 @@ function build(spec) {
     if (!isSuccess(created)) throw spec.name + ': createDecisionTable failed ' + errorsOf(created);
     tableId = created.record.getValue('sys_id');
 
-    var inputPayload = [];
-    for (var i = 0; i < spec.inputs.length; i++) {
-        inputPayload.push({ label: spec.inputs[i].label, name: spec.inputs[i].name, type: spec.inputs[i].type });
-    }
-    var inputs = api.createInputs(tableId, inputPayload);
-    if (!isSuccess(inputs)) throw spec.name + ': createInputs failed ' + errorsOf(inputs);
+    // Inputs: record-shaped, as Decision Builder's own DecisionInputRepository
+    // sends them (internal_type, label, element required).
     var element = {};
     var inputIds = {};
     var elementReport = [];
     for (var j = 0; j < spec.inputs.length; j++) {
-        var inputRecord = inputs.results[j].record;
-        element[spec.inputs[j].name] = inputRecord.getValue('element');
-        inputIds[spec.inputs[j].name] = inputRecord.getValue('sys_id');
-        elementReport.push(spec.inputs[j].name + '->' + inputRecord.getValue('element'));
+        var inputSpec = spec.inputs[j];
+        var input = builder.createInput({ model: tableId, label: inputSpec.label, element: inputSpec.name, internal_type: inputSpec.type,
+            max_length: inputSpec.type === 'string' ? 100 : 40, mandatory: false, active: true, order: (j + 1) * 100 });
+        if (!isSuccess(input)) throw spec.name + ': createInput ' + inputSpec.name + ' failed ' + errorsOf(input);
+        element[inputSpec.name] = input.record.getValue('element');
+        inputIds[inputSpec.name] = input.record.getValue('sys_id');
+        elementReport.push(inputSpec.name + '->' + input.record.getValue('element'));
     }
 
     // Grid columns in Decision Builder (display only; rows carry the logic).
@@ -153,14 +160,17 @@ function build(spec) {
     }
     var conditions = api.createConditions(tableId, conditionPayload);
 
-    var outputPayload = [];
+    // Outputs (result elements), same record shape (AnswerElementRepository).
+    var outputReport = [];
     for (var o = 0; o < spec.outputs.length; o++) {
-        var output = { label: spec.outputs[o].label, name: spec.outputs[o].name, type: spec.outputs[o].type };
-        if (spec.outputs[o].reference) output.reference = spec.outputs[o].reference;
-        outputPayload.push(output);
+        var outputSpec = spec.outputs[o];
+        var outputFields = { model: tableId, label: outputSpec.label, element: outputSpec.name, internal_type: outputSpec.type,
+            max_length: 40, active: true, order: (o + 1) * 100 };
+        if (outputSpec.reference) outputFields.reference = outputSpec.reference;
+        var created = builder.createAnswerElement(outputFields);
+        if (!isSuccess(created)) throw spec.name + ': createAnswerElement ' + outputSpec.name + ' failed ' + errorsOf(created);
+        outputReport.push(outputSpec.name + '->' + created.record.getValue('element'));
     }
-    var outputs = api.createAnswerElements(tableId, outputPayload);
-    if (!isSuccess(outputs)) throw spec.name + ': createAnswerElements failed ' + errorsOf(outputs);
 
     var questions = [];
     for (var r = 0; r < spec.rows.length; r++) {
@@ -171,19 +181,17 @@ function build(spec) {
         var condition = row.condition.replace(/\{([a-z_]+)\}/g, function(match, name) { return element[name] || name; }) + '^EQ';
         questions.push({ label: spec.name + ' - ' + row.label, condition: condition, answer: String(answerId), order: (r + 1) * 100 });
     }
-    var rows = api.createQuestions(tableId, questions);
-    var method = 'createQuestions';
-    if (!isSuccess(rows) || questionCount(tableId) < questions.length) {
-        // Fallback: the builder API, one row at a time.
-        method = 'DecisionTableBuilderAPI.createQuestion (createQuestions: ' + errorsOf(rows) + ')';
-        var builder = new sn_dt.DecisionTableBuilderAPI();
-        for (var q = 0; q < questions.length; q++) {
-            builder.createQuestion({ decision_table: tableId, label: questions[q].label, condition: questions[q].condition,
-                answer: questions[q].answer, order: questions[q].order, default_answer: false, active: true });
-        }
+    // Rows (decisions), record-shaped, one at a time.
+    var rowErrors = [];
+    for (var q = 0; q < questions.length; q++) {
+        var createdRow = builder.createQuestion({ decision_table: tableId, label: questions[q].label, condition: questions[q].condition,
+            answer: questions[q].answer, order: questions[q].order, default_answer: false, active: true });
+        if (!isSuccess(createdRow)) rowErrors.push(questions[q].label + ': ' + errorsOf(createdRow));
     }
     out.push(spec.name + ': created ' + tableId + ' | inputs ' + elementReport.join(', ') + ' | columns ' + (isSuccess(conditions) ? 'ok' : errorsOf(conditions)) +
-        ' | outputs ok | rows ' + questionCount(tableId) + '/' + questions.length + ' via ' + method);
+        ' | outputs ' + outputReport.join(', ') + ' | rows ' + questionCount(tableId) + '/' + questions.length +
+        (rowErrors.length ? ' | ROW ERRORS ' + rowErrors.join('; ') : '') + ' | first condition: ' + questions[0].condition);
+    if (questionCount(tableId) < questions.length) throw spec.name + ': not all rows were created';
     return tableId;
 }
 
