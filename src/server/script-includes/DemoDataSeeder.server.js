@@ -845,11 +845,15 @@ DemoDataSeeder.prototype = {
             deleted[table.replace('x_695068_bcfa_', '')] = n;
         };
 
-        // Document intakes: attachments first.
-        var intake = new GlideRecord('x_695068_bcfa_finance_intake');
-        intake.query();
+        // Document intakes: attachments first (the scoped GlideSysAttachment
+        // API deletes one attachment at a time).
         var attachments = new GlideSysAttachment();
-        while (intake.next()) attachments.deleteAll(intake);
+        var att = new GlideRecord('sys_attachment');
+        att.addQuery('table_name', 'x_695068_bcfa_finance_intake');
+        att.query();
+        var attachmentCount = 0;
+        while (att.next()) { attachments.deleteAttachment(att.getUniqueValue()); attachmentCount++; }
+        deleted.intake_attachment = attachmentCount;
 
         // Children before parents.
         ['x_695068_bcfa_ap_match', 'x_695068_bcfa_ap_extraction', 'x_695068_bcfa_ap_invoice_line', 'x_695068_bcfa_ap_approval',
