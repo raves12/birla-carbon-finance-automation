@@ -18,11 +18,13 @@ business admin can change them without a code deploy. Phase 15 moves them into D
 | Low-confidence extraction | `ApDomainService.validateInvoice`: confidence (from latest `AP Extraction`) below `x_695068_bcfa.ap.extraction.confidence_threshold` (0.85) | `low_confidence` |
 | Mandatory fields | `invoice_number`, `vendor`, `gross_amount` must be present | `missing_field` |
 | Vendor validation | Vendor must resolve to an active `x_695068_bcfa_vendor` record | `vendor_invalid` |
-| PO validation | If `purchase_order` is set, it must resolve | `po_mismatch` |
-| Duplicate detection | `MatchingEngine.detectDuplicateInvoice`: `duplicate_key = vendor + invoice_number + gross_amount`; another non-`FAILED` invoice with the same key is a duplicate. Known gap (Phase 14): the same vendor and invoice number with a different amount is not flagged | `duplicate` |
+| PO validation | `MatchingEngine.validatePurchaseOrder` (Phase 14): if set, the PO must resolve, belong to the invoice vendor and not be closed | `po_mismatch` |
+| PO line / GRN linkage | `threeWayMatch` (Phase 14): a PO invoice needs lines linked to lines of its PO, each with a receipt for the same PO line | `po_mismatch` / `grn_missing` |
+| Duplicate detection | `MatchingEngine.detectDuplicateInvoice` (Phase 14): same vendor + normalized invoice number (case/spaces/punctuation ignored), any amount; another invoice not `FAILED`/`REJECTED` is a duplicate; evidence says exact or different amount | `duplicate` |
 | Quantity tolerance | `MatchingEngine.threeWayMatch`: `\|invoiceLine.qty - receipt.qty\| / receipt.qty ≤ 2%` (`x_695068_bcfa.ap.tolerance.quantity_pct`) | `quantity_tolerance` |
 | Price tolerance | `\|invoiceLine.unitPrice - poLine.unitPrice\| / poLine.unitPrice ≤ 2%` (`x_695068_bcfa.ap.tolerance.price_pct`) | `price_tolerance` |
 | Tax validation | `\|invoice.tax_amount - (net_amount × expectedRateByVendorCountry)\| ≤ max(tax_absolute 1.0, expectedTax × tax_relative_pct 2%)` (`x_695068_bcfa.ap.tolerance.tax_*`) | `tax_validation` |
+| Header vs lines | `threeWayMatch` (Phase 14): sum of line amounts = net within `ap.tolerance.tax_absolute` | `line_total_mismatch` |
 | Approval rule | `ApDomainService.routeForApproval`: human approval unless gross ≤ `x_695068_bcfa.ap.approval.auto_approve_limit` (0, so always required); requester ≠ approver | — |
 | Approval / posting eligibility | AP Invoice must have `approval_state = 'approved'` before `ApDomainService.postInvoice` will call SAP | — (hard gate, not an exception) |
 | Exception severity / SLA | `FinancePolicy`: base severity by reason; quantity, price or tax variance ≥ `ap.exception.high_value_variance` (1000) → high. SLA hours by severity from `ap.exception.sla_hours` (critical 4, high 8, medium 24, low 72) | — |
@@ -38,9 +40,11 @@ work should move into a real Decision Table so it becomes configurable without a
 |---|---|---|
 | Remittance match (Phase 13, first) | `MatchingEngine.resolveRemittanceReferences`: every invoice reference on the remittance must resolve to exactly one not-cleared open item of one customer, in the payment currency; otherwise it falls back below | `currency_mismatch` if a referenced item is in another currency |
 | Customer identification (Phase 13) | Remitter name via alias/exact name only at or above `x_695068_bcfa.ar.match.auto_confidence` (0.95); else the single owner of every referenced invoice | `customer_ambiguous` |
-| Exact match | `MatchingEngine.exactMatch`: exactly one open item for the resolved customer with `\|open_amount - payment.amount\| ≤ 0.01` | — (success path) |
-| Multi-invoice allocation | `MatchingEngine.multiInvoiceSuggestion`: greedy accumulation of open items ordered by due date until the running total reaches the payment amount | — (success path if residual ≈ 0) |
-| Customer alias resolution | `MatchingEngine.resolveCustomerByAlias`: exact match against `x_695068_bcfa_customer_alias.alias_name`, falling back to an exact customer-name match | `customer_ambiguous` if neither resolves |
+| Exact match | `MatchingEngine.exactMatch`: exactly one open item for the resolved customer, in the payment currency (Phase 14), with `\|open_amount - payment.amount\| ≤ 0.01`; several → `ambiguous_match` | — (success path) |
+| Exact combination (Phase 14) | `MatchingEngine.findExactCombinations`: exact subset of the customer's same-currency open items (≤ 20 items, in cents); one → match; several → never chosen | `ambiguous_match` |
+| Residual suggestion (Phase 14) | `MatchingEngine.classifyResidual`: open credit note of exactly the residual → credit_note_netting; else ≤ `ar.bank_charge.max_amount` (1,000) → bank_charge; pre-set on the exception for the reviewer | — (suggestion) |
+| Multi-invoice allocation | `MatchingEngine.multiInvoiceSuggestion`: greedy accumulation (same currency) by due date, used only when no exact combination exists | — (short/over pay if residual ≠ 0) |
+| Customer alias resolution | `MatchingEngine.resolveCustomerByAlias` (Phase 14): normalized match against active aliases, then active customer names; a name pointing to two customers is ambiguous | `customer_ambiguous` if unresolved or ambiguous |
 | Unmatched payment | No open item combination found | `unmatched` |
 | Allocation balance | `ArDomainService.allocatePayment`: `SUM(allocated_amount) ` must equal `payment.amount` within `0.01` (Section 8's balance rule) | `short_pay` (allocated < payment) or `over_pay` (allocated > payment) |
 | Approval / clearing eligibility | Payment must have `state = 'APPROVED'` before `ArDomainService.clearPayment` will call SAP | — (hard gate, not an exception) |

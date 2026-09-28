@@ -14,7 +14,7 @@
 //   approval by the demo approver -> clearing -> credit note applied;
 //   AMB: Request Clarification -> the customer's remittance (A+B) arrives
 //   -> Resolve & Retry -> remittance match -> approval -> clearing; C stays open.
-var MODE = 'create'; // change to 'close' for the second run
+var MODE = 'close'; // change to 'close' for the second run
 var DEMO_APPROVER = 'd33f6290d7533660937e25a599602b2c';
 var out = [];
 
