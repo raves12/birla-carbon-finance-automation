@@ -820,7 +820,8 @@ ArDomainService.prototype = {
         if (result.error) return result;
 
         if (decision === 'approved') {
-            this._setState(paymentSysId, 'APPROVED', null, 'Approved by ' + approver);
+            var approverUser = new GlideRecord('sys_user');
+            this._setState(paymentSysId, 'APPROVED', null, 'Approved by ' + (approver && approverUser.get(approver) ? approverUser.getDisplayValue() : 'configured rule'));
         } else {
             var exceptionSysId = this.exceptionEngine.createArException(paymentSysId, 'other', 'Approval rejected: ' + (notes || ''));
             this._setState(paymentSysId, 'EXCEPTION', null, 'Approval rejected');

@@ -242,6 +242,7 @@ export const x_695068_bcfa_audit_event = Table({
         before_value: JsonColumn({ label: 'Before Value' }),
         after_value: JsonColumn({ label: 'After Value' }),
         occurred_at: DateTimeColumn({ label: 'Occurred At' }),
+        event_sequence: StringColumn({ label: 'Event Sequence', maxLength: 20, hint: 'Epoch milliseconds plus a counter: the exact order of events within a second. Sort by this to read the evidence chain.' }),
     },
 })
 

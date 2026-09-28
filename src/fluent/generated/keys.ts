@@ -3684,6 +3684,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '1bb2e52703c64292b1d097af49cdfdc7'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'event_sequence'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '1be8ee42e7474acbacc71e2f5122d4fe'
                         key: {
@@ -8971,6 +8979,15 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ap_invoice_line'
                             element: 'ap_invoice'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '7384131c818840b1bf01e4b827152e3e'
+                        key: {
+                            name: 'x_695068_bcfa_audit_event'
+                            element: 'event_sequence'
+                            language: 'en'
                         }
                     },
                     {

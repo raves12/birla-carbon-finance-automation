@@ -85,6 +85,13 @@ AuditEngine.CORRECTABLE_FIELDS = {
     x_695068_bcfa_finance_intake: ['document_type']
 };
 
+// Sortable, unique-enough event order: epoch milliseconds (13 digits) plus
+// a 3-digit counter, because occurred_at only resolves to the second.
+AuditEngine.nextSequence = function() {
+    AuditEngine._counter = ((AuditEngine._counter || 0) + 1) % 1000;
+    return String(new Date().getTime()) + ('00' + AuditEngine._counter).slice(-3);
+};
+
 AuditEngine.eventForState = function(state) {
     return AuditEngine.EVENT_BY_STATE[state] || 'state_transition';
 };
@@ -123,6 +130,7 @@ AuditEngine.prototype = {
                 gr.setValue('after_value', JSON.stringify(params.afterValue));
             }
             gr.setValue('occurred_at', new GlideDateTime().getValue());
+            gr.setValue('event_sequence', AuditEngine.nextSequence());
             return gr.insert();
         } catch (e) {
             gs.error('BCFA AuditEngine: audit event not written: ' + e);
