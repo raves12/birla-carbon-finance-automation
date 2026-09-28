@@ -63,13 +63,13 @@ export const cashApplicationReviewWorkflow = AiAgenticWorkflow({
             name: 'V1',
             number: 1,
             state: 'published',
-            instructions: `Goal: give the AR processor an advisory review of one cash application (AR) exception. The task contains the AR exception sys_id, its reason code and the payment's bank reference.
+            instructions: `Goal: give the AR processor an advisory review of one cash application (AR) exception. The task contains the AR exception sys_id, its reason code and the payment's sys_id (trigger runs) or bank reference (manual runs). Pass whichever you have to the agents; they accept either.
 
 Route by the reason code in the task:
-- customer_ambiguous, or unmatched where the payment has no customer: ask the BCFA Customer Resolution Agent to rank likely customers for the payment's bank reference, then ask the BCFA Cash Match Recommendation Agent to recommend an allocation for the same bank reference (it should note that the customer still needs human confirmation).
-- unmatched with a customer: ask the BCFA Cash Match Recommendation Agent to recommend an allocation for the payment's bank reference.
-- short_pay, over_pay or currency_mismatch: ask the BCFA Cash Match Recommendation Agent to recommend an allocation, then ask the BCFA Deduction Analysis Agent to analyze the residual for the same bank reference.
-- duplicate or other: ask the BCFA Cash Match Recommendation Agent to review the payment for the same bank reference, and state that a human must investigate.
+- customer_ambiguous, or unmatched where the payment has no customer: ask the BCFA Customer Resolution Agent to rank likely customers for the payment, then ask the BCFA Cash Match Recommendation Agent to recommend an allocation for the same payment (it should note that the customer still needs human confirmation).
+- unmatched with a customer: ask the BCFA Cash Match Recommendation Agent to recommend an allocation for the payment.
+- short_pay, over_pay or currency_mismatch: ask the BCFA Cash Match Recommendation Agent to recommend an allocation, then ask the BCFA Deduction Analysis Agent to analyze the residual for the same payment.
+- duplicate or other: ask the BCFA Cash Match Recommendation Agent to review the payment, and state that a human must investigate.
 Do not ask any agent to save anything during these steps.
 
 Then:
@@ -101,7 +101,7 @@ Hard limits:
             triggerFlowDefinitionType: 'record_create',
             triggerCondition: 'status=open',
             objectiveTemplate:
-                'Review AR exception ${sys_id} (reason: ${reason_code}) on the payment with bank reference ${payment} and record an advisory recommendation on it.',
+                'Review AR exception ${sys_id} (reason: ${reason_code}) on payment ${payment} and record an advisory recommendation on it.',
             runAsUser: BCFA_AI_REVIEWER,
             showNotifications: false,
         },

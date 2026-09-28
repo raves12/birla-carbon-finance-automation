@@ -76,9 +76,14 @@ FinanceAgentTools.prototype = {
         if (denied) return denied;
         if (!bankReference) return this._error('invalid_argument', 'A bank reference is required.');
 
+        // Agentic workflow triggers pass the payment reference field, which
+        // resolves to the payment's sys_id rather than its bank reference, so
+        // accept either.
+        var reference = String(bankReference).trim();
         var payments = [];
         var payment = new GlideRecordSecure('x_695068_bcfa_payment');
-        payment.addQuery('bank_reference', String(bankReference).trim());
+        var byReference = payment.addQuery('bank_reference', reference);
+        if (/^[0-9a-f]{32}$/.test(reference)) byReference.addOrCondition('sys_id', reference);
         payment.orderByDesc('sys_created_on');
         payment.setLimit(FinanceAgentTools.MAX_LIST);
         payment.query();
