@@ -278,6 +278,12 @@ FinanceAgentTools.prototype = {
         if (!exception.get(exceptionSysId)) return this._notFound(domain.toUpperCase() + ' exception');
         if (!exception.canWrite()) return this._error('forbidden', 'You are not allowed to update this exception.');
 
+        // Phase 21: the note is AI output; the parent record's state decides
+        // which completed-action statements are true.
+        var parentContext = domain === 'ap' ? this._buildApInvoiceContext(exception.getValue('ap_invoice')) : this._buildPaymentContext(exception.getValue('payment'));
+        var cleanedNote = new FinanceAiGuard().sanitizeOutput(advice, parentContext);
+        advice = cleanedNote.text.substring(0, FinanceAgentTools.MAX_ADVICE_CHARS);
+
         var before = exception.getValue('ai_recommendation');
         exception.setValue('ai_recommendation', advice);
         if (!exception.update()) return this._error('write_failed', 'The advisory note could not be saved.');
@@ -306,7 +312,9 @@ FinanceAgentTools.prototype = {
             skill: aiSession ? '' : (domain === 'ap' ? 'ap_match_exception_explanation + ap_recommended_next_action' : 'ar_match_explanation + ar_recommended_next_action'),
             status: 'success',
             result: advice,
-            confidence: split.confidence
+            confidence: split.confidence,
+            guardrailAction: cleanedNote.actions.length ? 'sanitized' : 'none',
+            guardrailReason: cleanedNote.actions.join('; ')
         });
 
         this.auditEngine.logEvent({
@@ -349,10 +357,44 @@ FinanceAgentTools.prototype = {
         var context = contextBuilder.call(this, sysId);
         if (!context) return this._notFound(label);
 
-        var result = this.skillClient.invoke(skillKey, context);
         var aiSession = this._isAiSession();
         var process = AuditEngine.PROCESS_BY_TABLE[sourceTable];
         var capability = AiInteractionLog.CAPABILITY_BY_SKILL[skillKey];
+        var guard = new FinanceAiGuard();
+
+        // Phase 21: text that tries to instruct the model stops the call.
+        var screen = guard.screenInput(context);
+        if (!screen.ok) {
+            new AiInteractionLog().log({
+                sourceTable: sourceTable, sourceRecord: sysId, provider: 'now_assist', operation: skillKey, skill: skillKey,
+                agent: aiSession ? (AiInteractionLog.AGENT_BY_SKILL[skillKey] || '') : '',
+                workflow: aiSession ? (AiInteractionLog.WORKFLOW[process] || '') : '',
+                context: context, status: 'refused', durationMs: 0, error: screen.reason,
+                guardrailAction: 'blocked', guardrailReason: screen.reason
+            });
+            this.auditEngine.logEvent({
+                sourceTable: sourceTable, sourceRecord: sysId, eventType: 'ai_invocation', actor: gs.getUserID(), actorType: 'now_assist_ai',
+                aiAgent: 'Now Assist skill: ' + skillKey, reason: screen.reason,
+                description: 'Now Assist skill ' + skillKey + ' NOT called: BCFA guardrail found possible prompt injection (' + screen.findings.join(', ') + ').',
+                afterValue: { skill: skillKey, blocked: true, findings: screen.findings }
+            });
+            return this._error('input_blocked', screen.reason);
+        }
+
+        var result = this.skillClient.invoke(skillKey, context);
+        var guardrailAction = 'none';
+        var guardrailReason = '';
+        if (result.ok) {
+            var cleaned = guard.sanitizeOutput(result.text, context);
+            if (cleaned.actions.length) {
+                result.text = cleaned.text;
+                guardrailAction = 'sanitized';
+                guardrailReason = cleaned.actions.join('; ');
+            }
+        } else if (result.guardianBlocked) {
+            guardrailAction = 'guardian_blocked';
+            guardrailReason = result.platformReason;
+        }
         new AiInteractionLog().log({
             sourceTable: sourceTable,
             sourceRecord: sysId,
@@ -366,8 +408,10 @@ FinanceAgentTools.prototype = {
             result: result.ok ? result.text : '',
             recommendation: result.ok && capability === 'next_action_recommendation' ? result.text : '',
             durationMs: result.latencyMs,
-            error: result.ok ? '' : result.message,
-            model: result.provider || 'Now LLM'
+            error: result.ok ? '' : (result.message + (result.platformReason ? ' (' + result.platformReason + ')' : '')),
+            model: result.provider || 'Now LLM',
+            guardrailAction: guardrailAction,
+            guardrailReason: guardrailReason
         });
         this.auditEngine.logEvent({
             sourceTable: sourceTable,
@@ -377,7 +421,8 @@ FinanceAgentTools.prototype = {
             actorType: 'now_assist_ai',
             aiAgent: 'Now Assist skill: ' + skillKey,
             reason: result.ok ? '' : String(result.message || result.error || ''),
-            description: 'Now Assist skill ' + skillKey + (result.ok ? ' returned advisory text' : ' failed: ' + result.error),
+            description: 'Now Assist skill ' + skillKey + (result.ok ? ' returned advisory text' + (guardrailAction === 'sanitized' ? ' (guardrail: ' + guardrailReason + ')' : '') :
+                ' failed: ' + result.error + (guardrailAction === 'guardian_blocked' ? ' (Now Assist Guardian)' : '')),
             afterValue: { skill: skillKey, ok: result.ok, latencyMs: result.latencyMs, provider: result.provider || '' }
         });
         if (!result.ok) return this._error(result.error, result.message);

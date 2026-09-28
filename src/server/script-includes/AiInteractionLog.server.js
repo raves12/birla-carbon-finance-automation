@@ -216,6 +216,8 @@ AiInteractionLog.prototype = {
         var confidence = this._confidence(p.confidence);
         if (confidence !== null) gr.setValue('confidence', confidence);
         if (p.error) gr.setValue('safe_error', String(p.error).substring(0, 4000));
+        if (p.guardrailAction) gr.setValue('guardrail_action', p.guardrailAction);
+        if (p.guardrailReason) gr.setValue('guardrail_reason', String(p.guardrailReason).substring(0, 1000));
     },
 
     // Numeric 0..1, or the High / Medium / Low label of an advisory note.

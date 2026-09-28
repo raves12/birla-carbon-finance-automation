@@ -109,6 +109,13 @@ export const x_695068_bcfa_ai_interaction = Table({
         human_decision: StringColumn({ label: 'Human Decision', maxLength: 100 }),
         human_decided_by: ReferenceColumn({ label: 'Human Decided By', referenceTable: 'sys_user' }),
         human_decided_at: DateTimeColumn({ label: 'Human Decided At' }),
+        // Phase 21: what the guardrails did with this execution.
+        guardrail_action: ChoiceColumn({
+            label: 'Guardrail Action',
+            default: 'none',
+            choices: { none: 'None', sanitized: 'Output sanitized', blocked: 'Blocked (not sent)', guardian_blocked: 'Blocked by Now Assist Guardian' },
+        }),
+        guardrail_reason: StringColumn({ label: 'Guardrail Reason', maxLength: 1000 }),
         claude_model: StringColumn({ label: 'Model', maxLength: 100 }),
         prompt_version: StringColumn({ label: 'Prompt Version', maxLength: 20 }),
         status: ChoiceColumn({

@@ -61,7 +61,12 @@ NowAssistSkillClient.prototype = {
             if (!capability || capability.status !== 'success') {
                 var reason = (result && result.message) || (capability && capability.status) || 'no response';
                 gs.warn('NowAssistSkillClient: skill ' + skillKey + ' did not succeed: ' + reason);
-                return this._fail(skillKey, 'skill_error', 'The Now Assist skill did not return a result.', latencyMs);
+                var failed = this._fail(skillKey, 'skill_error', 'The Now Assist skill did not return a result.', latencyMs);
+                // The platform's own reason (for example a Now Assist Guardian
+                // block): a status or message, never payload content.
+                failed.platformReason = String((capability && (capability.status + (capability.message ? ': ' + capability.message : ''))) || reason).substring(0, 500);
+                failed.guardianBlocked = /guard|trust|offens|inject|block/i.test(failed.platformReason + ' ' + ((result && result.message) || ''));
+                return failed;
             }
 
             var text = this._extractText(capability.response);

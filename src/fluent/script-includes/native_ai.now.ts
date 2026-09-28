@@ -31,3 +31,13 @@ export const aiInteractionLog = ScriptInclude({
     description: 'Writes the AI Interaction Log: one row per AI execution (Now Assist skills and agentic workflows, simulated extraction, legacy Claude) with capability, skill, agent, workflow, hashed input context, result, confidence, status, duration and the human outcome. Never stores prompts.',
     script: Now.include('../../server/script-includes/AiInteractionLog.server.js'),
 })
+
+// Phase 21: BCFA's own guardrails around every Now Assist skill call.
+export const financeAiGuard = ScriptInclude({
+    $id: Now.ID['si-finance-ai-guard'],
+    name: 'FinanceAiGuard',
+    active: true,
+    apiName: 'x_695068_bcfa.FinanceAiGuard',
+    description: 'BCFA AI guardrails (defence in depth next to Now Assist Guardian): screens skill input for prompt injection and sanitizes skill output (plain text, no statement that a financial action is completed unless the record is in that state).',
+    script: Now.include('../../server/script-includes/FinanceAiGuard.server.js'),
+})

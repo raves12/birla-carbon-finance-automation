@@ -1619,6 +1619,10 @@ declare global {
                         table: 'sys_script_include'
                         id: 'bc901948251a4cb4909b3f48e6271118'
                     }
+                    'si-finance-ai-guard': {
+                        table: 'sys_script_include'
+                        id: '63e859cada644453bf85fdad95bef992'
+                    }
                     'si-finance-document-intake-service': {
                         table: 'sys_script_include'
                         id: '1c7b870db61a4e3388acbf09d0575157'
@@ -1730,6 +1734,10 @@ declare global {
                     'src_server_script-includes_FinanceAgentTools_server_js': {
                         table: 'sys_module'
                         id: 'c2a73b1eb8bd45dd8c96627178a02f11'
+                    }
+                    'src_server_script-includes_FinanceAiGuard_server_js': {
+                        table: 'sys_module'
+                        id: '3fe7694c3de0495da4f96be688bcb1f2'
                     }
                     'src_server_script-includes_FinanceDocumentIntakeService_server_js': {
                         table: 'sys_module'
@@ -5886,6 +5894,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '3e1a85a57ba245e786ef0248cdc4c051'
+                        key: {
+                            name: 'x_695068_bcfa_ai_interaction'
+                            element: 'guardrail_action'
+                            value: 'sanitized'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_agent_access_role_configuration'
                         id: '3e377aa16a5b477597d06b7ecccc8026'
                         key: {
@@ -6005,6 +6024,17 @@ declare global {
                             name: 'x_695068_bcfa_finance_intake'
                             element: 'number'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '402c522ca5ae402fa208a63cc7483dae'
+                        key: {
+                            name: 'x_695068_bcfa_ai_interaction'
+                            element: 'guardrail_action'
+                            value: 'guardian_blocked'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -7255,6 +7285,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '5593501ca3904884bfa236920a454ee6'
+                        key: {
+                            name: 'x_695068_bcfa_ai_interaction'
+                            element: 'guardrail_action'
+                            value: 'blocked'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '55c9dc597e9741c090adb0627832f812'
                         key: {
@@ -7689,6 +7730,15 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_finance_intake'
                             element: 'extraction_confidence'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '5bb2b826efc148d492966d463e153bf6'
+                        key: {
+                            name: 'x_695068_bcfa_ai_interaction'
+                            element: 'guardrail_reason'
                             language: 'en'
                         }
                     },
@@ -9837,6 +9887,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '7aef3be6f54546439101ec8531b2dc61'
+                        key: {
+                            name: 'x_695068_bcfa_ai_interaction'
+                            element: 'guardrail_action'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '7b0679e1ba3843a7a2f77c708b1646ef'
                         key: {
@@ -10277,6 +10335,14 @@ declare global {
                         id: '826bcc8931234071846c6530c4d8b447'
                         key: {
                             name: 'x_695068_bcfa_ap_invoice'
+                        }
+                    },
+                    {
+                        table: 'sys_choice_set'
+                        id: '82918d4411504c4990bab74f8173fa56'
+                        key: {
+                            name: 'x_695068_bcfa_ai_interaction'
+                            element: 'guardrail_action'
                         }
                     },
                     {
@@ -10949,6 +11015,14 @@ declare global {
                             name: 'x_695068_bcfa_ap_invoice'
                             element: 'gross_amount'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '8ee8067e71204865993d14b45b92443a'
+                        key: {
+                            name: 'x_695068_bcfa_ai_interaction'
+                            element: 'guardrail_reason'
                         }
                     },
                     {
@@ -14225,6 +14299,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: 'c524aac01957416fbe1a800b3bbc8d13'
+                        key: {
+                            name: 'x_695068_bcfa_ai_interaction'
+                            element: 'guardrail_action'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: 'c52cc18220c140eabc71dedcc54bbf41'
                         key: {
@@ -17104,6 +17187,17 @@ declare global {
                             name: 'x_695068_bcfa_remittance'
                             element: 'NULL'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'f0502f7bb90e4f4ab4e5313510536517'
+                        key: {
+                            name: 'x_695068_bcfa_ai_interaction'
+                            element: 'guardrail_action'
+                            value: 'none'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
