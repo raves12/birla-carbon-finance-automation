@@ -316,7 +316,8 @@ Acl({
     type: 'record',
     table: 'x_695068_bcfa_audit_event',
     operation: 'read',
-    roles: [bcfaAuditor, bcfaReadOnly, bcfaFinanceReviewer, bcfaAdmin],
+    // Phase 24: processors and approvals see the evidence of the records they review.
+    roles: [bcfaAuditor, bcfaReadOnly, bcfaFinanceReviewer, bcfaAdmin, bcfaApProcessor, bcfaArProcessor, bcfaFinanceApprover],
 })
 
 Acl({
@@ -324,7 +325,8 @@ Acl({
     type: 'record',
     table: 'x_695068_bcfa_integration_txn',
     operation: 'read',
-    roles: [bcfaAuditor, bcfaReadOnly, bcfaFinanceReviewer, bcfaAdmin],
+    // Phase 24: processors and approvals see the evidence of the records they review.
+    roles: [bcfaAuditor, bcfaReadOnly, bcfaFinanceReviewer, bcfaAdmin, bcfaApProcessor, bcfaArProcessor, bcfaFinanceApprover],
 })
 
 Acl({
@@ -340,7 +342,8 @@ Acl({
     type: 'record',
     table: 'x_695068_bcfa_ai_interaction',
     operation: 'read',
-    roles: [bcfaAuditor, bcfaReadOnly, bcfaFinanceReviewer, bcfaAdmin],
+    // Phase 24: processors and approvals see the evidence of the records they review.
+    roles: [bcfaAuditor, bcfaReadOnly, bcfaFinanceReviewer, bcfaAdmin, bcfaApProcessor, bcfaArProcessor, bcfaFinanceApprover],
     description: 'AI Interaction is an evidence/audit-trail table like Audit Event/Integration Transaction — same read-only role list, no business-role write ACL.',
 })
 

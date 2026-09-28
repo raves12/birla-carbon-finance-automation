@@ -300,6 +300,7 @@ FinanceAgentTools.prototype = {
             derived.setValue('ai_confidence', split.confidence);
             derived.update();
         }
+        new FinanceReviewSummary().refreshForException(table, exceptionSysId);
 
         var aiSession = this._isAiSession();
         new AiInteractionLog().complete({

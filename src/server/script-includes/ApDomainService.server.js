@@ -57,6 +57,7 @@ ApDomainService.prototype = {
             beforeValue: { state: previous },
             afterValue: after
         });
+        new FinanceReviewSummary().refreshInvoice(apInvoiceSysId);
         return true;
     },
 

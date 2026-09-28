@@ -9,6 +9,206 @@ export const bcfaDashboard = Dashboard({
     $id: Now.ID['bcfa-dashboard'],
     name: 'BCFA Overview',
     tabs: [
+        // Phase 24: Finance Operations landing page. Counts read the records
+        // live; rates and averages (and the multi-table low-confidence count)
+        // come from x_695068_bcfa_kpi, refreshed every 15 minutes by
+        // FinanceKpiService (docs/FINANCE_OPERATIONS_WORKSPACE.md).
+        {
+            $id: Now.ID['bcfa-dashboard-tab-finance-operations'],
+            name: 'Finance Operations',
+            widgets: [
+                {
+                    $id: Now.ID['bcfa-fo-ap-received'],
+                    component: 'single-score',
+                    componentProps: {
+                        headerTitle: 'AP · Invoices received',
+                        dataSources: [{ id: 'ds1', label: 'Invoices received', sourceType: 'table', tableOrViewName: 'x_695068_bcfa_ap_invoice', filterQuery: '' }],
+                        metrics: [{ dataSource: 'ds1', id: 'm1', aggregateFunction: 'COUNT', axisId: 'primary' }],
+                    },
+                    height: 10, width: 8, position: { x: 0, y: 0 },
+                },
+                {
+                    $id: Now.ID['bcfa-fo-ap-posted'],
+                    component: 'single-score',
+                    componentProps: {
+                        headerTitle: 'AP · Invoices posted',
+                        dataSources: [{ id: 'ds1', label: 'Invoices posted', sourceType: 'table', tableOrViewName: 'x_695068_bcfa_ap_invoice', filterQuery: 'posting_state=posted' }],
+                        metrics: [{ dataSource: 'ds1', id: 'm1', aggregateFunction: 'COUNT', axisId: 'primary' }],
+                    },
+                    height: 10, width: 8, position: { x: 8, y: 0 },
+                },
+                {
+                    $id: Now.ID['bcfa-fo-ap-stp'],
+                    component: 'single-score',
+                    componentProps: {
+                        headerTitle: 'AP · Straight-through rate (%)',
+                        dataSources: [{ id: 'ds1', label: 'Straight-through rate (%)', sourceType: 'table', tableOrViewName: 'x_695068_bcfa_kpi', filterQuery: 'code=ap_stp_rate' }],
+                        metrics: [{ dataSource: 'ds1', id: 'm1', aggregateFunction: 'AVG', axisId: 'primary', aggregateField: 'value' }],
+                    },
+                    height: 10, width: 8, position: { x: 16, y: 0 },
+                },
+                {
+                    $id: Now.ID['bcfa-fo-ap-open-exc'],
+                    component: 'single-score',
+                    componentProps: {
+                        headerTitle: 'AP · Open exceptions',
+                        dataSources: [{ id: 'ds1', label: 'Open exceptions', sourceType: 'table', tableOrViewName: 'x_695068_bcfa_ap_exception', filterQuery: 'statusINopen,in_review' }],
+                        metrics: [{ dataSource: 'ds1', id: 'm1', aggregateFunction: 'COUNT', axisId: 'primary' }],
+                    },
+                    height: 10, width: 8, position: { x: 24, y: 0 },
+                },
+                {
+                    $id: Now.ID['bcfa-fo-ap-pending'],
+                    component: 'single-score',
+                    componentProps: {
+                        headerTitle: 'AP · Pending approvals',
+                        dataSources: [{ id: 'ds1', label: 'Pending approvals', sourceType: 'table', tableOrViewName: 'x_695068_bcfa_ap_approval', filterQuery: 'decision=pending' }],
+                        metrics: [{ dataSource: 'ds1', id: 'm1', aggregateFunction: 'COUNT', axisId: 'primary' }],
+                    },
+                    height: 10, width: 8, position: { x: 32, y: 0 },
+                },
+                {
+                    $id: Now.ID['bcfa-fo-ap-age'],
+                    component: 'single-score',
+                    componentProps: {
+                        headerTitle: 'AP · Avg exception age (hours)',
+                        dataSources: [{ id: 'ds1', label: 'Avg exception age (hours)', sourceType: 'table', tableOrViewName: 'x_695068_bcfa_kpi', filterQuery: 'code=ap_avg_exception_age' }],
+                        metrics: [{ dataSource: 'ds1', id: 'm1', aggregateFunction: 'AVG', axisId: 'primary', aggregateField: 'value' }],
+                    },
+                    height: 10, width: 8, position: { x: 40, y: 0 },
+                },
+                {
+                    $id: Now.ID['bcfa-fo-ar-received'],
+                    component: 'single-score',
+                    componentProps: {
+                        headerTitle: 'AR · Payments received',
+                        dataSources: [{ id: 'ds1', label: 'Payments received', sourceType: 'table', tableOrViewName: 'x_695068_bcfa_payment', filterQuery: '' }],
+                        metrics: [{ dataSource: 'ds1', id: 'm1', aggregateFunction: 'COUNT', axisId: 'primary' }],
+                    },
+                    height: 10, width: 8, position: { x: 0, y: 11 },
+                },
+                {
+                    $id: Now.ID['bcfa-fo-ar-matched'],
+                    component: 'single-score',
+                    componentProps: {
+                        headerTitle: 'AR · Payments matched',
+                        dataSources: [{ id: 'ds1', label: 'Payments matched', sourceType: 'table', tableOrViewName: 'x_695068_bcfa_payment', filterQuery: 'stateINMATCHED,PARTIALLY_MATCHED,ALLOCATION,PENDING_APPROVAL,APPROVED,CLEARING,CLEARED,UNKNOWN_OUTCOME,RECONCILED,CLOSED' }],
+                        metrics: [{ dataSource: 'ds1', id: 'm1', aggregateFunction: 'COUNT', axisId: 'primary' }],
+                    },
+                    height: 10, width: 8, position: { x: 8, y: 11 },
+                },
+                {
+                    $id: Now.ID['bcfa-fo-ar-unapplied'],
+                    component: 'single-score',
+                    componentProps: {
+                        headerTitle: 'AR · Unapplied cash (INR)',
+                        dataSources: [{ id: 'ds1', label: 'Unapplied cash (INR)', sourceType: 'table', tableOrViewName: 'x_695068_bcfa_payment', filterQuery: 'stateNOT INCLEARED,RECONCILED,CLOSED^currency=INR' }],
+                        metrics: [{ dataSource: 'ds1', id: 'm1', aggregateFunction: 'SUM', axisId: 'primary', aggregateField: 'amount' }],
+                    },
+                    height: 10, width: 8, position: { x: 16, y: 11 },
+                },
+                {
+                    $id: Now.ID['bcfa-fo-ar-auto'],
+                    component: 'single-score',
+                    componentProps: {
+                        headerTitle: 'AR · Auto-match rate (%)',
+                        dataSources: [{ id: 'ds1', label: 'Auto-match rate (%)', sourceType: 'table', tableOrViewName: 'x_695068_bcfa_kpi', filterQuery: 'code=ar_auto_match_rate' }],
+                        metrics: [{ dataSource: 'ds1', id: 'm1', aggregateFunction: 'AVG', axisId: 'primary', aggregateField: 'value' }],
+                    },
+                    height: 10, width: 8, position: { x: 24, y: 11 },
+                },
+                {
+                    $id: Now.ID['bcfa-fo-ar-open-exc'],
+                    component: 'single-score',
+                    componentProps: {
+                        headerTitle: 'AR · Open exceptions',
+                        dataSources: [{ id: 'ds1', label: 'Open exceptions', sourceType: 'table', tableOrViewName: 'x_695068_bcfa_ar_exception', filterQuery: 'statusINopen,in_review' }],
+                        metrics: [{ dataSource: 'ds1', id: 'm1', aggregateFunction: 'COUNT', axisId: 'primary' }],
+                    },
+                    height: 10, width: 8, position: { x: 32, y: 11 },
+                },
+                {
+                    $id: Now.ID['bcfa-fo-ar-pending'],
+                    component: 'single-score',
+                    componentProps: {
+                        headerTitle: 'AR · Pending approvals',
+                        dataSources: [{ id: 'ds1', label: 'Pending approvals', sourceType: 'table', tableOrViewName: 'x_695068_bcfa_ar_approval', filterQuery: 'decision=pending' }],
+                        metrics: [{ dataSource: 'ds1', id: 'm1', aggregateFunction: 'COUNT', axisId: 'primary' }],
+                    },
+                    height: 10, width: 8, position: { x: 40, y: 11 },
+                },
+                {
+                    $id: Now.ID['bcfa-fo-ai-reviews'],
+                    component: 'single-score',
+                    componentProps: {
+                        headerTitle: 'AI · AI-assisted reviews',
+                        dataSources: [{ id: 'ds1', label: 'AI-assisted reviews', sourceType: 'table', tableOrViewName: 'x_695068_bcfa_ai_interaction', filterQuery: 'capability=exception_review^status=success' }],
+                        metrics: [{ dataSource: 'ds1', id: 'm1', aggregateFunction: 'COUNT', axisId: 'primary' }],
+                    },
+                    height: 10, width: 12, position: { x: 0, y: 22 },
+                },
+                {
+                    $id: Now.ID['bcfa-fo-ai-accept'],
+                    component: 'single-score',
+                    componentProps: {
+                        headerTitle: 'AI · Recommendation acceptance (%)',
+                        dataSources: [{ id: 'ds1', label: 'Recommendation acceptance (%)', sourceType: 'table', tableOrViewName: 'x_695068_bcfa_kpi', filterQuery: 'code=ai_acceptance_rate' }],
+                        metrics: [{ dataSource: 'ds1', id: 'm1', aggregateFunction: 'AVG', axisId: 'primary', aggregateField: 'value' }],
+                    },
+                    height: 10, width: 12, position: { x: 12, y: 22 },
+                },
+                {
+                    $id: Now.ID['bcfa-fo-ai-overrides'],
+                    component: 'single-score',
+                    componentProps: {
+                        headerTitle: 'AI · Overrides',
+                        dataSources: [{ id: 'ds1', label: 'Overrides', sourceType: 'table', tableOrViewName: 'x_695068_bcfa_ai_interaction', filterQuery: 'human_overridden=true' }],
+                        metrics: [{ dataSource: 'ds1', id: 'm1', aggregateFunction: 'COUNT', axisId: 'primary' }],
+                    },
+                    height: 10, width: 12, position: { x: 24, y: 22 },
+                },
+                {
+                    $id: Now.ID['bcfa-fo-ai-lowconf'],
+                    component: 'single-score',
+                    componentProps: {
+                        headerTitle: 'AI · Low-confidence documents',
+                        dataSources: [{ id: 'ds1', label: 'Low-confidence documents', sourceType: 'table', tableOrViewName: 'x_695068_bcfa_kpi', filterQuery: 'code=ai_low_confidence_documents' }],
+                        metrics: [{ dataSource: 'ds1', id: 'm1', aggregateFunction: 'AVG', axisId: 'primary', aggregateField: 'value' }],
+                    },
+                    height: 10, width: 12, position: { x: 36, y: 22 },
+                },
+                {
+                    $id: Now.ID['bcfa-fo-int-failures'],
+                    component: 'single-score',
+                    componentProps: {
+                        headerTitle: 'Integration · Failures',
+                        dataSources: [{ id: 'ds1', label: 'Failures', sourceType: 'table', tableOrViewName: 'x_695068_bcfa_integration_txn', filterQuery: 'statusINfailed,technical_error,validation_error' }],
+                        metrics: [{ dataSource: 'ds1', id: 'm1', aggregateFunction: 'COUNT', axisId: 'primary' }],
+                    },
+                    height: 10, width: 16, position: { x: 0, y: 33 },
+                },
+                {
+                    $id: Now.ID['bcfa-fo-int-unknown'],
+                    component: 'single-score',
+                    componentProps: {
+                        headerTitle: 'Integration · UNKNOWN_OUTCOME',
+                        dataSources: [{ id: 'ds1', label: 'UNKNOWN_OUTCOME', sourceType: 'table', tableOrViewName: 'x_695068_bcfa_integration_txn', filterQuery: 'unknown_outcome_flag=true' }],
+                        metrics: [{ dataSource: 'ds1', id: 'm1', aggregateFunction: 'COUNT', axisId: 'primary' }],
+                    },
+                    height: 10, width: 16, position: { x: 16, y: 33 },
+                },
+                {
+                    $id: Now.ID['bcfa-fo-int-pending-rec'],
+                    component: 'single-score',
+                    componentProps: {
+                        headerTitle: 'Integration · Pending reconciliation',
+                        dataSources: [{ id: 'ds1', label: 'Pending reconciliation', sourceType: 'table', tableOrViewName: 'x_695068_bcfa_integration_txn', filterQuery: 'reconciliation_state=pending' }],
+                        metrics: [{ dataSource: 'ds1', id: 'm1', aggregateFunction: 'COUNT', axisId: 'primary' }],
+                    },
+                    height: 10, width: 16, position: { x: 32, y: 33 },
+                },
+            ],
+        },
         {
             $id: Now.ID['bcfa-dashboard-tab-overview'],
             name: 'Overview',

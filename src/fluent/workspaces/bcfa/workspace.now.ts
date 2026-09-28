@@ -32,6 +32,15 @@ export const bcfaWorkspace = Workspace({
         'x_695068_bcfa_match_candidate',
         'x_695068_bcfa_ai_interaction',
         'x_695068_bcfa_audit_event',
+        // Phase 24: the AP and Cash Application workspace lists
+        'x_695068_bcfa_ap_approval',
+        'x_695068_bcfa_ar_approval',
+        'x_695068_bcfa_integration_txn',
+        'x_695068_bcfa_remittance',
+        'x_695068_bcfa_ar_open_item',
+        'x_695068_bcfa_payment_allocation',
+        'x_695068_bcfa_deduction',
+        'x_695068_bcfa_kpi',
     ],
     listConfig: bcfaListConfig,
 })

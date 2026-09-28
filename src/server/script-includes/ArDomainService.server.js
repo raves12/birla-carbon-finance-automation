@@ -68,6 +68,7 @@ ArDomainService.prototype = {
             beforeValue: { state: previous },
             afterValue: after
         });
+        new FinanceReviewSummary().refreshPayment(paymentSysId);
         return true;
     },
 
