@@ -206,6 +206,49 @@ CO", on the already-resolved BANK-AR-004), which limits how much the
 Customer Resolution agent can show. Add an ambiguous-remitter scenario with
 aliases in the Phase 27/28 demo data.
 
+## Phase 10: BCFA AP Invoice Review agentic workflow (2026-09-28)
+
+Source: `src/fluent/ai-agents/ap_workflow.now.ts`. Deployed with
+`scripts/deploy/phase10_ap_workflow_bg.js`, which also creates the AI user
+(`gen_agent_loader.mjs --ai-user`). The run loaded 142 records, 0 failures.
+
+- **Trigger.** `BCFA AP Exception Created` fires on record create of
+  `x_695068_bcfa_ap_exception` where `status=open`. Only deterministic
+  validation or matching opens AP exceptions, so clean invoices never enter
+  the workflow.
+- **Team.** AP Exception Analysis → AP Resolution Recommendation →
+  (only when the vendor must be contacted) AP Communication. One advisory
+  note is then saved to `ai_recommendation`, and the workflow stops.
+- **Identity.** It runs as **`bcfa.ai.reviewer`**
+  (`sys_id b8efbc9ef2654167b89add3507667685`, `identity_type=ai_agent`),
+  which holds only `ap_processor` and `ar_processor`, so it cannot approve.
+  The workflow `runAs` and the trigger `run_as_user` are both set.
+- **Decisions (user, 2026-09-28).** Use a dedicated AI user rather than the
+  exception's assigned_to or a manual-only run. Auto-save the advisory note:
+  the AP "Save Advisory Recommendation" tool is now **autopilot**. It can
+  still write only `ai_recommendation`, is role-checked and audited, and in
+  chat the agent saves only when asked.
+
+**Manual workflow test** (AI Agent Studio, task "Review AP exception
+5a522ded… (price_tolerance) and record an advisory recommendation"):
+
+- ✔ **Orchestration:** the orchestrator called Analysis, then Resolution
+  (which this time called the recommendation skill, so the Phase 8 tuning
+  worked), then Communication because the recommendation was "Request invoice
+  correction from the vendor", then Save.
+- ✔ **Advisory note:** the note on the exception has three sections. The
+  analysis gives the $3,000 / 25% variance with evidence and a High
+  confidence hypothesis. The recommendation gives rationale and the human
+  action required. The draft vendor message is marked "NOT sent".
+- ✔ **Identity:** every skill call and the save are audited with actor
+  **BCFA AI Reviewer**, and `sys_updated_by = bcfa.ai.reviewer`.
+- ✔ **Stops before posting:** the exception is still `open`, with no
+  resolution or assignee. The invoice is untouched (`EXCEPTION`,
+  `not_required`, `not_posted`, last updated 2026-09-25).
+
+**Still to run:** an unattended trigger test, by creating a new open AP
+exception.
+
 ### Findings to act on later
 
 - **Markdown in output.** The model sometimes uses markdown bold (`**…**`)
