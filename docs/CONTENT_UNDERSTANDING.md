@@ -1,15 +1,47 @@
 # Content Understanding / Now Assist DocIntel Configuration (Phase 5)
 
-Date: 2026-09-25 to 2026-09-27
+Date: 2026-09-25 to 2026-09-27 (corrected 2026-09-28, Phase 12)
 Instance: `pwcmanagementservicesdemo01.service-now.com`
 
-## Capability confirmation
+## Correction (Phase 12): extraction does not return values on this instance
 
-This configuration uses **Now Assist DocIntel** (the GenAI-powered document
-extraction capability), **not** the legacy trained-ML Document Intelligence
-engine, per the program's "no external AI" mandate (this is a native
-platform capability, not a call to Claude/OpenAI/Gemini or any external
-LLM). Verified directly against the database, not assumed:
+The Phase 5 conclusion below, that these use cases run on the generative
+(Now Assist) path, was **wrong**. The Phase 12 spike
+(`scripts/deploy/phase12_docintel_spike_bg.js`) created a document task on
+`AP_INV_001_CLEAN.pdf` through `sn_docintel.DocIntelAPI`
+(`createTask` → `processTask`). The task processed (task
+`5ab68716ebe3c310311dff0dcad0cdfa`), but **all 13 fields came back empty**:
+
+- The task's prediction method is **Classic** (the untrained ML method),
+  and the use case is `is_trained=false`.
+- The platform reported that the prediction server could not process the
+  attachments.
+- Generative (Now LLM) extraction is not available to these use cases.
+  This points to entitlement, but that is unconfirmed.
+
+**Status:** the use cases are configured and field-complete, but DocIntel
+extraction is **license- and training-dependent** and returns no values
+today. The AP journey therefore uses **simulated extraction** for the
+reading step: `SimulatedDocumentExtraction` returns the printed values of
+each synthetic fixture, clearly labelled SIMULATED, with no AI and no
+external call. Everything after reading is the real deterministic pipeline.
+To go native later:
+
+1. Confirm the Now Assist Document Intelligence entitlement with the
+   ServiceNow account team.
+2. Switch the use cases to the generative method, or train them.
+3. Swap `SimulatedDocumentExtraction` for a `DocIntelAPI` call that has the
+   same result shape.
+
+The "Capability confirmation" section below is kept for the record.
+
+## Capability confirmation (Phase 5; superseded by the correction above)
+
+This configuration was intended to use **Now Assist DocIntel** (the
+GenAI-powered document extraction capability), **not** the legacy
+trained-ML Document Intelligence engine, per the program's "no external AI"
+mandate. The Phase 5 evidence (below) showed the use cases were created
+through the generative wizard; it did not prove that extraction runs on it:
 
 - Both use cases live in `sys_di_task_definition` (the unified "Use Case"
   model Now Assist DocIntel shares with the legacy engine), but their
@@ -98,10 +130,12 @@ up a few real "known-good" extraction examples.
 
 ## Neither use case is wired into the application yet
 
-Deliberately deferred to a later phase: these two Content Understanding use
-cases exist and are field-complete, but nothing in `FinanceDocumentIntakeService`
-or `BCClaudeClient` calls them yet. Wiring them in (replacing the three
-Claude-only extraction/classification calls) is Phase 34 territory — build
-the native replacement first, verify it works, *then* remove Claude, never
-the other way around (see `IMPLEMENTATION_BACKLOG.md`'s ordering rationale
-for Phase 34).
+These two use cases exist and are field-complete, but nothing in the
+application calls them, because they return no values (see the correction
+at the top). Since Phase 12, with `x_695068_bcfa.ai.provider = native` (the
+default), `FinanceDocumentIntakeService` does not call Claude:
+
+- It uses the document type set at upload.
+- It reads AP invoices through `SimulatedDocumentExtraction`.
+
+The AR document paths still call Claude until Phase 13.

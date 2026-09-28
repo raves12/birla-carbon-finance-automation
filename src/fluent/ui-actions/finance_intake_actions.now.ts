@@ -8,9 +8,9 @@ import { UiAction, Record } from '@servicenow/sdk/core'
 export const intakeProcessWithClaude = UiAction({
     $id: Now.ID['ui-action-intake-process-with-claude'],
     table: 'x_695068_bcfa_finance_intake',
-    name: 'Process with Claude',
-    actionName: 'process_with_claude_intake',
-    hint: 'Classifies the attached document with Claude and, once a document type is known, extracts it and creates the corresponding AP Invoice or Payment/Remittance.',
+    name: 'Process Document',
+    actionName: 'process_document_intake',
+    hint: 'Processes the attached document: uses the document type set at upload, reads the fields (simulated extraction until Document Intelligence extraction is licensed; Claude only if x_695068_bcfa.ai.provider = claude), then creates the AP Invoice or Payment/Remittance and runs the deterministic pipeline.',
     showUpdate: true,
     condition: "current.processing_status == 'new'",
     form: {
@@ -36,7 +36,7 @@ const intakeProcessWithClaudeFormAction = Record({
         ui_action: intakeProcessWithClaude,
         action_type: 'ui_action',
         active: true,
-        name: 'Process with Claude',
+        name: 'Process Document',
     },
 })
 
@@ -45,8 +45,8 @@ Record({
     table: 'sys_ux_form_action_layout_item',
     data: {
         table: 'x_695068_bcfa_finance_intake',
-        name: 'Process with Claude',
-        label: 'Process with Claude',
+        name: 'Process Document',
+        label: 'Process Document',
         color: 'primary-ai',
         overflow: false,
         order: 100,

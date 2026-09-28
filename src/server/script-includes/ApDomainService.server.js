@@ -13,15 +13,25 @@ ApDomainService.prototype = {
         this.integrationService = new IntegrationService();
         this.aiSimulation = new AISimulationService();
         this.claudeClient = new BCClaudeClient();
+        this.policy = new FinancePolicy();
     },
 
-    // Public entry point for the "Explain with Claude" UI Action on AP
-    // Exception — regenerates the advisory ai_recommendation on demand
-    // (e.g. to refresh a recommendation written before Claude was wired in,
-    // or after new evidence was added to the invoice). Same Claude-first-
-    // with-fallback behavior as the automatic call during validate/match.
+    // Public entry point for the "Explain with Now Assist" UI Action on AP
+    // Exception: regenerates the advisory ai_recommendation on demand, as
+    // the current user. With the native provider it calls the published
+    // Now Assist skills through FinanceAgentTools (role-checked, advisory
+    // field only); other providers use the automatic path below.
     explainException: function(apExceptionSysId) {
-        return this._explainApException(apExceptionSysId);
+        if (this.policy.aiProvider() !== 'native') return this._explainApException(apExceptionSysId);
+
+        var tools = new FinanceAgentTools();
+        var explanation = tools.explainApException(apExceptionSysId);
+        if (!explanation.ok) return explanation;
+        var recommendation = tools.recommendApNextAction(apExceptionSysId);
+        var note = 'AI REVIEW (advisory only - a human must decide)\n\nExplanation:\n' + explanation.text +
+            (recommendation.ok ? '\n\nRecommended next action:\n' + recommendation.text : '\n\nRecommended next action: not available (' + recommendation.error + ')');
+        var saved = tools.recordExceptionAdvice('ap', apExceptionSysId, note);
+        return saved.ok ? { ok: true, recommendation: note } : saved;
     },
 
     _setState: function(apInvoiceSysId, newState, correlationId, description) {
@@ -123,16 +133,16 @@ ApDomainService.prototype = {
     },
 
     // seedFields stands in for whatever partial, as-if-OCR'd fields a real
-    // extraction step would have produced — see BCClaudeClient.extractInvoice
-    // for why this app uses a JSON-context path rather than a document/image
-    // one (no attachment mechanism exists in this app). Tries Claude first;
-    // falls back to the deterministic simulated extraction (AISimulationService)
-    // if Claude is disabled or the call fails for any reason — extraction
-    // must never block the pipeline on an AI outage.
+    // extraction step would have produced. With the native provider (the
+    // default) this is the deterministic simulated extraction
+    // (AISimulationService): Document Intelligence extraction is not
+    // licensed on this instance (see docs/CONTENT_UNDERSTANDING.md). Claude
+    // is only used when x_695068_bcfa.ai.provider = claude (legacy, removed
+    // in Phase 34). Extraction never blocks the pipeline on an AI outage.
     runExtraction: function(apInvoiceSysId, seedFields, options) {
         this._setState(apInvoiceSysId, 'EXTRACTING', null, 'Beginning extraction');
-        var result = this._runClaudeExtraction(apInvoiceSysId, seedFields, options) ||
-            this.aiSimulation.simulateApExtraction(apInvoiceSysId, seedFields, options);
+        var claudeResult = this.policy.aiProvider() === 'claude' ? this._runClaudeExtraction(apInvoiceSysId, seedFields, options) : null;
+        var result = claudeResult || this.aiSimulation.simulateApExtraction(apInvoiceSysId, seedFields, options);
         this._setState(apInvoiceSysId, 'EXTRACTED', null, 'Extraction complete, confidence ' + result.confidence);
         return result;
     },
@@ -148,7 +158,7 @@ ApDomainService.prototype = {
         var data = envelope.data;
         var forcedConfidence = options && options.forceConfidence !== undefined ? options.forceConfidence : null;
         var confidence = forcedConfidence !== null ? forcedConfidence : data.confidence;
-        var requiresReview = confidence < this.claudeClient.confidenceThreshold();
+        var requiresReview = confidence < this.policy.extractionConfidenceThreshold();
 
         var extraction = new GlideRecord('x_695068_bcfa_ap_extraction');
         extraction.initialize();
@@ -190,10 +200,10 @@ ApDomainService.prototype = {
         extraction.query();
         var confidence = extraction.next() ? parseFloat(extraction.getValue('confidence') || '1') : 1;
 
-        var confidenceThreshold = this.claudeClient.confidenceThreshold();
+        var confidenceThreshold = this.policy.extractionConfidenceThreshold();
         var failure = null;
         if (confidence < confidenceThreshold) {
-            failure = { reasonCode: 'low_confidence', description: 'Extraction confidence ' + confidence + ' is below the ' + confidenceThreshold + ' review threshold.' };
+            failure = { reasonCode: 'low_confidence', description: 'Extraction confidence ' + confidence + ' is below the ' + confidenceThreshold + ' review threshold (POC ASSUMPTION).' };
         } else if (!invoice.getValue('invoice_number') || !invoice.getValue('vendor') || !invoice.getValue('gross_amount')) {
             failure = { reasonCode: 'missing_field', description: 'One or more mandatory fields (invoice number, vendor, gross amount) are missing.' };
         } else {
@@ -209,7 +219,14 @@ ApDomainService.prototype = {
         }
 
         if (failure) {
-            var exceptionSysId = this.exceptionEngine.createApException(apInvoiceSysId, failure.reasonCode, failure.description);
+            var exceptionSysId = this.exceptionEngine.createApException(apInvoiceSysId, failure.reasonCode, failure.description, {
+                ruleResult: 'FAIL validation: ' + failure.description,
+                evidence: 'Extraction confidence: ' + confidence + ' (threshold ' + confidenceThreshold + ')\n' +
+                    'Invoice number: ' + (invoice.getValue('invoice_number') || 'missing') + '\n' +
+                    'Vendor: ' + (invoice.getDisplayValue('vendor') || 'missing') + '\n' +
+                    'Gross amount: ' + (invoice.getValue('gross_amount') || 'missing') + ' ' + invoice.getValue('currency') + '\n' +
+                    'Purchase order: ' + (invoice.getDisplayValue('purchase_order') || invoice.getValue('purchase_order') || 'none')
+            });
             this._explainApException(exceptionSysId);
             this._setState(apInvoiceSysId, 'EXCEPTION', null, 'Validation failed: ' + failure.reasonCode);
             return { validated: false, reasonCode: failure.reasonCode, exceptionSysId: exceptionSysId };
@@ -224,7 +241,14 @@ ApDomainService.prototype = {
 
         var duplicateResult = this.matchingEngine.detectDuplicateInvoice(apInvoiceSysId);
         if (duplicateResult.duplicate) {
-            var dupExceptionSysId = this.exceptionEngine.createApException(apInvoiceSysId, 'duplicate', 'Duplicate of AP Invoice ' + duplicateResult.matchedInvoiceSysId);
+            var original = new GlideRecord('x_695068_bcfa_ap_invoice');
+            original.get(duplicateResult.matchedInvoiceSysId);
+            var dupExceptionSysId = this.exceptionEngine.createApException(apInvoiceSysId, 'duplicate', 'Duplicate of AP Invoice ' + duplicateResult.matchedInvoiceSysId, {
+                ruleResult: 'FAIL duplicate check: same vendor, invoice number and gross amount as AP invoice ' +
+                    original.getValue('invoice_number') + ' (state ' + original.getValue('state') + ').',
+                evidence: 'Duplicate key: ' + duplicateResult.duplicateKey + '\nExisting invoice sys_id: ' + duplicateResult.matchedInvoiceSysId +
+                    '\nExisting invoice state: ' + original.getValue('state') + ', SAP document: ' + (original.getValue('sap_document_id') || 'none')
+            });
             this._explainApException(dupExceptionSysId);
             this._setState(apInvoiceSysId, 'EXCEPTION', null, 'Duplicate invoice detected');
             return { matched: false, reasonCode: 'duplicate', exceptionSysId: dupExceptionSysId };
@@ -232,11 +256,13 @@ ApDomainService.prototype = {
 
         var match = this.matchingEngine.threeWayMatch(apInvoiceSysId);
         if (!match.withinTolerance) {
+            var tolerances = match.tolerancesUsed;
             var reasonCode = 'price_tolerance';
-            if (match.quantityVariancePct > this.matchingEngine.DEFAULT_TOLERANCES.quantityPct) reasonCode = 'quantity_tolerance';
+            if (match.quantityVariancePct > tolerances.quantityPct) reasonCode = 'quantity_tolerance';
             else if (!match.taxWithinTolerance) reasonCode = 'tax_validation';
             var exceptionSysId2 = this.exceptionEngine.createApException(apInvoiceSysId, reasonCode,
-                'Match result: ' + match.matchResult + '. Quantity variance ' + (match.quantityVariancePct * 100).toFixed(1) + '%, price variance ' + (match.priceVariancePct * 100).toFixed(1) + '%.');
+                'Match result: ' + match.matchResult + '. Quantity variance ' + (match.quantityVariancePct * 100).toFixed(1) + '%, price variance ' + (match.priceVariancePct * 100).toFixed(1) + '%.',
+                this._matchExceptionDetails(reasonCode, match));
             this._explainApException(exceptionSysId2);
             this._setState(apInvoiceSysId, 'EXCEPTION', null, 'Match failed: ' + reasonCode);
             return { matched: false, reasonCode: reasonCode, exceptionSysId: exceptionSysId2, match: match };
@@ -246,13 +272,89 @@ ApDomainService.prototype = {
         return { matched: true, match: match };
     },
 
-    // Writes an analyst-facing explanation into the exception's existing
-    // advisory field (ai_recommendation) — never read by any deterministic
-    // rule or approval/posting logic. Tries Claude first; falls back to the
-    // deterministic templated explanation (AISimulationService) if Claude is
-    // disabled, returns insufficient_information, or fails for any reason.
+    // Deterministic rule result, evidence and variance for a failed 3-way
+    // match: what the exception shows the reviewer and what the AI agents
+    // explain. Only facts the MatchingEngine computed; no AI.
+    _matchExceptionDetails: function(reasonCode, match) {
+        var t = match.tolerancesUsed;
+        var pct = function(v) { return (v * 100).toFixed(1) + '%'; };
+        var checks = [
+            'quantity ' + pct(match.quantityVariancePct) + ' vs tolerance ' + pct(t.quantityPct) + (match.quantityVariancePct > t.quantityPct ? ' FAIL' : ' pass'),
+            'price ' + pct(match.priceVariancePct) + ' vs tolerance ' + pct(t.pricePct) + (match.priceVariancePct > t.pricePct ? ' FAIL' : ' pass'),
+            'tax variance ' + match.taxVariance + (match.taxWithinTolerance ? ' pass' : ' FAIL')
+        ];
+        var evidence = [];
+        for (var i = 0; i < match.lines.length; i++) {
+            var l = match.lines[i];
+            evidence.push('Line ' + l.lineNumber + ': invoice qty ' + l.invoiceQuantity + ' at ' + l.invoiceUnitPrice +
+                '; PO ' + (l.poNumber || 'not linked') + (l.poQuantity !== null ? ' qty ' + l.poQuantity + ' at ' + l.poUnitPrice : '') +
+                '; GRN ' + (l.receiptNumber || 'not linked') + (l.receiptQuantity !== null ? ' qty ' + l.receiptQuantity : ''));
+        }
+        evidence.push('Net ' + match.netAmount + ', tax ' + match.taxAmount +
+            (match.expectedTax !== null ? ', expected tax ' + match.expectedTax + ' (' + match.vendorCountry + ' rate ' + pct(match.expectedTaxRate) + ')' : ', no expected tax rate for vendor country'));
+        evidence.push('Tolerances are POC ASSUMPTIONS (x_695068_bcfa.ap.tolerance.*).');
+
+        var varianceAmount = match.priceVarianceValue;
+        var variancePct = match.priceVariancePct;
+        if (reasonCode === 'quantity_tolerance') {
+            varianceAmount = match.quantityVarianceValue;
+            variancePct = match.quantityVariancePct;
+        } else if (reasonCode === 'tax_validation') {
+            varianceAmount = match.taxVariance;
+            variancePct = match.expectedTax ? match.taxVariance / match.expectedTax : 0;
+        }
+        return {
+            ruleResult: 'FAIL 3-way match (' + reasonCode + '): ' + checks.join('; ') + '.',
+            evidence: evidence.join('\n'),
+            varianceAmount: varianceAmount,
+            variancePct: variancePct
+        };
+    },
+
+    // Applies the configured approval rule to a MATCHED invoice: either
+    // requests human approval (requester = requestedBy) or, when the gross
+    // amount is within the configured auto-approve limit, records a
+    // rule-based approval. Either way posting only happens through the
+    // approval cascade and IntegrationService.
+    routeForApproval: function(apInvoiceSysId, requestedBy) {
+        var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
+        if (!invoice.get(apInvoiceSysId)) return { error: 'AP Invoice not found' };
+        var rule = this.policy.apApprovalRule(invoice.getValue('gross_amount'));
+        this.auditEngine.logEvent({
+            correlationId: invoice.getValue('correlation_id'),
+            sourceTable: 'x_695068_bcfa_ap_invoice',
+            sourceRecord: apInvoiceSysId,
+            eventType: 'approval_decision',
+            actorType: 'system',
+            description: 'Approval rule evaluated (POC ASSUMPTION): ' + rule.rule,
+            afterValue: rule
+        });
+        var approval = this.requestApproval(apInvoiceSysId, requestedBy);
+        if (rule.required) return { approvalRequired: true, approvalSysId: approval.approvalSysId, rule: rule.rule };
+        var decision = this.decideApproval(apInvoiceSysId, approval.approvalSysId, 'approved', null, 'Approved by configured rule: ' + rule.rule);
+        return { approvalRequired: false, approvalSysId: approval.approvalSysId, rule: rule.rule, decision: decision };
+    },
+
+    // Advisory explanation for a newly raised exception (ai_recommendation,
+    // never read by any deterministic rule or approval/posting logic).
+    // native (default): nothing runs here. The BCFA AP Invoice Review
+    // agentic workflow is triggered by the exception's creation, runs as
+    // the AI user and saves its note asynchronously.
+    // claude (legacy): Claude, falling back to the simulation.
+    // simulated: deterministic templated explanation only.
     _explainApException: function(exceptionSysId) {
-        if (this.claudeClient.isEnabled()) {
+        var provider = this.policy.aiProvider();
+        if (provider === 'native') {
+            this.auditEngine.logEvent({
+                sourceTable: 'x_695068_bcfa_ap_exception',
+                sourceRecord: exceptionSysId,
+                eventType: 'ai_recommendation',
+                actorType: 'system',
+                description: 'AI review handed to the BCFA AP Invoice Review agentic workflow (Now Assist), which starts on exception creation and records an advisory note.'
+            });
+            return { deferred: true, workflow: 'BCFA AP Invoice Review' };
+        }
+        if (provider === 'claude' && this.claudeClient.isEnabled()) {
             var envelope = this.claudeClient.explainInvoiceException(exceptionSysId);
             if (envelope.ok && !envelope.data.insufficient_information) {
                 var recommendation = envelope.data.explanation +
@@ -278,13 +380,18 @@ ApDomainService.prototype = {
     },
 
     // Reviewer correction: resolve the exception, then loop back to
-    // re-validate from scratch (Section 7 items 16-17: reviewer correction,
-    // rematch).
+    // re-validate and rematch from scratch (Section 7 items 16-17). If the
+    // corrected invoice now matches, the configured approval rule applies.
     resolveExceptionAndRetry: function(apInvoiceSysId, exceptionSysId, resolutionNotes, resolvedBy) {
         this._setState(apInvoiceSysId, 'RESOLUTION', null, 'Reviewer resolving exception');
         this.exceptionEngine.resolveApException(exceptionSysId, resolutionNotes, resolvedBy);
         this._setState(apInvoiceSysId, 'VALIDATING', null, 'Re-validating after correction');
-        return this.validateInvoice(apInvoiceSysId);
+        var validation = this.validateInvoice(apInvoiceSysId);
+        if (!validation.validated) return validation;
+        var match = this.matchInvoice(apInvoiceSysId);
+        if (!match.matched) return match;
+        match.approval = this.routeForApproval(apInvoiceSysId, resolvedBy);
+        return match;
     },
 
     requestApproval: function(apInvoiceSysId, requestedBy) {

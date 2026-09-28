@@ -177,6 +177,7 @@ export const x_695068_bcfa_audit_event = Table({
                 ai_recommendation: 'AI Recommendation',
                 exception_created: 'Exception Created',
                 exception_resolved: 'Exception Resolved',
+                human_decision: 'Human Decision',
             },
         }),
         actor: ReferenceColumn({ label: 'Actor', referenceTable: 'sys_user' }),

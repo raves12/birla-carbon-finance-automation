@@ -19,6 +19,8 @@ FinanceDocumentIntakeService.prototype = {
         this.lineResolver = new ApLineResolutionService();
         this.claudeClient = new BCClaudeClient();
         this.auditEngine = new AuditEngine();
+        this.policy = new FinancePolicy();
+        this.simulatedExtraction = new SimulatedDocumentExtraction();
     },
 
     // ==== Entry point (backs "Process with Claude" / "Reprocess") =========
@@ -103,6 +105,7 @@ FinanceDocumentIntakeService.prototype = {
     // ==== Phase 3 — Classification ==========================================
 
     classifyFinanceDocument: function(intakeSysId) {
+        if (this.policy.aiProvider() !== 'claude') return this._classifyWithoutModel(intakeSysId);
         this._setStatus(intakeSysId, 'classifying', 'Classifying uploaded document with Claude.');
 
         var envelope = this.claudeClient.classifyFinanceDocument(intakeSysId);
@@ -134,6 +137,22 @@ FinanceDocumentIntakeService.prototype = {
         return { classified: true, documentType: mappedType };
     },
 
+    // Native provider: Document Intelligence classification is not licensed
+    // on this instance, so the document type chosen at upload is used as
+    // is. Without one, the document goes to manual review; nothing guesses.
+    _classifyWithoutModel: function(intakeSysId) {
+        var intake = new GlideRecord('x_695068_bcfa_finance_intake');
+        intake.get(intakeSysId);
+        var preset = intake.getValue('document_type');
+        if (preset && preset !== 'unknown') {
+            intake.setValue('classification_reason', 'Document type set at upload. Automatic classification is not used: Document Intelligence classification is not licensed on this instance.');
+            intake.update();
+            return { classified: true, documentType: preset };
+        }
+        this.sendToManualReview(intakeSysId, 'Set the document type (AP invoice, payment advice or remittance), then process the document again. Automatic classification is not available on this instance.');
+        return { classified: true, documentType: 'unknown', requiresReview: true };
+    },
+
     _mapClaudeDocumentType: function(claudeType) {
         var map = {
             AP_INVOICE: 'ap_invoice',
@@ -157,19 +176,27 @@ FinanceDocumentIntakeService.prototype = {
             return this._resumeApInvoicePipeline(intakeSysId, apInvoiceSysId);
         }
 
-        this._setStatus(intakeSysId, 'extracting', 'Extracting AP invoice fields from the attached document.');
-        var envelope = this.claudeClient.extractApInvoiceDocument(intakeSysId);
+        var useClaude = this.policy.aiProvider() === 'claude';
+        this._setStatus(intakeSysId, 'extracting', useClaude
+            ? 'Extracting AP invoice fields from the attached document.'
+            : 'Reading AP invoice fields (SIMULATED extraction: fixture values, Document Intelligence extraction not licensed).');
+        var envelope = useClaude
+            ? this.claudeClient.extractApInvoiceDocument(intakeSysId)
+            : this.simulatedExtraction.extractApInvoiceDocument(intakeSysId);
         if (!envelope.ok) {
-            return this._fail(intakeSysId, 'AP invoice extraction failed: ' + envelope.safeError);
+            if (useClaude) return this._fail(intakeSysId, 'AP invoice extraction failed: ' + envelope.safeError);
+            this.sendToManualReview(intakeSysId, envelope.safeError);
+            return { requiresReview: true };
         }
+        var extractionSource = useClaude ? 'claude_document_intelligence' : SimulatedDocumentExtraction.SOURCE;
 
         var data = envelope.data;
         intake.setValue('extraction_json', JSON.stringify(data));
         intake.setValue('extraction_confidence', data.confidence);
-        intake.setValue('claude_request_id', envelope.requestId || intake.getValue('claude_request_id'));
+        if (useClaude) intake.setValue('claude_request_id', envelope.requestId || intake.getValue('claude_request_id'));
         intake.update();
 
-        var threshold = this.claudeClient.confidenceThreshold();
+        var threshold = this.policy.extractionConfidenceThreshold();
         if (data.confidence < threshold) {
             this.sendToManualReview(intakeSysId, 'Extraction confidence ' + data.confidence + ' is below the ' + threshold + ' review threshold.');
             return { requiresReview: true };
@@ -231,7 +258,7 @@ FinanceDocumentIntakeService.prototype = {
         extraction.setValue('ap_invoice', apInvoiceSysId);
         extraction.setValue('extracted_fields', JSON.stringify(data));
         extraction.setValue('confidence', data.confidence);
-        extraction.setValue('source', 'claude_document_intelligence');
+        extraction.setValue('source', extractionSource);
         extraction.setValue('requires_review', false);
         extraction.insert();
 
@@ -289,9 +316,14 @@ FinanceDocumentIntakeService.prototype = {
             return { stoppedAt: 'MATCH_EXCEPTION', apInvoiceSysId: apInvoiceSysId, detail: match };
         }
 
-        var approval = this.apService.requestApproval(apInvoiceSysId, gs.getUserID());
-        this._setStatus(intakeSysId, 'completed', 'AP Invoice matched and pending approval.');
-        return { stoppedAt: 'PENDING_APPROVAL', apInvoiceSysId: apInvoiceSysId, detail: approval };
+        // Approval is determined by the configured rule (FinancePolicy); the
+        // person processing the document is the requester, so a different
+        // user must approve (segregation of duties).
+        var approval = this.apService.routeForApproval(apInvoiceSysId, gs.getUserID());
+        this._setStatus(intakeSysId, 'completed', approval.approvalRequired
+            ? 'AP Invoice matched and pending approval. ' + approval.rule
+            : 'AP Invoice matched and approved by configured rule. ' + approval.rule);
+        return { stoppedAt: approval.approvalRequired ? 'PENDING_APPROVAL' : 'APPROVED_BY_RULE', apInvoiceSysId: apInvoiceSysId, detail: approval };
     },
 
     // ==== Deterministic master-data resolvers (never guess ambiguity) ======

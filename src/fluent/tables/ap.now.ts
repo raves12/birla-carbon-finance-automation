@@ -98,10 +98,10 @@ export const x_695068_bcfa_ap_extraction = Table({
             default: 'claude_document_intelligence',
             choices: {
                 claude_document_intelligence: 'Claude (JSON-context extraction)',
-                simulated_document_intelligence: 'Simulated (deterministic fallback, legacy)',
+                simulated_document_intelligence: 'Simulated extraction (fixture values; DocIntel extraction not licensed)',
                 now_assist_document_intelligence: 'Now Assist in Document Intelligence (not licensed in this PDI)',
             },
-            hint: 'Records which engine actually produced this extraction row. Claude is tried first when x_695068_bcfa.claude.enabled is true; the simulated fallback runs only if Claude is disabled or unavailable.',
+            hint: 'Records which engine produced this extraction row. With x_695068_bcfa.ai.provider = native (default) this is the simulated extraction; Claude is used only when the provider is claude (legacy, removed in Phase 34).',
         }),
         requires_review: BooleanColumn({ label: 'Requires Review', default: false }),
         reviewed_by: ReferenceColumn({ label: 'Reviewed By', referenceTable: 'sys_user' }),
@@ -164,6 +164,35 @@ export const x_695068_bcfa_ap_exception = Table({
             maxLength: 4000,
             hint: 'Advisory AI output only (Now Assist, or the legacy simulation). Never read by deterministic rules or approval/posting logic.',
         }),
+        // Phase 12 enrichment, set by ExceptionEngine when the exception is
+        // raised (deterministic, from FinancePolicy and MatchingEngine).
+        severity: ChoiceColumn({
+            label: 'Severity',
+            default: 'medium',
+            readOnly: true,
+            choices: { low: 'Low', medium: 'Medium', high: 'High', critical: 'Critical' },
+        }),
+        assignment_group: ReferenceColumn({ label: 'Assignment Group', referenceTable: 'sys_user_group' }),
+        sla_due: DateTimeColumn({ label: 'SLA Due', readOnly: true, hint: 'Set from the severity and x_695068_bcfa.ap.exception.sla_hours (POC ASSUMPTION).' }),
+        rule_result: StringColumn({ label: 'Rule Result', maxLength: 1000, readOnly: true, hint: 'Deterministic validation / 3-way match result that raised this exception.' }),
+        evidence: StringColumn({ label: 'Evidence', maxLength: 4000, readOnly: true, hint: 'Source facts: invoice, PO and GRN quantities and prices, tax, duplicate key.' }),
+        variance_amount: DecimalColumn({ label: 'Variance Amount', scale: 2, readOnly: true, hint: 'Value of the variance in invoice currency.' }),
+        variance_pct: DecimalColumn({ label: 'Variance %', scale: 2, readOnly: true }),
+        // Human decision (ApExceptionDecisionService). The reason is typed by
+        // the finance user; the rest is recorded by the service.
+        decision: ChoiceColumn({
+            label: 'Decision',
+            readOnly: true,
+            choices: {
+                approve_override: 'Approve Override',
+                reject: 'Reject',
+                request_correction: 'Request Correction',
+                hold: 'Hold',
+            },
+        }),
+        decision_reason: StringColumn({ label: 'Decision Reason', maxLength: 4000, hint: 'Required before choosing Approve Override, Reject, Request Correction or Hold.' }),
+        decided_by: ReferenceColumn({ label: 'Decided By', referenceTable: 'sys_user', readOnly: true }),
+        decided_at: DateTimeColumn({ label: 'Decided At', readOnly: true }),
     },
 })
 

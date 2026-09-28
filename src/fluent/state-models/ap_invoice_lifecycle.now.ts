@@ -32,6 +32,9 @@ export const apInvoiceLifecycle = StateModel({
         closed: { $id: Now.ID['ap-state-closed'], label: 'Closed', value: 'CLOSED', sequence: 14 },
         failed: { $id: Now.ID['ap-state-failed'], label: 'Failed', value: 'FAILED', sequence: 15 },
         unknown_outcome: { $id: Now.ID['ap-state-unknown-outcome'], label: 'Unknown Outcome', value: 'UNKNOWN_OUTCOME', sequence: 16 },
+        // Phase 12 human decisions on an exception (ApExceptionDecisionService).
+        on_hold: { $id: Now.ID['ap-state-on-hold'], label: 'On Hold', value: 'ON_HOLD', sequence: 17 },
+        rejected: { $id: Now.ID['ap-state-rejected'], label: 'Rejected', value: 'REJECTED', sequence: 18 },
     },
     transitions: [
         { $id: Now.ID['ap-trans-received-extracting'], from: 'received', to: 'extracting' },
@@ -57,5 +60,11 @@ export const apInvoiceLifecycle = StateModel({
         { $id: Now.ID['ap-trans-posted-reconciled'], from: 'posted', to: 'reconciled' },
         { $id: Now.ID['ap-trans-reconciled-closed'], from: 'reconciled', to: 'closed' },
         { $id: Now.ID['ap-trans-failed-resolution'], from: 'failed', to: 'resolution' },
+        // Hold / request correction, reject, and approve override (Phase 12).
+        { $id: Now.ID['ap-trans-exception-on-hold'], from: 'exception', to: 'on_hold' },
+        { $id: Now.ID['ap-trans-on-hold-resolution'], from: 'on_hold', to: 'resolution' },
+        { $id: Now.ID['ap-trans-exception-rejected'], from: 'exception', to: 'rejected' },
+        { $id: Now.ID['ap-trans-on-hold-rejected'], from: 'on_hold', to: 'rejected' },
+        { $id: Now.ID['ap-trans-resolution-pending-approval'], from: 'resolution', to: 'pending_approval' },
     ],
 })

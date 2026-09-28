@@ -15,7 +15,7 @@ passes its own verification.
 | 2 | Stabilize the custom application (build + install to parity) | **DONE** | None |
 | 3 | Rebuild lost reference and demo data | **DONE** | None — see `docs/DEMO_DATA.md` |
 | 4 | Generate synthetic document fixtures | **DONE** | None — see `docs/DOCUMENT_FIXTURES.md` |
-| 5 | Content Understanding / Document Intelligence configuration | **DONE** | None — confirmed on Now Assist DocIntel (GenAI), not legacy ML; see `docs/CONTENT_UNDERSTANDING.md` |
+| 5 | Content Understanding / Document Intelligence configuration | **DONE (configuration only)** | Extraction returns no values (Classic untrained method; generative extraction not available). Corrected in Phase 12, see `docs/CONTENT_UNDERSTANDING.md` |
 | 6 | ServiceNow generative AI skills | **DONE** — all 9 skills built and published in Now Assist Skill Kit on Now LLM Generic, see `docs/GENERATIVE_AI_SKILLS_BUILD_GUIDE.md` | Skill Kit "Run Test" preview doesn't substitute inputs on this instance — runtime verification moves to Phase 7 |
 | 7 | AI agent tools (least-privilege) | **DONE** — `NowAssistSkillClient` + `FinanceAgentTools` (18 tools) deployed and tested live against demo data; see `docs/AI_AGENT_TOOLS.md` | None. Role-denial test deferred to Phase 29. Studio "Commit Changes" still needed before any Apply Remote Changes |
 | 8 | Native AP AI agents (3) | **DONE** — Exception Analysis, Resolution Recommendation, Communication; deployed and tested in AI Agent Studio; see `docs/AI_AGENT_TOOLS.md` | None |

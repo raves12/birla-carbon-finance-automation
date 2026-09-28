@@ -399,7 +399,17 @@ FinanceAgentTools.prototype = {
         var lines = [];
         this._add(lines, 'Exception Reason', exception.getDisplayValue('reason_code'));
         this._add(lines, 'Exception Status', exception.getDisplayValue('status'));
+        this._add(lines, 'Severity', exception.getDisplayValue('severity'));
+        this._add(lines, 'SLA Due', exception.getValue('sla_due'));
         this._add(lines, 'Exception Description', exception.getValue('description'));
+        // Deterministic rule output from MatchingEngine / validation. These
+        // are facts; the AI explains them and must not re-decide them.
+        this._add(lines, 'Rule Result (deterministic)', exception.getValue('rule_result'));
+        this._add(lines, 'Variance Amount', exception.getValue('variance_amount'));
+        this._add(lines, 'Variance Percent', exception.getValue('variance_pct'));
+        this._add(lines, 'Evidence', exception.getValue('evidence'));
+        this._add(lines, 'Human Decision', exception.getDisplayValue('decision'));
+        this._add(lines, 'Decision Reason', exception.getValue('decision_reason'));
         this._add(lines, 'Resolution Notes', exception.getValue('resolution_notes'));
         var invoiceContext = this._buildApInvoiceContext(exception.getValue('ap_invoice'));
         return lines.join('\n') + (invoiceContext ? '\n' + invoiceContext : '\nAP Invoice: not available');

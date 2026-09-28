@@ -11,12 +11,16 @@ import { UiAction, Record } from '@servicenow/sdk/core'
 // existing advisory ai_recommendation field — never reason_code, status,
 // approval, or posting/clearing state.
 
+// Phase 12: the AP action now uses ServiceNow AI (Now Assist skills via
+// FinanceAgentTools, as the signed-in user). Same record ids as the former
+// "Explain with Claude" action, so it is updated in place. The AR action
+// switches in Phase 13.
 export const apExceptionExplainWithClaude = UiAction({
     $id: Now.ID['ui-action-ap-exception-explain-claude'],
     table: 'x_695068_bcfa_ap_exception',
-    name: 'Explain with Claude',
-    actionName: 'explain_with_claude_ap',
-    hint: 'Ask Claude to (re)generate the advisory AI Recommendation for this exception. Advisory only.',
+    name: 'Explain with Now Assist',
+    actionName: 'explain_with_now_assist_ap',
+    hint: 'Ask Now Assist to (re)generate the advisory explanation and recommended next action for this exception. Advisory only: it never decides the exception.',
     showUpdate: true,
     form: {
         showButton: true,
@@ -27,8 +31,8 @@ export const apExceptionExplainWithClaude = UiAction({
         showFormButtonV2: true,
     },
     script: `
-        var service = new ApDomainService();
-        service.explainException(current.getUniqueValue());
+        var result = new ApDomainService().explainException(current.getUniqueValue());
+        if (result && result.ok === false) gs.addErrorMessage('Now Assist could not explain this exception: ' + (result.message || result.error));
         action.setRedirectURL(current);
     `,
 })
@@ -41,7 +45,7 @@ const apExceptionExplainWithClaudeFormAction = Record({
         ui_action: apExceptionExplainWithClaude,
         action_type: 'ui_action',
         active: true,
-        name: 'Explain with Claude',
+        name: 'Explain with Now Assist',
     },
 })
 
@@ -50,8 +54,8 @@ Record({
     table: 'sys_ux_form_action_layout_item',
     data: {
         table: 'x_695068_bcfa_ap_exception',
-        name: 'Explain with Claude',
-        label: 'Explain with Claude',
+        name: 'Explain with Now Assist',
+        label: 'Explain with Now Assist',
         color: 'primary-ai',
         overflow: false,
         order: 100,

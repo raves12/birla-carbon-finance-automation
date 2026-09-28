@@ -2,13 +2,11 @@ var MatchingEngine = Class.create();
 MatchingEngine.prototype = {
     initialize: function() {},
 
-    // Default tolerances. These are the same values Stage 13 (Decision
-    // Tables) externalizes into sn_decision_table records — MatchingEngine
-    // accepts an override object so that wiring happens without changing
-    // this file, but ships with sane, documented defaults so the engine is
-    // usable and testable before Stage 13 lands.
+    // Fallback tolerances, used only if FinancePolicy cannot be read. The
+    // live values are the x_695068_bcfa.ap.tolerance.* properties (POC
+    // ASSUMPTION, quantity 2%) — see FinancePolicy.apTolerances().
     DEFAULT_TOLERANCES: {
-        quantityPct: 0.05,
+        quantityPct: 0.02,
         pricePct: 0.02,
         taxAbsolute: 1.0,
         taxRelativePct: 0.02
@@ -35,6 +33,10 @@ MatchingEngine.prototype = {
         var maxPriceVariancePct = 0;
         var matchedPoLine = null;
         var matchedReceipt = null;
+        // Per-line evidence for the exception record and the AI agents.
+        var lineEvidence = [];
+        var quantityVarianceValue = 0;
+        var priceVarianceValue = 0;
 
         var line = new GlideRecord('x_695068_bcfa_ap_invoice_line');
         line.addQuery('ap_invoice', apInvoiceSysId);
@@ -44,15 +46,29 @@ MatchingEngine.prototype = {
             var receiptSysId = line.getValue('receipt_reference');
             var lineQty = parseFloat(line.getValue('quantity') || '0');
             var lineUnitPrice = parseFloat(line.getValue('unit_price') || '0');
+            var evidence = {
+                lineNumber: line.getValue('line_number'),
+                invoiceQuantity: lineQty,
+                invoiceUnitPrice: lineUnitPrice,
+                poNumber: null,
+                poQuantity: null,
+                poUnitPrice: null,
+                receiptNumber: null,
+                receiptQuantity: null
+            };
 
             if (poLineSysId) {
                 matchedPoLine = poLineSysId;
                 var poLine = new GlideRecord('x_695068_bcfa_po_line');
                 if (poLine.get(poLineSysId)) {
                     var poUnitPrice = parseFloat(poLine.getValue('unit_price') || '0');
+                    evidence.poNumber = poLine.getDisplayValue('purchase_order');
+                    evidence.poQuantity = parseFloat(poLine.getValue('quantity') || '0');
+                    evidence.poUnitPrice = poUnitPrice;
                     if (poUnitPrice > 0) {
                         var priceVariancePct = Math.abs(lineUnitPrice - poUnitPrice) / poUnitPrice;
                         if (priceVariancePct > maxPriceVariancePct) maxPriceVariancePct = priceVariancePct;
+                        priceVarianceValue += Math.abs(lineUnitPrice - poUnitPrice) * lineQty;
                     }
                 }
             }
@@ -62,11 +78,15 @@ MatchingEngine.prototype = {
                 var receipt = new GlideRecord('x_695068_bcfa_receipt');
                 if (receipt.get(receiptSysId)) {
                     var receiptQty = parseFloat(receipt.getValue('quantity') || '0');
+                    evidence.receiptNumber = receipt.getValue('receipt_number');
+                    evidence.receiptQuantity = receiptQty;
                     var base = receiptQty > 0 ? receiptQty : (lineQty > 0 ? lineQty : 1);
                     var quantityVariancePct = Math.abs(lineQty - receiptQty) / base;
                     if (quantityVariancePct > maxQuantityVariancePct) maxQuantityVariancePct = quantityVariancePct;
+                    quantityVarianceValue += Math.abs(lineQty - receiptQty) * lineUnitPrice;
                 }
             }
+            lineEvidence.push(evidence);
         }
 
         var netAmount = parseFloat(invoice.getValue('net_amount') || '0');
@@ -75,8 +95,9 @@ MatchingEngine.prototype = {
         var expectedRate = this.TAX_RATE_BY_COUNTRY.hasOwnProperty(vendorCountry) ? this.TAX_RATE_BY_COUNTRY[vendorCountry] : null;
         var taxVariance = 0;
         var taxWithinTolerance = true;
+        var expectedTax = null;
         if (expectedRate !== null) {
-            var expectedTax = Math.round(netAmount * expectedRate * 100) / 100;
+            expectedTax = Math.round(netAmount * expectedRate * 100) / 100;
             taxVariance = Math.abs(taxAmount - expectedTax);
             var taxToleranceBand = Math.max(tolerances.taxAbsolute, expectedTax * tolerances.taxRelativePct);
             taxWithinTolerance = taxVariance <= taxToleranceBand;
@@ -109,6 +130,14 @@ MatchingEngine.prototype = {
             priceVariancePct: maxPriceVariancePct,
             taxVariance: taxVariance,
             taxWithinTolerance: taxWithinTolerance,
+            quantityVarianceValue: Math.round(quantityVarianceValue * 100) / 100,
+            priceVarianceValue: Math.round(priceVarianceValue * 100) / 100,
+            netAmount: netAmount,
+            taxAmount: taxAmount,
+            vendorCountry: vendorCountry,
+            expectedTaxRate: expectedRate,
+            expectedTax: expectedTax,
+            lines: lineEvidence,
             tolerancesUsed: tolerances
         };
     },
@@ -240,8 +269,14 @@ MatchingEngine.prototype = {
 
     _mergeTolerances: function(overrides) {
         var merged = {};
+        var configured = {};
+        try {
+            configured = new FinancePolicy().apTolerances();
+        } catch (e) {
+            configured = {};
+        }
         for (var k in this.DEFAULT_TOLERANCES) {
-            merged[k] = this.DEFAULT_TOLERANCES[k];
+            merged[k] = configured.hasOwnProperty(k) ? configured[k] : this.DEFAULT_TOLERANCES[k];
         }
         if (overrides) {
             for (var k2 in overrides) {
