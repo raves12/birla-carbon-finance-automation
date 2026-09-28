@@ -6,25 +6,70 @@
 // access-role configurations; each agent's execute ACL and ACL role rows;
 // and the given script includes (with their module records).
 //
+// Also loads agentic workflows (use case, team, members, config override,
+// triggers) and, with --ai-user, first creates the dedicated BCFA AI user
+// that the workflows run as.
+//
 // Usage (after `now-sdk build`):
-//   node scripts/deploy/gen_agent_loader.mjs <output.js> [ScriptIncludeName ...]
+//   node scripts/deploy/gen_agent_loader.mjs <output.js> [--ai-user] [ScriptIncludeName ...]
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const dir = path.join(root, 'dist/app/update');
-const [outFile, ...includeNames] = process.argv.slice(2);
+const args = process.argv.slice(2);
+const withAiUser = args.includes('--ai-user');
+const [outFile, ...includeNames] = args.filter((a) => a !== '--ai-user');
 if (!outFile) {
-  console.error('Usage: node scripts/deploy/gen_agent_loader.mjs <output.js> [ScriptIncludeName ...]');
+  console.error('Usage: node scripts/deploy/gen_agent_loader.mjs <output.js> [--ai-user] [ScriptIncludeName ...]');
   process.exit(1);
 }
+
+// The dedicated AI user the BCFA agentic workflows run as (runAs /
+// trigger runAsUser in src/fluent/ai-agents/*_workflow.now.ts). It holds only
+// the processor roles: it can read and record advisory notes, never approve.
+const AI_USER = {
+  sysId: 'b8efbc9ef2654167b89add3507667685',
+  userName: 'bcfa.ai.reviewer',
+  roles: ['x_695068_bcfa.ap_processor', 'x_695068_bcfa.ar_processor'],
+};
+const aiUserPreamble = `
+  // Dedicated AI user (identity_type=ai_agent) the BCFA workflows run as.
+  var aiUser = new GlideRecord('sys_user');
+  var aiUserExists = aiUser.get('${AI_USER.sysId}');
+  if (!aiUserExists) { aiUser.initialize(); aiUser.setNewGuidValue('${AI_USER.sysId}'); }
+  aiUser.setValue('user_name', '${AI_USER.userName}');
+  aiUser.setValue('first_name', 'BCFA AI');
+  aiUser.setValue('last_name', 'Reviewer');
+  aiUser.setValue('identity_type', 'ai_agent');
+  aiUser.setValue('active', true);
+  aiUserExists ? aiUser.update() : aiUser.insert();
+  ${JSON.stringify(AI_USER.roles)}.forEach(function(roleName) {
+    var role = new GlideRecord('sys_user_role');
+    if (!role.get('name', roleName)) { out.push('ROLE MISSING ' + roleName); return; }
+    var grant = new GlideRecord('sys_user_has_role');
+    grant.addQuery('user', '${AI_USER.sysId}');
+    grant.addQuery('role', role.getUniqueValue());
+    grant.query();
+    if (!grant.hasNext()) {
+      grant.initialize();
+      grant.setValue('user', '${AI_USER.sysId}');
+      grant.setValue('role', role.getUniqueValue());
+      grant.insert();
+    }
+  });
+  var aiCheck = new GlideRecord('sys_user');
+  aiCheck.get('${AI_USER.sysId}');
+  out.push('ai user ' + aiCheck.getValue('user_name') + ' identity_type=' + aiCheck.getValue('identity_type') +
+    ' ap_processor=' + gs.getUser().getUserByID('${AI_USER.sysId}').hasRole('x_695068_bcfa.ap_processor'));
+`;
 
 const all = readdirSync(dir);
 const read = (f) => readFileSync(path.join(dir, f), 'utf8');
 const sysIdOf = (xml) => (xml.match(/<sys_id>([0-9a-f]{32})<\/sys_id>/) || [])[1];
 
-// Agent execute ACLs are named global.x_695068_bcfa.<agent name>.
+// Agent and workflow execute ACLs are named global.x_695068_bcfa.<name>.
 const agentAcls = all.filter((f) => /^sys_security_acl_[0-9a-f]{32}\.xml$/.test(f) && /<name>global\.x_695068_bcfa\.BCFA /.test(read(f)));
 const aclIds = agentAcls.map((f) => sysIdOf(read(f)));
 const aclRoles = all.filter((f) => f.startsWith('sys_security_acl_role_') && aclIds.some((id) => read(f).includes(id)));
@@ -50,6 +95,12 @@ const picked = [
   ...byPrefix('sn_aia_version_'),
   ...byPrefix('sn_aia_agent_tool_m2m_'),
   ...byPrefix('sys_agent_access_role_configuration_'),
+  ...byPrefix('sn_aia_usecase_', ['sn_aia_usecase_config_override_']),
+  ...byPrefix('sn_aia_usecase_config_override_'),
+  ...byPrefix('sn_aia_team_', ['sn_aia_team_member_']),
+  ...byPrefix('sn_aia_team_member_'),
+  ...byPrefix('sn_aia_trigger_configuration_'),
+  ...byPrefix('sn_aia_trigger_agent_usecase_m2m_'),
 ];
 
 const files = picked.map((f) => ({ name: f.replace('.xml', ''), xml: read(f) }));
@@ -61,7 +112,7 @@ var files = ${JSON.stringify(files)};
 var out = [];
 if (gs.getCurrentScopeName() !== 'rhino.global') {
   gs.info('BCFA_DEPLOY ABORTED: run in scope "global", current scope is ' + gs.getCurrentScopeName());
-} else {
+} else {${withAiUser ? aiUserPreamble : ''}
   var gum = new GlideUpdateManager2();
   var ok = 0, failed = 0;
   files.forEach(function(f) {
@@ -74,7 +125,13 @@ if (gs.getCurrentScopeName() !== 'rhino.global') {
   agent.query();
   var agents = [];
   while (agent.next()) agents.push(agent.getValue('name') + (agent.getValue('sys_scope') === '229ba2b1a079431e104010f5ea883e85' ? '' : ' (WRONG SCOPE ' + agent.getValue('sys_scope') + ')'));
-  out.unshift('loaded=' + ok + ' failed=' + failed + ' of ' + files.length + ' | ' + agents.length + ' agents: ' + agents.join('; '));
+  var usecase = new GlideRecord('sn_aia_usecase');
+  usecase.addEncodedQuery('nameSTARTSWITHBCFA ');
+  usecase.query();
+  var workflows = [];
+  while (usecase.next()) workflows.push(usecase.getValue('name'));
+  out.unshift('loaded=' + ok + ' failed=' + failed + ' of ' + files.length + ' | ' + agents.length + ' agents: ' + agents.join('; ') +
+    ' | ' + workflows.length + ' workflows: ' + workflows.join('; '));
 }
 gs.info('BCFA_DEPLOY ' + out.join(' | '));
 `;

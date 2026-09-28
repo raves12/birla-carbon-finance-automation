@@ -557,6 +557,14 @@ declare global {
                         table: 'sys_security_acl'
                         id: 'c09072c3a2e34a60be3f433e20c58766'
                     }
+                    bcfa_ap_invoice_review_workflow: {
+                        table: 'sn_aia_usecase'
+                        id: '53ff37dad1c14284be73d757e05ddd15'
+                    }
+                    bcfa_ap_invoice_review_workflow_acl: {
+                        table: 'sys_security_acl'
+                        id: '4e792e3f193d4045a9116bc35f083513'
+                    }
                     bcfa_ap_resolution_recommendation_agent: {
                         table: 'sn_aia_agent'
                         id: 'ef84e321673c4969b17dea9d03c4dae5'
@@ -2382,6 +2390,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_usecase_config_override'
+                        id: '0dabf3d24b284a9f8212627abcecafae'
+                        key: {
+                            usecase_configuration: '53ff37dad1c14284be73d757e05ddd15'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '0e01860485934cc6a5c8ce68678f0a04'
                         key: {
@@ -2932,6 +2947,20 @@ declare global {
                                     name: 'x_695068_bcfa.admin'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sn_aia_trigger_agent_usecase_m2m'
+                        id: '1b99a008f826491e8d837a5882e7418c'
+                        key: {
+                            trigger_configuration: {
+                                id: '7a42563817c44ac38f123664a1670e39'
+                                key: {
+                                    name: 'BCFA AP Exception Created'
+                                    usecase: '53ff37dad1c14284be73d757e05ddd15'
+                                }
+                            }
+                            related_resource_record: '53ff37dad1c14284be73d757e05ddd15'
                         }
                     },
                     {
@@ -4514,6 +4543,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '3fc409dff04f4075af175c00689570f4'
+                        key: {
+                            sys_security_acl: '4e792e3f193d4045a9116bc35f083513'
+                            sys_user_role: 'e1abbc605ba34cbfb77c584ea689c1b2'
+                        }
+                    },
+                    {
                         table: 'sn_aia_tool'
                         id: '3fc8d62e6f184efca200a3ef659dd2d1'
                         key: {
@@ -5793,6 +5830,14 @@ declare global {
                             name: 'x_695068_bcfa_vendor'
                             element: 'company_code'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '5a2e3027549a4f22967bb15128d7682d'
+                        key: {
+                            sys_security_acl: '4e792e3f193d4045a9116bc35f083513'
+                            sys_user_role: 'bf505b5092574a7fa59a01048550571a'
                         }
                     },
                     {
@@ -7196,6 +7241,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_version'
+                        id: '76c7a74c6b514bb18543036558462203'
+                        key: {
+                            target_id: '53ff37dad1c14284be73d757e05ddd15'
+                            version_name: 'V1'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '76cbe6521b4e494b80ecef23ffe9f128'
                         key: {
@@ -7345,6 +7398,14 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ai_interaction'
                             element: 'source_table'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_trigger_configuration'
+                        id: '7a42563817c44ac38f123664a1670e39'
+                        key: {
+                            name: 'BCFA AP Exception Created'
+                            usecase: '53ff37dad1c14284be73d757e05ddd15'
                         }
                     },
                     {
@@ -10318,6 +10379,14 @@ declare global {
                     },
                     {
                         table: 'sys_security_acl_role'
+                        id: 'bbf30e4eec6542bbad721cec8155f4c4'
+                        key: {
+                            sys_security_acl: '4e792e3f193d4045a9116bc35f083513'
+                            sys_user_role: '484c56f4217841e298f5752ea6093a3f'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
                         id: 'bc0b68ccdb614136bc171f6f15171fcf'
                         key: {
                             sys_security_acl: '12f4ad253d554352ab0a05e0576730fa'
@@ -10448,6 +10517,19 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_deduction'
                             element: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_team_member'
+                        id: 'bfaa163ed3cc4ba0ad5673559cac4b96'
+                        key: {
+                            agent: '04cf894018b541cc929bdf7895e8e286'
+                            team: {
+                                id: 'cf363437369f408cbfba3a0e11f4dcd7'
+                                key: {
+                                    name: 'BCFA AP Invoice Review Team'
+                                }
+                            }
                         }
                     },
                     {
@@ -11239,6 +11321,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_team'
+                        id: 'cf363437369f408cbfba3a0e11f4dcd7'
+                        key: {
+                            name: 'BCFA AP Invoice Review Team'
+                        }
+                    },
+                    {
                         table: 'sn_aia_agent_tool_m2m'
                         id: 'cf66e45cdec64bcbbd6f9857e53218b7'
                         key: {
@@ -11605,6 +11694,14 @@ declare global {
                             name: 'x_695068_bcfa_deduction'
                             element: 'deduction_type'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'd86a038660124f64a5079d805ad8b8a0'
+                        key: {
+                            sys_security_acl: '4e792e3f193d4045a9116bc35f083513'
+                            sys_user_role: '4411dd9103de4bdbb5468924b1e5459f'
                         }
                     },
                     {
@@ -13389,6 +13486,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_team_member'
+                        id: 'fa3552cc84d64d54a9c324e84502e934'
+                        key: {
+                            agent: '3c1340425274482fb242410734d781fe'
+                            team: {
+                                id: 'cf363437369f408cbfba3a0e11f4dcd7'
+                                key: {
+                                    name: 'BCFA AP Invoice Review Team'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: 'fa4f643424b94819a505c86eba694065'
                         key: {
@@ -13585,6 +13695,19 @@ declare global {
                             agent: '59b6817ef4724c9ea131e5aa57c3f250'
                             tool: '6296e518e68b4bb08e48ca6abdf9885d'
                             name: 'Save AR Advisory Recommendation (Cash Match)'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_team_member'
+                        id: 'fee000868a2c4802af42164e2c327554'
+                        key: {
+                            agent: 'ef84e321673c4969b17dea9d03c4dae5'
+                            team: {
+                                id: 'cf363437369f408cbfba3a0e11f4dcd7'
+                                key: {
+                                    name: 'BCFA AP Invoice Review Team'
+                                }
+                            }
                         }
                     },
                     {

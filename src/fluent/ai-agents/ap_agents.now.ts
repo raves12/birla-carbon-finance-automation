@@ -212,10 +212,15 @@ export const apResolutionRecommendationAgent = AiAgent({
         {
             name: 'Save Advisory Recommendation',
             description:
-                'Saves the final recommendation text to the AP exception\'s advisory AI Recommendation field only. Changes nothing else and is audited. Requires the user to confirm.',
+                'Saves the final recommendation text to the AP exception\'s advisory AI Recommendation field only. Changes nothing else and is audited.',
             type: 'script',
             recordType: 'custom',
-            executionMode: 'copilot',
+            // Autopilot so the triggered BCFA AP Invoice Review workflow can
+            // record its advisory note with nobody present to confirm (Phase 10
+            // decision). Safe because the tool can only write ai_recommendation,
+            // is role-checked and audited, and nothing reads that field for
+            // decisions. In chat the instructions still say: save only when asked.
+            executionMode: 'autopilot',
             preMessage: 'Saving the advisory recommendation...',
             postMessage: 'Advisory recommendation saved to the exception.',
             inputs: [
