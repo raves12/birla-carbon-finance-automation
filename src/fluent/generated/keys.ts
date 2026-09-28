@@ -541,6 +541,30 @@ declare global {
                         table: 'sys_ui_related_list_entry'
                         id: 'e52b5626825644ff8447e115eb6186f7'
                     }
+                    bcfa_ap_communication_agent: {
+                        table: 'sn_aia_agent'
+                        id: '3c1340425274482fb242410734d781fe'
+                    }
+                    bcfa_ap_communication_agent_acl: {
+                        table: 'sys_security_acl'
+                        id: 'ddc8714aa5f844578bcc2b309059210c'
+                    }
+                    bcfa_ap_exception_analysis_agent: {
+                        table: 'sn_aia_agent'
+                        id: '04cf894018b541cc929bdf7895e8e286'
+                    }
+                    bcfa_ap_exception_analysis_agent_acl: {
+                        table: 'sys_security_acl'
+                        id: 'c09072c3a2e34a60be3f433e20c58766'
+                    }
+                    bcfa_ap_resolution_recommendation_agent: {
+                        table: 'sn_aia_agent'
+                        id: 'ef84e321673c4969b17dea9d03c4dae5'
+                    }
+                    bcfa_ap_resolution_recommendation_agent_acl: {
+                        table: 'sys_security_acl'
+                        id: '2895fd078be441a3967cb2e4e920a98b'
+                    }
                     'bcfa-app-menu': {
                         table: 'sys_app_application'
                         id: 'c34b89c19957473da79f8c95aa069e60'
@@ -1865,6 +1889,14 @@ declare global {
                     },
                     {
                         table: 'sys_security_acl_role'
+                        id: '069c9e849f744b8fb46021fa137334ce'
+                        key: {
+                            sys_security_acl: '2895fd078be441a3967cb2e4e920a98b'
+                            sys_user_role: '484c56f4217841e298f5752ea6093a3f'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
                         id: '06c562cdbe4b4f8bbbe4aa7b48ad4626'
                         key: {
                             sys_security_acl: 'e94b991c4b954494b225f3a86a9a7eb8'
@@ -1923,6 +1955,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: '075a827a15a440fdb8eaa1576c0d0b10'
+                        key: {
+                            agent: 'ef84e321673c4969b17dea9d03c4dae5'
+                            tool: 'f8a2cd60e6a54f59a8220618e881a5c2'
+                            name: 'Get AP Exception Context (Resolution)'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: '075d7432b8ef4d5fbc7e48be8431db2b'
                         key: {
@@ -1969,6 +2010,13 @@ declare global {
                             name: 'x_695068_bcfa_vendor'
                             element: 'active'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_tool'
+                        id: '082cda60c197400e8c9c26e55dca747b'
+                        key: {
+                            name: 'Get AP Exception Context (Communication)'
                         }
                     },
                     {
@@ -2040,6 +2088,13 @@ declare global {
                             name: 'x_695068_bcfa_po_line'
                             element: 'material_or_service'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_agent_config'
+                        id: '0a5a2f18f37f465a8592afa11d98166e'
+                        key: {
+                            agent: '3c1340425274482fb242410734d781fe'
                         }
                     },
                     {
@@ -2284,6 +2339,13 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ap_exception'
                             element: 'description'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_tool'
+                        id: '0edc4add126141c6ada6301ab546faad'
+                        key: {
+                            name: 'Get AP Exception Context'
                         }
                     },
                     {
@@ -2603,6 +2665,15 @@ declare global {
                                     name: 'x_695068_bcfa.finance_approver'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: '174ffe11b1054acdb9944d7ad783c511'
+                        key: {
+                            agent: 'ef84e321673c4969b17dea9d03c4dae5'
+                            tool: 'f02ff85cc02a411999a8cd1693c2a4e9'
+                            name: 'Find AP Invoice (Resolution)'
                         }
                     },
                     {
@@ -3427,6 +3498,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '2ce57b7318c4485785784abd58055df1'
+                        key: {
+                            sys_security_acl: 'ddc8714aa5f844578bcc2b309059210c'
+                            sys_user_role: 'bf505b5092574a7fa59a01048550571a'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '2d362be587ba4215b1013200423bd48b'
                         key: {
@@ -3519,6 +3598,14 @@ declare global {
                             name: 'x_695068_bcfa_ap_match'
                             element: 'within_tolerance'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '2e041a209a7a4442a9bfc24855dd9d35'
+                        key: {
+                            sys_security_acl: 'ddc8714aa5f844578bcc2b309059210c'
+                            sys_user_role: 'e1abbc605ba34cbfb77c584ea689c1b2'
                         }
                     },
                     {
@@ -3944,6 +4031,14 @@ declare global {
                     },
                     {
                         table: 'sys_security_acl_role'
+                        id: '38decf1752e44bdb8fc00040503934d7'
+                        key: {
+                            sys_security_acl: '2895fd078be441a3967cb2e4e920a98b'
+                            sys_user_role: 'e1abbc605ba34cbfb77c584ea689c1b2'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
                         id: '392c2485c9b8488987183ba149e85c22'
                         key: {
                             sys_security_acl: '389ff39dc4c940a0ab7496f8f6c433d9'
@@ -4258,6 +4353,13 @@ declare global {
                             value: 'duplicate'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_tool'
+                        id: '3fc8d62e6f184efca200a3ef659dd2d1'
+                        key: {
+                            name: 'Explain AP Exception'
                         }
                     },
                     {
@@ -4685,6 +4787,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_tool'
+                        id: '48dcd30ccb7c400ca7438368657f9bed'
+                        key: {
+                            name: 'Find AP Invoice (Communication)'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '49a397e1bd114b908b8930ee63eaf613'
                         key: {
@@ -4720,6 +4829,14 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ap_approval'
                             element: 'decision_notes'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_version'
+                        id: '4a9c149482984233af179661274b8102'
+                        key: {
+                            target_id: '04cf894018b541cc929bdf7895e8e286'
+                            version_name: 'V1'
                         }
                     },
                     {
@@ -4804,6 +4921,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '4c2866c2fbb045f2a3d35582e42d874b'
+                        key: {
+                            sys_security_acl: 'c09072c3a2e34a60be3f433e20c58766'
+                            sys_user_role: '4411dd9103de4bdbb5468924b1e5459f'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '4c999618a7b94de0a513b2eddf427472'
                         key: {
@@ -4864,6 +4989,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: '4e3d198e428d4bbb91feb48e5cab5056'
+                        key: {
+                            agent: '04cf894018b541cc929bdf7895e8e286'
+                            tool: '3fc8d62e6f184efca200a3ef659dd2d1'
+                            name: 'Explain AP Exception'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: '4e51b1bd3cb542428c9deed345fea775'
                         key: {
@@ -4888,6 +5022,15 @@ declare global {
                         id: '4edc47eab4c9497fac4283e8a388e4cf'
                         key: {
                             ui_action: 'd6364c9589c84fea88ccac365a8fdbcc'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: '4f11c5fa2e52489fa2115e8d2929cb97'
+                        key: {
+                            agent: '3c1340425274482fb242410734d781fe'
+                            tool: '7a914594b1dd4e759757e41d05d9c652'
+                            name: 'Draft Vendor Clarification'
                         }
                     },
                     {
@@ -4990,6 +5133,14 @@ declare global {
                         key: {
                             document_key: '0ed0fbb411da48efa9fa4608fc130842'
                             variable: '989d9e235324220002c6435723dc3484'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_version'
+                        id: '525a187d1b764234b463f2c8dc5df29d'
+                        key: {
+                            target_id: 'ef84e321673c4969b17dea9d03c4dae5'
+                            version_name: 'V1'
                         }
                     },
                     {
@@ -5536,6 +5687,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_agent_access_role_configuration'
+                        id: '5ef98313b09647f2b781cddcf9e3b9fb'
+                        key: {
+                            agent: '04cf894018b541cc929bdf7895e8e286'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '5f02ecd17c6c41cb8306370ae2f3064c'
                         key: {
@@ -5808,6 +5966,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_agent_config'
+                        id: '635d0dbb7f3c44d2bd1e87397fcbf372'
+                        key: {
+                            agent: '04cf894018b541cc929bdf7895e8e286'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '63857bf8a6c542d5bde2625ee51123fe'
                         key: {
@@ -5854,6 +6019,21 @@ declare global {
                             name: 'x_695068_bcfa_ar_exception'
                             element: 'ai_recommendation'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '63f06f884190405eaf239d3d6d7e0545'
+                        key: {
+                            sys_security_acl: '2895fd078be441a3967cb2e4e920a98b'
+                            sys_user_role: '03604bf4100246588f4250676240bc18'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_tool'
+                        id: '642952acf47a465da77a11044f131d4d'
+                        key: {
+                            name: 'List Open AP Exceptions (Communication)'
                         }
                     },
                     {
@@ -5982,6 +6162,14 @@ declare global {
                             value: 'trade_name'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '6710f3c85aea472cbe587603c3df5286'
+                        key: {
+                            sys_security_acl: 'c09072c3a2e34a60be3f433e20c58766'
+                            sys_user_role: '03604bf4100246588f4250676240bc18'
                         }
                     },
                     {
@@ -6650,6 +6838,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: '7595d51388fb49ebb0b1d45fc4eed1e4'
+                        key: {
+                            agent: 'ef84e321673c4969b17dea9d03c4dae5'
+                            tool: 'e019abdf4cac40d6809e95e478319484'
+                            name: 'Save Advisory Recommendation'
+                        }
+                    },
+                    {
                         table: 'ua_table_licensing_config'
                         id: '75aff25258a44b328043619606aa3bf3'
                         key: {
@@ -6706,6 +6903,15 @@ declare global {
                             name: 'x_695068_bcfa_finance_intake'
                             element: 'requires_review'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: '76b0aae2ef2a4d56b2b6781568a35ef1'
+                        key: {
+                            agent: '04cf894018b541cc929bdf7895e8e286'
+                            tool: 'c25c19c756e64e3cb07fb398e1340750'
+                            name: 'List Open AP Exceptions'
                         }
                     },
                     {
@@ -6877,6 +7083,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_tool'
+                        id: '7a914594b1dd4e759757e41d05d9c652'
+                        key: {
+                            name: 'Draft Vendor Clarification'
+                        }
+                    },
+                    {
                         table: 'sys_ux_form_action'
                         id: '7ad99fb3124b49cbbbc026595a0f95b4'
                         key: {
@@ -6995,6 +7208,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '7ce4042983294d8191510717c5bf1acb'
+                        key: {
+                            sys_security_acl: '2895fd078be441a3967cb2e4e920a98b'
+                            sys_user_role: 'bf505b5092574a7fa59a01048550571a'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '7d4ae307ef2240fa83f06583c358a42e'
                         key: {
@@ -7101,6 +7322,13 @@ declare global {
                                     name: 'x_695068_bcfa.finance_reviewer'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sn_aia_tool'
+                        id: '7fff063f1edf4cfab3fe42177aeaf9ab'
+                        key: {
+                            name: 'Recommend AP Next Action'
                         }
                     },
                     {
@@ -7519,6 +7747,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: '89d20b70be6048e5b65dd1ed6adae0e9'
+                        key: {
+                            agent: 'ef84e321673c4969b17dea9d03c4dae5'
+                            tool: 'e279e39a1a464ed388b808db6cacdea7'
+                            name: 'List Open AP Exceptions (Resolution)'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: '8a1daf2a8f024284adb7b9efb422d29e'
                         key: {
@@ -7567,6 +7804,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: '8c16c3cd0e4f48a58b551af34a579cc1'
+                        key: {
+                            agent: 'ef84e321673c4969b17dea9d03c4dae5'
+                            tool: '7fff063f1edf4cfab3fe42177aeaf9ab'
+                            name: 'Recommend AP Next Action'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '8c669975847b43a28e823296235afff7'
                         key: {
@@ -7611,6 +7857,14 @@ declare global {
                             name: 'x_695068_bcfa_remittance'
                             element: 'confidence'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '8d6adac8f94b444a9b2898ade605275e'
+                        key: {
+                            sys_security_acl: '2895fd078be441a3967cb2e4e920a98b'
+                            sys_user_role: '4411dd9103de4bdbb5468924b1e5459f'
                         }
                     },
                     {
@@ -8028,6 +8282,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_agent_access_role_configuration'
+                        id: '98cf77d1724947afb1a1e507ccd940d3'
+                        key: {
+                            agent: '3c1340425274482fb242410734d781fe'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '98d66cf502344de699f8889b42f6a1c7'
                         key: {
@@ -8141,6 +8402,15 @@ declare global {
                                     name: 'x_695068_bcfa.ap_processor'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: '9c037e90af0d425998e480091cd9cb84'
+                        key: {
+                            agent: '04cf894018b541cc929bdf7895e8e286'
+                            tool: 'be36ba2be2a04a01ae12d06cf334c983'
+                            name: 'Find AP Invoice'
                         }
                     },
                     {
@@ -9081,6 +9351,14 @@ declare global {
                     },
                     {
                         table: 'sys_security_acl_role'
+                        id: 'b1c2e74ddb29410b8d4e585be43c9c6b'
+                        key: {
+                            sys_security_acl: 'c09072c3a2e34a60be3f433e20c58766'
+                            sys_user_role: 'e1abbc605ba34cbfb77c584ea689c1b2'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
                         id: 'b2783fc3ccb444498aff60aa4fe2099e'
                         key: {
                             sys_security_acl: 'f3bea3e6ce79409986fdd080caf698bd'
@@ -9727,6 +10005,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_tool'
+                        id: 'be36ba2be2a04a01ae12d06cf334c983'
+                        key: {
+                            name: 'Find AP Invoice'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: 'be798a8b099f4ab6b2515123beaf2067'
                         key: {
@@ -9832,6 +10117,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_tool'
+                        id: 'c25c19c756e64e3cb07fb398e1340750'
+                        key: {
+                            name: 'List Open AP Exceptions'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: 'c288e6da4f764df59d9fae3653374597'
                         key: {
@@ -9911,6 +10203,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: 'c4253efaf30d41cc89e3516f4bb1b9cb'
+                        key: {
+                            sys_security_acl: 'c09072c3a2e34a60be3f433e20c58766'
+                            sys_user_role: '484c56f4217841e298f5752ea6093a3f'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: 'c42bcebfbfdf4eb7b8db3f98c6696553'
                         key: {
@@ -9953,6 +10253,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: 'c52cc18220c140eabc71dedcc54bbf41'
+                        key: {
+                            sys_security_acl: 'ddc8714aa5f844578bcc2b309059210c'
+                            sys_user_role: '484c56f4217841e298f5752ea6093a3f'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: 'c533c6419b504699b943f42e56ffc2f1'
                         key: {
@@ -9981,6 +10289,15 @@ declare global {
                             value: 'in_review'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: 'c593de1244e44393ac999d39417f5745'
+                        key: {
+                            agent: '3c1340425274482fb242410734d781fe'
+                            tool: '48dcd30ccb7c400ca7438368657f9bed'
+                            name: 'Find AP Invoice (Communication)'
                         }
                     },
                     {
@@ -10282,6 +10599,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_agent_config'
+                        id: 'cac867f7b578405e8f9716d59954fe01'
+                        key: {
+                            agent: 'ef84e321673c4969b17dea9d03c4dae5'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: 'caf5b13ca8ec4053ab15e81578f535f4'
                         key: {
@@ -10478,6 +10802,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: 'cf66e45cdec64bcbbd6f9857e53218b7'
+                        key: {
+                            agent: '3c1340425274482fb242410734d781fe'
+                            tool: '082cda60c197400e8c9c26e55dca747b'
+                            name: 'Get AP Exception Context (Communication)'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: 'cfb09ac42a194701a4ceb651b7fb3aee'
                         key: {
@@ -10590,6 +10923,13 @@ declare global {
                                     name: 'x_695068_bcfa.admin'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_agent_access_role_configuration'
+                        id: 'd290d81703b149f7a7e58f55819e8b8a'
+                        key: {
+                            agent: 'ef84e321673c4969b17dea9d03c4dae5'
                         }
                     },
                     {
@@ -11084,6 +11424,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: 'dd8ce8412d374174a3f043d817ed1efa'
+                        key: {
+                            agent: '3c1340425274482fb242410734d781fe'
+                            tool: '642952acf47a465da77a11044f131d4d'
+                            name: 'List Open AP Exceptions (Communication)'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: 'dd8ec601ce0c4ff9943534b5a0de19a1'
                         key: {
@@ -11168,6 +11517,13 @@ declare global {
                             name: 'x_695068_bcfa_ap_approval'
                             element: 'decision_notes'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sn_aia_tool'
+                        id: 'e019abdf4cac40d6809e95e478319484'
+                        key: {
+                            name: 'Save Advisory Recommendation'
                         }
                     },
                     {
@@ -11308,6 +11664,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_tool'
+                        id: 'e279e39a1a464ed388b808db6cacdea7'
+                        key: {
+                            name: 'List Open AP Exceptions (Resolution)'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: 'e2b0ba8997614ce1b9839b0986920413'
                         key: {
@@ -11356,6 +11719,14 @@ declare global {
                                     name: 'x_695068_bcfa.ar_processor'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'e3adc4bfe3f842f58e6a627cd17d4399'
+                        key: {
+                            sys_security_acl: 'ddc8714aa5f844578bcc2b309059210c'
+                            sys_user_role: '4411dd9103de4bdbb5468924b1e5459f'
                         }
                     },
                     {
@@ -11843,6 +12214,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_version'
+                        id: 'ed6020261504488f8a1142b955be9f37'
+                        key: {
+                            target_id: '3c1340425274482fb242410734d781fe'
+                            version_name: 'V1'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: 'ed6193cc0df04d9bbe8ba5f19d976e3f'
                         key: {
@@ -12007,6 +12386,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_tool'
+                        id: 'f02ff85cc02a411999a8cd1693c2a4e9'
+                        key: {
+                            name: 'Find AP Invoice (Resolution)'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: 'f04f979d44414b5392def6c015363e6a'
                         key: {
@@ -12054,6 +12440,14 @@ declare global {
                             value: 'rejected'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'f136ff40551a4146ba0a3ae5c43f586e'
+                        key: {
+                            sys_security_acl: 'c09072c3a2e34a60be3f433e20c58766'
+                            sys_user_role: 'bf505b5092574a7fa59a01048550571a'
                         }
                     },
                     {
@@ -12387,6 +12781,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_aia_tool'
+                        id: 'f8a2cd60e6a54f59a8220618e881a5c2'
+                        key: {
+                            name: 'Get AP Exception Context (Resolution)'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: 'f8fdb6ddcc0743dcbb0ef338ea019a52'
                         key: {
@@ -12610,6 +13011,15 @@ declare global {
                                     name: 'x_695068_bcfa.finance_approver'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sn_aia_agent_tool_m2m'
+                        id: 'fe00fe77163c41f1ab7c8ab5ab0d2dc9'
+                        key: {
+                            agent: '04cf894018b541cc929bdf7895e8e286'
+                            tool: '0edc4add126141c6ada6301ab546faad'
+                            name: 'Get AP Exception Context'
                         }
                     },
                     {
