@@ -162,7 +162,10 @@ if (gs.getCurrentScopeName() !== 'rhino.global') {
       link.setValue('active', true);
       link.update();
     }
-    out.push('trigger ' + trigger.getValue('name') + (trigger.getValue('trigger_flow') ? ' active with flow' : ' HAS NO FLOW'));
+    // Re-read: the flow reference is written by the platform after update().
+    var check = new GlideRecord('sn_aia_trigger_configuration');
+    check.get(trigger.getUniqueValue());
+    out.push('trigger ' + check.getValue('name') + (check.getValue('trigger_flow') ? ' active with flow' : ' flow not yet visible (verify trigger_flow is set)'));
   }
   var usecase = new GlideRecord('sn_aia_usecase');
   usecase.addEncodedQuery('nameSTARTSWITHBCFA ');
