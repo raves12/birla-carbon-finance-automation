@@ -30,7 +30,7 @@ export const apInvoiceAuditFieldCorrections = BusinessRule({
 
 export const apInvoiceLineAuditFieldCorrections = BusinessRule({
     $id: Now.ID['br-audit-field-corrections-ap-invoice-line'],
-    name: 'AP Invoice Line - Audit Field Corrections',
+    name: 'AP Invoice Line - Audit Corrections',
     table: 'x_695068_bcfa_ap_invoice_line',
     when: 'after',
     action: ['update'],
@@ -66,7 +66,7 @@ export const remittanceAuditFieldCorrections = BusinessRule({
 
 export const financeIntakeAuditFieldCorrections = BusinessRule({
     $id: Now.ID['br-audit-field-corrections-finance-intake'],
-    name: 'Finance Document Intake - Audit Field Corrections',
+    name: 'Document Intake - Audit Corrections',
     table: 'x_695068_bcfa_finance_intake',
     when: 'after',
     action: ['update'],

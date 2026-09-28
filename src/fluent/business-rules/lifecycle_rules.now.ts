@@ -19,7 +19,7 @@ export const apInvoiceLifecycleEnforcement = BusinessRule({
 
 export const paymentLifecycleEnforcement = BusinessRule({
     $id: Now.ID['br-payment-lifecycle-enforcement'],
-    name: 'BCFA - Enforce Cash Application Lifecycle',
+    name: 'BCFA - Enforce Payment Lifecycle',
     table: 'x_695068_bcfa_payment',
     when: 'before',
     action: ['update'],

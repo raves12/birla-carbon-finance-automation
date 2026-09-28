@@ -63,7 +63,7 @@ exercised yet:
 |---|---|
 | `FinanceLifecycle` (script include) | Reads the allowed transitions from the deployed state model, so the model is the single source of truth. `evaluate(table, from, to)`; staying in the same state is always allowed |
 | `ApDomainService._setState` / `ArDomainService._setState` | Every state change the services make is checked first. A transition outside the model is audited and **refused**: the service throws `BCFA lifecycle: …`, so no later step runs on a record in the wrong state. In a flow stage, FinanceOrchestration catches it and logs the error |
-| **BCFA - Enforce AP Invoice Lifecycle / Cash Application Lifecycle** (before-update business rules) | Backstop for any other writer (form, list, import, script): the update is aborted with an error message, and audited |
+| **BCFA - Enforce AP Invoice Lifecycle / BCFA - Enforce Payment Lifecycle** (before-update business rules) | Backstop for any other writer (form, list, import, script): the update is aborted with an error message, and audited |
 | `state` field | Read-only on forms. Only the services change it, through the actions (Resolve & Retry, approval decisions and so on) |
 
 Each refusal is an audit event of type **Rule Evaluated**. Its after value is
@@ -75,6 +75,27 @@ Property `x_695068_bcfa.lifecycle.enforcement`:
 |---|---|
 | `enforce` (default) | Transitions outside the model are refused and audited |
 | `monitor` | Transitions outside the model are allowed but audited (result `MONITORED`). This is a fallback if a legitimate path turns out to be missing from the model; add the transition, then switch back |
+
+## Verification (2026-09-28)
+
+`phase26_verify_bg.js`:
+
+- **Configuration:** enforcement mode is `enforce`, the new transitions are in the models, and CLOSED → MATCHING is not
+  allowed.
+- **Through the service:** `matchInvoice` on the closed invoice INV-P25-902939 threw `BCFA lifecycle: The AP Invoice
+  Lifecycle does not allow CLOSED -> MATCHING. Allowed from CLOSED: none.` The invoice stayed CLOSED, and the refusal
+  was audited.
+- **Direct update:** setting the closed payment BANK-AR-001 back to RECEIVED was aborted by the payment backstop rule,
+  with the message "State change refused: …". The payment stayed CLOSED, and the refusal was audited.
+- **Backstop rule count:** this check failed only because the payment rule's first name, *BCFA - Enforce Cash
+  Application Lifecycle*, has 41 characters. The name field holds 40, so the name was truncated and the exact-name
+  lookup missed it. The rule itself fired, as the direct-update test shows. It is renamed *BCFA - Enforce Payment
+  Lifecycle*.
+- **Legal paths still work.** In `phase25_verify_bg.js` / `phase25_verify2_bg.js` under enforcement, INV-P25-805373 ran
+  through the flows to CLOSED (posted MIRO1062621), and BANK-P25-805373 reached PENDING_APPROVAL. The only lifecycle
+  audit events on the instance are the two deliberate test refusals.
+- **Re-run of the state model check:** there are no new unmodelled transitions. The only remaining ones are the two
+  Phase 14 test-run paths, which are now refused.
 
 **Changing a lifecycle.** Add the transition to `src/fluent/state-models/*.now.ts` and deploy. Enforcement picks it up
 from the model, so no code changes are needed.

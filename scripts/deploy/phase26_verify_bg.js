@@ -22,7 +22,7 @@
     check('CLOSED -> MATCHING not allowed', !bad.allowed, bad.message);
 
     var rules = new GlideRecord('sys_script');
-    rules.addQuery('name', 'IN', 'BCFA - Enforce AP Invoice Lifecycle,BCFA - Enforce Cash Application Lifecycle');
+    rules.addQuery('name', 'IN', 'BCFA - Enforce AP Invoice Lifecycle,BCFA - Enforce Payment Lifecycle');
     rules.addActiveQuery();
     rules.query();
     check('both backstop business rules active', rules.getRowCount() === 2, String(rules.getRowCount()));
