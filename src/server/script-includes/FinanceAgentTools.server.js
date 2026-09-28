@@ -414,6 +414,10 @@ FinanceAgentTools.prototype = {
         }
         this._add(lines, 'Payment Amount', payment.getValue('amount'));
         this._add(lines, 'Currency', payment.getValue('currency'));
+        // Placeholder for the deterministic currency check, filled in below
+        // once every referenced open item is known.
+        var currencyCheckIndex = lines.length;
+        var referencedItems = [];
         this._add(lines, 'Value Date', payment.getValue('value_date'));
         this._add(lines, 'Posting Date', payment.getValue('posting_date'));
         this._add(lines, 'Remitter Bank Account', this._mask(payment.getValue('bank_account')));
@@ -437,6 +441,7 @@ FinanceAgentTools.prototype = {
         candidate.setLimit(FinanceAgentTools.MAX_LIST);
         candidate.query();
         while (candidate.next()) {
+            referencedItems.push(candidate.getValue('ar_open_item'));
             lines.push('Match Candidate: ' + candidate.getDisplayValue('match_type') +
                 ', open item ' + (this._openItemText(candidate.getValue('ar_open_item')) || 'none') +
                 ', customer candidate ' + (candidate.getDisplayValue('customer_candidate') || 'none') +
@@ -453,6 +458,7 @@ FinanceAgentTools.prototype = {
         while (allocation.next()) {
             totalAllocated += parseFloat(allocation.getValue('allocated_amount') || '0');
             totalResidual += parseFloat(allocation.getValue('residual_amount') || '0');
+            referencedItems.push(allocation.getValue('ar_open_item'));
             lines.push('Allocation: open item ' + (this._openItemText(allocation.getValue('ar_open_item')) || 'none') +
                 ', allocated ' + (allocation.getValue('allocated_amount') || '0') +
                 ', discount ' + (allocation.getValue('discount') || '0') +
@@ -480,6 +486,7 @@ FinanceAgentTools.prototype = {
             openItem.setLimit(FinanceAgentTools.MAX_LIST);
             openItem.query();
             while (openItem.next()) {
+                referencedItems.push(openItem.getUniqueValue());
                 lines.push('Customer Open Item: ' + openItem.getValue('item_number') +
                     ', invoice amount ' + openItem.getValue('invoice_amount') +
                     ', open amount ' + openItem.getValue('open_amount') +
@@ -487,6 +494,9 @@ FinanceAgentTools.prototype = {
                     ', due ' + (openItem.getValue('due_date') || 'unknown'));
             }
         }
+
+        var currencyCheck = this._currencyCheckLine(payment.getValue('currency'), referencedItems);
+        if (currencyCheck) lines.splice(currencyCheckIndex, 0, currencyCheck);
         return lines.join('\n');
     },
 
@@ -542,7 +552,31 @@ FinanceAgentTools.prototype = {
         var item = new GlideRecordSecure('x_695068_bcfa_ar_open_item');
         if (!item.get(openItemSysId)) return '';
         return item.getValue('item_number') + ' (invoice amount ' + item.getValue('invoice_amount') +
-            ', open amount ' + item.getValue('open_amount') + ')';
+            ', open amount ' + item.getValue('open_amount') + ' ' + (item.getValue('currency') || '') + ')';
+    },
+
+    // Deterministic guard: states explicitly when any open item the payment
+    // is matched or allocated against is in a different currency, so the
+    // agents never add, subtract or allocate across currencies (seen in the
+    // Phase 11 test on BANK-AR-002: EUR payment vs INR invoice).
+    _currencyCheckLine: function(paymentCurrency, openItemSysIds) {
+        if (!paymentCurrency) return '';
+        var mismatched = [];
+        var seen = {};
+        for (var i = 0; i < openItemSysIds.length; i++) {
+            var id = openItemSysIds[i];
+            if (!id || seen[id]) continue;
+            seen[id] = true;
+            var item = new GlideRecordSecure('x_695068_bcfa_ar_open_item');
+            if (!item.get(id)) continue;
+            var itemCurrency = item.getValue('currency');
+            if (itemCurrency && itemCurrency !== paymentCurrency) {
+                mismatched.push(item.getValue('item_number') + ' (' + itemCurrency + ')');
+            }
+        }
+        if (!mismatched.length) return 'Currency Check: all referenced open items are in the payment currency (' + paymentCurrency + ')';
+        return 'CURRENCY MISMATCH: the payment is in ' + paymentCurrency + ' but open item(s) ' + mismatched.join(', ') +
+            ' are not. Amounts in different currencies must not be added, subtracted, compared or allocated against each other; no residual can be computed across currencies.';
     },
 
     _deductionText: function(allocationSysId) {
