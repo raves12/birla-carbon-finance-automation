@@ -99,25 +99,55 @@ where `error` is one of `forbidden`, `invalid_argument`, `not_found`,
 `skill_error`, `invalid_response`, `exception` or `write_failed`. Messages are
 safe to show a user. Skill results carry `advisory: true`.
 
-## Deployment status
+## Deployment (2026-09-28)
 
 - Source: `src/server/script-includes/NowAssistSkillClient.server.js`,
   `src/server/script-includes/FinanceAgentTools.server.js`, and
   `src/fluent/script-includes/native_ai.now.ts`. Also the `now_assist_ai`
   Audit Event actor type and updated `ai_recommendation` hints.
-- `now-sdk build` succeeds. Build output for the new and changed records is
-  on branch `sn_instances/pwcmanagementservicesdemo01` (commit `5756f3a`).
-- **Not yet on the instance.** Do *not* run Studio "Apply Remote Changes"
-  before first committing the instance's local changes: the 9 Now Assist
-  skills and the DocIntel use cases were built on the instance and aren't in
-  source control yet, and an apply could overwrite them. Safe order:
-  1. In Studio, **Source Control → Commit Changes** for BCFA, which captures
-     the skills and DocIntel in git.
-  2. Resolve against commit `5756f3a` if Studio reports the remote as ahead.
-  3. **Apply Remote Changes.**
+- Build output for these records is on `sn_instances/pwcmanagementservicesdemo01`
+  (commit `5756f3a`).
+- **Deployed directly** from a global-scope background script. It set
+  `sys_scope`/`sys_package` to the BCFA app and used the build sys_ids,
+  because a scoped script is refused create/write on `sys_script_include`,
+  `sys_choice` and `sys_documentation`. Verified: both script includes are in
+  the BCFA scope, active, with `package_private` access. The
+  `now_assist_ai` choice is live and both hints are updated.
+- **Don't run Studio "Apply Remote Changes" yet.** The 9 Now Assist skills
+  and the DocIntel use cases were built on the instance and aren't in source
+  control. First run **Source Control → Commit Changes** in Studio. After
+  that the instance and repo should already agree on the Phase 7 records,
+  because the sys_ids match.
 
-  The alternative is to insert the two script includes, the choice and the
-  two hints directly on the instance in scope `x_695068_bcfa`, using the
-  build sys_ids so the instance and the repo stay aligned.
-- Runtime verification of the tool methods (role denial, sys_id validation,
-  a live skill call per domain, advice write and audit row) follows deployment.
+## Live tool test (2026-09-28, run in scope `x_695068_bcfa`)
+
+| # | Test | Result |
+|---|---|---|
+| 1 | `summarizeApInvoice('not-a-sys-id')` | `invalid_argument` ✔ |
+| 2 | `explainApException(<non-existent sys_id>)` | `not_found` ✔ |
+| 3 | `recordExceptionAdvice('xx', …)` | `invalid_argument` ✔ |
+| 4 | `findApInvoice('INV-AP-005')` | 1 match, correct vendor and states ✔ |
+| 5 | AP exception and payment context | Full context, bank account masked (`****-002`) ✔ |
+| 6 | `summarizeApInvoice` (INV-AP-005) | Now LLM, ~1.7 s, correct and read-only ✔ |
+| 7 | `explainApException` (price tolerance) | Correctly explained $50 vs $40 = 25% variance, flagged the missing tolerance threshold ✔ |
+| 7b | `explainArResidual` (BANK-AR-002) | Now LLM, ~1.4 s, hypothesis clearly labelled ✔ |
+| 8 | `recordExceptionAdvice('ap', …)` | Only `ai_recommendation` changed; exception still `open`, invoice untouched; audit row with before/after ✔ |
+
+Every skill call and the advice write produced an Audit Event with
+`actor_type = now_assist_ai` and the calling user as actor.
+
+**Not yet tested:** a user with no BCFA role getting `forbidden`. That needs
+a dedicated test user and is covered by the Phase 29 automated tests.
+
+### Findings to act on later
+
+- **Markdown in output.** The model sometimes uses markdown bold (`**…**`)
+  despite the "plain text" instruction. It's cosmetic. Either strip it in
+  the Phase 24 workspace display or tighten the prompts in a v2.
+- **Demo data inconsistency (fix before Phase 13).** BANK-AR-002 is EUR but
+  its open item ARI0006 is INR, and the allocation shows residual 0 while the
+  short-pay exception says -3500. The residual skill correctly surfaced the
+  currency mismatch as a hypothesis.
+- **Leftover test value.** The `bcfaApInvoiceSummary` payload still carries
+  the old Record input's test value (`ap_invoice: "INV-AP-001"`). The v2
+  prompt ignores it, so it's harmless.
