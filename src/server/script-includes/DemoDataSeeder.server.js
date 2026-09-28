@@ -13,7 +13,13 @@ DemoDataSeeder.prototype = {
         this.arService = new ArDomainService();
     },
 
+    // Phase 25: demo seeding runs the pipeline synchronously (inline).
     seedAll: function() {
+        var self = this;
+        return FinanceOrchestration.runInline(function() { return self._seedAll(); });
+    },
+
+    _seedAll: function() {
         var alreadySeeded = new GlideRecord('x_695068_bcfa_vendor');
         alreadySeeded.addQuery('vendor_code', 'V001');
         alreadySeeded.query();
@@ -277,7 +283,13 @@ DemoDataSeeder.prototype = {
 
     // ---- AP scenarios (Section 17/19) ---------------------------------------
 
+    // Phase 25: demo seeding runs the pipeline synchronously (inline).
     seedApScenarios: function() {
+        var self = this;
+        return FinanceOrchestration.runInline(function() { return self._seedApScenarios(); });
+    },
+
+    _seedApScenarios: function() {
         var users = this._twoUsers();
         var requester = users[0];
         var approver = users[1];
@@ -438,7 +450,13 @@ DemoDataSeeder.prototype = {
 
     // ---- AR scenarios (Section 17/19) ---------------------------------------
 
+    // Phase 25: demo seeding runs the pipeline synchronously (inline).
     seedArScenarios: function() {
+        var self = this;
+        return FinanceOrchestration.runInline(function() { return self._seedArScenarios(); });
+    },
+
+    _seedArScenarios: function() {
         var users = this._twoUsers();
         var requester = users[0];
         var approver = users[1];
@@ -594,7 +612,13 @@ DemoDataSeeder.prototype = {
     // the remittance PDFs in test/fixtures/AR_REMIT_10x drive the rest.
     // Idempotent: existing records (by code / number / bank reference) are
     // left untouched.
+    // Phase 25: demo seeding runs the pipeline synchronously (inline).
     seedPoc2CashScenarios: function() {
+        var self = this;
+        return FinanceOrchestration.runInline(function() { return self._seedPoc2CashScenarios(); });
+    },
+
+    _seedPoc2CashScenarios: function() {
         var created = [];
         var customers = [
             { code: 'C1001', name: 'Sahyadri Tyre Works Pvt Ltd' },
@@ -655,7 +679,13 @@ DemoDataSeeder.prototype = {
     // All four are deliberately left at their natural stopping point
     // (PENDING_APPROVAL or EXCEPTION) rather than auto-approved — that's the
     // live click-through moment for the actual client demo.
+    // Phase 25: demo seeding runs the pipeline synchronously (inline).
     seedClaudeDemoScenarios: function() {
+        var self = this;
+        return FinanceOrchestration.runInline(function() { return self._seedClaudeDemoScenarios(); });
+    },
+
+    _seedClaudeDemoScenarios: function() {
         var alreadySeeded = new GlideRecord('x_695068_bcfa_purchase_order');
         alreadySeeded.addQuery('po_number', 'PO-BC-1001');
         alreadySeeded.query();

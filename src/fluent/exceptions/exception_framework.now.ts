@@ -93,7 +93,9 @@ export const exceptionSweepJob = ScheduledScript({
     // No explicit time zone: with timeZone 'UTC' the platform's 'Adjust Time
     // Based on Time Zone' rule refused to create the job trigger (confirmed live).
     executionStart: '2026-09-28 10:00:00',
-    active: true,
+    // Phase 25: superseded by the BCFA AP / AR Aging/Escalation Flows, which
+    // run the same ExceptionEngine logic per exception (sweepOne).
+    active: false,
     script: `
         var result = new ExceptionEngine().sweep();
         gs.info('BCFA exception sweep: ' + JSON.stringify(result));

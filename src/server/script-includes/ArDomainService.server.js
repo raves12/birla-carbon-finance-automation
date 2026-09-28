@@ -81,6 +81,8 @@ ArDomainService.prototype = {
         if (fields.remittance) {
             this.intakeRemittance(intake.paymentSysId, fields.remittance);
         }
+        // Phase 25: in flow mode the AR flows take it from here.
+        if (!FinanceOrchestration.isInline()) return { paymentSysId: intake.paymentSysId, stoppedAt: 'RECEIVED', handedTo: 'AR Payment Intake Flow' };
         var normalization = this.normalizePayment(intake.paymentSysId);
         if (!normalization.normalized) {
             return { paymentSysId: intake.paymentSysId, stoppedAt: 'NORMALIZATION_EXCEPTION', detail: normalization };
@@ -798,6 +800,8 @@ ArDomainService.prototype = {
     resolveExceptionAndRetry: function(paymentSysId, exceptionSysId, resolutionNotes, resolvedBy) {
         this.exceptionEngine.resolveArException(exceptionSysId, resolutionNotes, resolvedBy);
         this._setState(paymentSysId, 'MATCHING', null, 'Re-matching after correction');
+        // Phase 25: in flow mode the AR Exception Flow re-matches and re-allocates.
+        if (!FinanceOrchestration.isInline()) return { resolved: true, handedTo: 'AR Exception Flow' };
         var match = this.matchPayment(paymentSysId);
         if (!match.matched) return match;
         var allocation = this.allocatePayment(paymentSysId);

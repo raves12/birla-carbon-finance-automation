@@ -337,13 +337,143 @@ declare global {
                         table: 'sys_security_acl'
                         id: '02782fbbc50e4f1ab1cee081d5f03e94'
                     }
+                    'act-ap-aging-log': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: '71fd676df1dd4cf1be0deb4d70eb6031'
+                    }
+                    'act-ap-aging-lookup': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: '162e5f0885e14dd3a9d2edf237f23366'
+                    }
+                    'act-ap-aging-stage': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: '5cf78cd16a1144fda3b28ea0785fe9c0'
+                    }
+                    'act-ap-approval-log': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: 'e6f8db8983d74a449e1fabd8be1002f7'
+                    }
+                    'act-ap-approval-stage': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: 'dfc7b2a27ec848c4b5db30732170474b'
+                    }
+                    'act-ap-exception-log': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: 'a2026259023049a285561d3b6c9fd1e9'
+                    }
+                    'act-ap-exception-stage': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: 'f5d7bd36f0b641b7a50fa3a00f01a932'
+                    }
+                    'act-ap-integration-log': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: '3e50367101b24980bfc6f9a7e6ed5630'
+                    }
+                    'act-ap-integration-stage': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: 'eaa24e30ee574028b8170111a5a66d98'
+                    }
+                    'act-ap-invoice-intake-log': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: '01f8077f23604698bcd84231cc64302a'
+                    }
+                    'act-ap-invoice-intake-stage': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: '429e8163e9e9475dbcb6e13114e0020f'
+                    }
+                    'act-ap-reconciliation-log': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: 'e2932591b6ed43aea69dc5f155bfef90'
+                    }
+                    'act-ap-reconciliation-stage': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: '121bfcbd174943b2a73ab5ead9cb6de5'
+                    }
+                    'act-ap-validation-log': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: '417791869257458ba3e73741e63486c4'
+                    }
+                    'act-ap-validation-stage': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: '76c260f05dcb42d6b8d12a87a4343fc7'
+                    }
+                    'act-ar-aging-log': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: 'ae1c1a50880847cba21dfe08c5ec5143'
+                    }
+                    'act-ar-aging-lookup': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: '61a8c68a36b7403c85db70ecf6d18788'
+                    }
+                    'act-ar-aging-stage': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: '149602ef578047878b14aa593001f4db'
+                    }
+                    'act-ar-approval-log': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: '325cb9ca8f604cbe890018b53be94d13'
+                    }
+                    'act-ar-approval-stage': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: '61a88d3e0b0d4d95b62910629e270301'
+                    }
+                    'act-ar-clearing-log': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: 'fe34a1901cb1448b9a4cc041475f47d3'
+                    }
+                    'act-ar-clearing-stage': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: '25fd926850fb4953aa2f95403fec9475'
+                    }
+                    'act-ar-exception-log': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: '1e4dc4ef423848d793dac4a680be627e'
+                    }
+                    'act-ar-exception-stage': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: '995ec44307704d21aaf7d764846fbce4'
+                    }
+                    'act-ar-match-log': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: 'a5c4221c16194c1fba2dd919b970cfa8'
+                    }
+                    'act-ar-match-stage': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: 'a8117af8a9af44d99dc439d9579c1ce8'
+                    }
+                    'act-ar-payment-intake-log': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: 'a8992dadc1e740d6a9625e3c4aceef62'
+                    }
+                    'act-ar-payment-intake-stage': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: '7bef0632ee844a459060785982986d9a'
+                    }
+                    'act-ar-reconciliation-log': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: '389c12fff50147c0bb8cb5523bff2f6b'
+                    }
+                    'act-ar-reconciliation-stage': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: '4f881c91463b4ab0b44b872a9300e4cf'
+                    }
+                    'act-ar-remittance-log': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: 'e12483df36234c5f889fe2fb6f9c7e1b'
+                    }
+                    'act-ar-remittance-stage': {
+                        table: 'sys_hub_action_instance_v2'
+                        id: '4824a82aa6eb4b2f8090fa0bce677fbf'
+                    }
                     'ap-aging-log': {
                         table: 'sys_hub_action_instance_v2'
                         id: '7d908a159c3f48d0890150a89f37f44b'
+                        deleted: true
                     }
                     'ap-aging-lookup': {
                         table: 'sys_hub_action_instance_v2'
                         id: '6b25581331014cec938e1ed5a0805a2b'
+                        deleted: true
                     }
                     'ap-ai-interaction-entry': {
                         table: 'sys_ui_related_list_entry'
@@ -592,10 +722,12 @@ declare global {
                     'ar-aging-log': {
                         table: 'sys_hub_action_instance_v2'
                         id: '7fdc3b20034e4b8a8c3c909e56fdfabb'
+                        deleted: true
                     }
                     'ar-aging-lookup': {
                         table: 'sys_hub_action_instance_v2'
                         id: 'c820c2b10be74ce4b872e74fb991d8a1'
+                        deleted: true
                     }
                     'ar-approval-entry': {
                         table: 'sys_ui_related_list_entry'
@@ -1449,13 +1581,69 @@ declare global {
                         table: 'sysevent_register'
                         id: '810d7ebac48e41f580258728c0f52824'
                     }
+                    'event-flow-stage': {
+                        table: 'sysevent_register'
+                        id: '716381fad463458492887fa27bddcc0e'
+                    }
+                    'flow-ap-approval': {
+                        table: 'sys_hub_flow'
+                        id: 'd70f8cf1dae84920a48eb7dc2862da5f'
+                    }
+                    'flow-ap-exception': {
+                        table: 'sys_hub_flow'
+                        id: '52e0960df5c74ea0b2a919c1b76393f7'
+                    }
                     'flow-ap-exception-aging-escalation': {
                         table: 'sys_hub_flow'
                         id: '8769e860868b4d1da62856fa0f7e0f76'
                     }
+                    'flow-ap-integration': {
+                        table: 'sys_hub_flow'
+                        id: '51d1b610be2c4d66bbc973076e0aeebb'
+                    }
+                    'flow-ap-invoice-intake': {
+                        table: 'sys_hub_flow'
+                        id: 'fe60b524116245bfa303276c7df23813'
+                    }
+                    'flow-ap-reconciliation': {
+                        table: 'sys_hub_flow'
+                        id: '7cd373fc414b4655b377a47ff1945844'
+                    }
+                    'flow-ap-validation': {
+                        table: 'sys_hub_flow'
+                        id: 'dc895c4f65c345a0b498a67189bd691f'
+                    }
+                    'flow-ar-approval': {
+                        table: 'sys_hub_flow'
+                        id: 'c54d412b2c6245c0909e60268da78dc9'
+                    }
+                    'flow-ar-clearing': {
+                        table: 'sys_hub_flow'
+                        id: 'ba06914e94b548979dcaf5ccfeaf1d35'
+                    }
+                    'flow-ar-exception': {
+                        table: 'sys_hub_flow'
+                        id: '01952b8915ac4bc1a271bc04f52621a0'
+                    }
                     'flow-ar-exception-aging-escalation': {
                         table: 'sys_hub_flow'
                         id: 'ba50cc23ef894ee7a317396f3de70b0c'
+                    }
+                    'flow-ar-match': {
+                        table: 'sys_hub_flow'
+                        id: '0b50bcc273bc4529ba9edc08e1d00f6d'
+                    }
+                    'flow-ar-payment-intake': {
+                        table: 'sys_hub_flow'
+                        id: '90107bde15394521b47048b7af67162d'
+                    }
+                    'flow-ar-reconciliation': {
+                        table: 'sys_hub_flow'
+                        id: '2ef9ef484cf444f9b3b7b1094338ddec'
+                    }
+                    'flow-ar-remittance': {
+                        table: 'sys_hub_flow'
+                        id: 'b7908b93b5a84e428371dd5febd33db6'
                     }
                     'job-claude-ap-phase2-test-v1': {
                         table: 'sysauto_script'
@@ -1542,6 +1730,14 @@ declare global {
                     'job-finance-kpi-refresh': {
                         table: 'sysauto_script'
                         id: 'e06fcfa703f046698cf31d3a7aeb209e'
+                    }
+                    'loop-ap-aging': {
+                        table: 'sys_hub_flow_logic_instance_v2'
+                        id: '26949729f2944b2e94823fda31863355'
+                    }
+                    'loop-ar-aging': {
+                        table: 'sys_hub_flow_logic_instance_v2'
+                        id: 'bd73e793912f4cdfae243b49bffdbfeb'
                     }
                     'match-candidate-entry': {
                         table: 'sys_ui_related_list_entry'
@@ -1719,6 +1915,10 @@ declare global {
                         table: 'sys_properties'
                         id: '732add1fdb044f53b34565facd13fd3a'
                     }
+                    'prop-orchestration-mode': {
+                        table: 'sys_properties'
+                        id: '3cf89aae405c43de85f9b9fa67c0307f'
+                    }
                     'prop-sod-approver-in-group': {
                         table: 'sys_properties'
                         id: '5eb6cd88e34c46718385fe5b85f47e40'
@@ -1734,6 +1934,10 @@ declare global {
                     'remittance-entry': {
                         table: 'sys_ui_related_list_entry'
                         id: '68b282b5fb7d4dfe807e94d135d24695'
+                    }
+                    'script-action-run-flow-stage': {
+                        table: 'sysevent_script_action'
+                        id: 'ac2b06e0b4bb49b4872190d1dbd13e07'
                     }
                     'si-ai-interaction-log': {
                         table: 'sys_script_include'
@@ -1798,6 +2002,10 @@ declare global {
                     'si-finance-kpi-service': {
                         table: 'sys_script_include'
                         id: '914d765f605047a59c767d99d7ce099d'
+                    }
+                    'si-finance-orchestration': {
+                        table: 'sys_script_include'
+                        id: 'db56861d14944f8b8cd0700828157284'
                     }
                     'si-finance-policy': {
                         table: 'sys_script_include'
@@ -1923,6 +2131,10 @@ declare global {
                         table: 'sys_module'
                         id: '0b23e2c9ae4b4f29b4d9c1e72d105949'
                     }
+                    'src_server_script-includes_FinanceOrchestration_server_js': {
+                        table: 'sys_module'
+                        id: 'e662b6ff089f4e41915a7ed6c91e408f'
+                    }
                     'src_server_script-includes_FinancePolicy_server_js': {
                         table: 'sys_module'
                         id: 'a662cc88c9234f3083a63532043a48e0'
@@ -2011,13 +2223,65 @@ declare global {
                         table: 'sys_atf_step'
                         id: '10f7c4ad3d8c46889841a6386cbf4330'
                     }
+                    'trg-ap-approval': {
+                        table: 'sys_hub_trigger_instance_v2'
+                        id: 'eabcc20ec21045f08607439ead5092a3'
+                    }
+                    'trg-ap-exception': {
+                        table: 'sys_hub_trigger_instance_v2'
+                        id: 'e63a32bc38b44f25a85c57978d14da07'
+                    }
                     'trg-ap-exception-aging': {
                         table: 'sys_hub_trigger_instance_v2'
                         id: '0cca1ec2e8594aa5b64adb9fcf33583a'
                     }
+                    'trg-ap-integration': {
+                        table: 'sys_hub_trigger_instance_v2'
+                        id: '2fc8a14194af4ab1b86fcb204137195f'
+                    }
+                    'trg-ap-invoice-intake': {
+                        table: 'sys_hub_trigger_instance_v2'
+                        id: '181ac6754f5d48648d773dd186c0362f'
+                    }
+                    'trg-ap-reconciliation': {
+                        table: 'sys_hub_trigger_instance_v2'
+                        id: '91730e19ea84443cb881cb555f98dc67'
+                    }
+                    'trg-ap-validation': {
+                        table: 'sys_hub_trigger_instance_v2'
+                        id: '5816b614d11541e6823c375996544e71'
+                    }
+                    'trg-ar-approval': {
+                        table: 'sys_hub_trigger_instance_v2'
+                        id: 'bf20abfc2e21427db7bade96bb0ef554'
+                    }
+                    'trg-ar-clearing': {
+                        table: 'sys_hub_trigger_instance_v2'
+                        id: '4bb8e1bd02284dac90fed1e68d00713a'
+                    }
+                    'trg-ar-exception': {
+                        table: 'sys_hub_trigger_instance_v2'
+                        id: 'b98b56c67570495dbf9a317f87f6687e'
+                    }
                     'trg-ar-exception-aging': {
                         table: 'sys_hub_trigger_instance_v2'
                         id: '0038ab76fdf64d93aed873fed77f324c'
+                    }
+                    'trg-ar-match': {
+                        table: 'sys_hub_trigger_instance_v2'
+                        id: 'c35f973010434997b64b2c945be5d1f3'
+                    }
+                    'trg-ar-payment-intake': {
+                        table: 'sys_hub_trigger_instance_v2'
+                        id: '291293a55f4940c1b0ba626dbaec3be6'
+                    }
+                    'trg-ar-reconciliation': {
+                        table: 'sys_hub_trigger_instance_v2'
+                        id: '7892dc11e17a417281cc05f73eb2fd33'
+                    }
+                    'trg-ar-remittance': {
+                        table: 'sys_hub_trigger_instance_v2'
+                        id: '5ddd6246d3404818851814fc1aca44fa'
                     }
                     'ui-action-ap-approval-approve': {
                         table: 'sys_ui_action'

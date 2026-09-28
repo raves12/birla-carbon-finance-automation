@@ -73,6 +73,8 @@ ApDomainService.prototype = {
         var intake = this.intakeInvoice(fields);
         var lines = fields.lines || [];
         for (var i = 0; i < lines.length; i++) this.attachInvoiceLine(intake.apInvoiceSysId, lines[i]);
+        // Phase 25: in flow mode the AP flows take it from here.
+        if (!FinanceOrchestration.isInline()) return { apInvoiceSysId: intake.apInvoiceSysId, stoppedAt: 'RECEIVED', handedTo: 'AP Invoice Intake Flow' };
         this.runExtraction(intake.apInvoiceSysId, fields.seedExtraction || {}, fields.extractionOptions);
         var validation = this.validateInvoice(intake.apInvoiceSysId);
         if (!validation.validated) {
@@ -447,6 +449,8 @@ ApDomainService.prototype = {
     resolveExceptionAndRetry: function(apInvoiceSysId, exceptionSysId, resolutionNotes, resolvedBy) {
         this._setState(apInvoiceSysId, 'RESOLUTION', null, 'Reviewer resolving exception');
         this.exceptionEngine.resolveApException(exceptionSysId, resolutionNotes, resolvedBy);
+        // Phase 25: in flow mode the AP Exception Flow re-validates and re-matches.
+        if (!FinanceOrchestration.isInline()) return { resolved: true, handedTo: 'AP Exception Flow' };
         this._setState(apInvoiceSysId, 'VALIDATING', null, 'Re-validating after correction');
         var validation = this.validateInvoice(apInvoiceSysId);
         if (!validation.validated) return validation;

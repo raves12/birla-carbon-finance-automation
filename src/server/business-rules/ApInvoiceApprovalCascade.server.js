@@ -4,6 +4,8 @@
 // Wrapped in a function so its variables never leak into the caller's
 // script scope (a bare "var svc" here once overwrote a caller's variable).
 (function executeRule(current, previous) {
+    // Phase 25: in flow mode the AP Integration Flow posts instead.
+    if (!FinanceOrchestration.isInline()) return;
     if (current.getValue('approval_state') === 'approved' && previous.getValue('approval_state') !== 'approved') {
         new ApDomainService().postInvoice(current.getUniqueValue());
     }

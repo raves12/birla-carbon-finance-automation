@@ -198,7 +198,25 @@ ExceptionEngine.prototype = {
         var gr = new GlideRecord(ExceptionEngine.PROCESS[process].table);
         gr.addQuery('status', 'IN', ExceptionEngine.OPEN_STATUSES);
         gr.query();
-        while (gr.next()) {
+        while (gr.next()) this._sweepRecord(process, gr, now, counts);
+        return counts;
+    },
+
+    // Phase 25: one open exception (the Aging/Escalation flows call this per
+    // exception). Returns what changed.
+    sweepOne: function(process, exceptionSysId) {
+        var counts = { checked: 0, atRisk: 0, breached: 0, escalated1: 0, escalated2: 0 };
+        var gr = new GlideRecord(ExceptionEngine.PROCESS[process].table);
+        if (!gr.get(exceptionSysId) || ExceptionEngine.OPEN_STATUSES.split(',').indexOf(gr.getValue('status')) < 0) return counts;
+        this._sweepRecord(process, gr, new GlideDateTime(), counts);
+        counts.number = gr.getValue('number');
+        counts.sla_status = gr.getValue('sla_status');
+        counts.escalation_level = gr.getValue('escalation_level');
+        return counts;
+    },
+
+    _sweepRecord: function(process, gr, now, counts) {
+        {
             counts.checked++;
             var opened = new GlideDateTime(gr.getValue('opened_at') || gr.getValue('sys_created_on'));
             var ageHours = (now.getNumericValue() - opened.getNumericValue()) / 3600000;
@@ -228,7 +246,6 @@ ExceptionEngine.prototype = {
             }
             if (changed) gr.update();
         }
-        return counts;
     },
 
     _set: function(gr, field, value) {

@@ -321,6 +321,11 @@ FinanceDocumentIntakeService.prototype = {
     // touches approval_state/posting_state/state directly, and never calls
     // ApprovalEngine or IntegrationService.
     _resumeApInvoicePipeline: function(intakeSysId, apInvoiceSysId) {
+        // Phase 25: in flow mode the AP flows continue from the new invoice.
+        if (!FinanceOrchestration.isInline()) {
+            this._setStatus(intakeSysId, 'completed', 'AP Invoice created from the document; the AP flows continue (validation, matching, approval).');
+            return { stoppedAt: 'RECEIVED', apInvoiceSysId: apInvoiceSysId, handedTo: 'AP Invoice Intake Flow' };
+        }
         var validation = this.apService.validateInvoice(apInvoiceSysId);
         if (!validation.validated) {
             this._setStatus(intakeSysId, 'completed', 'AP Invoice created; deterministic validation raised a ' + validation.reasonCode + ' exception — see the AP Invoice for analyst review.');
@@ -489,6 +494,12 @@ FinanceDocumentIntakeService.prototype = {
     // methods — never touches state directly, never calls ApprovalEngine or
     // IntegrationService.
     _resumePaymentPipeline: function(intakeSysId, paymentSysId, candidateCustomerName) {
+        // Phase 25: in flow mode the AR flows continue (payment intake, or
+        // remittance processing for an existing payment).
+        if (!FinanceOrchestration.isInline()) {
+            this._setStatus(intakeSysId, 'completed', 'Document processed; the AR flows continue (matching, allocation, approval).');
+            return { stoppedAt: 'HANDED_TO_FLOWS', paymentSysId: paymentSysId, handedTo: 'AR flows' };
+        }
         var normalization = this.arService.normalizePayment(paymentSysId);
         if (!normalization.normalized) {
             this._setStatus(intakeSysId, 'completed', 'Payment created; normalization raised an exception — see the Payment for analyst review.');
