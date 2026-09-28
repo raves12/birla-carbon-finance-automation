@@ -20,7 +20,7 @@ passes its own verification.
 | 7 | AI agent tools (least-privilege) | **DONE** — `NowAssistSkillClient` + `FinanceAgentTools` (18 tools) deployed and tested live against demo data; see `docs/AI_AGENT_TOOLS.md` | None. Role-denial test deferred to Phase 29. Studio "Commit Changes" still needed before any Apply Remote Changes |
 | 8 | Native AP AI agents (3) | **DONE** — Exception Analysis, Resolution Recommendation, Communication; deployed and tested in AI Agent Studio; see `docs/AI_AGENT_TOOLS.md` | None |
 | 9 | Native AR AI agents (4) | **DONE** — Customer Resolution, Cash Match Recommendation, Deduction Analysis, Cash Application Communication; deployed; 2 of 4 tested live, rest in Phase 13 | Demo data lacks remittances/aliases for a rich customer-resolution demo (Phase 27/28) |
-| 10 | AP agentic workflow | **DONE** — BCFA AP Invoice Review (trigger on open AP exception, runs as AI user `bcfa.ai.reviewer`); manual run verified end to end; see `docs/AI_AGENT_TOOLS.md` | Unattended trigger test pending (needs a new open AP exception) |
+| 10 | AP agentic workflow | **DONE** — BCFA AP Invoice Review (trigger on open AP exception, runs as AI user `bcfa.ai.reviewer`); manual run and unattended trigger run both verified end to end; see `docs/AI_AGENT_TOOLS.md` | None |
 | 11 | Cash Application agentic workflow | Queued | Depends on Phase 9 |
 | 12 | POC 1 AP automation (happy path + exception path) | Queued | Depends on Phases 2–11 |
 | 13 | POC 2 Cash Application automation | Queued | Depends on Phases 2–11 |

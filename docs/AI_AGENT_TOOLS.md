@@ -246,8 +246,32 @@ Source: `src/fluent/ai-agents/ap_workflow.now.ts`. Deployed with
   resolution or assignee. The invoice is untouched (`EXCEPTION`,
   `not_required`, `not_posted`, last updated 2026-09-25).
 
-**Still to run:** an unattended trigger test, by creating a new open AP
-exception.
+**Unattended trigger test** (user-approved; three test AP exceptions on
+INV-AP-003, all closed afterwards with explanatory resolution notes):
+
+1. **First attempt: nothing ran.** The loaded trigger had no `trigger_flow`,
+   because `loadXML` skips the business rule that generates the backing
+   Flow Designer flow. Fix: toggle the trigger `active` false → true with
+   normal updates, which generated flow `a9208b12eba3c310311dff0dcad0cd44`.
+2. **Second attempt: the flow ran but stopped.** It logged "Trying to execute
+   a disabled trigger". The trigger-to-workflow link
+   (`sn_aia_trigger_agent_usecase_m2m`) is generated with `active=false`.
+   Fix: set it active.
+3. **Third attempt: ✔ full unattended run.** An execution plan was created by
+   `bcfa.ai.reviewer` with the templated objective. Explain (02:39:39), then
+   Recommend (02:39:51), then the advisory note was saved (02:40:11), 47 s
+   after the exception was created. The vendor draft was correctly skipped.
+   The note flagged the invoice's underlying `po_mismatch` (no PO
+   referenced), gave **Low** confidence because figures were missing, and
+   recommended "Hold invoice pending clarification". The invoice was untouched.
+
+Both activation fixes are now automatic: `gen_agent_loader.mjs` activates
+every loaded BCFA trigger and its links after loading.
+
+**Instance drift to note:** the trigger's `trigger_flow` and the link's
+`active` flag now differ from the build XML, as they would after activating
+in the AI Agent Studio UI. Re-running a loader resets them, and its
+post-load step re-activates them.
 
 ### Findings to act on later
 
