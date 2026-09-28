@@ -280,11 +280,19 @@ FinanceAgentTools.prototype = {
 
         var before = exception.getValue('ai_recommendation');
         exception.setValue('ai_recommendation', advice);
-        // Phase 16 framework fields, split from the note (best effort).
-        var split = new ExceptionEngine().splitAdvice(advice);
-        exception.setValue('ai_explanation', split.explanation);
-        exception.setValue('ai_confidence', split.confidence);
         if (!exception.update()) return this._error('write_failed', 'The advisory note could not be saved.');
+
+        // Phase 16 framework fields, split from the saved note (best effort).
+        // They are read-only in the dictionary, which GlideRecordSecure
+        // enforces, so the service derives them with a system write; the
+        // caller's own write above stays ACL-checked.
+        var split = new ExceptionEngine().splitAdvice(advice);
+        var derived = new GlideRecord(table);
+        if (derived.get(exceptionSysId)) {
+            derived.setValue('ai_explanation', split.explanation);
+            derived.setValue('ai_confidence', split.confidence);
+            derived.update();
+        }
 
         var aiSession = this._isAiSession();
         new AiInteractionLog().complete({
