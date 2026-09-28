@@ -58,12 +58,48 @@ SimulatedDocumentExtraction.AP_FIXTURES = {
     }
 };
 
+// Phase 13 POC 2 remittances (scripts/fixtures/gen_poc2_remittances.py).
+// Shape matches the legacy remittance extractor, plus invoice_lines with
+// the amount applied per invoice.
+SimulatedDocumentExtraction.AR_FIXTURES = {
+    'AR_REMIT_101_EXACT.pdf': {
+        customer_code: '', customer_name: 'Sahyadri Tyre Works Pvt Ltd', payment_reference: 'BANK-POC2-001',
+        payment_amount: 50000, currency: 'INR', payment_date: '2026-09-26',
+        invoice_references: ['ARINV1001'],
+        invoice_lines: [{ invoice_reference: 'ARINV1001', amount_applied: 50000 }],
+        deduction_amount: 0, deduction_reason: '', confidence: 0.97, warnings: []
+    },
+    'AR_REMIT_102_MULTI_INVOICE.pdf': {
+        customer_code: '', customer_name: 'Nilgiri Rubber Compounds Ltd', payment_reference: 'BANK-POC2-002',
+        payment_amount: 80000, currency: 'INR', payment_date: '2026-09-26',
+        invoice_references: ['ARINV2001', 'ARINV2002'],
+        invoice_lines: [{ invoice_reference: 'ARINV2001', amount_applied: 50000 }, { invoice_reference: 'ARINV2002', amount_applied: 30000 }],
+        deduction_amount: 0, deduction_reason: '', confidence: 0.97, warnings: []
+    },
+    'AR_REMIT_103_BANK_CHARGE.pdf': {
+        customer_code: '', customer_name: 'Vindhya Elastomers Pvt Ltd', payment_reference: 'BANK-POC2-003',
+        payment_amount: 79500, currency: 'INR', payment_date: '2026-09-26',
+        invoice_references: ['ARINV3001', 'ARINV3002'],
+        invoice_lines: [{ invoice_reference: 'ARINV3001', amount_applied: 50000 }, { invoice_reference: 'ARINV3002', amount_applied: 29500 }],
+        deduction_amount: 500, deduction_reason: 'Amount remitted less INR 500.00 correspondent bank charges.', confidence: 0.96,
+        warnings: ['ARINV3002 applied 29,500.00 of 30,000.00 due.']
+    }
+};
+
 SimulatedDocumentExtraction.prototype = {
     initialize: function() {},
+
+    extractArRemittanceDocument: function(intakeSysId) {
+        return this._extract(intakeSysId, SimulatedDocumentExtraction.AR_FIXTURES);
+    },
 
     // Returns the same envelope shape the legacy extractor returned:
     // { ok:true, data, source, fileName } or { ok:false, safeError }.
     extractApInvoiceDocument: function(intakeSysId) {
+        return this._extract(intakeSysId, SimulatedDocumentExtraction.AP_FIXTURES);
+    },
+
+    _extract: function(intakeSysId, registry) {
         var attachment = new GlideRecord('sys_attachment');
         attachment.addQuery('table_name', 'x_695068_bcfa_finance_intake');
         attachment.addQuery('table_sys_id', intakeSysId);
@@ -73,7 +109,7 @@ SimulatedDocumentExtraction.prototype = {
         if (!attachment.next()) return { ok: false, safeError: 'No attachment on this intake record.' };
 
         var fileName = attachment.getValue('file_name');
-        var fixture = SimulatedDocumentExtraction.AP_FIXTURES[fileName];
+        var fixture = registry[fileName];
         if (!fixture) {
             return {
                 ok: false,

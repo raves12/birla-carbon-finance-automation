@@ -35,6 +35,12 @@ export const x_695068_bcfa_payment = Table({
         state: StringColumn({ label: 'State', maxLength: 40, hint: 'Managed by the Cash Application StateModel' }),
         correlation_id: StringColumn({ label: 'Correlation ID', maxLength: 64 }),
         idempotency_key: StringColumn({ label: 'Idempotency Key', maxLength: 128, unique: true }),
+        ai_recommendation: StringColumn({
+            label: 'AI Match Explanation (advisory)',
+            maxLength: 4000,
+            readOnly: true,
+            hint: 'Now Assist explanation of a multi-invoice allocation, for the reviewer who confirms it. Never read by matching, allocation, approval or clearing logic.',
+        }),
     },
 })
 
@@ -88,7 +94,12 @@ export const x_695068_bcfa_match_candidate = Table({
         match_type: ChoiceColumn({
             label: 'Match Type',
             mandatory: true,
-            choices: { exact: 'Exact', fuzzy: 'Fuzzy (deterministic)', ai_suggested: 'AI Suggested (advisory)' },
+            choices: {
+                exact: 'Exact',
+                fuzzy: 'Fuzzy (deterministic)',
+                ai_suggested: 'AI Suggested (advisory)',
+                remittance: 'Remittance Reference (deterministic)',
+            },
         }),
         confidence: DecimalColumn({ label: 'Confidence', scale: 2 }),
         rank: IntegerColumn({ label: 'Rank' }),
@@ -121,6 +132,8 @@ export const x_695068_bcfa_deduction = Table({
             choices: { proposed: 'Proposed', approved: 'Approved', rejected: 'Rejected' },
         }),
         notes: StringColumn({ label: 'Notes', maxLength: 4000 }),
+        approved_by: ReferenceColumn({ label: 'Approved By', referenceTable: 'sys_user', readOnly: true }),
+        approved_at: DateTimeColumn({ label: 'Approved At', readOnly: true }),
     },
 })
 
@@ -157,6 +170,44 @@ export const x_695068_bcfa_ar_exception = Table({
             maxLength: 4000,
             hint: 'Advisory AI output only (Now Assist, or the legacy simulation). Never read by deterministic rules or approval/clearing logic.',
         }),
+        // Phase 13 enrichment, set by ExceptionEngine when the exception is
+        // raised (deterministic, from FinancePolicy and the matching result).
+        severity: ChoiceColumn({
+            label: 'Severity',
+            default: 'medium',
+            readOnly: true,
+            choices: { low: 'Low', medium: 'Medium', high: 'High', critical: 'Critical' },
+        }),
+        assignment_group: ReferenceColumn({ label: 'Assignment Group', referenceTable: 'sys_user_group' }),
+        sla_due: DateTimeColumn({ label: 'SLA Due', readOnly: true, hint: 'Set from the severity and x_695068_bcfa.ar.exception.sla_hours (POC ASSUMPTION).' }),
+        rule_result: StringColumn({ label: 'Rule Result', maxLength: 1000, readOnly: true, hint: 'Deterministic matching / allocation result that raised this exception.' }),
+        evidence: StringColumn({ label: 'Evidence', maxLength: 4000, readOnly: true, hint: 'Source facts: remittance lines, open items, allocations, payment.' }),
+        residual_amount: DecimalColumn({ label: 'Residual Amount', scale: 2, readOnly: true, hint: 'Short or over payment against the allocated open items.' }),
+        // Human decision (ArExceptionDecisionService). The reviewer sets the
+        // deduction type and reason; the service records the rest.
+        deduction_type: ChoiceColumn({
+            label: 'Deduction Type',
+            choices: {
+                bank_charge: 'Bank Charge',
+                tcs: 'TCS',
+                short_pay: 'Short Pay',
+                credit_note_netting: 'Credit Note Netting',
+                unapplied: 'Unapplied Cash',
+            },
+            hint: 'Chosen by the reviewer before Approve Deduction. The amount is always the computed residual.',
+        }),
+        decision: ChoiceColumn({
+            label: 'Decision',
+            readOnly: true,
+            choices: {
+                approve_deduction: 'Approve Deduction',
+                request_clarification: 'Request Clarification',
+                hold: 'Hold',
+            },
+        }),
+        decision_reason: StringColumn({ label: 'Decision Reason', maxLength: 4000, hint: 'Required before choosing Approve Deduction, Request Clarification or Hold.' }),
+        decided_by: ReferenceColumn({ label: 'Decided By', referenceTable: 'sys_user', readOnly: true }),
+        decided_at: DateTimeColumn({ label: 'Decided At', readOnly: true }),
     },
 })
 

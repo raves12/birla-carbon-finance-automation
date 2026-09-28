@@ -522,7 +522,17 @@ FinanceAgentTools.prototype = {
         var lines = [];
         this._add(lines, 'Exception Reason', exception.getDisplayValue('reason_code'));
         this._add(lines, 'Exception Status', exception.getDisplayValue('status'));
+        this._add(lines, 'Severity', exception.getDisplayValue('severity'));
+        this._add(lines, 'SLA Due', exception.getValue('sla_due'));
         this._add(lines, 'Exception Description', exception.getValue('description'));
+        // Deterministic output of matching / allocation. Facts to explain,
+        // not to re-decide.
+        this._add(lines, 'Rule Result (deterministic)', exception.getValue('rule_result'));
+        this._add(lines, 'Residual Amount', exception.getValue('residual_amount'));
+        this._add(lines, 'Evidence', exception.getValue('evidence'));
+        this._add(lines, 'Human Decision', exception.getDisplayValue('decision'));
+        this._add(lines, 'Deduction Type Chosen', exception.getDisplayValue('deduction_type'));
+        this._add(lines, 'Decision Reason', exception.getValue('decision_reason'));
         this._add(lines, 'Resolution Notes', exception.getValue('resolution_notes'));
         var paymentContext = this._buildPaymentContext(exception.getValue('payment'));
         return lines.join('\n') + (paymentContext ? '\n' + paymentContext : '\nPayment: not available');

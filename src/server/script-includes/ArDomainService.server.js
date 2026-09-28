@@ -11,16 +11,31 @@ ArDomainService.prototype = {
         this.integrationService = new IntegrationService();
         this.aiSimulation = new AISimulationService();
         this.claudeClient = new BCClaudeClient();
+        this.policy = new FinancePolicy();
     },
 
     BALANCE_TOLERANCE: 0.01,
 
-    // Public entry point for the "Explain with Claude" UI Action on AR
-    // Exception — same purpose as ApDomainService.explainException. For a
-    // customer_ambiguous exception, re-derives the same candidate-customer
-    // context from the exception's own description so a manual re-run is
-    // just as informed as the automatic call was.
+    // Public entry point for the "Explain with Now Assist" UI Action on AR
+    // Exception. With the native provider it calls the published Now Assist
+    // skills through FinanceAgentTools as the current user (role-checked,
+    // advisory field only). Other providers keep the legacy path, which
+    // for customer_ambiguous re-derives the candidate customers from the
+    // exception description.
     explainException: function(arExceptionSysId) {
+        if (this.policy.aiProvider() === 'native') {
+            var tools = new FinanceAgentTools();
+            var target = new GlideRecord('x_695068_bcfa_ar_exception');
+            if (!target.get(arExceptionSysId)) return { ok: false, error: 'not_found', message: 'AR exception not found.' };
+            var residual = tools.explainArResidual(target.getValue('payment'));
+            var next = tools.recommendArNextAction(arExceptionSysId);
+            if (!residual.ok && !next.ok) return next;
+            var note = 'AI REVIEW (advisory only - a human must decide)' +
+                (residual.ok ? '\n\nPayment and residual:\n' + residual.text : '') +
+                (next.ok ? '\n\nRecommended next action:\n' + next.text : '');
+            var saved = tools.recordExceptionAdvice('ar', arExceptionSysId, note);
+            return saved.ok ? { ok: true, recommendation: note } : saved;
+        }
         var exception = new GlideRecord('x_695068_bcfa_ar_exception');
         var candidateCustomers = null;
         if (exception.get(arExceptionSysId) && exception.getValue('reason_code') === 'customer_ambiguous') {
@@ -104,6 +119,10 @@ ArDomainService.prototype = {
         return { paymentSysId: sysId, correlationId: correlationId };
     },
 
+    // fields.extractedFields: fields already read from a remittance document
+    // (Finance Document Intake), stored as is with fields.confidence.
+    // fields.seedFields: the legacy JSON-context path (Claude only when the
+    // provider is claude, otherwise the deterministic simulation).
     intakeRemittance: function(paymentSysId, fields) {
         var remittance = new GlideRecord('x_695068_bcfa_remittance');
         remittance.initialize();
@@ -111,10 +130,14 @@ ArDomainService.prototype = {
         remittance.setValue('remittance_reference', fields.remittanceReference || '');
         remittance.setValue('source', fields.source || 'email');
         if (fields.receivedDate) remittance.setValue('received_date', fields.receivedDate);
+        if (fields.extractedFields) {
+            remittance.setValue('extracted_fields', JSON.stringify(fields.extractedFields));
+            if (fields.confidence !== undefined) remittance.setValue('confidence', fields.confidence);
+        }
         var sysId = remittance.insert();
-        if (fields.seedFields) {
-            this._runClaudeRemittanceExtraction(sysId, fields.seedFields, fields.options) ||
-                this.aiSimulation.simulateArExtraction(sysId, fields.seedFields, fields.options);
+        if (!fields.extractedFields && fields.seedFields) {
+            var claudeResult = this.policy.aiProvider() === 'claude' ? this._runClaudeRemittanceExtraction(sysId, fields.seedFields, fields.options) : null;
+            if (!claudeResult) this.aiSimulation.simulateArExtraction(sysId, fields.seedFields, fields.options);
         }
         return { remittanceSysId: sysId };
     },
@@ -171,17 +194,51 @@ ArDomainService.prototype = {
             return { resolved: true, customerSysId: payment.getValue('customer') };
         }
 
+        // 1. Remitter name through alias / exact name, accepted only at or
+        //    above the configured auto-match confidence (POC ASSUMPTION).
+        // 2. Otherwise the customer that owns every invoice referenced on
+        //    the remittance, if exactly one customer does and it does not
+        //    contradict the name match.
+        // Anything else goes to a human; the customer is never guessed.
+        var threshold = this.policy.arAutoMatchConfidence();
         var resolution = this.matchingEngine.resolveCustomerByAlias(candidateName);
-        if (resolution.resolved) {
-            payment.setValue('customer', resolution.customerSysId);
-            payment.update();
-            return { resolved: true, customerSysId: resolution.customerSysId, confidence: resolution.confidence };
+        if (resolution.resolved && resolution.confidence >= threshold) {
+            return this._setPaymentCustomer(payment, resolution.customerSysId, 'remitter name "' + candidateName + '" (confidence ' + resolution.confidence + ')');
+        }
+        var remittance = this.matchingEngine.resolveRemittanceReferences(paymentSysId);
+        if (remittance.available && remittance.unresolved.length === 0 && remittance.customerCount === 1 &&
+            (!resolution.resolved || resolution.customerSysId === remittance.customerSysId)) {
+            return this._setPaymentCustomer(payment, remittance.customerSysId, 'owner of every invoice referenced on the remittance (' +
+                remittance.items.map(function(i) { return i.itemNumber; }).join(', ') + ')');
         }
 
-        var exceptionSysId = this.exceptionEngine.createArException(paymentSysId, 'customer_ambiguous', 'Could not resolve customer from remitter name "' + candidateName + '".');
+        var why = resolution.resolved
+            ? 'alias match confidence ' + resolution.confidence + ' is below the auto-match threshold ' + threshold
+            : 'remitter name "' + (candidateName || '') + '" did not resolve to a customer';
+        var exceptionSysId = this.exceptionEngine.createArException(paymentSysId, 'customer_ambiguous', 'Could not resolve customer from remitter name "' + candidateName + '".', {
+            ruleResult: 'FAIL customer resolution: ' + why + (remittance.available ? '; remittance references ' +
+                (remittance.unresolved.length ? 'not all resolved (' + remittance.unresolved.join(', ') + ')' : 'span ' + remittance.customerCount + ' customers') : '; no remittance references') + '.',
+            evidence: 'Remitter name: ' + (candidateName || 'none') + '\nAlias result: ' + (resolution.resolved ? resolution.customerSysId + ' at ' + resolution.confidence : 'none') +
+                '\nPayment: ' + payment.getValue('amount') + ' ' + payment.getValue('currency') + ', bank reference ' + payment.getValue('bank_reference')
+        });
         this._explainArException(exceptionSysId, this._findCandidateCustomers(candidateName));
         this._setState(paymentSysId, 'EXCEPTION', null, 'Customer resolution failed');
         return { resolved: false, exceptionSysId: exceptionSysId };
+    },
+
+    _setPaymentCustomer: function(payment, customerSysId, how) {
+        payment.setValue('customer', customerSysId);
+        payment.update();
+        this.auditEngine.logEvent({
+            correlationId: payment.getValue('correlation_id'),
+            sourceTable: 'x_695068_bcfa_payment',
+            sourceRecord: payment.getUniqueValue(),
+            eventType: 'state_transition',
+            actorType: 'system',
+            description: 'Customer identified from ' + how + '.',
+            afterValue: { customer: customerSysId }
+        });
+        return { resolved: true, customerSysId: customerSysId, method: how };
     },
 
     // Deterministic, coarse pre-filter for the customer_ambiguous
@@ -205,7 +262,26 @@ ArDomainService.prototype = {
     },
 
     matchPayment: function(paymentSysId) {
-        this._setState(paymentSysId, 'MATCHING', null, 'Running exact and multi-invoice matching');
+        this._setState(paymentSysId, 'MATCHING', null, 'Running remittance, exact and multi-invoice matching');
+
+        // Phase 13: the invoices the customer named on the remittance come
+        // first. Allocation and the balance check still decide the outcome.
+        var remittance = this.matchingEngine.resolveRemittanceReferences(paymentSysId);
+        if (remittance.available && remittance.currencyMismatch.length) {
+            var currencyExceptionSysId = this.exceptionEngine.createArException(paymentSysId, 'currency_mismatch',
+                'Remittance references invoices in another currency: ' + remittance.currencyMismatch.join(', ') + '.', {
+                    ruleResult: 'FAIL currency check: payment is ' + this._paymentCurrency(paymentSysId) + ' but ' + remittance.currencyMismatch.join(', ') + '. Cash is never allocated across currencies.',
+                    evidence: this._remittanceEvidence(remittance)
+                });
+            this._explainArException(currencyExceptionSysId);
+            this._setState(paymentSysId, 'EXCEPTION', null, 'Currency mismatch between payment and remittance invoices');
+            return { matched: false, reasonCode: 'currency_mismatch', exceptionSysId: currencyExceptionSysId };
+        }
+        if (remittance.available && remittance.usable) {
+            this.matchingEngine.recordRemittanceCandidates(paymentSysId, remittance);
+            this._setState(paymentSysId, 'MATCHED', null, 'Matched to the ' + remittance.items.length + ' invoice(s) referenced on the remittance');
+            return { matched: true, mode: 'remittance', remittance: remittance };
+        }
 
         var exact = this.matchingEngine.exactMatch(paymentSysId);
         if (exact.matched) {
@@ -214,9 +290,17 @@ ArDomainService.prototype = {
         }
 
         var multi = this.matchingEngine.multiInvoiceSuggestion(paymentSysId);
-        this._recommendClaudeCashMatch(paymentSysId) || this.aiSimulation.suggestTopCandidate(paymentSysId);
+        // Legacy AI suggestions only; with the native provider the Cash
+        // Application Review workflow advises on any exception instead.
+        var provider = this.policy.aiProvider();
+        if (provider === 'claude') this._recommendClaudeCashMatch(paymentSysId) || this.aiSimulation.suggestTopCandidate(paymentSysId);
+        else if (provider === 'simulated') this.aiSimulation.suggestTopCandidate(paymentSysId);
         if (!multi.matched) {
-            var exceptionSysId = this.exceptionEngine.createArException(paymentSysId, 'unmatched', 'No open item combination matched this payment.');
+            var exceptionSysId = this.exceptionEngine.createArException(paymentSysId, 'unmatched', 'No open item combination matched this payment.', {
+                ruleResult: 'FAIL matching: no open item of the customer equals the payment and no combination was found' +
+                    (remittance.available && remittance.unresolved.length ? '; remittance references not found as open items: ' + remittance.unresolved.join(', ') : '') + '.',
+                evidence: remittance.available ? this._remittanceEvidence(remittance) : 'No remittance references.'
+            });
             this._explainArException(exceptionSysId);
             this._setState(paymentSysId, 'UNMATCHED', null, 'No match found');
             this._setState(paymentSysId, 'EXCEPTION', null, 'Unmatched payment routed to exception');
@@ -278,13 +362,45 @@ ArDomainService.prototype = {
         return { suggested: true, matchCandidateSysId: sysId, matchType: data.match_type };
     },
 
-    // Writes an analyst-facing explanation into the exception's existing
-    // advisory field (ai_recommendation). Same Claude-first-with-fallback
-    // pattern as ApDomainService._explainApException. candidateCustomers is
-    // optional context for the customer_ambiguous case (see
-    // _findCandidateCustomers).
+    _paymentCurrency: function(paymentSysId) {
+        var payment = new GlideRecord('x_695068_bcfa_payment');
+        return payment.get(paymentSysId) ? payment.getValue('currency') : '';
+    },
+
+    _remittanceEvidence: function(remittance) {
+        var lines = [];
+        for (var i = 0; i < remittance.references.length; i++) {
+            var ref = remittance.references[i];
+            var item = null;
+            for (var j = 0; j < remittance.items.length; j++) {
+                if (remittance.items[j].itemNumber === ref.reference) item = remittance.items[j];
+            }
+            lines.push('Remittance line ' + ref.reference + (ref.applied !== null ? ' applied ' + ref.applied : '') +
+                (item ? '; open item open amount ' + item.openAmount : '; NOT FOUND as an open item'));
+        }
+        lines.push('Payment ' + remittance.paymentAmount + ', referenced open items total ' + remittance.openTotal + ', difference ' + remittance.residual);
+        if (remittance.deductionHint) lines.push('Remittance deduction note: ' + remittance.deductionHint.reason + (remittance.deductionHint.amount ? ' (' + remittance.deductionHint.amount + ')' : ''));
+        return lines.join('\n');
+    },
+
+    // Advisory explanation for a newly raised AR exception. native
+    // (default): the BCFA Cash Application Review workflow starts on the
+    // exception's creation and records the note asynchronously. claude:
+    // legacy Claude path with simulation fallback. simulated: templates.
+    // candidateCustomers is legacy context for customer_ambiguous.
     _explainArException: function(exceptionSysId, candidateCustomers) {
-        if (this.claudeClient.isEnabled()) {
+        var provider = this.policy.aiProvider();
+        if (provider === 'native') {
+            this.auditEngine.logEvent({
+                sourceTable: 'x_695068_bcfa_ar_exception',
+                sourceRecord: exceptionSysId,
+                eventType: 'ai_recommendation',
+                actorType: 'system',
+                description: 'AI review handed to the BCFA Cash Application Review agentic workflow (Now Assist), which starts on exception creation and records an advisory note.'
+            });
+            return { deferred: true, workflow: 'BCFA Cash Application Review' };
+        }
+        if (provider === 'claude' && this.claudeClient.isEnabled()) {
             var envelope = this.claudeClient.explainCashException(exceptionSysId, candidateCustomers);
             if (envelope.ok && !envelope.data.insufficient_information) {
                 var recommendation = envelope.data.explanation +
@@ -321,15 +437,26 @@ ArDomainService.prototype = {
         payment.get(paymentSysId);
         var paymentAmount = parseFloat(payment.getValue('amount') || '0');
 
-        var candidateType = 'exact';
-        var candidate = new GlideRecord('x_695068_bcfa_match_candidate');
-        candidate.addQuery('payment', paymentSysId);
-        candidate.addQuery('match_type', 'exact');
-        candidate.query();
-        var exactCandidates = [];
-        while (candidate.next()) exactCandidates.push(candidate.getValue('ar_open_item'));
+        // Candidate precedence: remittance references (Phase 13), then the
+        // single exact amount match, then the greedy multi-invoice set.
+        var candidateType = 'remittance';
+        var selectedItems = [];
+        var remittanceCandidate = new GlideRecord('x_695068_bcfa_match_candidate');
+        remittanceCandidate.addQuery('payment', paymentSysId);
+        remittanceCandidate.addQuery('match_type', 'remittance');
+        remittanceCandidate.orderBy('rank');
+        remittanceCandidate.query();
+        while (remittanceCandidate.next()) selectedItems.push(remittanceCandidate.getValue('ar_open_item'));
 
-        var selectedItems = exactCandidates;
+        if (selectedItems.length === 0) {
+            candidateType = 'exact';
+            var candidate = new GlideRecord('x_695068_bcfa_match_candidate');
+            candidate.addQuery('payment', paymentSysId);
+            candidate.addQuery('match_type', 'exact');
+            candidate.query();
+            while (candidate.next()) selectedItems.push(candidate.getValue('ar_open_item'));
+        }
+
         if (selectedItems.length === 0) {
             candidateType = 'fuzzy';
             var fuzzy = new GlideRecord('x_695068_bcfa_match_candidate');
@@ -357,11 +484,13 @@ ArDomainService.prototype = {
         // exception rather than a silently-clean approval).
         var allocatedTotal = 0;
         var allocationSysIds = [];
+        var allocationEvidence = [];
         for (var i = 0; i < selectedItems.length; i++) {
             var item = new GlideRecord('x_695068_bcfa_ar_open_item');
             item.get(selectedItems[i]);
             var openAmount = parseFloat(item.getValue('open_amount') || '0');
             var allocatedAmount = openAmount;
+            allocationEvidence.push('Allocated ' + allocatedAmount + ' to ' + item.getValue('item_number') + ' (open ' + openAmount + ' ' + item.getValue('currency') + ', ' + candidateType + ' match)');
 
             var allocation = new GlideRecord('x_695068_bcfa_payment_allocation');
             allocation.initialize();
@@ -381,8 +510,9 @@ ArDomainService.prototype = {
 
         var difference = Math.round((paymentAmount - allocatedTotal) * 100) / 100;
         if (Math.abs(difference) <= this.BALANCE_TOLERANCE) {
-            this._setState(paymentSysId, 'PENDING_APPROVAL', null, 'Allocation balances; ready for approval');
-            return { balanced: true, allocationSysIds: allocationSysIds, allocatedTotal: allocatedTotal };
+            this._setState(paymentSysId, 'PENDING_APPROVAL', null, 'Allocation balances (' + allocationEvidence.length + ' item(s), total ' + allocatedTotal + ' = payment ' + paymentAmount + '); ready for approval');
+            if (selectedItems.length > 1) this._adviseOnAllocation(paymentSysId);
+            return { balanced: true, allocationSysIds: allocationSysIds, allocatedTotal: allocatedTotal, candidateType: candidateType };
         }
 
         // difference = paymentAmount - allocatedTotal. Positive means the
@@ -391,11 +521,100 @@ ArDomainService.prototype = {
         // actually paid (a genuine short payment). An earlier version of
         // this had the two labels swapped.
         var reasonCode = difference > 0 ? 'over_pay' : 'short_pay';
+        var remittance = this.matchingEngine.resolveRemittanceReferences(paymentSysId);
         var exceptionSysId = this.exceptionEngine.createArException(paymentSysId, reasonCode,
-            'Allocation total ' + allocatedTotal + ' does not match payment amount ' + paymentAmount + ' (difference ' + difference + ').');
+            'Allocation total ' + allocatedTotal + ' does not match payment amount ' + paymentAmount + ' (difference ' + difference + ').', {
+                ruleResult: 'FAIL allocation balance: payment ' + paymentAmount + ' vs allocated ' + allocatedTotal + ' across ' + selectedItems.length +
+                    ' open item(s); residual ' + Math.abs(difference) + (difference < 0 ? ' short' : ' over') + ' (tolerance ' + this.BALANCE_TOLERANCE + ').',
+                evidence: allocationEvidence.join('\n') + (remittance.available ? '\n' + this._remittanceEvidence(remittance) : ''),
+                residual: Math.abs(difference)
+            });
         this._explainArException(exceptionSysId);
         this._setState(paymentSysId, 'EXCEPTION', null, 'Allocation does not balance: ' + reasonCode);
         return { balanced: false, reasonCode: reasonCode, exceptionSysId: exceptionSysId, allocationSysIds: allocationSysIds, difference: difference };
+    },
+
+    // Multi-invoice allocations get an advisory Now Assist explanation on
+    // the payment (ai_recommendation) for the reviewer who confirms it.
+    // The deterministic balance check has already passed; this never
+    // changes the allocation, and a failed AI call never blocks the payment.
+    _adviseOnAllocation: function(paymentSysId) {
+        if (this.policy.aiProvider() !== 'native') return null;
+        try {
+            var result = new FinanceAgentTools().explainArMatch(paymentSysId);
+            if (!result.ok) return null;
+            var note = 'AI MATCH EXPLANATION (advisory only - the reviewer confirms the allocation)\n\n' + result.text;
+            var payment = new GlideRecord('x_695068_bcfa_payment');
+            if (!payment.get(paymentSysId)) return null;
+            payment.setValue('ai_recommendation', note.substring(0, 4000));
+            payment.update();
+            this.auditEngine.logEvent({
+                correlationId: payment.getValue('correlation_id'),
+                sourceTable: 'x_695068_bcfa_payment',
+                sourceRecord: paymentSysId,
+                eventType: 'ai_recommendation',
+                actor: gs.getUserID(),
+                actorType: 'now_assist_ai',
+                description: 'Now Assist explanation of the multi-invoice allocation recorded on the payment (advisory field only)'
+            });
+            return { ok: true };
+        } catch (e) {
+            return null;
+        }
+    },
+
+    // Applies the configured approval rule to a PENDING_APPROVAL payment:
+    // requests approval (requester = requestedBy) or, within the
+    // auto-approve limit, records a rule-based approval. Clearing only ever
+    // happens through the approval cascade and IntegrationService.
+    routeForApproval: function(paymentSysId, requestedBy) {
+        var payment = new GlideRecord('x_695068_bcfa_payment');
+        if (!payment.get(paymentSysId)) return { error: 'Payment not found' };
+        var rule = this.policy.arApprovalRule(payment.getValue('amount'));
+        this.auditEngine.logEvent({
+            correlationId: payment.getValue('correlation_id'),
+            sourceTable: 'x_695068_bcfa_payment',
+            sourceRecord: paymentSysId,
+            eventType: 'approval_decision',
+            actorType: 'system',
+            description: 'Approval rule evaluated (POC ASSUMPTION): ' + rule.rule,
+            afterValue: rule
+        });
+        var approval = this.requestApproval(paymentSysId, requestedBy);
+        if (rule.required) return { approvalRequired: true, approvalSysId: approval.approvalSysId, rule: rule.rule };
+        var decision = this.decideApproval(paymentSysId, approval.approvalSysId, 'approved', null, 'Approved by configured rule: ' + rule.rule);
+        return { approvalRequired: false, approvalSysId: approval.approvalSysId, rule: rule.rule, decision: decision };
+    },
+
+    // After SAP (mock) confirms clearing, reduce each allocated open item
+    // in the mock SAP open-item table so a cleared invoice can never be
+    // applied again. An allocation covers the item's full open amount
+    // (cash plus any approved deduction), so the item is settled by it.
+    _settleOpenItems: function(paymentSysId) {
+        var settled = [];
+        var allocation = new GlideRecord('x_695068_bcfa_payment_allocation');
+        allocation.addQuery('payment', paymentSysId);
+        allocation.query();
+        while (allocation.next()) {
+            var item = new GlideRecord('x_695068_bcfa_ar_open_item');
+            if (!item.get(allocation.getValue('ar_open_item'))) continue;
+            var before = parseFloat(item.getValue('open_amount') || '0');
+            var after = Math.max(0, Math.round((before - parseFloat(allocation.getValue('allocated_amount') || '0')) * 100) / 100);
+            item.setValue('open_amount', after);
+            item.setValue('status', after <= this.BALANCE_TOLERANCE ? 'cleared' : 'partially_cleared');
+            item.update();
+            settled.push(item.getValue('item_number') + ' ' + before + ' -> ' + after);
+        }
+        if (settled.length) {
+            this.auditEngine.logEvent({
+                sourceTable: 'x_695068_bcfa_payment',
+                sourceRecord: paymentSysId,
+                eventType: 'state_transition',
+                actorType: 'system',
+                description: 'Open items settled after clearing: ' + settled.join('; ')
+            });
+        }
+        return settled;
     },
 
     // Re-checks the balance rule AFTER a reviewer has recorded approved
@@ -508,6 +727,7 @@ ArDomainService.prototype = {
                 allocation.setValue('allocation_state', 'cleared');
                 allocation.update();
             }
+            this._settleOpenItems(paymentSysId);
             this._setState(paymentSysId, 'CLEARED', null, 'Cleared in SAP (simulated): ' + (result.response ? result.response.sapDocumentId : ''));
             this.reconcileAndClose(paymentSysId);
             return { cleared: true, sapDocumentId: result.response ? result.response.sapDocumentId : null };
@@ -534,6 +754,7 @@ ArDomainService.prototype = {
                 allocation.setValue('allocation_state', 'cleared');
                 allocation.update();
             }
+            this._settleOpenItems(paymentSysId);
             this._setState(paymentSysId, 'CLEARED', null, 'Reconciliation confirmed clearing committed: ' + resolution.sapDocumentId);
             this.reconcileAndClose(paymentSysId);
             return { cleared: true, sapDocumentId: resolution.sapDocumentId };

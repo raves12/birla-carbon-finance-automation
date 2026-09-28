@@ -397,6 +397,13 @@ FinanceDocumentIntakeService.prototype = {
             return this._resumePaymentPipeline(intakeSysId, paymentSysId);
         }
 
+        if (this.policy.aiProvider() !== 'claude') {
+            // Bank payments arrive from the bank statement; payment advice
+            // documents have no simulated extraction, and Document
+            // Intelligence extraction is not licensed on this instance.
+            this.sendToManualReview(intakeSysId, 'Payment advice documents are not read automatically on this instance (Document Intelligence extraction not licensed). Enter the payment from the bank statement, then upload the remittance.');
+            return { requiresReview: true };
+        }
         this._setStatus(intakeSysId, 'extracting', 'Extracting AR payment advice fields from the attached document.');
         var envelope = this.claudeClient.extractArPaymentAdviceDocument(intakeSysId);
         if (!envelope.ok) {
@@ -487,9 +494,13 @@ FinanceDocumentIntakeService.prototype = {
             return { stoppedAt: 'ALLOCATION_EXCEPTION', paymentSysId: paymentSysId, detail: allocation };
         }
 
-        var approval = this.arService.requestApproval(paymentSysId, gs.getUserID());
-        this._setStatus(intakeSysId, 'completed', 'Payment matched, allocated, and pending approval.');
-        return { stoppedAt: 'PENDING_APPROVAL', paymentSysId: paymentSysId, detail: approval };
+        // Approval per the configured rule; the person processing the
+        // document is the requester, so a different user must approve.
+        var approval = this.arService.routeForApproval(paymentSysId, gs.getUserID());
+        this._setStatus(intakeSysId, 'completed', approval.approvalRequired
+            ? 'Payment matched, allocated (' + (allocation.candidateType || 'deterministic') + ' match) and pending approval. ' + approval.rule
+            : 'Payment matched, allocated and approved by configured rule. ' + approval.rule);
+        return { stoppedAt: approval.approvalRequired ? 'PENDING_APPROVAL' : 'APPROVED_BY_RULE', paymentSysId: paymentSysId, detail: approval, allocation: allocation };
     },
 
     // ==== Phase 7/8 — AR remittance extraction + payment correlation =======
@@ -503,19 +514,26 @@ FinanceDocumentIntakeService.prototype = {
             return linkedPayment ? this._resumePaymentPipeline(intakeSysId, linkedPayment) : { stoppedAt: 'ALREADY_LINKED' };
         }
 
-        this._setStatus(intakeSysId, 'extracting', 'Extracting AR remittance fields from the attached document.');
-        var envelope = this.claudeClient.extractArRemittanceDocument(intakeSysId);
+        var useClaude = this.policy.aiProvider() === 'claude';
+        this._setStatus(intakeSysId, 'extracting', useClaude
+            ? 'Extracting AR remittance fields from the attached document.'
+            : 'Reading AR remittance fields (SIMULATED extraction: fixture values, Document Intelligence extraction not licensed).');
+        var envelope = useClaude
+            ? this.claudeClient.extractArRemittanceDocument(intakeSysId)
+            : this.simulatedExtraction.extractArRemittanceDocument(intakeSysId);
         if (!envelope.ok) {
-            return this._fail(intakeSysId, 'AR remittance extraction failed: ' + envelope.safeError);
+            if (useClaude) return this._fail(intakeSysId, 'AR remittance extraction failed: ' + envelope.safeError);
+            this.sendToManualReview(intakeSysId, envelope.safeError);
+            return { requiresReview: true };
         }
 
         var data = envelope.data;
         intake.setValue('extraction_json', JSON.stringify(data));
         intake.setValue('extraction_confidence', data.confidence);
-        intake.setValue('claude_request_id', envelope.requestId || intake.getValue('claude_request_id'));
+        if (useClaude) intake.setValue('claude_request_id', envelope.requestId || intake.getValue('claude_request_id'));
         intake.update();
 
-        var threshold = this.claudeClient.confidenceThreshold();
+        var threshold = this.policy.extractionConfidenceThreshold();
         if (data.confidence < threshold) {
             this.sendToManualReview(intakeSysId, 'Extraction confidence ' + data.confidence + ' is below the ' + threshold + ' review threshold.');
             return { requiresReview: true };
@@ -546,10 +564,26 @@ FinanceDocumentIntakeService.prototype = {
             found = candidates[0];
         }
 
+        // A remittance only drives a payment that has not been processed
+        // yet; it never reopens a matched, cleared or closed payment.
+        var target = new GlideRecord('x_695068_bcfa_payment');
+        target.get(found);
+        var targetState = target.getValue('state');
+        if (targetState !== 'RECEIVED' && targetState !== 'NORMALIZED') {
+            this.sendToManualReview(intakeSysId, 'Payment ' + target.getValue('bank_reference') + ' is already ' + targetState +
+                '; the remittance was not applied automatically. Review it against that payment.');
+            return { requiresReview: true, paymentSysId: found, paymentState: targetState };
+        }
+
+        // The fields read from the document are stored on the remittance,
+        // where MatchingEngine.resolveRemittanceReferences reads the
+        // invoice references.
         var remittanceIntake = this.arService.intakeRemittance(found, {
             remittanceReference: data.payment_reference || '',
-            source: 'workspace_upload',
+            source: 'document',
             receivedDate: data.payment_date || undefined,
+            extractedFields: data,
+            confidence: data.confidence,
         });
 
         intake.setValue('remittance', remittanceIntake.remittanceSysId);

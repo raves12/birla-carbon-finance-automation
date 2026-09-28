@@ -10,7 +10,7 @@
 //
 // Usage (after `now-sdk build`):
 //   node scripts/deploy/gen_record_loader.mjs <output.js> [--si A,B] [--files <regex>]
-//        [--choices <regex>] [--columns table=c1,c2] [--demo-users]
+//        [--choices <regex>] [--columns table=c1,c2 ...] [--demo-users]
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -41,10 +41,12 @@ const DEMO = {
   groups: [
     { sysId: '6c3107e75eeec3146f95ff49b9011def', name: 'BCFA AP Operations', description: 'Demo group: AP processors who own AP exceptions (POC).' },
     { sysId: 'e34ee8a159fd504893d4fc248a6632a7', name: 'BCFA Finance Approvers', description: 'Demo group: finance approvers for AP posting and overrides (POC).' },
+    { sysId: 'a42557739c621c40c2570c9fa414cc46', name: 'BCFA Cash Application', description: 'Demo group: AR processors who own cash application exceptions (POC).' },
   ],
   users: [
     { sysId: '6fe2fbfa188d7aa5829b61d52b3202c9', userName: 'bcfa.ap.processor', first: 'BCFA Demo', last: 'AP Processor', role: 'x_695068_bcfa.ap_processor', group: '6c3107e75eeec3146f95ff49b9011def' },
     { sysId: 'd33f6290d7533660937e25a599602b2c', userName: 'bcfa.finance.approver', first: 'BCFA Demo', last: 'Finance Approver', role: 'x_695068_bcfa.finance_approver', group: 'e34ee8a159fd504893d4fc248a6632a7' },
+    { sysId: 'a9f827de8d254b4150e07ac76dd9cef6', userName: 'bcfa.ar.processor', first: 'BCFA Demo', last: 'AR Processor', role: 'x_695068_bcfa.ar_processor', group: 'a42557739c621c40c2570c9fa414cc46' },
   ],
 };
 const demoPreamble = `
@@ -113,8 +115,10 @@ if (opt('--choices')) {
 // column label (sys_documentation) loaded afterwards with its build sys_id.
 const columns = [];
 const docs = [];
-if (opt('--columns')) {
-  const [table, list] = opt('--columns').split('=');
+// --columns may be repeated, one table per occurrence.
+const columnSpecs = argv.flatMap((a, i) => (a === '--columns' && argv[i + 1] ? [argv[i + 1]] : []));
+for (const spec of columnSpecs) {
+  const [table, list] = spec.split('=');
   for (const col of list.split(',')) {
     const dictFile = `sys_dictionary_${table}_${col}.xml`;
     const xml = readUpdate(dictFile);

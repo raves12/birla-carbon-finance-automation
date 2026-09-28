@@ -573,6 +573,71 @@ DemoDataSeeder.prototype = {
         return results;
     },
 
+    // ---- Phase 13: POC 2 cash application scenarios -------------------------
+    // Three independent paths from the POC brief, each with its own
+    // fictional customer so they can be demoed in any order:
+    //   C1001  ARINV1001 50,000                  payment 50,000  (exact)
+    //   C1002  ARINV2001 50,000 + ARINV2002 30,000  payment 80,000  (multi-invoice)
+    //   C1003  ARINV3001 50,000 + ARINV3002 30,000  payment 79,500  (500 bank charge)
+    // The brief's example uses one customer (C1001) for all three; one
+    // customer each keeps the paths from consuming each other's open items.
+    // Payments arrive as bank statement lines (RECEIVED, customer unknown);
+    // the remittance PDFs in test/fixtures/AR_REMIT_10x drive the rest.
+    // Idempotent: existing records (by code / number / bank reference) are
+    // left untouched.
+    seedPoc2CashScenarios: function() {
+        var created = [];
+        var customers = [
+            { code: 'C1001', name: 'Sahyadri Tyre Works Pvt Ltd' },
+            { code: 'C1002', name: 'Nilgiri Rubber Compounds Ltd' },
+            { code: 'C1003', name: 'Vindhya Elastomers Pvt Ltd' }
+        ];
+        var customerSysId = {};
+        for (var c = 0; c < customers.length; c++) {
+            customerSysId[customers[c].code] = this._lookupSysId('x_695068_bcfa_customer', 'customer_code', customers[c].code) ||
+                this._createdMark(created, customers[c].code, this._insert('x_695068_bcfa_customer', {
+                    customer_code: customers[c].code, name: customers[c].name, country: 'India', currency: 'INR', company_code: '1000', active: true
+                }));
+        }
+
+        var items = [
+            { item: 'ARINV1001', customer: 'C1001', amount: 50000, daysAgo: 30 },
+            { item: 'ARINV2001', customer: 'C1002', amount: 50000, daysAgo: 35 },
+            { item: 'ARINV2002', customer: 'C1002', amount: 30000, daysAgo: 20 },
+            { item: 'ARINV3001', customer: 'C1003', amount: 50000, daysAgo: 40 },
+            { item: 'ARINV3002', customer: 'C1003', amount: 30000, daysAgo: 25 }
+        ];
+        for (var i = 0; i < items.length; i++) {
+            if (this._lookupSysId('x_695068_bcfa_ar_open_item', 'item_number', items[i].item)) continue;
+            var due = new GlideDateTime();
+            due.addDaysUTC(-items[i].daysAgo);
+            this._createdMark(created, items[i].item, this._insert('x_695068_bcfa_ar_open_item', {
+                item_number: items[i].item, customer: customerSysId[items[i].customer], company_code: '1000', currency: 'INR',
+                invoice_amount: items[i].amount, open_amount: items[i].amount, due_date: due.getDate(), status: 'open'
+            }));
+        }
+
+        var payments = [
+            { ref: 'BANK-POC2-001', amount: 50000 },
+            { ref: 'BANK-POC2-002', amount: 80000 },
+            { ref: 'BANK-POC2-003', amount: 79500 }
+        ];
+        var paymentSysId = {};
+        for (var p = 0; p < payments.length; p++) {
+            paymentSysId[payments[p].ref] = this._lookupSysId('x_695068_bcfa_payment', 'bank_reference', payments[p].ref) ||
+                this._createdMark(created, payments[p].ref, this.arService.intakePayment({
+                    bankReference: payments[p].ref, currency: 'INR', amount: payments[p].amount, bankAccount: 'IN-COLL-POC2',
+                    valueDate: '2026-09-26', idempotencyKey: 'POC2-' + payments[p].ref
+                }).paymentSysId);
+        }
+        return { created: created, customers: customerSysId, payments: paymentSysId };
+    },
+
+    _createdMark: function(created, label, sysId) {
+        created.push(label);
+        return sysId;
+    },
+
     // ---- Phase 6 (Claude AI layer) client demo scenarios --------------------
     // Four purpose-built scenarios matching the client demo script exactly:
     // AP happy path, AP amount-mismatch exception, Cash exact match, Cash

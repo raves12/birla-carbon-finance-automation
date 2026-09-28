@@ -166,6 +166,102 @@ MatchingEngine.prototype = {
 
     // ---- AR: cash application matching --------------------------------------
 
+    // Phase 13: resolves the invoice references printed on the payment's
+    // remittance to open items. Pure lookup, no writes. Never guesses: a
+    // reference that does not resolve exactly, references that belong to
+    // more than one customer, or an open item in another currency make
+    // the result unusable, and the caller falls back or raises an exception.
+    // Returns { available:false } when there is no remittance with references.
+    resolveRemittanceReferences: function(paymentSysId) {
+        var payment = new GlideRecord('x_695068_bcfa_payment');
+        if (!payment.get(paymentSysId)) return { available: false, error: 'Payment not found' };
+
+        var remittance = new GlideRecord('x_695068_bcfa_remittance');
+        remittance.addQuery('payment', paymentSysId);
+        remittance.addNotNullQuery('extracted_fields');
+        remittance.orderByDesc('sys_created_on');
+        remittance.setLimit(1);
+        remittance.query();
+        if (!remittance.next()) return { available: false };
+
+        var fields = {};
+        try {
+            fields = JSON.parse(remittance.getValue('extracted_fields')) || {};
+        } catch (e) {
+            return { available: false };
+        }
+        var lines = [];
+        var refLines = fields.invoice_lines || [];
+        for (var l = 0; l < refLines.length; l++) {
+            lines.push({ reference: String(refLines[l].invoice_reference || '').trim(), applied: parseFloat(refLines[l].amount_applied || '0') });
+        }
+        if (lines.length === 0) {
+            var refs = fields.invoice_references || [];
+            for (var r = 0; r < refs.length; r++) lines.push({ reference: String(refs[r] || '').trim(), applied: null });
+        }
+        if (lines.length === 0) return { available: false };
+
+        var paymentCustomer = payment.getValue('customer');
+        var paymentCurrency = payment.getValue('currency');
+        var items = [];
+        var unresolved = [];
+        var currencyMismatch = [];
+        var customers = {};
+        for (var i = 0; i < lines.length; i++) {
+            var item = new GlideRecord('x_695068_bcfa_ar_open_item');
+            item.addQuery('item_number', lines[i].reference);
+            item.addQuery('status', '!=', 'cleared');
+            if (paymentCustomer) item.addQuery('customer', paymentCustomer);
+            item.query();
+            if (item.getRowCount() !== 1 || !item.next()) {
+                unresolved.push(lines[i].reference);
+                continue;
+            }
+            if (paymentCurrency && item.getValue('currency') && item.getValue('currency') !== paymentCurrency) {
+                currencyMismatch.push(lines[i].reference + ' (' + item.getValue('currency') + ')');
+            }
+            customers[item.getValue('customer')] = true;
+            items.push({
+                sysId: item.getUniqueValue(),
+                itemNumber: item.getValue('item_number'),
+                customer: item.getValue('customer'),
+                openAmount: parseFloat(item.getValue('open_amount') || '0'),
+                applied: lines[i].applied
+            });
+        }
+
+        var customerIds = [];
+        for (var c in customers) customerIds.push(c);
+        var openTotal = 0;
+        for (var t = 0; t < items.length; t++) openTotal += items[t].openAmount;
+        openTotal = Math.round(openTotal * 100) / 100;
+        var paymentAmount = parseFloat(payment.getValue('amount') || '0');
+
+        return {
+            available: true,
+            usable: unresolved.length === 0 && currencyMismatch.length === 0 && customerIds.length === 1,
+            remittanceSysId: remittance.getUniqueValue(),
+            references: lines,
+            items: items,
+            unresolved: unresolved,
+            currencyMismatch: currencyMismatch,
+            customerSysId: customerIds.length === 1 ? customerIds[0] : null,
+            customerCount: customerIds.length,
+            openTotal: openTotal,
+            paymentAmount: paymentAmount,
+            residual: Math.round((paymentAmount - openTotal) * 100) / 100,
+            deductionHint: fields.deduction_reason ? { amount: fields.deduction_amount, reason: fields.deduction_reason } : null
+        };
+    },
+
+    // Records the resolved remittance references as selected match
+    // candidates (match_type 'remittance'), in remittance order.
+    recordRemittanceCandidates: function(paymentSysId, resolution) {
+        for (var i = 0; i < resolution.items.length; i++) {
+            this._recordMatchCandidate(paymentSysId, resolution.items[i].sysId, resolution.customerSysId, 'remittance', 1.0, i + 1, true);
+        }
+    },
+
     exactMatch: function(paymentSysId) {
         var payment = new GlideRecord('x_695068_bcfa_payment');
         if (!payment.get(paymentSysId)) return { error: 'Payment not found' };

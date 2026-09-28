@@ -8,6 +8,8 @@ import { Property } from '@servicenow/sdk/core'
 // script (scripts/deploy/gen_agent_loader.mjs --demo-users).
 const BCFA_AP_OPERATIONS_GROUP = '6c3107e75eeec3146f95ff49b9011def'
 const BCFA_AP_PROCESSOR_USER = '6fe2fbfa188d7aa5829b61d52b3202c9'
+const BCFA_CASH_APPLICATION_GROUP = 'a42557739c621c40c2570c9fa414cc46'
+const BCFA_AR_PROCESSOR_USER = 'a9f827de8d254b4150e07ac76dd9cef6'
 
 export const aiProvider = Property({
     $id: Now.ID['prop-ai-provider'],
@@ -55,7 +57,7 @@ export const apExtractionConfidenceThreshold = Property({
     name: 'x_695068_bcfa.ap.extraction.confidence_threshold',
     type: 'string',
     value: '0.85',
-    description: 'POC ASSUMPTION. Extraction or classification confidence (0-1) below which a document goes to human review instead of continuing automatically.',
+    description: 'POC ASSUMPTION. Document extraction or classification confidence (0-1), for AP invoices and AR remittances, below which a document goes to human review instead of continuing automatically.',
 })
 
 export const apAutoApproveLimit = Property({
@@ -104,4 +106,70 @@ export const apOverrideAllowedReasons = Property({
     type: 'string',
     value: 'quantity_tolerance,price_tolerance,tax_validation',
     description: 'POC ASSUMPTION. Comma-separated AP exception reason codes a finance approver may approve by override. Other reasons (duplicate, vendor, PO, missing field, low confidence) must be corrected or rejected.',
+})
+
+// ---- Cash application (Phase 13) -------------------------------------------
+
+export const arAutoApproveLimit = Property({
+    $id: Now.ID['prop-ar-approval-auto-approve-limit'],
+    name: 'x_695068_bcfa.ar.approval.auto_approve_limit',
+    type: 'string',
+    value: '0',
+    description: 'POC ASSUMPTION. Balanced payments at or below this amount clear without a human approval. 0 means every clearing needs a finance approver (requester and approver must differ).',
+})
+
+export const arAutoMatchConfidence = Property({
+    $id: Now.ID['prop-ar-match-auto-confidence'],
+    name: 'x_695068_bcfa.ar.match.auto_confidence',
+    type: 'string',
+    value: '0.95',
+    description: 'POC ASSUMPTION. Minimum confidence (0-1) to resolve a customer automatically from a remitter alias. Below it the payment goes to a human as customer_ambiguous.',
+})
+
+export const arDeductionApprovalThreshold = Property({
+    $id: Now.ID['prop-ar-deduction-approval-threshold'],
+    name: 'x_695068_bcfa.ar.deduction.approval_threshold',
+    type: 'string',
+    value: '5000',
+    description: 'POC ASSUMPTION. Deductions up to this amount (payment currency) can be accepted by an AR processor; larger deductions need a finance approver.',
+})
+
+export const arDeductionAllowedTypes = Property({
+    $id: Now.ID['prop-ar-deduction-allowed-types'],
+    name: 'x_695068_bcfa.ar.deduction.allowed_types',
+    type: 'string',
+    value: 'bank_charge,tcs,short_pay',
+    description: 'POC ASSUMPTION. Comma-separated deduction reason codes a reviewer may accept to balance a short payment (BANK_CHARGE, TCS, SHORT_PAY).',
+})
+
+export const arHighValueResidual = Property({
+    $id: Now.ID['prop-ar-exception-high-value-residual'],
+    name: 'x_695068_bcfa.ar.exception.high_value_residual',
+    type: 'string',
+    value: '5000',
+    description: 'POC ASSUMPTION. A short or over payment whose residual (payment currency) reaches this amount is raised to high severity.',
+})
+
+export const arExceptionSlaHours = Property({
+    $id: Now.ID['prop-ar-exception-sla-hours'],
+    name: 'x_695068_bcfa.ar.exception.sla_hours',
+    type: 'string',
+    value: '{"critical":4,"high":8,"medium":24,"low":72}',
+    description: 'POC ASSUMPTION. Hours to resolve an AR exception, by severity (JSON). Sets the exception SLA due date when it is raised.',
+})
+
+export const arExceptionAssignmentGroup = Property({
+    $id: Now.ID['prop-ar-exception-assignment-group'],
+    name: 'x_695068_bcfa.ar.exception.assignment_group',
+    type: 'string',
+    value: BCFA_CASH_APPLICATION_GROUP,
+    description: 'POC ASSUMPTION. sys_id of the group new AR exceptions are assigned to (demo group BCFA Cash Application).',
+})
+
+export const arExceptionDefaultOwner = Property({
+    $id: Now.ID['prop-ar-exception-default-owner'],
+    name: 'x_695068_bcfa.ar.exception.default_owner',
+    type: 'string',
+    value: BCFA_AR_PROCESSOR_USER,
+    description: 'POC ASSUMPTION. sys_id of the user who owns new AR exceptions (demo user bcfa.ar.processor).',
 })

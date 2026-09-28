@@ -14,7 +14,7 @@ import { UiAction, Record } from '@servicenow/sdk/core'
 // Phase 12: the AP action now uses ServiceNow AI (Now Assist skills via
 // FinanceAgentTools, as the signed-in user). Same record ids as the former
 // "Explain with Claude" action, so it is updated in place. The AR action
-// switches in Phase 13.
+// switched the same way in Phase 13.
 export const apExceptionExplainWithClaude = UiAction({
     $id: Now.ID['ui-action-ap-exception-explain-claude'],
     table: 'x_695068_bcfa_ap_exception',
@@ -68,9 +68,9 @@ Record({
 export const arExceptionExplainWithClaude = UiAction({
     $id: Now.ID['ui-action-ar-exception-explain-claude'],
     table: 'x_695068_bcfa_ar_exception',
-    name: 'Explain with Claude',
-    actionName: 'explain_with_claude_ar',
-    hint: 'Ask Claude to (re)generate the advisory AI Recommendation for this exception. Advisory only.',
+    name: 'Explain with Now Assist',
+    actionName: 'explain_with_now_assist_ar',
+    hint: 'Ask Now Assist to (re)generate the advisory explanation and recommended next action for this exception. Advisory only: it never decides the exception.',
     showUpdate: true,
     form: {
         showButton: true,
@@ -81,8 +81,8 @@ export const arExceptionExplainWithClaude = UiAction({
         showFormButtonV2: true,
     },
     script: `
-        var service = new ArDomainService();
-        service.explainException(current.getUniqueValue());
+        var result = new ArDomainService().explainException(current.getUniqueValue());
+        if (result && result.ok === false) gs.addErrorMessage('Now Assist could not explain this exception: ' + (result.message || result.error));
         action.setRedirectURL(current);
     `,
 })
@@ -95,7 +95,7 @@ const arExceptionExplainWithClaudeFormAction = Record({
         ui_action: arExceptionExplainWithClaude,
         action_type: 'ui_action',
         active: true,
-        name: 'Explain with Claude',
+        name: 'Explain with Now Assist',
     },
 })
 
@@ -104,8 +104,8 @@ Record({
     table: 'sys_ux_form_action_layout_item',
     data: {
         table: 'x_695068_bcfa_ar_exception',
-        name: 'Explain with Claude',
-        label: 'Explain with Claude',
+        name: 'Explain with Now Assist',
+        label: 'Explain with Now Assist',
         color: 'primary-ai',
         overflow: false,
         order: 100,

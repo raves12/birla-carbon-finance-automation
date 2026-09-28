@@ -20,7 +20,27 @@ FinancePolicy.DEFAULTS = {
     'ap.exception.sla_hours': '{"critical":4,"high":8,"medium":24,"low":72}',
     'ap.exception.assignment_group': '',
     'ap.exception.default_owner': '',
-    'ap.override.allowed_reasons': 'quantity_tolerance,price_tolerance,tax_validation'
+    'ap.override.allowed_reasons': 'quantity_tolerance,price_tolerance,tax_validation',
+    'ar.approval.auto_approve_limit': 0,
+    'ar.match.auto_confidence': 0.95,
+    'ar.deduction.approval_threshold': 5000,
+    'ar.deduction.allowed_types': 'bank_charge,tcs,short_pay',
+    'ar.exception.high_value_residual': 5000,
+    'ar.exception.sla_hours': '{"critical":4,"high":8,"medium":24,"low":72}',
+    'ar.exception.assignment_group': '',
+    'ar.exception.default_owner': ''
+};
+
+// Base severity per AR exception reason. Short and over payments are
+// raised to high when the residual reaches ar.exception.high_value_residual.
+FinancePolicy.AR_BASE_SEVERITY = {
+    unmatched: 'medium',
+    customer_ambiguous: 'medium',
+    short_pay: 'medium',
+    over_pay: 'medium',
+    duplicate: 'high',
+    currency_mismatch: 'high',
+    other: 'medium'
 };
 
 // Base severity per AP exception reason. Tolerance failures are raised to
@@ -88,9 +108,64 @@ FinancePolicy.prototype = {
 
     // Returns a GlideDateTime for the SLA due date of a new exception.
     apExceptionDueDate: function(severity) {
+        return this._dueDate('ap.exception.sla_hours', severity);
+    },
+
+    // ---- AR (Phase 13) ----------------------------------------------------
+
+    arApprovalRule: function(amount) {
+        var limit = this._number('ar.approval.auto_approve_limit');
+        var value = parseFloat(amount || '0');
+        var required = !(limit > 0 && value <= limit);
+        return {
+            required: required,
+            limit: limit,
+            rule: required
+                ? 'Human approval required: payment ' + value + (limit > 0 ? ' exceeds the auto-approve limit ' + limit : ' (auto-approve limit is 0, so every clearing needs approval)') + '.'
+                : 'No approval required: payment ' + value + ' is within the auto-approve limit ' + limit + '.'
+        };
+    },
+
+    // Minimum confidence for resolving a customer automatically from an
+    // alias; below it the payment goes to a human as customer_ambiguous.
+    arAutoMatchConfidence: function() {
+        return this._number('ar.match.auto_confidence');
+    },
+
+    // Deductions above this amount need a finance approver to accept them.
+    arDeductionApprovalThreshold: function() {
+        return this._number('ar.deduction.approval_threshold');
+    },
+
+    arDeductionTypeAllowed: function(type) {
+        return this._inList('ar.deduction.allowed_types', type);
+    },
+
+    arExceptionSeverity: function(reasonCode, residual) {
+        var severity = FinancePolicy.AR_BASE_SEVERITY[reasonCode] || 'medium';
+        if ((reasonCode === 'short_pay' || reasonCode === 'over_pay') &&
+            Math.abs(parseFloat(residual || '0')) >= this._number('ar.exception.high_value_residual')) {
+            severity = 'high';
+        }
+        return severity;
+    },
+
+    arExceptionDueDate: function(severity) {
+        return this._dueDate('ar.exception.sla_hours', severity);
+    },
+
+    arExceptionAssignmentGroup: function() {
+        return this._string('ar.exception.assignment_group');
+    },
+
+    arExceptionDefaultOwner: function() {
+        return this._string('ar.exception.default_owner');
+    },
+
+    _dueDate: function(key, severity) {
         var hours = 24;
         try {
-            var table = JSON.parse(this._string('ap.exception.sla_hours'));
+            var table = JSON.parse(this._string(key));
             if (table && table[severity] > 0) hours = table[severity];
         } catch (e) {
             // Unparsable property: keep the 24h default.
@@ -98,6 +173,14 @@ FinancePolicy.prototype = {
         var due = new GlideDateTime();
         due.addSeconds(Math.round(hours * 3600));
         return due;
+    },
+
+    _inList: function(key, value) {
+        var allowed = this._string(key).split(',');
+        for (var i = 0; i < allowed.length; i++) {
+            if (allowed[i].trim() === value) return true;
+        }
+        return false;
     },
 
     apExceptionAssignmentGroup: function() {
@@ -109,11 +192,7 @@ FinancePolicy.prototype = {
     },
 
     overrideAllowed: function(reasonCode) {
-        var allowed = this._string('ap.override.allowed_reasons').split(',');
-        for (var i = 0; i < allowed.length; i++) {
-            if (allowed[i].trim() === reasonCode) return true;
-        }
-        return false;
+        return this._inList('ap.override.allowed_reasons', reasonCode);
     },
 
     _string: function(key) {

@@ -27,6 +27,8 @@ export const cashApplicationLifecycle = StateModel({
         closed: { $id: Now.ID['ca-state-closed'], label: 'Closed', value: 'CLOSED', sequence: 14 },
         failed: { $id: Now.ID['ca-state-failed'], label: 'Failed', value: 'FAILED', sequence: 15 },
         unknown_outcome: { $id: Now.ID['ca-state-unknown-outcome'], label: 'Unknown Outcome', value: 'UNKNOWN_OUTCOME', sequence: 16 },
+        // Phase 13 human decisions on an exception (ArExceptionDecisionService).
+        on_hold: { $id: Now.ID['ca-state-on-hold'], label: 'On Hold', value: 'ON_HOLD', sequence: 17 },
     },
     transitions: [
         { $id: Now.ID['ca-trans-received-normalized'], from: 'received', to: 'normalized' },
@@ -54,5 +56,10 @@ export const cashApplicationLifecycle = StateModel({
         { $id: Now.ID['ca-trans-cleared-reconciled'], from: 'cleared', to: 'reconciled' },
         { $id: Now.ID['ca-trans-reconciled-closed'], from: 'reconciled', to: 'closed' },
         { $id: Now.ID['ca-trans-failed-exception'], from: 'failed', to: 'exception' },
+        // Approved deduction re-balances the allocation; hold / clarification (Phase 13).
+        { $id: Now.ID['ca-trans-exception-pending-approval'], from: 'exception', to: 'pending_approval' },
+        { $id: Now.ID['ca-trans-exception-on-hold'], from: 'exception', to: 'on_hold' },
+        { $id: Now.ID['ca-trans-on-hold-pending-approval'], from: 'on_hold', to: 'pending_approval' },
+        { $id: Now.ID['ca-trans-on-hold-matching'], from: 'on_hold', to: 'matching' },
     ],
 })

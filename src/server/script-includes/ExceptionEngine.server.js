@@ -48,14 +48,38 @@ ExceptionEngine.prototype = {
         return gr.update() ? true : false;
     },
 
-    createArException: function(paymentSysId, reasonCode, description) {
+    // details (optional): { ruleResult, evidence, residual }. Same approach
+    // as createApException: everything is set in the one insert, because
+    // the BCFA Cash Application Review workflow triggers on creation.
+    createArException: function(paymentSysId, reasonCode, description, details) {
+        details = details || {};
+        var policy = new FinancePolicy();
+        var severity = policy.arExceptionSeverity(reasonCode, details.residual);
+
         var gr = new GlideRecord('x_695068_bcfa_ar_exception');
         gr.initialize();
         gr.setValue('payment', paymentSysId);
         gr.setValue('reason_code', reasonCode);
         gr.setValue('description', description || '');
+        gr.setValue('severity', severity);
+        gr.setValue('sla_due', policy.arExceptionDueDate(severity).getValue());
+        if (policy.arExceptionAssignmentGroup()) gr.setValue('assignment_group', policy.arExceptionAssignmentGroup());
+        if (policy.arExceptionDefaultOwner()) gr.setValue('assigned_to', policy.arExceptionDefaultOwner());
+        gr.setValue('rule_result', details.ruleResult || description || '');
+        if (details.evidence) gr.setValue('evidence', details.evidence);
+        if (details.residual !== undefined && details.residual !== null) gr.setValue('residual_amount', details.residual);
         gr.setValue('status', 'open');
-        return gr.insert();
+        var sysId = gr.insert();
+
+        new AuditEngine().logEvent({
+            sourceTable: 'x_695068_bcfa_ar_exception',
+            sourceRecord: sysId,
+            eventType: 'exception_created',
+            actorType: 'system',
+            description: 'AR exception raised: ' + reasonCode + ', severity ' + severity + '. ' + (details.ruleResult || description || ''),
+            afterValue: { payment: paymentSysId, reason_code: reasonCode, severity: severity, residual_amount: details.residual }
+        });
+        return sysId;
     },
 
     resolveArException: function(exceptionSysId, resolutionNotes, resolvedBy) {
