@@ -239,9 +239,12 @@ DemoDataSeeder.prototype = {
             });
         }
 
-        // Customer alias for AR-004.
+        // Customer alias for AR-004: a confirmed master-data alias (1.0). Since
+        // Phase 14 an alias below the auto-match threshold (0.95) no longer
+        // resolves the customer on its own; the 0.9 used before made AR-004
+        // end in a customer_ambiguous exception instead of resolving.
         this._upsert('x_695068_bcfa_customer_alias', { alias_name: 'LONE STAR TYRE CO' }, {
-            customer: customerSysId['C005'], alias_name: 'LONE STAR TYRE CO', alias_type: 'bank_remitter_name', confidence: 0.9, active: true
+            customer: customerSysId['C005'], alias_name: 'LONE STAR TYRE CO', alias_type: 'bank_remitter_name', confidence: 1.0, active: true
         });
 
         // Integration Profiles (Section 9) — all default to success; Stage 12

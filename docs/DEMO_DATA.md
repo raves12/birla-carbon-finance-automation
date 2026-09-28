@@ -52,6 +52,32 @@ Seeding runs inline (Phase 25), so each scenario lands in one call. It also runs
 and a refused transition stops the seed with an error. The Phase 25 flows still trigger on the seeded records. Each flow
 stage checks the record's state and skips, because the inline chain has already moved the record on.
 
+### First reset and re-seed (2026-09-28)
+
+**The reset.** It deleted 27 AP invoices and 27 payments, with everything attached to them. It also deleted:
+
+- 15 document intakes and their 15 attachments
+- 64 integration transactions
+- 19 KPI rows
+- 24 non-baseline open items, 3 test POs and 1 test credit note
+
+1,346 audit events were kept. The script was started twice, so the audit trail shows two reset events 27 seconds
+apart; the second one removed the first run's freshly seeded scenarios before seeding them again.
+
+**The re-seed.** It ran under the Phase 25 flows and Phase 26 lifecycle enforcement:
+
+- 9 of 9 AP invoice numbers (10 scenarios) and 9 of 10 AR scenarios landed as documented
+- no lifecycle refusal
+- every flow triggered by the seeded records completed and skipped its stage, because the inline chain had already
+  moved the record on; states were unchanged afterwards
+
+**AR-004 ended in EXCEPTION** (`customer_ambiguous`), not PENDING_APPROVAL. The seeded alias *LONE STAR TYRE CO* → C005
+had confidence 0.9. Since Phase 14, an alias below the auto-match threshold (0.95) no longer resolves the customer on
+its own. The documented end state predates that rule. The alias is master data, so it is now seeded as a confirmed
+alias with confidence 1.0. The threshold control itself is unchanged.
+
+AR-006/007/008 still end at PENDING_APPROVAL, as noted above.
+
 ## Master data (confirmed live)
 
 10 vendors, 10 customers, 10 POs (+ 1 line each), 10 receipts, 15 AR open
