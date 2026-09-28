@@ -157,6 +157,11 @@ ApExceptionDecisionService.prototype = {
         exception.setValue('decided_by', userId);
         exception.setValue('decided_at', new GlideDateTime().getValue());
         exception.setValue('status', newStatus);
+        // Phase 16: resolution code, resolved by/at and final SLA status
+        // through the shared exception framework.
+        if (newStatus === 'resolved' || newStatus === 'closed') {
+            new ExceptionEngine().stampResolution(exception, { approve_override: 'override_approved', reject: 'rejected' }[decision] || 'other', userId);
+        }
         if (resolutionNotes) exception.setValue('resolution_notes', resolutionNotes);
         exception.update();
 

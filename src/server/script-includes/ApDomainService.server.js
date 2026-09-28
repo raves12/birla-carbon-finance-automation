@@ -249,6 +249,7 @@ ApDomainService.prototype = {
             var thisInvoice = new GlideRecord('x_695068_bcfa_ap_invoice');
             thisInvoice.get(apInvoiceSysId);
             var dupExceptionSysId = this.exceptionEngine.createApException(apInvoiceSysId, 'duplicate', 'Duplicate of AP Invoice ' + duplicateResult.matchedInvoiceSysId, {
+                subtype: duplicateResult.sameAmount ? 'exact_duplicate' : 'same_number_different_amount',
                 ruleResult: duplicateResult.sameAmount
                     ? 'FAIL duplicate check: same vendor, invoice number and gross amount as AP invoice ' + original.getValue('invoice_number') + ' (state ' + original.getValue('state') + ').'
                     : 'FAIL duplicate check: same vendor and invoice number as AP invoice ' + original.getValue('invoice_number') + ' (state ' + original.getValue('state') +

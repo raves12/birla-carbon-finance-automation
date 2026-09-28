@@ -132,7 +132,7 @@ export const x_695068_bcfa_ap_match = Table({
 export const x_695068_bcfa_ap_exception = Table({
     name: 'x_695068_bcfa_ap_exception',
     label: 'AP Exception',
-    display: 'reason_code',
+    display: 'number',
     audit: true,
     schema: {
         ap_invoice: ReferenceColumn({ label: 'AP Invoice', referenceTable: 'x_695068_bcfa_ap_invoice', mandatory: true }),
@@ -195,6 +195,48 @@ export const x_695068_bcfa_ap_exception = Table({
         decision_reason: StringColumn({ label: 'Decision Reason', maxLength: 4000, hint: 'Required before choosing Approve Override, Reject, Request Correction or Hold.' }),
         decided_by: ReferenceColumn({ label: 'Decided By', referenceTable: 'sys_user', readOnly: true }),
         decided_at: DateTimeColumn({ label: 'Decided At', readOnly: true }),
+        // Phase 16 unified exception framework fields (same on AP and AR,
+        // maintained by ExceptionEngine).
+        number: StringColumn({ label: 'Number', maxLength: 40, readOnly: true }),
+        process: ChoiceColumn({ label: 'Process', default: 'ap', readOnly: true, choices: { ap: 'Accounts Payable', ar: 'Accounts Receivable' } }),
+        subtype: StringColumn({ label: 'Subtype', maxLength: 100, readOnly: true }),
+        priority: ChoiceColumn({
+            label: 'Priority',
+            default: '3',
+            readOnly: true,
+            choices: { '1': '1 - Critical', '2': '2 - High', '3': '3 - Moderate', '4': '4 - Low' },
+            hint: 'From the severity; raised one step per escalation level.',
+        }),
+        opened_at: DateTimeColumn({ label: 'Opened', readOnly: true }),
+        sla_status: ChoiceColumn({
+            label: 'SLA Status',
+            readOnly: true,
+            choices: { on_track: 'On Track', at_risk: 'At Risk', breached: 'Breached', met: 'Met', missed: 'Missed' },
+            hint: 'At risk from 75% of the SLA; set hourly by the exception sweep and on resolution.',
+        }),
+        aging_bucket: ChoiceColumn({
+            label: 'Aging',
+            readOnly: true,
+            choices: { lt_1d: 'Under 1 day', '1_3d': '1-3 days', '3_7d': '3-7 days', gt_7d: 'Over 7 days' },
+        }),
+        escalation_level: IntegerColumn({ label: 'Escalation Level', default: 0, readOnly: true, hint: '1 at SLA breach, 2 at twice the SLA (Finance Controllers notified).' }),
+        ai_explanation: StringColumn({ label: 'AI Explanation (advisory)', maxLength: 4000, readOnly: true, hint: 'Explanation section of the advisory AI note.' }),
+        ai_confidence: ChoiceColumn({ label: 'AI Confidence', readOnly: true, choices: { high: 'High', medium: 'Medium', low: 'Low' } }),
+        resolution_code: ChoiceColumn({
+            label: 'Resolution Code',
+            readOnly: true,
+            choices: {
+                override_approved: 'Override Approved',
+                rejected: 'Rejected',
+                deduction_approved: 'Deduction Approved',
+                corrected_and_retried: 'Corrected and Retried',
+                withdrawn: 'Withdrawn',
+                other: 'Other',
+            },
+        }),
+        resolved_by: ReferenceColumn({ label: 'Resolved By', referenceTable: 'sys_user', readOnly: true }),
+        resolved_at: DateTimeColumn({ label: 'Resolved', readOnly: true }),
+        correlation_id: StringColumn({ label: 'Correlation ID', maxLength: 64, readOnly: true }),
     },
 })
 

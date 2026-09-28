@@ -665,6 +665,10 @@ declare global {
                         table: 'par_dashboard'
                         id: '1261313489914f5f8c098758149de3cf'
                     }
+                    'bcfa-dashboard-tab-exceptions': {
+                        table: 'par_dashboard_tab'
+                        id: 'a04eafad1d344a30949468e9eb0521ee'
+                    }
                     'bcfa-dashboard-tab-overview': {
                         table: 'par_dashboard_tab'
                         id: '88122ef923db439cb162a4de868bc70d'
@@ -873,13 +877,45 @@ declare global {
                         table: 'par_dashboard_widget'
                         id: '63b297d8be604f5cbbd583ad7cc80d32'
                     }
+                    'bcfa-widget-ap-escalated': {
+                        table: 'par_dashboard_widget'
+                        id: 'd8d572e37a554b5d9965853d8a0fbcd1'
+                    }
                     'bcfa-widget-ap-exceptions-by-reason': {
                         table: 'par_dashboard_widget'
                         id: 'b168e8c6ca37456885893f92d1ab866c'
                     }
+                    'bcfa-widget-ap-open-by-aging': {
+                        table: 'par_dashboard_widget'
+                        id: '70bac17a7f5a4585a499e2271aa1792c'
+                    }
+                    'bcfa-widget-ap-open-by-priority': {
+                        table: 'par_dashboard_widget'
+                        id: 'f76daf0f7c6f461eb52beb7371e7a308'
+                    }
+                    'bcfa-widget-ap-sla-breached': {
+                        table: 'par_dashboard_widget'
+                        id: '1c93d21be9924a3ea1637e24117e6a78'
+                    }
+                    'bcfa-widget-ar-escalated': {
+                        table: 'par_dashboard_widget'
+                        id: 'ddcbb0f1f9d64b5797472722d8b47e43'
+                    }
                     'bcfa-widget-ar-exceptions-by-reason': {
                         table: 'par_dashboard_widget'
                         id: '6017ca619a5446cdb35ea377a3481f4a'
+                    }
+                    'bcfa-widget-ar-open-by-aging': {
+                        table: 'par_dashboard_widget'
+                        id: '4201b68858fb4cbcbc5518718219b30e'
+                    }
+                    'bcfa-widget-ar-open-by-priority': {
+                        table: 'par_dashboard_widget'
+                        id: '048114b6938c463c8606d7e601887ade'
+                    }
+                    'bcfa-widget-ar-sla-breached': {
+                        table: 'par_dashboard_widget'
+                        id: 'aa996bc1820641c3866c95b0915ad2e6'
                     }
                     'bcfa-widget-open-ap-exceptions': {
                         table: 'par_dashboard_widget'
@@ -1217,6 +1253,22 @@ declare global {
                         table: 'sys_ui_related_list_entry'
                         id: '0820a072c9534711bdf07df3f0517802'
                     }
+                    'event-ap-exception-assigned': {
+                        table: 'sysevent_register'
+                        id: '70ff1d9325354ad3a32868db31a8ecbb'
+                    }
+                    'event-ap-exception-escalated': {
+                        table: 'sysevent_register'
+                        id: '6c2f2b2523d347b499ede9a7d1961b6a'
+                    }
+                    'event-ar-exception-assigned': {
+                        table: 'sysevent_register'
+                        id: '8de4f5f713224881be2cb2b227b5ec26'
+                    }
+                    'event-ar-exception-escalated': {
+                        table: 'sysevent_register'
+                        id: '810d7ebac48e41f580258728c0f52824'
+                    }
                     'flow-ap-exception-aging-escalation': {
                         table: 'sys_hub_flow'
                         id: '8769e860868b4d1da62856fa0f7e0f76'
@@ -1303,9 +1355,29 @@ declare global {
                         id: '06226f4a65c74f899aa237342ed1a170'
                         deleted: true
                     }
+                    'job-exception-sla-sweep': {
+                        table: 'sysauto_script'
+                        id: '4e6d10932d304e6a99110d1e8866341b'
+                    }
                     'match-candidate-entry': {
                         table: 'sys_ui_related_list_entry'
                         id: 'b6d4108f47a94bbaadf4a45eb5b08487'
+                    }
+                    'notification-ap-exception-assigned': {
+                        table: 'sysevent_email_action'
+                        id: '9cecef83c80f4fffa9375aa0fac6bac1'
+                    }
+                    'notification-ap-exception-escalated': {
+                        table: 'sysevent_email_action'
+                        id: '619829d7196246b485675cdacc9964bd'
+                    }
+                    'notification-ar-exception-assigned': {
+                        table: 'sysevent_email_action'
+                        id: '379187838ca747009d5c8e4ec20d8d53'
+                    }
+                    'notification-ar-exception-escalated': {
+                        table: 'sysevent_email_action'
+                        id: 'a3bcce709f094450b3e0837177a61637'
                     }
                     package_json: {
                         table: 'sys_module'
@@ -1872,6 +1944,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '003e8bac59e94061a053cffd09c9582b'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'priority'
+                            value: '3'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '00ed1d2566e1408fbe2fe1e48c678cf0'
                         key: {
@@ -2222,6 +2305,15 @@ declare global {
                     },
                     {
                         table: 'sys_documentation'
+                        id: '068f0b3f11a44fef932d0351fd7e34ec'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'ai_confidence'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
                         id: '06903de00bd3468ea3c582cf311ba3df'
                         key: {
                             name: 'x_695068_bcfa_payment_allocation'
@@ -2235,6 +2327,14 @@ declare global {
                         key: {
                             sys_security_acl: '2895fd078be441a3967cb2e4e920a98b'
                             sys_user_role: '484c56f4217841e298f5752ea6093a3f'
+                        }
+                    },
+                    {
+                        table: 'sys_choice_set'
+                        id: '06a8bbaeb1da45febd30eb877e3f5402'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'resolution_code'
                         }
                     },
                     {
@@ -2522,6 +2622,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '0b4bf93afd694e67915e11510a792b3f'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'aging_bucket'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '0b726a44b043464194626cbeeae07417'
                         key: {
@@ -2794,6 +2902,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '0f3343410ef14844a8031dfcc131288e'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'resolution_code'
+                            value: 'deduction_approved'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sn_aia_agent_tool_m2m'
                         id: '0f6ad8a0576144c681b4a0317cd341cc'
                         key: {
@@ -2961,6 +3080,15 @@ declare global {
                     },
                     {
                         table: 'sys_documentation'
+                        id: '126591c54b6845428ab929c8848bc4e7'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'opened_at'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
                         id: '1267806b758342978aad52c7e5a004a5'
                         key: {
                             name: 'x_695068_bcfa_ap_extraction'
@@ -3021,6 +3149,14 @@ declare global {
                                     name: 'x_695068_bcfa.read_only'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '13ab5e73880145bcaf8e9e2193b356b9'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'correlation_id'
                         }
                     },
                     {
@@ -3113,6 +3249,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '15136e6cc046476782454e4651494ca0'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'escalation_level'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '15a025c2a692453fb84ef574892297ee'
                         key: {
@@ -3128,6 +3272,28 @@ declare global {
                             name: 'x_695068_bcfa_ai_interaction'
                             element: 'status'
                             value: 'timeout'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '15fb423226814774bbb4ca06d81dafb2'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'resolution_code'
+                            value: 'corrected_and_retried'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '162d1d152e744dd18c3f344420468737'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'priority'
+                            value: '4'
                             language: 'en'
                             dependent_value: 'NULL'
                         }
@@ -3272,6 +3438,15 @@ declare global {
                         id: '193616903e384b5190a32a2460c2604b'
                         key: {
                             name: 'x_695068_bcfa_receipt'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '193d137864ed42afba712b68c524f41a'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'resolved_by'
+                            language: 'en'
                         }
                     },
                     {
@@ -3671,6 +3846,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '21c5adeeb5a8426a8f8a2b1257275ba4'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'aging_bucket'
+                            value: 'gt_7d'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '21ece4d636964523abc427df76b4a722'
                         key: {
@@ -3750,6 +3936,15 @@ declare global {
                                     name: 'x_695068_bcfa.admin'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '231d3f152d5546319ee6341ef0f0efba'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'ai_explanation'
+                            language: 'en'
                         }
                     },
                     {
@@ -3939,6 +4134,14 @@ declare global {
                     },
                     {
                         table: 'sys_dictionary'
+                        id: '26de9645c62a4dd49474791129c27391'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'process'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
                         id: '270f86710c0b422895279d346f1370cd'
                         key: {
                             name: 'x_695068_bcfa_ap_exception'
@@ -4097,6 +4300,17 @@ declare global {
                             name: 'x_695068_bcfa_reference_mapping'
                             element: 'active'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '2b414a9b12a24e4588bf504667c391ed'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'sla_status'
+                            value: 'on_track'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -4418,6 +4632,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '318d0b653bbb4a38b53bbfc48dce7255'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'priority'
+                            value: '2'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '3190e3e5ab3c4709a4ef9e63c1a62a42'
                         key: {
@@ -4498,6 +4723,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '33b03cb5912c44afaeac02cbd6852b88'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'resolved_at'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_choice_set'
                         id: '33b31ca501734ced9623af263a2ac5e5'
                         key: {
@@ -4511,6 +4745,15 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_purchase_order'
                             element: 'currency'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '33cc1078ca184075b5385dcd519ea729'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'aging_bucket'
+                            language: 'en'
                         }
                     },
                     {
@@ -4577,6 +4820,14 @@ declare global {
                                     name: 'x_695068_bcfa.ap_processor'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_choice_set'
+                        id: '350fc53561934b1db68c490795150351'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'ai_confidence'
                         }
                     },
                     {
@@ -4797,6 +5048,25 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '38edabb68da0441bb649614465e867d7'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'resolved_at'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '39031ae45c6d4721866971118c17c136'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'ai_confidence'
+                            value: 'high'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '392c2485c9b8488987183ba149e85c22'
                         key: {
@@ -4891,6 +5161,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '3a3467aa9bc84194ad1bf1eee3ee2d37'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'process'
+                        }
+                    },
+                    {
                         table: 'sys_choice_set'
                         id: '3a3d3880a6dc4cebb7d3f3b9d0cf4cb2'
                         key: {
@@ -4955,6 +5233,17 @@ declare global {
                             name: 'x_695068_bcfa_po_line'
                             element: 'NULL'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '3c7751b7265f4ef2bfd85b1d44a12ad1'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'resolution_code'
+                            value: 'other'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -5034,6 +5323,17 @@ declare global {
                                     name: 'x_695068_bcfa.admin'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '3d1f269aceb04675bf0d8e94a9c70a7a'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'sla_status'
+                            value: 'met'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -5143,6 +5443,14 @@ declare global {
                             value: 'duplicate'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '3f5c6db37671476d9336ff1b0a769719'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'sla_status'
                         }
                     },
                     {
@@ -5374,6 +5682,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '4373b906ce544161be40ee26d5bd409d'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'resolved_by'
+                        }
+                    },
+                    {
                         table: 'sn_aia_agent_tool_m2m'
                         id: '43e4e7d0bd794feb86a4e87cbf53bb8c'
                         key: {
@@ -5508,6 +5824,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice_set'
+                        id: '46b8c982d99842babca1c134e08d7265'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'aging_bucket'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '46cffa6bf1ca4aceba9f6613ae6b7978'
                         key: {
@@ -5563,6 +5887,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice_set'
+                        id: '473de02573664cf491de1822ac779cd6'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'priority'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '475070e41cc442f89e4b6f8990b2fdc1'
                         key: {
@@ -5572,11 +5904,33 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '475a43a58a374afdb0243d26d8bdff04'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'aging_bucket'
+                            value: '1_3d'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_choice_set'
                         id: '47a03f4976d84d0e817528c3dc507655'
                         key: {
                             name: 'x_695068_bcfa_ap_invoice'
                             element: 'source'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '48041e81e8b84838a5573bc7ee1e853b'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'ai_confidence'
+                            value: 'low'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -5645,6 +5999,15 @@ declare global {
                                     name: 'x_695068_bcfa.ap_processor'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '49a7e0f5b52d4a398596a1de10edf988'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'number'
+                            language: 'en'
                         }
                     },
                     {
@@ -5822,6 +6185,14 @@ declare global {
                     },
                     {
                         table: 'sys_dictionary'
+                        id: '4d2cfe1c743048f5848daef216a33511'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'ai_explanation'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
                         id: '4d60c6a16cf341c59bfd457f34c5e21e'
                         key: {
                             name: 'x_695068_bcfa_finance_intake'
@@ -5870,6 +6241,14 @@ declare global {
                         id: '4edc47eab4c9497fac4283e8a388e4cf'
                         key: {
                             ui_action: 'd6364c9589c84fea88ccac365a8fdbcc'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '4f0a846b56a9495581a845f932a04fad'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'priority'
                         }
                     },
                     {
@@ -5929,11 +6308,31 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '51850c209cac47a3b205ac59f53813e1'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'sla_status'
+                            value: 'breached'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '5185aae8168c485596d528a582b2c4c5'
                         key: {
                             name: 'x_695068_bcfa_reference_mapping'
                             element: 'external_value'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '518c7b44f3b04fa6a3cea09fa5ec58db'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'priority'
                             language: 'en'
                         }
                     },
@@ -6001,11 +6400,29 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '52cf907873c94c3f8dfd4b460f839b5c'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'number'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '52f7fc3e1ab84e25bde7278229f84541'
                         key: {
                             name: 'x_695068_bcfa_decision_log'
                             element: 'passed'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '5307bcfa6e984782ac93b7f946c799b0'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'priority'
+                            language: 'en'
                         }
                     },
                     {
@@ -6243,6 +6660,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '5666e0702009445c903e68e7e37e89b7'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'number'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: '56862337b0b545038524615066903564'
                         key: {
@@ -6441,6 +6866,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '590b83b29a2948cba792079087f6b53e'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'resolution_code'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '594f9cf3d9284eb1b2ee68b38d750725'
                         key: {
@@ -6460,6 +6893,15 @@ declare global {
                                     name: 'x_695068_bcfa.finance_approver'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '596f692e66a64de084ad0694fe1e56fb'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'subtype'
+                            language: 'en'
                         }
                     },
                     {
@@ -6521,6 +6963,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '5abaff2880924cc698a5bf45800d106e'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'resolved_by'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: '5ae26fbf0e48429994bfceffab3d057c'
                         key: {
@@ -6529,6 +6979,14 @@ declare global {
                             value: 'http_error'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice_set'
+                        id: '5b0e99f812c04638a85363a5c5ef397b'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'sla_status'
                         }
                     },
                     {
@@ -6615,6 +7073,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '5df36ebf8acb479d8de4a0342cc9d83c'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'resolution_code'
+                            value: 'rejected'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '5e283a17cbcb4cb79e9e8502f51c9abd'
                         key: {
@@ -6691,6 +7160,14 @@ declare global {
                             name: 'x_695068_bcfa_ap_invoice'
                             element: 'vendor'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '5f211cd224c9427fb1630b63a60686a9'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'ai_confidence'
                         }
                     },
                     {
@@ -6905,6 +7382,17 @@ declare global {
                     },
                     {
                         table: 'sys_choice'
+                        id: '617c330857dc4b369da3be528b2535df'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'priority'
+                            value: '2'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
                         id: '6198be41879b4e21bf363c4f10109107'
                         key: {
                             name: 'x_695068_bcfa_ar_exception'
@@ -6931,6 +7419,15 @@ declare global {
                     },
                     {
                         table: 'sys_documentation'
+                        id: '61d24add604a4f12a73c10627af94e67'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'resolution_code'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
                         id: '61efdd31605c44ef99cc4d67c0c40f28'
                         key: {
                             name: 'x_695068_bcfa_deduction'
@@ -6944,6 +7441,17 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_finance_exception'
                             element: 'domain'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '626e4f6678d64fa29516e2214d0a8385'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'resolution_code'
+                            value: 'rejected'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -7242,6 +7750,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '66c66d4266ba485897751b204c33e043'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'correlation_id'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '6710f3c85aea472cbe587603c3df5286'
                         key: {
@@ -7374,6 +7891,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '6939c782290f4b70b2a2699d3296ad01'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'subtype'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '69568ec940bb4133868f7dab2b0f8ac4'
                         key: {
@@ -7443,6 +7969,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '6a1077d8b78146c085e5b8515b539f6e'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'ai_confidence'
+                            value: 'medium'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '6a445eed0aea4e329c04e2683fa8faca'
                         key: {
@@ -7466,6 +8003,14 @@ declare global {
                             value: 'material'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '6afedc4765454ba790edb7a4105fb286'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'opened_at'
                         }
                     },
                     {
@@ -7537,6 +8082,15 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ar_approval'
                             element: 'decision_notes'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '6be2b2f655894f2ab53a5564d333723c'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'ai_explanation'
                             language: 'en'
                         }
                     },
@@ -7656,6 +8210,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '6e4b963f8414420897c79b6be8aee493'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'process'
+                            value: 'ar'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '6e5d97d0cdfe4b6c8f90fc4db236d460'
                         key: {
@@ -7726,6 +8291,14 @@ declare global {
                                     name: 'x_695068_bcfa.finance_reviewer'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '7028c343d51248b3bc37c2d08e927985'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'resolution_code'
                         }
                     },
                     {
@@ -7854,6 +8427,15 @@ declare global {
                             value: 'combination'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '720e7e261ec445c784143c77beb9249a'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'resolution_code'
+                            language: 'en'
                         }
                     },
                     {
@@ -8134,6 +8716,17 @@ declare global {
                     },
                     {
                         table: 'sys_choice'
+                        id: '7716fee33ad541c6ac4b9533791eb69e'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'ai_confidence'
+                            value: 'medium'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
                         id: '7756a480d2824340aba1da42af6cb9b7'
                         key: {
                             name: 'x_695068_bcfa_credit_note'
@@ -8243,6 +8836,17 @@ declare global {
                     },
                     {
                         table: 'sys_choice'
+                        id: '78f8d606fbe5455da5bd59c18f6b1273'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'process'
+                            value: 'ar'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
                         id: '78ffe15e3a6e4af4ba51328d13854552'
                         key: {
                             name: 'x_695068_bcfa_ap_exception'
@@ -8269,6 +8873,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '7982a6302391486c95402e8456a16d90'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'resolution_code'
+                            value: 'override_approved'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '79a5d89222c549dcbac2273c05c26ebe'
                         key: {
@@ -8282,6 +8897,17 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ai_interaction'
                             element: 'source_table'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '79c335a8771b49dbaaff26d45c5074f6'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'sla_status'
+                            value: 'at_risk'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -8328,6 +8954,23 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_integration_txn'
                             element: 'operation'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '7b0679e1ba3843a7a2f77c708b1646ef'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'resolved_at'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice_set'
+                        id: '7b5aac27bd4847f893ac25c12dc3f61c'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'aging_bucket'
                         }
                     },
                     {
@@ -8472,6 +9115,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice_set'
+                        id: '7d391586c7d14c42971e57d424cd2e49'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'priority'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '7d4ae307ef2240fa83f06583c358a42e'
                         key: {
@@ -8542,6 +9193,17 @@ declare global {
                             name: 'x_695068_bcfa_ap_exception'
                             element: 'severity'
                             value: 'critical'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '7f5cc710a5fd411fb5e5d91cb17da72e'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'resolution_code'
+                            value: 'withdrawn'
                             language: 'en'
                             dependent_value: 'NULL'
                         }
@@ -8631,6 +9293,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '80cf05f355774dd8affff9b0fc05320a'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'sla_status'
+                            value: 'missed'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_variable_value'
                         id: '8110832511d940f48f2137d502e89b6a'
                         key: {
@@ -8651,6 +9324,14 @@ declare global {
                         id: '81726cc569d04c47bd45beac87a3c153'
                         key: {
                             name: 'x_695068_bcfa_ar_approval'
+                        }
+                    },
+                    {
+                        table: 'sys_choice_set'
+                        id: '82348e2202334f14ac875cf2a6dfd4cf'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'sla_status'
                         }
                     },
                     {
@@ -8947,6 +9628,14 @@ declare global {
                     },
                     {
                         table: 'sys_dictionary'
+                        id: '87470b9b60bb4f5f8730eee5160924f4'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'subtype'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
                         id: '875ae6a7d813414a9fc841deb73a51c6'
                         key: {
                             name: 'x_695068_bcfa_deduction'
@@ -9065,6 +9754,14 @@ declare global {
                             value: 'rejected'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '8999a212b31d42fe85869fa78265e006'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'sla_status'
                         }
                     },
                     {
@@ -9208,6 +9905,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '8cf82d667ed549ab891ece93600949bc'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'aging_bucket'
+                            value: 'gt_7d'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '8d6adac8f94b444a9b2898ade605275e'
                         key: {
@@ -9291,12 +9999,31 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '8f322f9663d8436499fcf26ccf324d81'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'opened_at'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '8f66f16e96e1461a97ec95b6b43b9e1d'
                         key: {
                             name: 'x_695068_bcfa_ar_open_item'
                             element: 'currency'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '8f772464012d43a9a914f8912ecf2fc2'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'process'
+                            value: 'ap'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -9308,10 +10035,27 @@ declare global {
                     },
                     {
                         table: 'sys_dictionary'
+                        id: '903dd09a3e314b9a8a5875fddce1479e'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'ai_confidence'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
                         id: '90982e151dec40279c4a577d486a2784'
                         key: {
                             name: 'x_695068_bcfa_payment_allocation'
                             element: 'tcs'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '90a23886909648fb8114bc3d40872620'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'aging_bucket'
+                            language: 'en'
                         }
                     },
                     {
@@ -9367,6 +10111,14 @@ declare global {
                                     name: 'x_695068_bcfa.read_only'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '91e3225e7e7044b6b915f5c6551ce010'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'resolved_at'
                         }
                     },
                     {
@@ -9462,6 +10214,15 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_finance_intake'
                             element: 'classification_confidence'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '94a9f0ea18f04c41ad14024895e842a4'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'correlation_id'
+                            language: 'en'
                         }
                     },
                     {
@@ -9649,6 +10410,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '986191f2faa440a78bfd03e262fc6d9c'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'sla_status'
+                            value: 'at_risk'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '987fa058362740c1aed888178d9da240'
                         key: {
@@ -9736,6 +10508,14 @@ declare global {
                     },
                     {
                         table: 'sys_dictionary'
+                        id: '99ba54b1f74b4a9c952f8778a56e5fbe'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'escalation_level'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
                         id: '99c076ec8ef5497e85ee83ff773fb522'
                         key: {
                             name: 'x_695068_bcfa_audit_event'
@@ -9819,11 +10599,33 @@ declare global {
                     },
                     {
                         table: 'sys_choice'
+                        id: '9b729efad78749258b11526ef5b09d36'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'resolution_code'
+                            value: 'override_approved'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
                         id: '9ba2cff147624d3d9cf3b9c328c8adb4'
                         key: {
                             name: 'x_695068_bcfa_ar_exception'
                             element: 'severity'
                             value: 'medium'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '9bb66b9d1c5f4f3c80b97d8cd5449a80'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'priority'
+                            value: '4'
                             language: 'en'
                             dependent_value: 'NULL'
                         }
@@ -9896,6 +10698,26 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_credit_note'
                             element: 'NULL'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '9cc710be4eb64218bf454da969d2fdf7'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'aging_bucket'
+                            value: 'lt_1d'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '9cd5a078430c47f8a272ced6eb8925e3'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'opened_at'
                             language: 'en'
                         }
                     },
@@ -9994,6 +10816,17 @@ declare global {
                                     name: 'x_695068_bcfa.admin'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '9dea363863b84f41b304edca6ec93dd1'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'process'
+                            value: 'ap'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -10308,6 +11141,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: 'a4834add176a45839724d345436417b7'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'ai_confidence'
+                            value: 'high'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: 'a4a7bf5e77e04afd93b2897293b8922b'
                         key: {
@@ -10437,6 +11281,25 @@ declare global {
                             value: 'tcs'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'a7d609956279491d815668fa9c65e5a2'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'aging_bucket'
+                            value: '3_7d'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice_set'
+                        id: 'a7e2348afc594a0e9e6b60ccd6f36f0c'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'process'
                         }
                     },
                     {
@@ -10692,6 +11555,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: 'ad2d17a3d4a64143987e43250a860acd'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'subtype'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: 'ad6a683b8b2d4ce88e0f3e53a87dec5a'
                         key: {
@@ -10720,6 +11591,17 @@ declare global {
                         id: 'ada646427f2548bd85a52cf14652312b'
                         key: {
                             agent: '9fd2181abab54e2eb93dffe220d11d93'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'adb4372896c7488084155a00e5369bb9'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'resolution_code'
+                            value: 'other'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -11080,6 +11962,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: 'b39f5b37c0574837838b954981b8075f'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'ai_explanation'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: 'b3b1bbc3268a48358032c4ad52016aed'
                         key: {
@@ -11205,6 +12095,15 @@ declare global {
                                     name: 'x_695068_bcfa.admin'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'b55eeda5d9fc4addbcd9bd3f282d41a6'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'process'
+                            language: 'en'
                         }
                     },
                     {
@@ -11545,10 +12444,32 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: 'bb5dcfdc2ff748938432292531556ab6'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'priority'
+                            value: '1'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'ua_table_licensing_config'
                         id: 'bb7ce05fe7984f548d88cbbe726f652f'
                         key: {
                             name: 'x_695068_bcfa_deduction'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'bb8235623bee4a14b6141c8ea3277f3f'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'priority'
+                            value: '1'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -11653,6 +12574,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: 'bdd5dc00cf6f47ac8b32acdcd298e17f'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'process'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: 'bddf813e7be5406b9bff521318f6255f'
                         key: {
@@ -11661,6 +12591,15 @@ declare global {
                             value: 'manual'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'be1cdca2617143a9aae53e5173ac3a6f'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'sla_status'
+                            language: 'en'
                         }
                     },
                     {
@@ -11741,6 +12680,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'par_dashboard_canvas'
+                        id: 'c01c48735ed44f7aaa5455fc789605c1'
+                        key: {
+                            dashboard: '1261313489914f5f8c098758149de3cf'
+                            dashboard_tab: 'a04eafad1d344a30949468e9eb0521ee'
+                        }
+                    },
+                    {
                         table: 'ua_table_licensing_config'
                         id: 'c022149f3a9b4325a1e893bd563ab5a8'
                         key: {
@@ -11786,6 +12733,17 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ap_invoice'
                             element: 'vendor'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'c15ccf560a394569b87f9054941a1ff7'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'aging_bucket'
+                            value: '1_3d'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -11867,6 +12825,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: 'c326ef9cd2ac4c0e9e15674d73b2fb55'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'sla_status'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: 'c3a66aecc9c14659b78d42157bb1883d'
                         key: {
@@ -11894,6 +12861,14 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_customer'
                             element: 'active'
+                        }
+                    },
+                    {
+                        table: 'sys_choice_set'
+                        id: 'c40fe7aac06640489f13ad1a4a6bdb92'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'resolution_code'
                         }
                     },
                     {
@@ -11992,6 +12967,14 @@ declare global {
                             value: 'in_review'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: 'c586c88b68a4480eb136a1183c6dc8c7'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'aging_bucket'
                         }
                     },
                     {
@@ -12530,6 +13513,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: 'cf30e6b65f4746d2aef50cfa16c8f3d8'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'ai_confidence'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sn_aia_team'
                         id: 'cf363437369f408cbfba3a0e11f4dcd7'
                         key: {
@@ -12543,6 +13535,17 @@ declare global {
                             agent: '3c1340425274482fb242410734d781fe'
                             tool: '082cda60c197400e8c9c26e55dca747b'
                             name: 'Get AP Exception Context (Communication)'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'cf79904442444cdfa727f49800eac2af'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'resolution_code'
+                            value: 'corrected_and_retried'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -12927,6 +13930,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: 'd6658a00f46142ab8c532453e41bccd0'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'priority'
+                            value: '3'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: 'd69f635bd7744ad69d98a12dd7db4114'
                         key: {
@@ -13005,6 +14019,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: 'd85e0e477cd84b058965c278d1c4479e'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'priority'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: 'd86a038660124f64a5079d805ad8b8a0'
                         key: {
@@ -13051,6 +14073,15 @@ declare global {
                             value: 'matched'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'd8f6f2c10eaf4f0f82f1cd889ed2108a'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'resolved_by'
+                            language: 'en'
                         }
                     },
                     {
@@ -13105,6 +14136,14 @@ declare global {
                             name: 'x_695068_bcfa_purchase_order'
                             element: 'currency'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice_set'
+                        id: 'da1dec3a3dec4cff85c72ea767f6cebe'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'process'
                         }
                     },
                     {
@@ -13297,6 +14336,25 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: 'dd450421aa884c50a730fefb61c43ec0'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'aging_bucket'
+                            value: '3_7d'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice_set'
+                        id: 'dd60298562714eb9b68065daa3672cbf'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'ai_confidence'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: 'dd65d6855b03409387c46cce7ad87e26'
                         key: {
@@ -13427,6 +14485,17 @@ declare global {
                                     name: 'x_695068_bcfa.finance_approver'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'df12e5dc75a64838aaedd842cab06ec0'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'resolution_code'
+                            value: 'withdrawn'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -13756,6 +14825,14 @@ declare global {
                                     name: 'x_695068_bcfa.integration_operator'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: 'e468b2e40f124ad7944feece906d6258'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'number'
                         }
                     },
                     {
@@ -14133,6 +15210,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: 'eb26cfbd4c894b9c80ce323842ebca6c'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'escalation_level'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: 'eb318fb1c8334843887eef583f813685'
                         key: {
@@ -14154,6 +15240,17 @@ declare global {
                                     name: 'x_695068_bcfa.ap_processor'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'ebd6f4d1b4f0446481ac9dab271550fc'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'sla_status'
+                            value: 'breached'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -14489,6 +15586,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: 'f0f0c996cfae427f9193fd81c3b117e3'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'sla_status'
+                            value: 'met'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_element_mapping'
                         id: 'f12be0b8e3194442934d437662b57431'
                         key: {
@@ -14550,6 +15658,17 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ap_match'
                             element: 'tax_variance'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'f2823d17e70441d6afa81b05189c83b1'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'sla_status'
+                            value: 'on_track'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -14651,6 +15770,17 @@ declare global {
                             name: 'x_695068_bcfa_receipt'
                             element: 'NULL'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'f433047e75d249469b4f8062788ba209'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'sla_status'
+                            value: 'missed'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -14917,6 +16047,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: 'f925e47542f340859bf27ef15444d08a'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'resolution_code'
+                            value: 'deduction_approved'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: 'f96c8343c3164c73838b114f69a4360c'
                         key: {
@@ -15114,6 +16255,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: 'fd7b8cc6a7fb40449cf4a9e1c228ed2f'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'correlation_id'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: 'fd8b5c0e8bfe4eef82ebfd10a5f491db'
                         key: {
@@ -15135,6 +16284,17 @@ declare global {
                                     name: 'x_695068_bcfa.admin'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'fdddfe6962894828a0149c4462afc71f'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'ai_confidence'
+                            value: 'low'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -15166,6 +16326,17 @@ declare global {
                             agent: '04cf894018b541cc929bdf7895e8e286'
                             tool: '0edc4add126141c6ada6301ab546faad'
                             name: 'Get AP Exception Context'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'fe02046f32ec4f738b0de589c0612858'
+                        key: {
+                            name: 'x_695068_bcfa_ap_exception'
+                            element: 'aging_bucket'
+                            value: 'lt_1d'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -15202,6 +16373,15 @@ declare global {
                         id: 'fe5978885359408dad24a23b61b818da'
                         key: {
                             ui_action: '4abc570e7eae4a02b15dc4121cf1a524'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'febd63b29a9a4db28586016f43b36f44'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'escalation_level'
+                            language: 'en'
                         }
                     },
                     {

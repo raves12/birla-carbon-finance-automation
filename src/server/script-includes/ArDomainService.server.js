@@ -307,6 +307,7 @@ ArDomainService.prototype = {
             this.matchingEngine.recordCombinationCandidates(paymentSysId, payment.getValue('customer'), combinations.solutions, false);
             var ambiguousSysId = this.exceptionEngine.createArException(paymentSysId, 'ambiguous_match',
                 'More than one set of open items matches the payment amount exactly.', {
+                    subtype: 'multiple_exact_options',
                     ruleResult: 'FAIL matching: the payment amount ' + payment.getValue('amount') + ' is matched exactly by more than one set of open items; the engine does not choose between them.',
                     evidence: options.join('\n') + (combinations.solutions.length >= 3 ? '\n(search stopped after 3 options)' : '') +
                         (remittance.available ? '\n' + this._remittanceEvidence(remittance) : '\nNo remittance references.')
@@ -594,6 +595,7 @@ ArDomainService.prototype = {
                     (suggestion.rule ? ' Rule suggestion: ' + (suggestion.type ? suggestion.type.toUpperCase() + ' - ' : 'none - ') + suggestion.rule + '; a reviewer confirms.' : ''),
                 evidence: allocationEvidence.join('\n') + (remittance.available ? '\n' + this._remittanceEvidence(remittance) : ''),
                 residual: Math.abs(difference),
+                subtype: suggestion.type ? 'suggested_' + suggestion.type : '',
                 suggestedDeductionType: suggestion.type,
                 creditNote: suggestion.creditNoteSysId
             });
