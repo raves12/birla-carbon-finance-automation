@@ -1,0 +1,279 @@
+// AI Interaction Log (Phase 20): one row per AI execution, whichever
+// provider ran it (Now Assist skills and agentic workflows, the simulated
+// Document Intelligence extraction, the legacy Claude client). It records
+// what ran, on which record, for which process, with what result, status,
+// confidence and duration, who started it, and later what the human did with
+// it (accepted or overrode it, and why).
+//
+// Prompts are never stored. The input is identified by a SHA-256 hash and
+// its size, so a run can be matched to its input without keeping the text;
+// the result is kept as a short summary (the full advisory note lives on
+// the record it was written to).
+var AiInteractionLog = Class.create();
+
+AiInteractionLog.TABLE = 'x_695068_bcfa_ai_interaction';
+AiInteractionLog.RESULT_CHARS = 1000;
+
+AiInteractionLog.CAPABILITY_BY_SKILL = {
+    ap_invoice_summary: 'summarization',
+    ap_match_exception_explanation: 'exception_explanation',
+    ap_recommended_next_action: 'next_action_recommendation',
+    ap_clarification_draft: 'communication_draft',
+    cash_application_summary: 'summarization',
+    ar_match_explanation: 'match_explanation',
+    ar_residual_explanation: 'residual_explanation',
+    ar_recommended_next_action: 'next_action_recommendation',
+    customer_clarification_draft: 'communication_draft'
+};
+
+// The AI agent whose tool calls each skill (src/fluent/ai-agents).
+AiInteractionLog.AGENT_BY_SKILL = {
+    ap_match_exception_explanation: 'BCFA AP Exception Analysis Agent',
+    ap_recommended_next_action: 'BCFA AP Resolution Recommendation Agent',
+    ap_clarification_draft: 'BCFA AP Communication Agent',
+    ar_match_explanation: 'BCFA Cash Match Recommendation Agent',
+    ar_residual_explanation: 'BCFA Deduction Analysis Agent',
+    customer_clarification_draft: 'BCFA Cash Application Communication Agent'
+};
+
+AiInteractionLog.WORKFLOW = { ap: 'BCFA AP Invoice Review', ar: 'BCFA Cash Application Review' };
+
+// Outputs a human decision can accept or override.
+AiInteractionLog.RECOMMENDATIONS = ['exception_review', 'next_action_recommendation', 'cash_match_recommendation', 'candidate_ranking'];
+
+// Decision -> pattern of a recommendation that agrees with it.
+AiInteractionLog.AGREES = {
+    ap: {
+        request_correction: /correct/i,
+        hold: /\bhold\b/i,
+        approve_override: /tolerance approval/i,
+        reject: /reject|duplicate/i
+    },
+    ar: {
+        request_clarification: /clarif|contact the customer|ask the customer|missing remittance|SHORT_PAY|dispute/i,
+        hold: /\bhold\b/i
+    }
+};
+
+AiInteractionLog.prototype = {
+    initialize: function() {},
+
+    // One-shot log of a finished AI execution. Returns the row sys_id.
+    // params: { sourceTable, sourceRecord, correlationId?, process?, provider,
+    //   operation, capability, skill?, agent?, workflow?, context? (hashed,
+    //   never stored), status, result?, recommendation?, confidence?,
+    //   durationMs?, error?, model?, requestId? }
+    log: function(params) {
+        try {
+            var gr = new GlideRecord(AiInteractionLog.TABLE);
+            gr.initialize();
+            this._fill(gr, params);
+            gr.setValue('started_at', new GlideDateTime().getValue());
+            this._finish(gr, params);
+            return gr.insert();
+        } catch (e) {
+            gs.error('BCFA AiInteractionLog: not written: ' + e);
+            return '';
+        }
+    },
+
+    // A long-running execution (an agentic workflow): started now, finished
+    // later by complete(), which computes the duration.
+    start: function(params) {
+        try {
+            var gr = new GlideRecord(AiInteractionLog.TABLE);
+            gr.initialize();
+            params.status = 'started';
+            this._fill(gr, params);
+            gr.setValue('started_at', new GlideDateTime().getValue());
+            gr.setValue('status', 'started');
+            return gr.insert();
+        } catch (e) {
+            gs.error('BCFA AiInteractionLog: start not written: ' + e);
+            return '';
+        }
+    },
+
+    // Finishes the open (started) run of the same workflow on the record,
+    // or logs a new row when there is none (or no workflow is given, e.g. a
+    // person using Explain with Now Assist). Returns the row sys_id.
+    complete: function(params) {
+        if (!params.workflow) return this.log(params);
+        var open = new GlideRecord(AiInteractionLog.TABLE);
+        open.addQuery('agentic_workflow', params.workflow);
+        open.addQuery('source_record', params.sourceRecord);
+        open.addQuery('capability', params.capability);
+        open.addQuery('status', 'started');
+        open.orderByDesc('started_at');
+        open.setLimit(1);
+        open.query();
+        if (!open.next()) return this.log(params);
+        if (params.agent) open.setValue('agent', params.agent);
+        if (params.context) this._context(open, params.context);
+        this._finish(open, params);
+        open.update();
+        return open.getUniqueValue();
+    },
+
+    // ---- Human outcome ----------------------------------------------------
+
+    // A person decided an exception: recommendations on it are accepted when
+    // they agree with the decision, otherwise overridden with the reason.
+    // Explanations get the decision recorded but are neither.
+    recordExceptionDecision: function(process, exception, decision, reason, userId) {
+        var gr = this._undecided({ sourceRecord: exception.getUniqueValue() });
+        var n = 0;
+        while (gr.next()) {
+            var isRecommendation = AiInteractionLog.RECOMMENDATIONS.indexOf(gr.getValue('capability')) >= 0;
+            var agrees = isRecommendation ? this._agrees(process, decision, gr.getValue('recommendation') || gr.getValue('result_summary'), exception) : null;
+            this._decide(gr, decision, reason, userId, agrees);
+            n++;
+        }
+        return n;
+    },
+
+    // A person approved or rejected the transaction: AI outputs in its chain
+    // that fed the decision (extraction, match explanation, summaries) are
+    // accepted on approval and overridden on rejection.
+    recordApprovalDecision: function(correlationId, decision, notes, userId) {
+        if (!correlationId) return 0;
+        var gr = this._undecided({ correlationId: correlationId, capabilities: ['document_extraction', 'match_explanation', 'summarization', 'residual_explanation'] });
+        var n = 0;
+        while (gr.next()) {
+            this._decide(gr, 'approval ' + decision, notes || '', userId, decision === 'approved');
+            n++;
+        }
+        return n;
+    },
+
+    // A person corrected fields the AI extracted: the extraction is
+    // overridden, with the corrected fields as the reason.
+    recordCorrection: function(current, fields, userId) {
+        var correlationId = current.isValidField('correlation_id') ? current.getValue('correlation_id') : '';
+        var gr = new GlideRecord(AiInteractionLog.TABLE);
+        gr.addQuery('capability', 'document_extraction');
+        var q = gr.addQuery('source_record', current.getUniqueValue());
+        if (correlationId) q.addOrCondition('correlation_id', correlationId);
+        gr.addQuery('human_overridden', false);
+        gr.query();
+        var n = 0;
+        while (gr.next()) {
+            this._decide(gr, 'field correction', 'Corrected after extraction: ' + fields.join(', '), userId || gs.getUserID(), false);
+            n++;
+        }
+        return n;
+    },
+
+    // An intake that later created a transaction: its AI rows join the
+    // transaction's correlation chain.
+    linkCorrelation: function(sourceRecord, correlationId) {
+        if (!sourceRecord || !correlationId) return;
+        var gr = new GlideRecord(AiInteractionLog.TABLE);
+        gr.addQuery('source_record', sourceRecord);
+        gr.addNullQuery('correlation_id');
+        gr.setValue('correlation_id', correlationId);
+        gr.updateMultiple();
+    },
+
+    // ---- Helpers ------------------------------------------------------------
+
+    // Extracts the recommendation section of an advisory note.
+    recommendationOf: function(text) {
+        text = String(text || '');
+        var m = /(?:^|\n)[\s\-*]*(Recommendation|Recommended next action|Residual classification|Recommended allocation)[^\n:]*:\s*([\s\S]*?)(?=\n\s*\n|\n[\s\-*]*(?:Draft|Human decision|Customer resolution|Residual classification|Recommended allocation)|$)/i.exec(text);
+        return m ? (m[1] + ': ' + m[2].trim()).substring(0, AiInteractionLog.RESULT_CHARS) : '';
+    },
+
+    _fill: function(gr, p) {
+        gr.setValue('source_table', p.sourceTable || '');
+        gr.setValue('source_record', p.sourceRecord || '');
+        gr.setValue('correlation_id', p.correlationId || this._correlation(p.sourceTable, p.sourceRecord));
+        gr.setValue('process', p.process || AuditEngine.PROCESS_BY_TABLE[p.sourceTable] || 'platform');
+        gr.setValue('provider', p.provider || 'now_assist');
+        gr.setValue('operation', p.operation || p.skill || p.capability || 'exception_review');
+        gr.setValue('capability', p.capability || AiInteractionLog.CAPABILITY_BY_SKILL[p.skill] || '');
+        gr.setValue('skill', p.skill || '');
+        gr.setValue('agent', p.agent || '');
+        gr.setValue('agentic_workflow', p.workflow || '');
+        gr.setValue('initiated_by', p.initiatedBy || gs.getUserID());
+        if (p.model) gr.setValue('claude_model', p.model);
+        if (p.requestId) gr.setValue('claude_request_id', p.requestId);
+        if (p.context) this._context(gr, p.context);
+    },
+
+    _finish: function(gr, p) {
+        var now = new GlideDateTime();
+        gr.setValue('status', p.status || 'success');
+        gr.setValue('completed_at', now.getValue());
+        var duration = p.durationMs;
+        if ((duration === undefined || duration === null) && gr.getValue('started_at')) {
+            duration = now.getNumericValue() - new GlideDateTime(gr.getValue('started_at')).getNumericValue();
+        }
+        if (duration !== undefined && duration !== null) gr.setValue('latency_ms', Math.round(duration));
+        if (p.result) gr.setValue('result_summary', String(p.result).substring(0, AiInteractionLog.RESULT_CHARS));
+        var recommendation = p.recommendation || (p.result ? this.recommendationOf(p.result) : '');
+        if (recommendation) gr.setValue('recommendation', recommendation.substring(0, AiInteractionLog.RESULT_CHARS));
+        var confidence = this._confidence(p.confidence);
+        if (confidence !== null) gr.setValue('confidence', confidence);
+        if (p.error) gr.setValue('safe_error', String(p.error).substring(0, 4000));
+    },
+
+    // Numeric 0..1, or the High / Medium / Low label of an advisory note.
+    _confidence: function(value) {
+        if (value === undefined || value === null || value === '') return null;
+        var label = { high: 0.9, medium: 0.6, low: 0.3 }[String(value).toLowerCase()];
+        if (label !== undefined) return label;
+        var n = parseFloat(value);
+        return isNaN(n) ? null : n;
+    },
+
+    _context: function(gr, context) {
+        context = String(context);
+        gr.setValue('input_context_id', 'sha256:' + new GlideDigest().getSHA256Hex(context).toLowerCase());
+        gr.setValue('input_context_size', context.length);
+    },
+
+    _correlation: function(table, sysId) {
+        if (!table || !sysId) return '';
+        var gr = new GlideRecord(table);
+        if (!gr.isValid() || !gr.isValidField('correlation_id') || !gr.get(sysId)) return '';
+        return gr.getValue('correlation_id');
+    },
+
+    _undecided: function(filter) {
+        var gr = new GlideRecord(AiInteractionLog.TABLE);
+        if (filter.sourceRecord) gr.addQuery('source_record', filter.sourceRecord);
+        if (filter.correlationId) gr.addQuery('correlation_id', filter.correlationId);
+        if (filter.capabilities) gr.addQuery('capability', 'IN', filter.capabilities.join(','));
+        gr.addQuery('status', 'success');
+        gr.addNullQuery('human_decided_at');
+        gr.query();
+        return gr;
+    },
+
+    // agrees: true = accepted, false = overridden, null = not applicable.
+    _decide: function(gr, decision, reason, userId, agrees) {
+        gr.setValue('human_decision', String(decision).substring(0, 100));
+        gr.setValue('human_decided_by', userId || gs.getUserID());
+        gr.setValue('human_decided_at', new GlideDateTime().getValue());
+        if (agrees === true) gr.setValue('human_accepted', true);
+        if (agrees === false) {
+            gr.setValue('human_overridden', true);
+            gr.setValue('override_reason', String(reason || '').substring(0, 1000));
+        }
+        gr.update();
+    },
+
+    _agrees: function(process, decision, recommendation, exception) {
+        recommendation = String(recommendation || '');
+        if (process === 'ar' && decision === 'approve_deduction') {
+            // The approved deduction type matches the residual classification.
+            var type = String(exception.getValue('deduction_type') || '').replace(/_netting$/, '');
+            return !!type && new RegExp(type.replace(/_/g, '[ _]'), 'i').test(recommendation);
+        }
+        var pattern = (AiInteractionLog.AGREES[process] || {})[decision];
+        return pattern ? pattern.test(recommendation) : false;
+    },
+
+    type: 'AiInteractionLog'
+};

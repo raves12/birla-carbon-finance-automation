@@ -175,6 +175,7 @@ ApExceptionDecisionService.prototype = {
         }
         if (resolutionNotes) exception.setValue('resolution_notes', resolutionNotes);
         exception.update();
+        new AiInteractionLog().recordExceptionDecision('ap', exception, decision, reason, userId);
 
         this.auditEngine.logEvent({
             sourceTable: 'x_695068_bcfa_ap_exception',

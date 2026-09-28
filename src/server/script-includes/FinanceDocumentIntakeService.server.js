@@ -251,6 +251,7 @@ FinanceDocumentIntakeService.prototype = {
 
         intake.setValue('ap_invoice', apInvoiceSysId);
         intake.setValue('correlation_id', intakeResult.correlationId);
+        new AiInteractionLog().linkCorrelation(intakeSysId, intakeResult.correlationId);
         intake.setValue('company_code', data.company_code || '');
         intake.setValue('currency', data.currency || '');
         intake.setValue('processing_status', 'processing');
@@ -458,6 +459,7 @@ FinanceDocumentIntakeService.prototype = {
 
         intake.setValue('payment', paymentSysId);
         intake.setValue('correlation_id', paymentIntake.correlationId);
+        new AiInteractionLog().linkCorrelation(intakeSysId, paymentIntake.correlationId);
         intake.setValue('currency', data.currency || '');
         intake.setValue('processing_status', 'processing');
         intake.update();
@@ -757,6 +759,16 @@ FinanceDocumentIntakeService.prototype = {
         var claude = this.policy.aiProvider() === 'claude';
         var fields = [];
         for (var k in data) if (k !== 'confidence' && k !== 'warnings' && data[k] !== null && data[k] !== '' && typeof data[k] !== 'object') fields.push(k);
+        // Claude calls are logged by BCClaudeClient itself.
+        if (!claude) {
+            var type = intake.getValue('document_type');
+            new AiInteractionLog().log({
+                sourceTable: 'x_695068_bcfa_finance_intake', sourceRecord: intake.getUniqueValue(), process: 'intake', provider: 'simulated',
+                operation: type === 'ap_invoice' ? 'extract_ap_invoice_document' : type === 'ar_payment_advice' ? 'extract_ar_payment_advice_document' : 'extract_ar_remittance_document',
+                capability: 'document_extraction', skill: 'SimulatedDocumentExtraction', status: 'success', durationMs: 0,
+                result: 'Extracted fields: ' + fields.join(', '), confidence: data.confidence, model: 'fixture'
+            });
+        }
         this.auditEngine.logEvent({
             correlationId: intake.getValue('correlation_id'),
             sourceTable: 'x_695068_bcfa_finance_intake',

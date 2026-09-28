@@ -286,6 +286,21 @@ FinanceAgentTools.prototype = {
         exception.setValue('ai_confidence', split.confidence);
         if (!exception.update()) return this._error('write_failed', 'The advisory note could not be saved.');
 
+        var aiSession = this._isAiSession();
+        new AiInteractionLog().complete({
+            sourceTable: table,
+            sourceRecord: exceptionSysId,
+            provider: 'now_assist',
+            operation: 'exception_review',
+            capability: 'exception_review',
+            agent: aiSession ? this._savingAgent(domain, exception) : '',
+            workflow: aiSession ? AiInteractionLog.WORKFLOW[domain] : '',
+            skill: aiSession ? '' : (domain === 'ap' ? 'ap_match_exception_explanation + ap_recommended_next_action' : 'ar_match_explanation + ar_recommended_next_action'),
+            status: 'success',
+            result: advice,
+            confidence: split.confidence
+        });
+
         this.auditEngine.logEvent({
             sourceTable: table,
             sourceRecord: exceptionSysId,
@@ -304,6 +319,14 @@ FinanceAgentTools.prototype = {
     // Internals
     // ---------------------------------------------------------------
 
+    // The agent that saves the workflow's note: the AP Resolution
+    // Recommendation Agent; on AR the Deduction Analysis Agent for a residual,
+    // otherwise the Cash Match Recommendation Agent (ar_workflow routing).
+    _savingAgent: function(domain, exception) {
+        if (domain === 'ap') return 'BCFA AP Resolution Recommendation Agent';
+        return /^(short_pay|over_pay)$/.test(exception.getValue('reason_code')) ? 'BCFA Deduction Analysis Agent' : 'BCFA Cash Match Recommendation Agent';
+    },
+
     // True when the session user is an AI agent identity (the agentic
     // workflows run as one); a person using Explain with Now Assist is not.
     _isAiSession: function() {
@@ -319,6 +342,25 @@ FinanceAgentTools.prototype = {
         if (!context) return this._notFound(label);
 
         var result = this.skillClient.invoke(skillKey, context);
+        var aiSession = this._isAiSession();
+        var process = AuditEngine.PROCESS_BY_TABLE[sourceTable];
+        var capability = AiInteractionLog.CAPABILITY_BY_SKILL[skillKey];
+        new AiInteractionLog().log({
+            sourceTable: sourceTable,
+            sourceRecord: sysId,
+            provider: 'now_assist',
+            operation: skillKey,
+            skill: skillKey,
+            agent: aiSession ? (AiInteractionLog.AGENT_BY_SKILL[skillKey] || '') : '',
+            workflow: aiSession ? (AiInteractionLog.WORKFLOW[process] || '') : '',
+            context: context,
+            status: result.ok ? 'success' : 'failed',
+            result: result.ok ? result.text : '',
+            recommendation: result.ok && capability === 'next_action_recommendation' ? result.text : '',
+            durationMs: result.latencyMs,
+            error: result.ok ? '' : result.message,
+            model: result.provider || 'Now LLM'
+        });
         this.auditEngine.logEvent({
             sourceTable: sourceTable,
             sourceRecord: sysId,

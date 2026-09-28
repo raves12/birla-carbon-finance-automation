@@ -183,7 +183,7 @@ export const bcfaListConfig = UxListMenuConfig({
                     order: 10,
                     condition: '',
                     table: 'x_695068_bcfa_ai_interaction',
-                    columns: 'operation,status,claude_model,confidence,http_status,latency_ms,initiated_by',
+                    columns: 'started_at,process,provider,capability,skill,agent,agentic_workflow,status,confidence,latency_ms,initiated_by,human_accepted,human_overridden',
                     applicabilities: [{ $id: Now.ID['bcfa-list-ai-interaction-app'], applicability: bcfaWorkspaceApplicability }],
                 },
                 {

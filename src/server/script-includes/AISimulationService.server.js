@@ -39,6 +39,8 @@ AISimulationService.prototype = {
             afterValue: { confidence: confidence, requiresReview: requiresReview }
         });
 
+        this._logAi('x_695068_bcfa_ap_invoice', apInvoiceSysId, 'extract_invoice', 'document_extraction', confidence,
+            'Simulated extraction of ' + Object.keys(seedFields || {}).length + ' seeded fields' + (requiresReview ? '; requires review' : ''));
         return { extractionSysId: sysId, confidence: confidence, requiresReview: requiresReview };
     },
 
@@ -61,6 +63,8 @@ AISimulationService.prototype = {
             afterValue: { confidence: confidence }
         });
 
+        this._logAi('x_695068_bcfa_remittance', remittanceSysId, 'extract_remittance', 'document_extraction', confidence,
+            'Simulated extraction of ' + Object.keys(seedFields || {}).length + ' seeded remittance fields');
         return { confidence: confidence };
     },
 
@@ -83,6 +87,7 @@ AISimulationService.prototype = {
             description: 'Simulated advisory recommendation for AP exception (' + reasonCode + ')',
             afterValue: { recommendation: recommendation }
         });
+        this._logAi('x_695068_bcfa_ap_exception', apExceptionSysId, 'explain_ap_exception', 'next_action_recommendation', null, recommendation, recommendation);
         return { recommendation: recommendation };
     },
 
@@ -102,6 +107,7 @@ AISimulationService.prototype = {
             description: 'Simulated advisory recommendation for AR exception (' + reasonCode + ')',
             afterValue: { recommendation: recommendation }
         });
+        this._logAi('x_695068_bcfa_ar_exception', arExceptionSysId, 'explain_ar_exception', 'next_action_recommendation', null, recommendation, recommendation);
         return { recommendation: recommendation };
     },
 
@@ -148,7 +154,15 @@ AISimulationService.prototype = {
             description: 'Simulated AI-suggested top allocation candidate (advisory, not auto-selected).',
             afterValue: { arOpenItem: best.getValue('ar_open_item') }
         });
+        this._logAi('x_695068_bcfa_payment', paymentSysId, 'suggest_top_candidate', 'candidate_ranking', 0.7,
+            'Suggested open item ' + best.getDisplayValue('ar_open_item') + ' (largest open amount among fuzzy candidates)', 'Allocate to ' + best.getDisplayValue('ar_open_item'));
         return { suggested: true, matchCandidateSysId: sysId };
+    },
+
+    // AI Interaction Log row for a simulated (deterministic, no model) output.
+    _logAi: function(table, sysId, operation, capability, confidence, result, recommendation) {
+        new AiInteractionLog().log({ sourceTable: table, sourceRecord: sysId, provider: 'simulated', operation: operation, capability: capability,
+            skill: 'AISimulationService', status: 'success', durationMs: 0, confidence: confidence, result: result, recommendation: recommendation, model: 'template' });
     },
 
     _templateForApReason: function(reasonCode) {

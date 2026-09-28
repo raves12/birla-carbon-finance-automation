@@ -236,6 +236,8 @@ ApprovalEngine.prototype = {
         approval.setValue('decided_at', new GlideDateTime().getValue());
         approval.setValue('sod_check', 'passed: ' + sod.checks.join('; '));
         approval.update();
+        // A person's decision accepts or overrides the AI outputs it relied on.
+        if (approver) new AiInteractionLog().recordApprovalDecision(this._parentCorrelation(p, approval), decision, notes, approver);
 
         this.audit.logEvent({
             correlationId: this._parentCorrelation(p, approval),

@@ -249,6 +249,14 @@ BCClaudeClient.prototype = {
             if (envelope.confidence !== undefined && envelope.confidence !== null) gr.setValue('confidence', envelope.confidence);
             gr.setValue('safe_error', envelope.safeError || '');
             gr.setValue('initiated_by', gs.getUserID());
+            // Phase 20 provider-agnostic fields.
+            var op = meta.operation || 'connectivity_test';
+            gr.setValue('provider', 'claude_legacy');
+            gr.setValue('process', AuditEngine.PROCESS_BY_TABLE[meta.sourceTable] || 'platform');
+            gr.setValue('capability', /^extract/.test(op) ? 'document_extraction' : /^classify/.test(op) ? 'document_classification' :
+                /^explain/.test(op) ? 'exception_explanation' : op === 'recommend_cash_match' ? 'cash_match_recommendation' :
+                op === 'rank_candidates' ? 'candidate_ranking' : 'connectivity_test');
+            gr.setValue('completed_at', new GlideDateTime().getValue());
             gr.insert();
         } catch (logErr) {
             // never let logging failure surface as a call failure

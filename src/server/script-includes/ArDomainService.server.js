@@ -452,6 +452,8 @@ ArDomainService.prototype = {
                 aiAgent: 'BCFA Cash Application Review (agentic workflow)',
                 description: 'AI review handed to the BCFA Cash Application Review agentic workflow (Now Assist), which starts on exception creation and records an advisory note.'
             });
+            new AiInteractionLog().start({ sourceTable: 'x_695068_bcfa_ar_exception', sourceRecord: exceptionSysId, provider: 'now_assist',
+                operation: 'exception_review', capability: 'exception_review', workflow: 'BCFA Cash Application Review' });
             return { deferred: true, workflow: 'BCFA Cash Application Review' };
         }
         if (provider === 'claude' && this.claudeClient.isEnabled()) {

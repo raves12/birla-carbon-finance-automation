@@ -21,3 +21,13 @@ export const financeAgentTools = ScriptInclude({
     description: 'Least-privilege, role-checked tool surface for the BCFA AI agents: read-only lookups and context, advisory Now Assist skill calls, and one write tool limited to the advisory ai_recommendation field.',
     script: Now.include('../../server/script-includes/FinanceAgentTools.server.js'),
 })
+
+// Phase 20: provider-agnostic AI Interaction Log writer.
+export const aiInteractionLog = ScriptInclude({
+    $id: Now.ID['si-ai-interaction-log'],
+    name: 'AiInteractionLog',
+    active: true,
+    apiName: 'x_695068_bcfa.AiInteractionLog',
+    description: 'Writes the AI Interaction Log: one row per AI execution (Now Assist skills and agentic workflows, simulated extraction, legacy Claude) with capability, skill, agent, workflow, hashed input context, result, confidence, status, duration and the human outcome. Never stores prompts.',
+    script: Now.include('../../server/script-includes/AiInteractionLog.server.js'),
+})

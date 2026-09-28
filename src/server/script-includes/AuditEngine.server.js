@@ -162,6 +162,7 @@ AuditEngine.prototype = {
             after[f] = now;
             names.push(current.getElement(f).getLabel() + ': "' + (previous.getDisplayValue(f) || '') + '" -> "' + (current.getDisplayValue(f) || '') + '"');
         }
+        this.lastCorrectedFields = Object.keys(after);
         if (!names.length) return '';
         return this.logEvent({
             correlationId: current.isValidField('correlation_id') ? current.getValue('correlation_id') : '',

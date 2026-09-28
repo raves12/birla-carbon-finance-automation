@@ -411,6 +411,8 @@ ApDomainService.prototype = {
                 aiAgent: 'BCFA AP Invoice Review (agentic workflow)',
                 description: 'AI review handed to the BCFA AP Invoice Review agentic workflow (Now Assist), which starts on exception creation and records an advisory note.'
             });
+            new AiInteractionLog().start({ sourceTable: 'x_695068_bcfa_ap_exception', sourceRecord: exceptionSysId, provider: 'now_assist',
+                operation: 'exception_review', capability: 'exception_review', workflow: 'BCFA AP Invoice Review' });
             return { deferred: true, workflow: 'BCFA AP Invoice Review' };
         }
         if (provider === 'claude' && this.claudeClient.isEnabled()) {

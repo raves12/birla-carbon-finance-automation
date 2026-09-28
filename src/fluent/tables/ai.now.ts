@@ -5,9 +5,19 @@ import {
     IntegerColumn,
     DecimalColumn,
     ReferenceColumn,
+    BooleanColumn,
+    DateTimeColumn,
 } from '@servicenow/sdk/core'
 
-// AI Interaction Log — a dedicated, minimal audit trail for every outbound
+// AI Interaction Log (Phase 20: provider-agnostic) — one row per AI
+// execution: Now Assist skills and agentic workflows, the simulated Document
+// Intelligence extraction, and the legacy Claude client (until Phase 34).
+// Written by AiInteractionLog (and BCClaudeClient for legacy calls). Prompts
+// are never stored: the input is identified by input_context_id (SHA-256)
+// and input_context_size. The claude_model / claude_request_id columns keep
+// their names but hold the model and provider request ID of any provider.
+//
+// Originally a dedicated, minimal audit trail for every outbound
 // call to Claude, separate from Integration Transaction (x_695068_bcfa_
 // integration_txn) on purpose: that table's mandatory-unique idempotency_key
 // and closed mock_sap/mock_bank/mock_archive adapter list are shaped for
@@ -19,7 +29,7 @@ import {
 
 export const x_695068_bcfa_ai_interaction = Table({
     name: 'x_695068_bcfa_ai_interaction',
-    label: 'AI Interaction',
+    label: 'AI Interaction Log',
     display: 'operation',
     audit: true,
     schema: {
@@ -41,9 +51,65 @@ export const x_695068_bcfa_ai_interaction = Table({
                 extract_ap_invoice_document: 'Extract AP Invoice Document',
                 extract_ar_payment_advice_document: 'Extract AR Payment Advice Document',
                 extract_ar_remittance_document: 'Extract AR Remittance Document',
+                ap_invoice_summary: 'AP Invoice Summary',
+                ap_match_exception_explanation: 'AP Match Exception Explanation',
+                ap_recommended_next_action: 'AP Recommended Next Action',
+                ap_clarification_draft: 'AP Clarification Draft',
+                cash_application_summary: 'Cash Application Summary',
+                ar_match_explanation: 'AR Match Explanation',
+                ar_residual_explanation: 'AR Residual Explanation',
+                ar_recommended_next_action: 'AR Recommended Next Action',
+                customer_clarification_draft: 'Customer Clarification Draft',
+                exception_review: 'Exception Review',
+                suggest_top_candidate: 'Suggest Top Candidate',
             },
         }),
-        claude_model: StringColumn({ label: 'Claude Model', maxLength: 100 }),
+        process: ChoiceColumn({
+            label: 'Process',
+            default: 'platform',
+            choices: { ap: 'Accounts Payable', ar: 'Accounts Receivable', intake: 'Document Intake', integration: 'Integration', platform: 'Platform' },
+        }),
+        provider: ChoiceColumn({
+            label: 'Provider',
+            choices: {
+                now_assist: 'Now Assist (Now LLM)',
+                simulated: 'Simulated (deterministic, no model)',
+                claude_legacy: 'Claude (legacy, removed in Phase 34)',
+            },
+        }),
+        capability: ChoiceColumn({
+            label: 'AI Capability',
+            choices: {
+                document_classification: 'Document Classification',
+                document_extraction: 'Document Extraction',
+                summarization: 'Summarization',
+                exception_explanation: 'Exception Explanation',
+                next_action_recommendation: 'Next Action Recommendation',
+                exception_review: 'Exception Review (agentic workflow)',
+                match_explanation: 'Match Explanation',
+                residual_explanation: 'Residual Explanation',
+                cash_match_recommendation: 'Cash Match Recommendation',
+                candidate_ranking: 'Candidate Ranking',
+                communication_draft: 'Communication Draft',
+                connectivity_test: 'Connectivity Test',
+            },
+        }),
+        skill: StringColumn({ label: 'Skill', maxLength: 100 }),
+        agent: StringColumn({ label: 'AI Agent', maxLength: 100 }),
+        agentic_workflow: StringColumn({ label: 'Agentic Workflow', maxLength: 100 }),
+        input_context_id: StringColumn({ label: 'Input Context ID', maxLength: 80, hint: 'sha256 of the input context sent to the model. The context itself is not stored.' }),
+        input_context_size: IntegerColumn({ label: 'Input Context Size (chars)' }),
+        result_summary: StringColumn({ label: 'Result', maxLength: 1000, hint: 'First 1,000 characters of the output. The full advisory note is on the record it was saved to.' }),
+        recommendation: StringColumn({ label: 'Recommendation', maxLength: 1000, hint: 'The recommendation section of the output, compared with the human decision.' }),
+        started_at: DateTimeColumn({ label: 'Started At' }),
+        completed_at: DateTimeColumn({ label: 'Completed At' }),
+        human_accepted: BooleanColumn({ label: 'Human Accepted', default: false }),
+        human_overridden: BooleanColumn({ label: 'Human Overridden', default: false }),
+        override_reason: StringColumn({ label: 'Override Reason', maxLength: 1000 }),
+        human_decision: StringColumn({ label: 'Human Decision', maxLength: 100 }),
+        human_decided_by: ReferenceColumn({ label: 'Human Decided By', referenceTable: 'sys_user' }),
+        human_decided_at: DateTimeColumn({ label: 'Human Decided At' }),
+        claude_model: StringColumn({ label: 'Model', maxLength: 100 }),
         prompt_version: StringColumn({ label: 'Prompt Version', maxLength: 20 }),
         status: ChoiceColumn({
             label: 'Status',
@@ -56,11 +122,13 @@ export const x_695068_bcfa_ai_interaction = Table({
                 credential_error: 'Credential Error',
                 disabled: 'Disabled',
                 refused: 'Refused',
+                started: 'Started',
+                failed: 'Failed',
             },
         }),
         http_status: IntegerColumn({ label: 'HTTP Status' }),
-        claude_request_id: StringColumn({ label: 'Claude Request ID', maxLength: 100 }),
-        latency_ms: IntegerColumn({ label: 'Latency (ms)' }),
+        claude_request_id: StringColumn({ label: 'Provider Request ID', maxLength: 100 }),
+        latency_ms: IntegerColumn({ label: 'Duration (ms)' }),
         input_tokens: IntegerColumn({ label: 'Input Tokens' }),
         output_tokens: IntegerColumn({ label: 'Output Tokens' }),
         confidence: DecimalColumn({ label: 'Confidence', scale: 2 }),

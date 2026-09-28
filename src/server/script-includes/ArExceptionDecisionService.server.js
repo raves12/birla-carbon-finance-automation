@@ -214,6 +214,7 @@ ArExceptionDecisionService.prototype = {
         }
         if (resolutionNotes) exception.setValue('resolution_notes', resolutionNotes);
         exception.update();
+        new AiInteractionLog().recordExceptionDecision('ar', exception, decision, reason, userId);
 
         this.auditEngine.logEvent({
             sourceTable: 'x_695068_bcfa_ar_exception',
