@@ -148,17 +148,11 @@ FinanceOrchestration.prototype = {
         var paymentId = rem.getValue('payment');
         var pay = this._get('x_695068_bcfa_payment', paymentId);
         if (!pay || pay.getValue('state') !== 'EXCEPTION') return this._result('ar_remittance', 'skipped', 'payment is ' + (pay ? pay.getValue('state') : 'missing') + '; matching will use the remittance');
-        var ex = new GlideRecord('x_695068_bcfa_ar_exception');
-        ex.addQuery('payment', paymentId);
-        ex.addQuery('status', 'IN', 'open,in_review');
-        ex.addQuery('reason_code', 'IN', 'unmatched,customer_ambiguous,ambiguous_match');
-        ex.orderByDesc('sys_created_on');
-        ex.setLimit(1);
-        ex.query();
-        if (!ex.next()) return this._result('ar_remittance', 'skipped', 'no matching exception to retry');
-        new ArDomainService().resolveExceptionAndRetry(paymentId, ex.getUniqueValue(),
-            'Remittance ' + (rem.getValue('remittance_reference') || rem.getUniqueValue()) + ' received; matching retried (AR Remittance Processing Flow).', '');
-        return this._ran('exception ' + ex.getValue('number') + ' resolved; payment re-matching');
+        // Phase 33: identifies the customer with the remittance first (a
+        // customer_ambiguous payment has none), then resolves and retries.
+        var r = new ArDomainService().retryWithRemittance(paymentId, remittanceId, '');
+        if (!r.retried) return this._result('ar_remittance', 'skipped', r.reason);
+        return this._ran('exception ' + r.exceptionNumber + ' resolved; payment re-matching');
     },
 
     // AR Match Flow: remittance, exact, combination and multi-invoice match,
@@ -285,13 +279,13 @@ FinanceOrchestration.prototype = {
         <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
         <sys_created_on>2026-09-28 17:41:59</sys_created_on>
         <sys_id>e662b6ff089f4e41915a7ed6c91e408f</sys_id>
-        <sys_mod_count>1</sys_mod_count>
+        <sys_mod_count>2</sys_mod_count>
         <sys_name>x_695068_bcfa/birla-carbon-finance-automation/0.0.1/src/server/script-includes/FinanceOrchestration.server.js</sys_name>
         <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
         <sys_policy/>
         <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
         <sys_update_name>sys_module_e662b6ff089f4e41915a7ed6c91e408f</sys_update_name>
         <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
-        <sys_updated_on>2026-09-28 18:12:52</sys_updated_on>
+        <sys_updated_on>2026-09-29 09:57:52</sys_updated_on>
     </sys_module>
 </record_update>

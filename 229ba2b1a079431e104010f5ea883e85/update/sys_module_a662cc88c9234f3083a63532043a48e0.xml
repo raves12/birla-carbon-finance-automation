@@ -142,11 +142,11 @@ FinancePolicy.prototype = {
     },
 
     // 'native' (ServiceNow AI: Now Assist skills/agents, simulated document
-    // extraction until DocIntel extraction is licensed), 'claude' (legacy,
-    // removed in Phase 34) or 'simulated' (deterministic templates only).
+    // extraction until DocIntel extraction is licensed) or 'simulated'
+    // (deterministic templates only: the process runs with AI switched off).
+    // Any other value, including the removed 'claude' (Phase 34), is native.
     aiProvider: function() {
-        var value = this._string('ai.provider');
-        return value === 'claude' || value === 'simulated' ? value : 'native';
+        return this._string('ai.provider') === 'simulated' ? 'simulated' : 'native';
     },
 
     // context (optional): { company, country, vendorType, invoiceType }.
@@ -368,13 +368,13 @@ FinancePolicy.prototype = {
         <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
         <sys_created_on>2026-09-28 07:03:21</sys_created_on>
         <sys_id>a662cc88c9234f3083a63532043a48e0</sys_id>
-        <sys_mod_count>0</sys_mod_count>
+        <sys_mod_count>1</sys_mod_count>
         <sys_name>x_695068_bcfa/birla-carbon-finance-automation/0.0.1/src/server/script-includes/FinancePolicy.server.js</sys_name>
         <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
         <sys_policy/>
         <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
         <sys_update_name>sys_module_a662cc88c9234f3083a63532043a48e0</sys_update_name>
         <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
-        <sys_updated_on>2026-09-28 07:03:21</sys_updated_on>
+        <sys_updated_on>2026-09-29 09:57:52</sys_updated_on>
     </sys_module>
 </record_update>

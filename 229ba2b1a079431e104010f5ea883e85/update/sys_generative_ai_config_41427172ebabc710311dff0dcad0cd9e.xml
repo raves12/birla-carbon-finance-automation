@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_generative_ai_config">
+    <sys_generative_ai_config action="INSERT_OR_UPDATE">
+        <active>false</active>
+        <additional_configurations>{"skill_config_id":"b860f81aebab4310311dff0dcad0cd69"}</additional_configurations>
+        <ai_suggested>false</ai_suggested>
+        <definition>2c60f81aebab4310311dff0dcad0cd2c</definition>
+        <definition_table>sys_one_extend_capability_definition</definition_table>
+        <documentation/>
+        <max_tokens>500</max_tokens>
+        <min_word_count>-1</min_word_count>
+        <model>llm_generic_small</model>
+        <name>AR Recommended Next Action</name>
+        <parent display_value="OneExtend Capability Definition: bcfaArRecommendedNextAction (Now LLM Service - Now LLM Generic)">7460f81aebab4310311dff0dcad0cd48</parent>
+        <prompt>You are a finance operations assistant supporting an Accounts Receivable reviewer. Based on the exception details below, suggest ONE reasonable next procedural step a human processor could take, in no more than 120 words.
+
+Your suggestion must:
+- Be phrased as a recommendation for a human to consider, not an instruction that will be automatically executed
+- Reference similar prior resolutions only if provided in the data
+- Note any open questions the reviewer should confirm before acting
+- If the exception is an ambiguous match (the data contains "Options to compare"), first decide whether the remittance note or other data points to one option: its own words name that option's invoice numbers or their distinctive digits, the month or dates of its due dates, or its relative age (oldest / newest). If it does, begin with "Supported option: Option N" and quote the words; this is a recommendation for the reviewer, not a decision. If it does not, begin with "Supported option: none". Do not answer "none" when the note plainly names one option.
+
+Strict rules:
+- You are advisory only. You never apply, clear, or write off a payment yourself.
+- Never tell the reviewer to bypass a control or skip an approval step.
+- If required data is missing, say so plainly instead of guessing.
+- Output plain text only, organized as short labeled lines, not JSON.
+
+Exception data:
+{{context}} </prompt>
+        <prompt_template_role>user</prompt_template_role>
+        <provider_company/>
+        <request_tokens>32018</request_tokens>
+        <show_in_prompt_library>false</show_in_prompt_library>
+        <state>draft</state>
+        <sys_class_name>sys_generative_ai_config</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-29 10:14:35</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>41427172ebabc710311dff0dcad0cd9e</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>2c60f81aebab4310311dff0dcad0cd2c</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_generative_ai_config_41427172ebabc710311dff0dcad0cd9e</sys_update_name>
+        <sys_updated_by>RaviMAdmin</sys_updated_by>
+        <sys_updated_on>2026-09-29 10:18:28</sys_updated_on>
+        <temperature>0.2</temperature>
+        <thinking_tokens>0</thinking_tokens>
+        <version>2</version>
+    </sys_generative_ai_config>
+</record_update>
