@@ -29,6 +29,13 @@ and recorded. Instance: `pwcmanagementservicesdemo01.service-now.com`. Repositor
   script include that runs. Also, two script include descriptions still named `BCClaudeClient`. All were synced on the
   instance and the BCClaudeClient module copy was deleted. **Run Commit Changes once more** so the Studio branch picks
   these up. From now on, script-include patches must also update the module copy (`gen_si_patch.py` note below).
+- **Commits after the sync (same day).**
+  - `e82eddf` captured the published skill prompt v3.
+  - `21be405` is a full export with **Include changes not tracked via the Customer Update table**.
+  - The full export was needed because `sys_module` records are not tracked in update sets: a normal commit never picks
+    up changes to them. After `21be405`, no module copy constructs `BCClaudeClient` and the BCClaudeClient module file is
+    gone. Studio reported "Failure" at the end, but the tracker shows the export succeeded, and GitHub and
+    `sys_repo_config.current_ref` both show `21be405`. The Studio branch and the instance are in sync.
 - **Note.** The Studio branch also carries an old `src/` tree from before Phase 3 (merged in with `4439233`). Studio
   only reads the `229ba2b1…/` folder. The Fluent source of truth is the feature branch.
 
@@ -106,8 +113,6 @@ generated scripts:
 
 | Item | Why a person |
 |---|---|
-| Studio **Commit Changes** once more (picks up the module and description sync; first commit `57bf15f` done 2026-09-29) | Studio UI action on the linked repository |
 | Review and merge PR raves12/birla-carbon-finance-automation#1 (pushed and opened 2026-09-29 with the owner's approval) | Merge decision |
-| Publish AR next-action skill prompt v3 in Now Assist Skill Kit | Skill Kit UI; it now also asks for ACL and role restrictions |
 | Delete the Claude credential alias, connection and API-key credential; revoke the key (`EXTERNAL_AI_REMOVAL.md`) | They hold a secret |
-| Name an AI steward for AI Control Tower approval AR0000002, and a business owner | Governance decision |
+| The AI steward (Ravi Kumar Kumar, named and granted the role 2026-09-29) reviews AR0000002: risk classification, approve or reject, lifecycle to *Deploy* | Governance decision |
