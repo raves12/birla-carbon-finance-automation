@@ -101,7 +101,9 @@ Test(
                     assertEqual({ name: 'a human override reason is not treated as injection', shouldbe: true, value: guard.screenInput(benign).ok });
 
                     var claim = guard.sanitizeOutput('The variance is 3%. The invoice has been approved and posted.', 'Invoice State: EXCEPTION');
-                    assertEqual({ name: 'completed-action claim removed when the invoice is not approved', shouldbe: -1, value: claim.text.indexOf('has been approved') });
+                    // The guardrail note itself says "Nothing has been approved ... by AI",
+                    // so check for the removed sentence, not the phrase.
+                    assertEqual({ name: 'completed-action claim removed when the invoice is not approved', shouldbe: -1, value: claim.text.indexOf('The invoice has been approved') });
                     assertEqual({ name: 'guardrail note added', shouldbe: true, value: claim.text.indexOf('[Guardrail:') >= 0 });
                     var truthful = guard.sanitizeOutput('The invoice has been posted.', 'Invoice State: POSTED');
                     assertEqual({ name: 'a true statement on a posted invoice is kept', shouldbe: 0, value: truthful.actions.length });

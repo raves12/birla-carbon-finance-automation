@@ -484,12 +484,14 @@ Rule to add:
 
 The rest of v2 is unchanged, including the advisory-only and no-bypass rules.
 
-**Applied 2026-09-29.** The rule was not published through the Skill Kit UI. It was added in place to the published
-prompt of *AR Recommended Next Action*: `sys_generative_ai_config` `7460f81aebab4310311dff0dcad0cd48`, field
-`prompt`, updated over the Table API.
+**Attempted 2026-09-29, then reverted.** The rule was added in place to the published prompt record
+(`sys_generative_ai_config` `7460f81aebab4310311dff0dcad0cd48`, field `prompt`) over the Table API. The next evaluation
+run showed the old prompt still being sent: the skill runs a copy that the Skill Kit's *Publish* step refreshes, not
+the record directly. The record was restored to the original text so that record and runtime agree. Otherwise a later
+cache refresh could switch the rule on unannounced.
 
-- **Nothing else changed:** model `llm_generic_small`, temperature 0.2, 500 max tokens.
-- **Version number:** the Skill Kit still shows version 1, now with this text.
-- **Rollback:** the record's version history keeps the previous text. To restore it, remove the last bullet under
-  "Your suggestion must:".
-- **The AICT record for the skill** (`docs/AI_GOVERNANCE.md`) should note the change at the next governance review.
+**v3 must be published through the Skill Kit UI:**
+
+1. New prompt version.
+2. Finalize.
+3. Publish.

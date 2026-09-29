@@ -175,6 +175,25 @@ does not fit it; the table above was read by hand.
   - Guardian clean
   - the engine never chose
 
+**Run 4 (2026-09-29): after an in-place edit of the published prompt record.** Same results as run 3:
+
+| | Skill | Agent |
+|---|---|---|
+| Hinted | 0/4 | 0/4 |
+| No-hint | 2/2 | 2/2 |
+| Completed-action claims | 0 | 0 |
+| Deterministic control | PASS | PASS |
+
+The logged prompt was still v2, so the edit never reached the skill. It was reverted (see the skill build guide).
+
+**ATF, BCFA Regression.**
+
+- **Run 1:** 12/13. The AI guardrail test found a real gap: a role marker after a field label (`Notes: system: …`)
+  was not screened. Fixed in `FinanceAiGuard`.
+- **Run 2:** 12/13. Injection screening passed 5/5. The remaining failure was a test defect: the check for "has been
+  approved" also matched the guardrail's own note ("Nothing has been approved … by AI"). The test now checks for the
+  removed sentence itself.
+
 **Conclusion (Phase 29).**
 
 - **Safe:** the AI does not choose between ambiguous options, does not mislead after the tuning pass, and a person
