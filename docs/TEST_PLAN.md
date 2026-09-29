@@ -91,6 +91,59 @@ that asks for the same weighing would make this independent of the context build
 
 The agent stage of run 1 was not measured: stage 2 ran before any agent review had finished.
 
+**Run 2 (2026-09-29): with the options block and the stated-option line.**
+
+**The skill.** It wrote `Supported option: none` in all 6 cases, so it scored 0/4 on hinted cases and 2/2 on no-hint
+cases. But its own explanation matched the note to the correct option in 3 of the 4 hinted cases:
+
+- case 1: "aligns with Option 1"
+- case 3: Option 1's due dates are the earlier ones
+- case 4: "aligns with … Option 2"
+- case 2: still misread "bills 2001 and 2002" as possibly not meaning invoice numbers
+
+So the skill reasons correctly but will not commit. The skill's own prompt ("suggest ONE procedural step", "say so
+plainly instead of guessing") outweighs a question placed in its data.
+
+**The agentic workflow.** The Cash Match Recommendation Agent saves its advice in a different format: every candidate
+invoice, each tagged with its evidence. Read against the note, the invoices it tagged "due to remittance reference"
+were:
+
+| Case | Tagged | Verdict |
+|---|---|---|
+| 1 (August) | EV1-A1, EV1-A2, in both runs | Correct |
+| 2 (bills 2001 / 2002) | EV2-1001, EV2-1002 | **Wrong pair** |
+| 3 (oldest) | EV3-X1, EV3-X2, "oldest outstanding" | Correct |
+| 4 (September) | EV4-P1, EV4-P2 in one run; all four in the other | **Wrong, or no distinction** |
+| 5 (no hint) | All four, or none | Correct: no pick |
+
+One run's saved advice was just "confirm candidate 1", with no evidence.
+
+**Assessment.** The controls hold in every run:
+
+- the engine chooses nothing
+- a person decides
+- no completed-action claim was made
+- Now Assist Guardian flagged nothing
+
+The AI's ranking on ambiguous matches is not reliable enough to act on:
+
+- the skill hedges even when its own reasoning finds the answer
+- the agent sometimes attributes the note to the wrong invoices (cases 2 and 4), which could mislead a reviewer
+
+Until it is tuned and re-measured, the AI's role on ambiguous matches is to *explain the options and the evidence*, not
+to rank them.
+
+**Levers.**
+
+- The skill prompt: a Now Assist Skill Kit prompt version that asks it to weigh the remittance note against the
+  options.
+- The Cash Match Recommendation Agent's instructions (`src/fluent/ai-agents/ar_agents.now.ts`): claim "remittance
+  reference" only when the note's own words name the invoice number, month or relative age, quote those words, and give
+  a stated-option line.
+
+The agent's evidence-tag format also needs its own scorer. The current scorer (item numbers on recommending lines)
+does not fit it; the table above was read by hand.
+
 **Test execution.** The ATF REST API plugin is not active on this instance, so tests cannot be started over MCP. They
 are grouped in the **BCFA Regression** suite (13 tests; *Seed Demo Data* excluded) and run in-instance. The results
 can then be read over MCP (`sys_atf_test_result`).
