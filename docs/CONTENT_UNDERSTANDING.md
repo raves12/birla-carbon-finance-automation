@@ -138,4 +138,7 @@ default), `FinanceDocumentIntakeService` does not call Claude:
 - It uses the document type set at upload.
 - It reads AP invoices through `SimulatedDocumentExtraction`.
 
-The AR document paths still call Claude until Phase 13.
+- It reads AR remittances through `SimulatedDocumentExtraction` too (since Phase 13).
+
+Claude was removed from every document path in Phase 34 (`EXTERNAL_AI_REMOVAL.md`). Payment-advice documents go to
+manual review.
