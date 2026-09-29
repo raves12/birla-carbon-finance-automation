@@ -646,8 +646,35 @@ FinanceAgentTools.prototype = {
         this._add(lines, 'Credit Note', exception.getDisplayValue('credit_note'));
         this._add(lines, 'Decision Reason', exception.getValue('decision_reason'));
         this._add(lines, 'Resolution Notes', exception.getValue('resolution_notes'));
+        if (exception.getValue('reason_code') === 'ambiguous_match') lines = lines.concat(this._ambiguousOptions(exception.getValue('payment')));
         var paymentContext = this._buildPaymentContext(exception.getValue('payment'));
         return lines.join('\n') + (paymentContext ? '\n' + paymentContext : '\nPayment: not available');
+    },
+
+    // Phase 29: for an ambiguous match, the options side by side (from the
+    // unselected combination candidates, grouped by option number) and the
+    // question the reviewer has to answer. Facts and a question only: the
+    // engine does not choose, and neither does this advice; a person does.
+    _ambiguousOptions: function(paymentSysId) {
+        var options = {};
+        var candidate = new GlideRecordSecure('x_695068_bcfa_match_candidate');
+        candidate.addQuery('payment', paymentSysId);
+        candidate.addQuery('match_type', 'combination');
+        candidate.orderBy('rank');
+        candidate.setLimit(FinanceAgentTools.MAX_LIST);
+        candidate.query();
+        while (candidate.next()) {
+            var rank = candidate.getValue('rank');
+            var item = candidate.ar_open_item.getRefRecord();
+            if (!item || !item.isValidRecord()) continue;
+            (options[rank] = options[rank] || []).push(item.getValue('item_number') + ' ' + item.getValue('open_amount') + ' ' +
+                (item.getValue('currency') || '') + ' due ' + (item.getValue('due_date') || 'unknown'));
+        }
+        var lines = ['Options to compare (the engine does not choose; a person decides):'];
+        for (var r in options) lines.push('Option ' + r + ': ' + options[r].join('; '));
+        if (lines.length === 1) return [];
+        lines.push('Reviewer question: does the remittance note or other data point to one option? Begin the answer with the line "Supported option: Option N" (the option the data points to, with the evidence) or "Supported option: none" (nothing in the data distinguishes the options).');
+        return lines;
     },
 
     _openExceptions: function(table, parentField, parentSysId) {

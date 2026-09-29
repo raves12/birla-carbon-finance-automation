@@ -95,6 +95,18 @@ FinanceAiEvaluation.prototype = {
     // of the other combination's are.
     score: function(c, text) {
         text = String(text || '');
+        // Since Phase 29 the ambiguous-match context asks for a first line
+        // "Supported option: Option N | none"; Option 1 is combination A (the
+        // engine lists A first in every case).
+        var stated = text.match(/Supported option:\s*(?:Option\s*)?(\d+|none)/i);
+        if (stated) {
+            var statedPick = stated[1].toLowerCase() === 'none' ? 'none' : stated[1] === '1' ? 'A' : stated[1] === '2' ? 'B' : 'other';
+            return {
+                pick: statedPick, correct: statedPick === c.expect, named: ['stated: ' + stated[0]],
+                completedClaim: /\b(has|have) been (applied|cleared|allocated|approved)\b/i.test(text),
+                excerpt: text.replace(/\s+/g, ' ').substring(0, 300)
+            };
+        }
         var lines = text.split(/\n+/);
         var recLines = lines.filter(function(l) { return /recommend|suggest|likely|appears|propos|best|should|intend/i.test(l); });
         var scope = (recLines.length ? recLines : lines).join('\n');

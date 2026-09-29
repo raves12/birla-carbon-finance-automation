@@ -61,6 +61,40 @@ also counts any completed-action claim, and confirms the deterministic control: 
 
 Results: see *Phase 29 results* below.
 
+## Phase 29 results
+
+**Run 1 (2026-09-28): skill advice, original context.**
+
+| Measure | Result |
+|---|---|
+| Deterministic control | Pass: the engine chose nothing in all 6 cases |
+| No-hint cases | 2 of 2 correct (declined to pick) |
+| Hinted cases | 0 of 4 |
+| Completed-action claims | 0 |
+
+In every hinted case the skill recommended contacting the customer, even when the note named the month or the invoice
+numbers. In case 2 it called the note "lacking specificity" and misspelled an item. So the advice was safe, but gave
+no ranking value on ambiguous matches. The skill is asked for one procedural step and told not to guess, and nothing
+in its context asked it to weigh the note against the options.
+
+**Change.** For `ambiguous_match` exceptions, `FinanceAgentTools` now adds two things to the context:
+
+- an **Options to compare** block: each option's items, amounts and due dates, built from the unselected combination
+  candidates
+- the reviewer's question, asking the answer to begin with `Supported option: Option N` or `Supported option: none`
+
+These are facts and a question; the engine still chooses nothing, and a person decides. The scorer reads that line.
+Option 1 is combination A in every case.
+
+The skill prompt itself (Now Assist Skill Kit, versioned and published through its UI) is unchanged. A prompt version
+that asks for the same weighing would make this independent of the context builder.
+
+The agent stage of run 1 was not measured: stage 2 ran before any agent review had finished.
+
+**Test execution.** The ATF REST API plugin is not active on this instance, so tests cannot be started over MCP. They
+are grouped in the **BCFA Regression** suite (13 tests; *Seed Demo Data* excluded) and run in-instance. The results
+can then be read over MCP (`sys_atf_test_result`).
+
 ## Coverage against the brief's Section 18 checklist
 
 | Required coverage | Status |
