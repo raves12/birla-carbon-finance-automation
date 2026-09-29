@@ -136,8 +136,15 @@ For a real POC read-out, run the scorecard over a representative sample of real 
 1. Run `scripts/deploy/phase30_scorecard_bg.js` in Scripts - Background, with scope set to **global**. The script:
    - creates the table;
    - loads the script include, the ACL, the list and the updated KPI job;
-   - runs `refresh()` once;
+   - re-arms the KPI job, which refreshes the scorecard every 15 minutes;
    - prints a `PHASE30` line.
+
+   `FinancePocScorecard` is package-private, so the global-scope script cannot call it. For the first rows immediately,
+   run `new FinancePocScorecard().refresh()` in scope **x_695068_bcfa**.
+
+   **Deployed 2026-09-29.** 18 records loaded and 11 columns created. The first refresh ran in app scope and saved
+   18 rows: 13 met, 4 not met (first-pass 30 %, human actions 2.0, auto-match 35.71 %, SLA 75 %; the demo mix, as
+   above), 1 information.
 
    It is safe to re-run.
 2. To regenerate the script after a change:
