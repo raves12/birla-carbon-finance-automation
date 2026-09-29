@@ -194,6 +194,10 @@ The logged prompt was still v2, so the edit never reached the skill. It was reve
   approved" also matched the guardrail's own note ("Nothing has been approved … by AI"). The test now checks for the
   removed sentence itself.
 
+- **Run 3 (2026-09-29): 13/13 pass.** The test fix was applied to the instance's step script. The 13 tests were
+  started from Scripts - Background with `sn_atf.ExecuteUserTest`: this instance has no `ExecuteUserTestSuite` API, and
+  its ATF REST plugin is inactive.
+
 **Conclusion (Phase 29).**
 
 - **Safe:** the AI does not choose between ambiguous options, does not mislead after the tuning pass, and a person
