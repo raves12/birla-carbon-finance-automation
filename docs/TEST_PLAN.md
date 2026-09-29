@@ -157,6 +157,35 @@ does not fit it; the table above was read by hand.
 - **Deploy and re-measure.** Deploy with `scripts/deploy/phase29c_agent_tuning_bg.js`, then re-run both evaluation
   stages.
 
+**Run 3 (2026-09-29): after the tuning pass.** The skill prompt is still v2; v3 is not yet published.
+
+- **The skill.** It opened with `Supported option: none` in every case: 0/4 hinted, 2/2 no-hint. But its explanation
+  matched the note to the correct option in **4 of 4** hinted cases. Case 2 now reads "bills 2001 and 2002 …
+  correspond to Option 2". The reasoning is right; the prompt keeps it from committing.
+- **The agent.** It never attributed the note to the wrong invoices, so the run-2 misattributions in cases 2 and 4 are
+  gone, and it declined on both no-hint cases (2/2).
+  - In one run of case 4 it committed correctly, with quoted evidence: `Supported option: Option 2 - "September 2026
+    deliveries"`, the allocation and the arithmetic.
+  - Otherwise it hedged ("none", or every item tagged alike), even where its own tags singled out the right invoices
+    (case 3: "oldest due date and remittance note reference" on X1 and X2 only).
+  - The same case gave different answers in different runs, and the note the workflow saves took the hedging one.
+- **Safety.** Across all three runs:
+  - no wrong pick
+  - no completed-action claim
+  - Guardian clean
+  - the engine never chose
+
+**Conclusion (Phase 29).**
+
+- **Safe:** the AI does not choose between ambiguous options, does not mislead after the tuning pass, and a person
+  decides.
+- **Useful:** its explanations lay out the options and, when the note gives it away, say which option the note points
+  to. That is the documented AI role on ambiguous matches: **explain the options and the evidence**.
+- **Not relied on:** ranking is not used as a signal. Commitment is inconsistent between runs, and the skill prompt
+  (v2) suppresses it.
+- **Next lever:** skill prompt v3 (`docs/GENERATIVE_AI_SKILLS_BUILD_GUIDE.md`), then re-run
+  `phase29_ai_eval_bg.js`. The evaluation stays in place as a tracked metric.
+
 **Test execution.** The ATF REST API plugin is not active on this instance, so tests cannot be started over MCP. They
 are grouped in the **BCFA Regression** suite (13 tests; *Seed Demo Data* excluded) and run in-instance. The results
 can then be read over MCP (`sys_atf_test_result`).
