@@ -495,3 +495,19 @@ cache refresh could switch the rule on unannounced.
 1. New prompt version.
 2. Finalize.
 3. Publish.
+
+**Published 2026-09-29.** v3 is live as a new prompt, *AR Recommended Next Action v3*
+(`sys_generative_ai_config` `54ca393aebebc710311dff0dcad0cd63`): finalized, set as the default prompt for Now LLM Service,
+and published through Skill Kit. The original v1 prompt stays published, but it is no longer the default.
+
+**How this was done: a lesson for future prompt changes.**
+- The first attempt put the v3 text into a Skill Kit draft (`41427172…`) through the Table API.
+- After that, Skill Kit could no longer save or finalize that draft. It showed "Finalized the prompt successfully" while
+  the system log recorded `Failed to mark state as finalized for AI Config`, and *Publish skill* then said
+  "Finalize at least one prompt to publish".
+- It was solved entirely in the UI: open the draft → arrow next to *Save* → **Save as a new prompt** → lock icon →
+  **Finalize prompt**, ticking *Make it the default* → **Publish skill**, ticking the new prompt.
+- The broken draft `41427172…` is left unused as a draft. Don't use *Delete prompt* on it: that may delete the whole
+  prompt, including the published v1.
+- **Rule: never edit a prompt record over the API. Make every prompt change in the Skill Kit UI.**
+

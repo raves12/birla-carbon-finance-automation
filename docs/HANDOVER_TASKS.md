@@ -4,7 +4,11 @@ Two tasks that cannot be scripted:
 1. Publishing a Now Assist Skill Kit prompt. This is a UI-only step, and the runtime ignores direct edits to the record.
 2. Naming the people who govern the AI.
 
-## Task 1: Publish prompt v3 of *AR Recommended Next Action* (about 10 minutes)
+## Task 1: Publish prompt v3 of *AR Recommended Next Action*: DONE 2026-09-29
+
+Published as the new default prompt *AR Recommended Next Action v3*; see `GENERATIVE_AI_SKILLS_BUILD_GUIDE.md` ("Published 2026-09-29") and the evaluation in `TEST_PLAN.md`. The steps below are kept for future prompt changes. Make every change in the Skill Kit UI; never edit a prompt over the API.
+
+### Steps (reference)
 
 **Why.** In the Phase 29 evaluation, prompt v2 answered "Supported option: none" on ambiguous cash matches, even when
 the remittance note plainly named one option. v3 adds one rule so the reviewer gets that pointer. It stays advisory: a
@@ -66,7 +70,11 @@ person still decides, and the engine never picks.
 record the result in `TEST_PLAN.md`. If the hinted cases now show "Supported option: Option N", v3 is live. If a case
 recommends a *wrong* option, unpublish v3 by re-publishing with v2 ticked.
 
-## Task 2: Name the AI steward and the business owner (about 15 minutes, after a decision)
+## Task 2: Name the AI steward and the business owner: named 2026-09-29
+
+Ravi Kumar Kumar is business owner of all 36 BCFA AI assets and holds `sn_ai_governance.ai_steward`. Remaining: the steward acts on AR0000002 (2d below).
+
+### Steps (reference)
 
 **Why.** AI Control Tower governs the BCFA AI as the solution *BCFA Finance Automation AI*: 2 agentic workflows,
 7 agents, 9 skills. Approval request **AR0000002**, *Approve BCFA Finance Automation AI for deployment (proposed risk:

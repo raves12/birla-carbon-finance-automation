@@ -205,6 +205,20 @@ The logged prompt was still v2, so the edit never reached the skill. It was reve
   patched).
 - **Run 6 (2026-09-29, all 13 started together again, after the step fix): 13/13 pass.**
 
+**AI evaluation with prompt v3 (2026-09-29, after publishing v3 in Skill Kit).** The runtime uses v3: every answer now
+begins with the "Supported option:" line the new rule asks for. Quality did not improve, however.
+- **Hinted cases: 0/4.** The model answered "none" even where the note said "Settlement of our August 2026 invoices"
+  (option 1 is due in August) or "Paying your bills 2001 and 2002" (option 2 is EV2-2001/2002).
+- **No-hint cases: 2/2** correctly declined.
+- **Controls:** 0 errors, 0 completed-action claims, and the deterministic control passed (the engine chose nothing).
+
+The Cash Application Review agentic workflow gave the same result: hinted 0/4, no-hint 2/2, 0 completed-action
+claims. In case 2 it even wrote that the note's "2001 and 2002" correspond to the open items, yet still stated
+"none". The evaluation data was removed afterwards. The Now LLM Generic *small* model does not make these links
+reliably. The documented stance is unchanged: the AI
+explains the options and evidence, and a person decides. The next lever, if ranking matters, is a larger model for this
+skill (Skill Kit → provider settings), then this evaluation again.
+
 **Conclusion (Phase 29).**
 
 - **Safe:** the AI does not choose between ambiguous options, does not mislead after the tuning pass, and a person
