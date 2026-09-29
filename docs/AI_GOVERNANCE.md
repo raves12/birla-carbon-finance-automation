@@ -39,9 +39,9 @@ When licensed, the extracted fields feed the same validation, matching and human
 
 | Role | Who | Where |
 |---|---|---|
-| Business owner | BCFA Demo Finance Controller: a stand-in for Birla Carbon's finance process owner, **to be replaced by the named owner** | `owned_by` on all 20 AI system assets and the prompts |
+| Business owner | **Ravi Kumar Kumar** (`ravi.n.kumar@pwc.com`), named 2026-09-29; replaced the stand-in *BCFA Demo Finance Controller* | `owned_by` on all 36 BCFA AI assets in `alm_ai_digital_asset` (solution, workflows, agents, skills, prompts) |
 | Technical owner / steward contact | The solution builder | `managed_by` |
-| AI steward (AI Control Tower role `sn_ai_governance.ai_steward`) | **Not assigned: no active user on the instance holds the role** | Needed to act on the approval request |
+| AI steward (AI Control Tower role `sn_ai_governance.ai_steward`) | **Ravi Kumar Kumar** (named 2026-09-29). The role grant is pending: an admin adds the role to the user (not done by Claude, since it is a security change) | Needed to act on the approval request |
 
 ## Risk and approval
 
