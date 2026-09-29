@@ -38,7 +38,7 @@ end state against the tables below.
 |---|---|
 | **Deleted** | Every AP invoice and payment, with their lines, extractions, matches, exceptions, approvals, remittances, match candidates, allocations and deductions. Also integration transactions, document intakes (and their attachments), finance exceptions and KPI rows. Also master rows outside the seeded baseline: POs, PO lines, receipts, open items and credit notes whose code is not in the lists above (test data) |
 | **Restored** | Master data is upserted by business key (vendor code, PO number, item number and so on). Existing rows keep their sys_id, so reference mappings stay valid, and get their seeded values back, for example an open item's open amount after a clearing consumed it. The integration profiles go back to `failure_mode: success` |
-| **Re-seeded** | The 10 AP and 10 AR scenarios (`seedAll`, inline orchestration) |
+| **Re-seeded** | The 10 AP and 10 AR scenarios (`seedAll`, inline orchestration). Since Phase 33, also the three POC 2 live cash journeys (`seedPoc2CashScenarios`: C1001–C1003, ARINV1001–3002, BANK-POC2-001..003). In flow mode their bank lines go to `customer_ambiguous` within seconds. They wait there for the remittance upload in the demo (`docs/POC_DEMO_SCRIPT.md`) |
 | **Kept** | The audit trail (append-only; the reset adds one audit event recording what it deleted) and the decision log. The AI Interaction Log is kept as governance evidence unless `x_695068_bcfa.demo.reset_clears_ai_log` is `true`. Configuration is kept: vendors, customers, aliases, integration profiles, reference mappings |
 
 **Safeguards**

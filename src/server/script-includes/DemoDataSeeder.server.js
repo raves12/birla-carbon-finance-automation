@@ -820,7 +820,8 @@ DemoDataSeeder.prototype = {
     //            (append-only) and the decision log; the AI Interaction Log
     //            unless x_695068_bcfa.demo.reset_clears_ai_log = true
     // then seedAll() restores the master data values and re-runs the 10 AP
-    // and 10 AR scenarios. The reset itself is audited.
+    // and 10 AR scenarios, and seedPoc2CashScenarios() re-creates the three
+    // POC 2 live cash journeys. The reset itself is audited.
     //
     // Refused unless confirm is exactly DemoDataSeeder.RESET_CONFIRMATION and
     // x_695068_bcfa.demo.reset_enabled is true (set it to false on any
@@ -828,7 +829,10 @@ DemoDataSeeder.prototype = {
     resetAndReseed: function(confirm) {
         var reset = this.resetDemoData(confirm);
         if (reset.refused) return reset;
-        return { reset: reset, seed: this.seedAll() };
+        // Phase 33: the POC 2 live cash journey (C1001-C1003, BANK-POC2-00x,
+        // remittances AR_REMIT_101-103) is part of the demo baseline too; the
+        // reset deletes its payments and open items.
+        return { reset: reset, seed: this.seedAll(), poc2: this.seedPoc2CashScenarios() };
     },
 
     resetDemoData: function(confirm) {

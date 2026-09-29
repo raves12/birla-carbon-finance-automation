@@ -596,11 +596,14 @@ FinanceDocumentIntakeService.prototype = {
         }
 
         // A remittance only drives a payment that has not been processed
-        // yet; it never reopens a matched, cleared or closed payment.
+        // yet, or one waiting in EXCEPTION for exactly this information
+        // (unmatched / customer_ambiguous / ambiguous_match, Phase 33); it
+        // never reopens a matched, cleared or closed payment.
         var target = new GlideRecord('x_695068_bcfa_payment');
         target.get(found);
         var targetState = target.getValue('state');
-        if (targetState !== 'RECEIVED' && targetState !== 'NORMALIZED') {
+        var retryable = targetState === 'EXCEPTION' && !!this.arService.findRetryableException(found);
+        if (targetState !== 'RECEIVED' && targetState !== 'NORMALIZED' && !retryable) {
             this.sendToManualReview(intakeSysId, 'Payment ' + target.getValue('bank_reference') + ' is already ' + targetState +
                 '; the remittance was not applied automatically. Review it against that payment.');
             return { requiresReview: true, paymentSysId: found, paymentState: targetState };
@@ -631,9 +634,32 @@ FinanceDocumentIntakeService.prototype = {
             afterValue: { remittance: remittanceIntake.remittanceSysId, payment: found },
         });
 
+        if (retryable) return this._retryPaymentWithRemittance(intakeSysId, found, remittanceIntake.remittanceSysId);
+
         // Re-run the matching/allocation portion of the EXISTING pipeline
         // now that a remittance is attached.
         return this._resumePaymentPipeline(intakeSysId, found, data.customer_name);
+    },
+
+    // Phase 33: the payment is in EXCEPTION waiting for its remittance. In
+    // flow mode the AR Remittance Processing Flow (triggered by the new
+    // remittance) retries; inline, it is retried here.
+    _retryPaymentWithRemittance: function(intakeSysId, paymentSysId, remittanceSysId) {
+        var payment = new GlideRecord('x_695068_bcfa_payment');
+        payment.get(paymentSysId);
+        var bankRef = payment.getValue('bank_reference');
+        if (!FinanceOrchestration.isInline()) {
+            this._setStatus(intakeSysId, 'completed', 'Remittance linked to Payment ' + bankRef + ', which was waiting in exception; the AR Remittance Processing Flow identifies the customer and retries matching.');
+            return { stoppedAt: 'HANDED_TO_FLOWS', paymentSysId: paymentSysId, handedTo: 'AR Remittance Processing Flow' };
+        }
+        var r = this.arService.retryWithRemittance(paymentSysId, remittanceSysId, gs.getUserID());
+        if (!r.retried) {
+            this._setStatus(intakeSysId, 'completed', 'Remittance linked to Payment ' + bankRef + '; ' + r.reason + '. The exception stays with the AR processor.');
+            return { stoppedAt: 'EXCEPTION', paymentSysId: paymentSysId, detail: r };
+        }
+        payment.get(paymentSysId);
+        this._setStatus(intakeSysId, 'completed', 'Remittance linked to Payment ' + bankRef + '; exception ' + r.exceptionNumber + ' resolved and matching retried. Payment is now ' + payment.getValue('state') + '.');
+        return { stoppedAt: payment.getValue('state'), paymentSysId: paymentSysId, detail: r };
     },
 
     _findPaymentByReference: function(reference) {

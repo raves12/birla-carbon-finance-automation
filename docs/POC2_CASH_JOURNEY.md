@@ -83,6 +83,25 @@ Tests `phase13_e2e_part1_bg.js` / `phase13_e2e_part2_bg.js` (scope x_695068_bcfa
    and "Classification: BANK_CHARGE, Amount: 25 INR". The test case was then closed through
    Approve Deduction and approval.
 
+3. **A remittance that arrived after its bank line was refused (found in Phase 33).**
+
+   **The problem.** Since the Phase 25 flows, the AR Payment Intake Flow processes a bank line as soon as it arrives. With no remittance yet, the customer cannot be identified, so the payment goes to EXCEPTION (`customer_ambiguous`) within seconds. Document Intake, however, still linked a remittance only to a payment at RECEIVED or NORMALIZED. Every late remittance therefore went to manual review, and the live cash journey above could no longer run.
+
+   The AR Remittance Processing Flow already existed to retry such a payment. But it never got a remittance to work with. Its retry also went straight to MATCHING, which cannot match a payment that has no customer.
+
+   **The fix (2026-09-29).**
+   - Document Intake now also links a remittance to a payment in EXCEPTION, when that payment has an open `unmatched`, `customer_ambiguous` or `ambiguous_match` exception. Matched, cleared and closed payments are still never reopened.
+   - `ArDomainService.retryWithRemittance` is used by the flow and by inline mode. It identifies the customer from the remittance with the same rules as `resolveCustomer`: an alias or exact name at the auto-match confidence, or the single owner of every referenced invoice. It does this without a state change, because EXCEPTION → CUSTOMER_RESOLUTION is not a lifecycle path. It then resolves the exception and retries matching through EXCEPTION → MATCHING.
+   - If the customer still cannot be identified, nothing changes and the exception stays with the AR processor.
+
+   **Verified live in flow mode** on RETEST data: customer C3301, invoice ARINV3301, payment BANK-P33-RT1.
+   1. The bank line went to `customer_ambiguous` (AREX0001081).
+   2. The remittance went through Document Intake (reading step stubbed, since there is no fixture PDF): linked and handed to the flows.
+   3. The flow identified the customer from the remitter name, resolved AREX0001081, and matched and allocated ARINV3301, which put the payment at PENDING_APPROVAL with one pending approval.
+   4. The payment was approved by `bcfa.finance.approver` (all five SoD checks passed), cleared and CLOSED.
+
+   The test data is labelled RETEST and closed.
+
 ## Findings to act on later
 
 - **Skill output breaks its own rule (Phase 21, Guardian).** The multi-invoice explanation ended

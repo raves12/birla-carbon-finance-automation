@@ -26,7 +26,8 @@
     for (var t in d) if (d[t]) parts.push(t + '=' + d[t]);
     out.push('deleted: ' + parts.join(', '));
     out.push('seed: master ' + (result.seed.masterData.skipped ? 'SKIPPED' : JSON.stringify(result.seed.masterData)) +
-        ', AP ' + (result.seed.apScenarios.skipped ? 'SKIPPED' : 'seeded') + ', AR ' + (result.seed.arScenarios.skipped ? 'SKIPPED' : 'seeded'));
+        ', AP ' + (result.seed.apScenarios.skipped ? 'SKIPPED' : 'seeded') + ', AR ' + (result.seed.arScenarios.skipped ? 'SKIPPED' : 'seeded') +
+        (result.poc2 ? ', POC 2 cash journeys created: ' + (result.poc2.created.join(' ') || 'none (already present)') : ''));
 
     // Documented end states (docs/DEMO_DATA.md). AP-001 and its duplicate
     // AP-002 share INV-AP-001: the first created is AP-001.

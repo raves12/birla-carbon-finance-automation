@@ -146,17 +146,11 @@ FinanceOrchestration.prototype = {
         var paymentId = rem.getValue('payment');
         var pay = this._get('x_695068_bcfa_payment', paymentId);
         if (!pay || pay.getValue('state') !== 'EXCEPTION') return this._result('ar_remittance', 'skipped', 'payment is ' + (pay ? pay.getValue('state') : 'missing') + '; matching will use the remittance');
-        var ex = new GlideRecord('x_695068_bcfa_ar_exception');
-        ex.addQuery('payment', paymentId);
-        ex.addQuery('status', 'IN', 'open,in_review');
-        ex.addQuery('reason_code', 'IN', 'unmatched,customer_ambiguous,ambiguous_match');
-        ex.orderByDesc('sys_created_on');
-        ex.setLimit(1);
-        ex.query();
-        if (!ex.next()) return this._result('ar_remittance', 'skipped', 'no matching exception to retry');
-        new ArDomainService().resolveExceptionAndRetry(paymentId, ex.getUniqueValue(),
-            'Remittance ' + (rem.getValue('remittance_reference') || rem.getUniqueValue()) + ' received; matching retried (AR Remittance Processing Flow).', '');
-        return this._ran('exception ' + ex.getValue('number') + ' resolved; payment re-matching');
+        // Phase 33: identifies the customer with the remittance first (a
+        // customer_ambiguous payment has none), then resolves and retries.
+        var r = new ArDomainService().retryWithRemittance(paymentId, remittanceId, '');
+        if (!r.retried) return this._result('ar_remittance', 'skipped', r.reason);
+        return this._ran('exception ' + r.exceptionNumber + ' resolved; payment re-matching');
     },
 
     // AR Match Flow: remittance, exact, combination and multi-invoice match,

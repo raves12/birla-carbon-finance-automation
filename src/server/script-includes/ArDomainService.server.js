@@ -223,29 +223,9 @@ ArDomainService.prototype = {
             return { resolved: true, customerSysId: payment.getValue('customer') };
         }
 
-        // 1. Remitter name through alias / exact name, accepted only at or
-        //    above the configured auto-match confidence (POC ASSUMPTION).
-        // 2. Otherwise the customer that owns every invoice referenced on
-        //    the remittance, if exactly one customer does and it does not
-        //    contradict the name match.
-        // Anything else goes to a human; the customer is never guessed.
-        var threshold = this.policy.arAutoMatchConfidence();
-        var resolution = this.matchingEngine.resolveCustomerByAlias(candidateName);
-        if (resolution.resolved && resolution.confidence >= threshold) {
-            return this._setPaymentCustomer(payment, resolution.customerSysId, 'remitter name "' + candidateName + '" (confidence ' + resolution.confidence + ')');
-        }
-        var remittance = this.matchingEngine.resolveRemittanceReferences(paymentSysId);
-        if (remittance.available && remittance.unresolved.length === 0 && remittance.customerCount === 1 &&
-            (!resolution.resolved || resolution.customerSysId === remittance.customerSysId)) {
-            return this._setPaymentCustomer(payment, remittance.customerSysId, 'owner of every invoice referenced on the remittance (' +
-                remittance.items.map(function(i) { return i.itemNumber; }).join(', ') + ')');
-        }
-
-        var why = resolution.resolved
-            ? 'alias match confidence ' + resolution.confidence + ' is below the auto-match threshold ' + threshold
-            : resolution.ambiguous
-                ? 'remitter name "' + (candidateName || '') + '" matches ' + resolution.candidates.length + ' different customers'
-                : 'remitter name "' + (candidateName || '') + '" did not resolve to a customer';
+        var id = this._identifyCustomer(payment, candidateName);
+        if (id.customerSysId) return this._setPaymentCustomer(payment, id.customerSysId, id.how);
+        var resolution = id.resolution, remittance = id.remittance, why = id.why;
         var exceptionSysId = this.exceptionEngine.createArException(paymentSysId, 'customer_ambiguous', 'Could not resolve customer from remitter name "' + candidateName + '".', {
             ruleResult: 'FAIL customer resolution: ' + why + (remittance.available ? '; remittance references ' +
                 (remittance.unresolved.length ? 'not all resolved (' + remittance.unresolved.join(', ') + ')' : 'span ' + remittance.customerCount + ' customers') : '; no remittance references') + '.',
@@ -255,6 +235,78 @@ ArDomainService.prototype = {
         this._explainArException(exceptionSysId, this._findCandidateCustomers(candidateName));
         this._setState(paymentSysId, 'EXCEPTION', null, 'Customer resolution failed');
         return { resolved: false, exceptionSysId: exceptionSysId };
+    },
+
+    // The customer identification rules, without a state change:
+    // 1. Remitter name through alias / exact name, accepted only at or
+    //    above the configured auto-match confidence (POC ASSUMPTION).
+    // 2. Otherwise the customer that owns every invoice referenced on
+    //    the remittance, if exactly one customer does and it does not
+    //    contradict the name match.
+    // Anything else goes to a human; the customer is never guessed.
+    // Returns { customerSysId, how } or { customerSysId: null, why, resolution, remittance }.
+    _identifyCustomer: function(payment, candidateName) {
+        var threshold = this.policy.arAutoMatchConfidence();
+        var resolution = this.matchingEngine.resolveCustomerByAlias(candidateName);
+        if (resolution.resolved && resolution.confidence >= threshold) {
+            return { customerSysId: resolution.customerSysId, how: 'remitter name "' + candidateName + '" (confidence ' + resolution.confidence + ')' };
+        }
+        var remittance = this.matchingEngine.resolveRemittanceReferences(payment.getUniqueValue());
+        if (remittance.available && remittance.unresolved.length === 0 && remittance.customerCount === 1 &&
+            (!resolution.resolved || resolution.customerSysId === remittance.customerSysId)) {
+            return { customerSysId: remittance.customerSysId, how: 'owner of every invoice referenced on the remittance (' +
+                remittance.items.map(function(i) { return i.itemNumber; }).join(', ') + ')' };
+        }
+        var why = resolution.resolved
+            ? 'alias match confidence ' + resolution.confidence + ' is below the auto-match threshold ' + threshold
+            : resolution.ambiguous
+                ? 'remitter name "' + (candidateName || '') + '" matches ' + resolution.candidates.length + ' different customers'
+                : 'remitter name "' + (candidateName || '') + '" did not resolve to a customer';
+        return { customerSysId: null, why: why, resolution: resolution, remittance: remittance };
+    },
+
+    // The open exception a newly arrived remittance can resolve: the payment
+    // could not be matched, or its customer identified, without one.
+    findRetryableException: function(paymentSysId) {
+        var ex = new GlideRecord('x_695068_bcfa_ar_exception');
+        ex.addQuery('payment', paymentSysId);
+        ex.addQuery('status', 'IN', 'open,in_review');
+        ex.addQuery('reason_code', 'IN', 'unmatched,customer_ambiguous,ambiguous_match');
+        ex.orderByDesc('sys_created_on');
+        ex.setLimit(1);
+        ex.query();
+        return ex.next() ? { sysId: ex.getUniqueValue(), number: ex.getValue('number') } : null;
+    },
+
+    // Phase 33: a remittance arrived for a payment already in EXCEPTION. In
+    // flow mode every bank line that arrives before its remittance goes to
+    // customer_ambiguous at intake, so this is the normal cash path. The
+    // customer is identified with the remittance by the resolveCustomer
+    // rules, without a state change (EXCEPTION -> CUSTOMER_RESOLUTION is not
+    // a lifecycle path); then the exception is resolved and matching retried
+    // (EXCEPTION -> MATCHING). If the customer still cannot be identified,
+    // nothing changes and the exception stays with the person.
+    retryWithRemittance: function(paymentSysId, remittanceSysId, actor) {
+        var payment = new GlideRecord('x_695068_bcfa_payment');
+        if (!payment.get(paymentSysId) || payment.getValue('state') !== 'EXCEPTION') return { retried: false, reason: 'payment is not in EXCEPTION' };
+        var ex = this.findRetryableException(paymentSysId);
+        if (!ex) return { retried: false, reason: 'no open unmatched, customer_ambiguous or ambiguous_match exception to retry' };
+        var reference = remittanceSysId, candidateName = '';
+        var rem = new GlideRecord('x_695068_bcfa_remittance');
+        if (rem.get(remittanceSysId)) {
+            reference = rem.getValue('remittance_reference') || remittanceSysId;
+            try { candidateName = JSON.parse(rem.getValue('extracted_fields') || '{}').customer_name || ''; } catch (e) { candidateName = ''; }
+        }
+        if (!payment.getValue('customer')) {
+            var id = this._identifyCustomer(payment, candidateName);
+            if (!id.customerSysId) return { retried: false, reason: 'customer still not identified (' + id.why + ')', exceptionNumber: ex.number };
+            this._setPaymentCustomer(payment, id.customerSysId, id.how);
+        }
+        var result = this.resolveExceptionAndRetry(paymentSysId, ex.sysId,
+            'Remittance ' + reference + ' received; matching retried.', actor || '');
+        result.retried = true;
+        result.exceptionNumber = ex.number;
+        return result;
     },
 
     _setPaymentCustomer: function(payment, customerSysId, how) {
