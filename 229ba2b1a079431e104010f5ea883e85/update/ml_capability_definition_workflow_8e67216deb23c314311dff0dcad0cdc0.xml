@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="ml_capability_definition_workflow">
+    <ml_capability_definition_workflow action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <capability display_value="Workflow">d12a03f173212010c0bbb63854f6a7b9</capability>
+        <current_solution_version/>
+        <dataset_language>en</dataset_language>
+        <description>DocIntel Training workflow</description>
+        <fields/>
+        <filter/>
+        <pretrained>false</pretrained>
+        <request_source>api</request_source>
+        <solution_label>docintel_training_workflow_0267216deb23c314311dff0dcad0cd8e</solution_label>
+        <solution_name>ml_x_pcmsl_x_695068_bcfa_global_docintel_training_workflow_0267216deb23c314311dff0dcad0cd8e</solution_name>
+        <solution_parameters/>
+        <solution_properties>{"description":"DocIntel Training workflow","label":"docintel_training_workflow_0267216deb23c314311dff0dcad0cd8e","predictPipeline":{},"schedulingInfo":{"useCase":"docintel_training_workflow","overrideCapability":{"name":"docintel_full_trainer","version":"27.1"}},"tags":"docintel,workflow","trainingPipeline":{"pipelineOutput":{"info":{"trainingInfo":"::docintel_training.info"},"models":{"model":"::docintel_training.model","taskIds":"::docintel_training.taskIds","messages":"::docintel_training.messages","metrics":"::docintel_training.metrics"}},"steps":[{"name":"docintel_training","component":"docintel_training","input":{"dataset":"::pipelineInput.datasets.training_input","keys":"::pipelineInput.datasets.keys","key_groups":"::pipelineInput.datasets.key_groups","key_hints":"::pipelineInput.datasets.key_hints","task_ids":"::pipelineInput.config.task_ids","extra_parameters":"::pipelineInput.config.extra_parameters","job_type":"::pipelineInput.config.job_type","training_component_version":"27.1"}}],"pipelineInput":{"config":{},"datasets":{"training_input":{"tableName":"sys_di_training_input","fieldNames":["task_definition","task","data","chunk_number","min_model_version"],"encodedQuery":"min_model_versionISEMPTY^task_definition\u003d0267216deb23c314311dff0dcad0cd8e","name":"training_input","fetchDisplayValue":false},"keys":{"tableName":"sys_di_key","fieldNames":["name","display_name","key_group","group_index","order","type","synonym","key_config","mandatory"],"encodedQuery":"task_definition\u003d0267216deb23c314311dff0dcad0cd8e","name":"keys","fetchDisplayValue":false},"key_hints":{"tableName":"sys_di_key_hint","fieldNames":["label","type","synonym_list"],"name":"key_hints","fetchDisplayValue":false},"key_groups":{"tableName":"sys_di_key_group","fieldNames":["is_list","display_name","type"],"encodedQuery":"task_definition\u003d0267216deb23c314311dff0dcad0cd8e","name":"key_groups","fetchDisplayValue":false}}}},"workflowConfiguration":{"trainingFrequency":"run_once"},"workflowLanguageVersion":"1.0.0"}</solution_properties>
+        <stopwords>a6282a25533333008c5bddeeff7b12c3</stopwords>
+        <sys_class_name>ml_capability_definition_workflow</sys_class_name>
+        <sys_created_by>RaviMAdmin</sys_created_by>
+        <sys_created_on>2026-09-25 12:14:44</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>8e67216deb23c314311dff0dcad0cdc0</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>DocIntel Training workflow</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>ml_capability_definition_workflow_8e67216deb23c314311dff0dcad0cdc0</sys_update_name>
+        <sys_updated_by>RaviMAdmin</sys_updated_by>
+        <sys_updated_on>2026-09-25 12:14:44</sys_updated_on>
+        <table/>
+        <tags>docintel,workflow</tags>
+        <training_frequency>run_once</training_frequency>
+        <triggered_source>API</triggered_source>
+        <word_vector_corpus/>
+    </ml_capability_definition_workflow>
+</record_update>

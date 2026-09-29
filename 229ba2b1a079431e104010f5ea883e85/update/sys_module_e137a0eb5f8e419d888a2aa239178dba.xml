@@ -251,6 +251,14 @@ BCClaudeClient.prototype = {
             if (envelope.confidence !== undefined && envelope.confidence !== null) gr.setValue('confidence', envelope.confidence);
             gr.setValue('safe_error', envelope.safeError || '');
             gr.setValue('initiated_by', gs.getUserID());
+            // Phase 20 provider-agnostic fields.
+            var op = meta.operation || 'connectivity_test';
+            gr.setValue('provider', 'claude_legacy');
+            gr.setValue('process', AuditEngine.PROCESS_BY_TABLE[meta.sourceTable] || 'platform');
+            gr.setValue('capability', /^extract/.test(op) ? 'document_extraction' : /^classify/.test(op) ? 'document_classification' :
+                /^explain/.test(op) ? 'exception_explanation' : op === 'recommend_cash_match' ? 'cash_match_recommendation' :
+                op === 'rank_candidates' ? 'candidate_ranking' : 'connectivity_test');
+            gr.setValue('completed_at', new GlideDateTime().getValue());
             gr.insert();
         } catch (logErr) {
             // never let logging failure surface as a call failure
@@ -698,6 +706,355 @@ BCClaudeClient.prototype = {
             sourceTable: 'x_695068_bcfa_ar_exception',
             sourceRecord: arExceptionSysId,
             promptVersion: 'ar-exception-explanation-v1',
+        });
+    },
+
+    // ==== Finance Document Intake — real attachment reading =================
+    // Everything below this line supports TRUE document-to-transaction
+    // processing (Finance Document Intake): reading an actual uploaded
+    // PDF/image and sending the document itself to Claude, rather than the
+    // JSON-context "as-if-OCR'd" path extractInvoice/extractRemittance use
+    // above. Nothing above this line is modified — invoke()/_buildRequest()/
+    // _parseSuccess() already accept spec.messages[].content as anything
+    // JSON-serializable, so a multi-modal content array (document/image
+    // block + text block) needs no transport-layer change at all.
+
+    // Finds the most recently added attachment on a record. Finance Document
+    // Intake is designed around one primary document per intake record —
+    // if more than one is attached, the newest is treated as authoritative.
+    _getPrimaryAttachment: function(sourceTable, sourceRecord) {
+        var gr = new GlideRecord('sys_attachment');
+        gr.addQuery('table_name', sourceTable);
+        gr.addQuery('table_sys_id', sourceRecord);
+        gr.orderByDesc('sys_created_on');
+        gr.setLimit(1);
+        gr.query();
+        return gr.next() ? gr : null;
+    },
+
+    // Type/size validation BEFORE any network call is made, per the
+    // configured properties — an oversized or unsupported file never reaches
+    // Claude, let alone gets base64-encoded for nothing.
+    _validateAttachmentRecord: function(attachmentGr) {
+        var allowedTypes = gs.getProperty('x_695068_bcfa.claude.allowed_attachment_types', 'application/pdf,image/png,image/jpeg').split(',');
+        var maxSize = parseInt(gs.getProperty('x_695068_bcfa.claude.max_attachment_size_bytes', '10485760'), 10);
+        var contentType = attachmentGr.getValue('content_type');
+        var sizeBytes = parseInt(attachmentGr.getValue('size_bytes') || '0', 10);
+
+        if (allowedTypes.indexOf(contentType) === -1) {
+            return { valid: false, reason: 'Unsupported attachment type: ' + contentType + '. Allowed: ' + allowedTypes.join(', ') + '.' };
+        }
+        if (sizeBytes > maxSize) {
+            return { valid: false, reason: 'Attachment size (' + sizeBytes + ' bytes) exceeds the configured limit of ' + maxSize + ' bytes.' };
+        }
+        return { valid: true, contentType: contentType, sizeBytes: sizeBytes };
+    },
+
+    // Reads the attachment content as base64 via the platform's own
+    // GlideSysAttachment API — never a direct sys_attachment_doc query.
+    // getContentBase64(GlideRecord) takes the sys_attachment GlideRecord
+    // itself, not its sys_id — confirmed live via the runtime's own error
+    // ("Cannot convert <sys_id> to com.glide.script.GlideRecord") after an
+    // earlier attempt passed a string (getBytes() is global-scope only and
+    // throws "Cannot find function getBytes" from inside a scoped app —
+    // also confirmed live). Requires the CrossScopePrivilege declared in
+    // security/cross_scope_privileges.now.ts, since GlideSysAttachment is a
+    // global-scope scriptable object.
+    _readAttachmentBase64: function(attachmentGr) {
+        var sysAttachment = new GlideSysAttachment();
+        return sysAttachment.getContentBase64(attachmentGr);
+    },
+
+    // PDFs use Anthropic's "document" content block; images use "image" —
+    // both take an identical { type: 'base64', media_type, data } source.
+    _buildDocumentContentBlock: function(base64, contentType) {
+        var blockType = contentType === 'application/pdf' ? 'document' : 'image';
+        return { type: blockType, source: { type: 'base64', media_type: contentType, data: base64 } };
+    },
+
+    // Single seam every Finance Document Intake use-case method calls
+    // through: find the attachment, validate it, read it, build the content
+    // block. Returns { ok:false, safeError } on any failure — the base64
+    // payload itself is only ever held in a local variable and passed
+    // straight into a request body; it is never assigned onto anything this
+    // class logs (see _logInteraction, which only ever receives envelope/
+    // meta — not this return value).
+    // Wrapped in try/catch deliberately: this method sits at a platform-API
+    // boundary (GlideSysAttachment) where a wrong assumption about a method
+    // name/signature throws rather than returning a normal falsy value —
+    // confirmed live, where an uncaught exception here silently killed the
+    // entire Finance Document Intake pipeline with no error surfaced back
+    // through the UI Action REST call and no audit trail at all. Every
+    // other failure path in this class already returns a clean
+    // { ok:false, safeError } envelope; this makes the attachment path do
+    // the same even for a genuinely unexpected exception.
+    _prepareAttachmentForClaude: function(sourceTable, sourceRecord) {
+        try {
+            var attachment = this._getPrimaryAttachment(sourceTable, sourceRecord);
+            if (!attachment) {
+                return { ok: false, safeError: 'No attachment found on ' + sourceTable + ' ' + sourceRecord + '.' };
+            }
+            var validation = this._validateAttachmentRecord(attachment);
+            if (!validation.valid) {
+                return { ok: false, safeError: validation.reason };
+            }
+            var base64 = this._readAttachmentBase64(attachment);
+            if (!base64) {
+                return { ok: false, safeError: 'Attachment content could not be read.' };
+            }
+            return {
+                ok: true,
+                contentBlock: this._buildDocumentContentBlock(base64, validation.contentType),
+                contentType: validation.contentType,
+                fileName: attachment.getValue('file_name'),
+            };
+        } catch (e) {
+            return { ok: false, safeError: 'Attachment could not be read: ' + (e && e.message ? e.message : String(e)) };
+        }
+    },
+
+    // Use Case 6 — Document classification. The very first Claude call in
+    // the Finance Document Intake pipeline: given only the raw attachment
+    // (no prior knowledge of what kind of document it is), decide whether
+    // it's a vendor invoice, a customer payment advice, a remittance advice,
+    // or something this app doesn't handle. Advisory only — a human can
+    // always override document_type on the intake record (Phase 3).
+    classifyFinanceDocument: function(intakeSysId) {
+        var attachmentResult = this._prepareAttachmentForClaude('x_695068_bcfa_finance_intake', intakeSysId);
+        if (!attachmentResult.ok) {
+            return { ok: false, status: 'invalid_response', httpStatus: null, safeError: attachmentResult.safeError };
+        }
+
+        var spec = {
+            system: this._systemPrompt('finance-document-classification-v1',
+                'You classify a raw finance document (an image or PDF) for an accounts-payable/accounts-receivable ' +
+                'intake process. Look at the actual document content and decide whether it is a vendor invoice being ' +
+                'billed to this company (AP_INVOICE), a customer\'s advice that they have sent or will send a payment ' +
+                '(AR_PAYMENT_ADVICE), or a remittance advice listing which invoices a payment applies to ' +
+                '(AR_REMITTANCE). If the document does not clearly match any of these, or you cannot tell, return ' +
+                'UNKNOWN rather than guessing. State a brief reason citing what you actually saw in the document ' +
+                '(e.g. a heading, a phrase, a table of invoice numbers).'),
+            messages: [{
+                role: 'user',
+                content: [
+                    attachmentResult.contentBlock,
+                    { type: 'text', text: 'Classify this finance document.' },
+                ],
+            }],
+            tool: {
+                name: 'classify_finance_document',
+                description: 'Records the document classification result.',
+                input_schema: {
+                    type: 'object',
+                    properties: {
+                        document_type: { type: 'string', enum: ['AP_INVOICE', 'AR_PAYMENT_ADVICE', 'AR_REMITTANCE', 'UNKNOWN'] },
+                        confidence: { type: 'number' },
+                        reason: { type: 'string' },
+                    },
+                    required: ['document_type', 'confidence', 'reason'],
+                },
+            },
+        };
+
+        return this.invoke(spec, {
+            operation: 'classify_finance_document',
+            sourceTable: 'x_695068_bcfa_finance_intake',
+            sourceRecord: intakeSysId,
+            promptVersion: 'finance-document-classification-v1',
+        });
+    },
+
+    // Use Case 7 — AP invoice extraction directly from the attached
+    // document. Unlike extractInvoice() above (which reconciles pre-supplied
+    // seedFields against a system-of-record invoice that already exists),
+    // this reads the actual document and is the ONLY source of truth at this
+    // point in the pipeline — no AP Invoice exists yet. field_confidence is
+    // an open per-field confidence map so a reviewer can see exactly which
+    // extracted values Claude was least sure of (Phase 9 review UI).
+    extractApInvoiceDocument: function(intakeSysId) {
+        var attachmentResult = this._prepareAttachmentForClaude('x_695068_bcfa_finance_intake', intakeSysId);
+        if (!attachmentResult.ok) {
+            return { ok: false, status: 'invalid_response', httpStatus: null, safeError: attachmentResult.safeError };
+        }
+
+        var spec = {
+            system: this._systemPrompt('ap-invoice-document-extraction-v1',
+                'You extract structured invoice header and line-item data directly from the attached vendor invoice ' +
+                'document. Read only what is actually printed on the document — never fabricate a value that is not ' +
+                'present. If a field is missing or illegible, return an empty string (0 for amounts, an empty array ' +
+                'for lines) and add a warning naming that field. Include one entry in lines for every line item you ' +
+                'can actually read, in document order. Set the top-level confidence between 0 and 1 reflecting your ' +
+                'overall extraction confidence; optionally set field_confidence as a per-field confidence map for the ' +
+                'fields you are least certain of. This is a real business document — do not estimate or guess an ' +
+                'ambiguous amount.'),
+            messages: [{
+                role: 'user',
+                content: [
+                    attachmentResult.contentBlock,
+                    { type: 'text', text: 'Extract the invoice header and line items from this document.' },
+                ],
+            }],
+            tool: {
+                name: 'record_ap_invoice_document_extraction',
+                description: 'Records the structured AP invoice extraction result read from the document.',
+                input_schema: {
+                    type: 'object',
+                    properties: {
+                        invoice_number: { type: 'string' },
+                        invoice_date: { type: 'string' },
+                        posting_date: { type: 'string' },
+                        vendor_code: { type: 'string' },
+                        vendor_name: { type: 'string' },
+                        company_code: { type: 'string' },
+                        po_number: { type: 'string' },
+                        currency: { type: 'string' },
+                        net_amount: { type: 'number' },
+                        tax_amount: { type: 'number' },
+                        gross_amount: { type: 'number' },
+                        lines: {
+                            type: 'array',
+                            items: {
+                                type: 'object',
+                                properties: {
+                                    line_number: { type: 'integer' },
+                                    description: { type: 'string' },
+                                    material_code: { type: 'string' },
+                                    quantity: { type: 'number' },
+                                    unit: { type: 'string' },
+                                    unit_price: { type: 'number' },
+                                    net_amount: { type: 'number' },
+                                    tax_amount: { type: 'number' },
+                                },
+                                required: ['line_number', 'description', 'quantity', 'unit_price', 'net_amount'],
+                            },
+                        },
+                        confidence: { type: 'number' },
+                        field_confidence: { type: 'object' },
+                        warnings: { type: 'array', items: { type: 'string' } },
+                    },
+                    required: ['invoice_number', 'currency', 'gross_amount', 'lines', 'confidence', 'warnings'],
+                },
+            },
+        };
+
+        return this.invoke(spec, {
+            operation: 'extract_ap_invoice_document',
+            sourceTable: 'x_695068_bcfa_finance_intake',
+            sourceRecord: intakeSysId,
+            promptVersion: 'ap-invoice-document-extraction-v1',
+        });
+    },
+
+    // Use Case 8 — AR payment advice extraction directly from the attached
+    // document (a bank/customer notice that a payment has been or will be
+    // made — distinct from a remittance advice, which itemizes what
+    // invoices a payment covers; see extractArRemittanceDocument below).
+    extractArPaymentAdviceDocument: function(intakeSysId) {
+        var attachmentResult = this._prepareAttachmentForClaude('x_695068_bcfa_finance_intake', intakeSysId);
+        if (!attachmentResult.ok) {
+            return { ok: false, status: 'invalid_response', httpStatus: null, safeError: attachmentResult.safeError };
+        }
+
+        var spec = {
+            system: this._systemPrompt('ar-payment-advice-document-extraction-v1',
+                'You extract structured payment advice data directly from the attached document — a notice that a ' +
+                'customer has sent or will send a payment. Read only what is actually present. If a field is missing ' +
+                'or illegible, return an empty string (0 for amounts) and add a warning naming that field. Set the ' +
+                'top-level confidence between 0 and 1; optionally set field_confidence as a per-field confidence map.'),
+            messages: [{
+                role: 'user',
+                content: [
+                    attachmentResult.contentBlock,
+                    { type: 'text', text: 'Extract the payment advice details from this document.' },
+                ],
+            }],
+            tool: {
+                name: 'record_ar_payment_advice_extraction',
+                description: 'Records the structured AR payment advice extraction result read from the document.',
+                input_schema: {
+                    type: 'object',
+                    properties: {
+                        bank_reference: { type: 'string' },
+                        value_date: { type: 'string' },
+                        posting_date: { type: 'string' },
+                        customer_code: { type: 'string' },
+                        customer_name: { type: 'string' },
+                        currency: { type: 'string' },
+                        amount: { type: 'number' },
+                        remittance_reference: { type: 'string' },
+                        confidence: { type: 'number' },
+                        field_confidence: { type: 'object' },
+                        warnings: { type: 'array', items: { type: 'string' } },
+                    },
+                    required: ['bank_reference', 'currency', 'amount', 'confidence', 'warnings'],
+                },
+            },
+        };
+
+        return this.invoke(spec, {
+            operation: 'extract_ar_payment_advice_document',
+            sourceTable: 'x_695068_bcfa_finance_intake',
+            sourceRecord: intakeSysId,
+            promptVersion: 'ar-payment-advice-document-extraction-v1',
+        });
+    },
+
+    // Use Case 9 — AR remittance extraction directly from the attached
+    // document (itemizes which invoice(s) a payment covers, and any
+    // deduction taken). invoice_references is free text as printed on the
+    // document — resolving those references to actual AR Open Item/Payment
+    // records is FinanceDocumentIntakeService's job (deterministic), never
+    // Claude's.
+    extractArRemittanceDocument: function(intakeSysId) {
+        var attachmentResult = this._prepareAttachmentForClaude('x_695068_bcfa_finance_intake', intakeSysId);
+        if (!attachmentResult.ok) {
+            return { ok: false, status: 'invalid_response', httpStatus: null, safeError: attachmentResult.safeError };
+        }
+
+        var spec = {
+            system: this._systemPrompt('ar-remittance-document-extraction-v1',
+                'You extract structured remittance advice data directly from the attached document — a notice ' +
+                'itemizing which invoice(s) a payment applies to, and any deduction taken. Read only what is ' +
+                'actually present; list every invoice reference you can find in invoice_references exactly as ' +
+                'printed. If a field is missing or illegible, return an empty string (0 for amounts, empty array ' +
+                'for invoice_references) and add a warning naming that field. Set the top-level confidence between ' +
+                '0 and 1; optionally set field_confidence as a per-field confidence map.'),
+            messages: [{
+                role: 'user',
+                content: [
+                    attachmentResult.contentBlock,
+                    { type: 'text', text: 'Extract the remittance advice details from this document.' },
+                ],
+            }],
+            tool: {
+                name: 'record_ar_remittance_extraction',
+                description: 'Records the structured AR remittance extraction result read from the document.',
+                input_schema: {
+                    type: 'object',
+                    properties: {
+                        customer_code: { type: 'string' },
+                        customer_name: { type: 'string' },
+                        payment_reference: { type: 'string' },
+                        payment_amount: { type: 'number' },
+                        currency: { type: 'string' },
+                        payment_date: { type: 'string' },
+                        invoice_references: { type: 'array', items: { type: 'string' } },
+                        deduction_amount: { type: 'number' },
+                        deduction_reason: { type: 'string' },
+                        confidence: { type: 'number' },
+                        field_confidence: { type: 'object' },
+                        warnings: { type: 'array', items: { type: 'string' } },
+                    },
+                    required: ['payment_reference', 'invoice_references', 'confidence', 'warnings'],
+                },
+            },
+        };
+
+        return this.invoke(spec, {
+            operation: 'extract_ar_remittance_document',
+            sourceTable: 'x_695068_bcfa_finance_intake',
+            sourceRecord: intakeSysId,
+            promptVersion: 'ar-remittance-document-extraction-v1',
         });
     },
 

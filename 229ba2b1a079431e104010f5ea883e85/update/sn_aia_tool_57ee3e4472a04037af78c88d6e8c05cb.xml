@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sn_aia_tool">
+    <sn_aia_tool action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description>Looks up payments by exact bank reference and returns their sys_id, customer, amount, currency and state. Read-only.</description>
+        <input_schema>[{"name":"bank_reference","description":"Exact bank reference, e.g. BANK-AR-002","mandatory":true}]</input_schema>
+        <name>Find Payment (Communication)</name>
+        <record_type>custom</record_type>
+        <script><![CDATA[(function(inputs) {
+    return new x_695068_bcfa.FinanceAgentTools().findPayment(inputs.bank_reference);
+})(inputs);]]></script>
+        <sys_class_name>sn_aia_tool</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 02:15:35</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>57ee3e4472a04037af78c88d6e8c05cb</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Find Payment (Communication)</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sn_aia_tool_57ee3e4472a04037af78c88d6e8c05cb</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 02:15:35</sys_updated_on>
+        <target_document/>
+        <target_document_table>sn_aia_tool</target_document_table>
+        <type>script</type>
+    </sn_aia_tool>
+</record_update>

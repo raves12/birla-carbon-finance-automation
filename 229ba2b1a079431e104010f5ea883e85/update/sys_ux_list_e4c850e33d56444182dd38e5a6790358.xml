@@ -2,8 +2,8 @@
     <sys_ux_list action="INSERT_OR_UPDATE">
         <active>true</active>
         <category display_value="Accounts Payable">94c1902c1d9342d68648c3a231d20a9d</category>
-        <columns>invoice_number,vendor,gross_amount,currency,extraction_confidence</columns>
-        <condition table="x_695068_bcfa_ap_invoice">state=EXCEPTION<item endquery="false" field="state" goto="false" newquery="false" operator="=" or="false" value="EXCEPTION"/>
+        <columns>invoice_number,vendor,state,gross_amount,currency,extraction_confidence,purchase_order</columns>
+        <condition table="x_695068_bcfa_ap_invoice">stateINEXCEPTION,ON_HOLD,RESOLUTION,UNKNOWN_OUTCOME,FAILED<item endquery="false" field="state" goto="false" newquery="false" operator="IN" or="false" value="EXCEPTION,ON_HOLD,RESOLUTION,UNKNOWN_OUTCOME,FAILED"/>
         </condition>
         <configuration display_value="BCFA Workspace List Configuration">fb16c25153c543d2a3b3d6085a42ac55</configuration>
         <fixed_query/>
@@ -53,7 +53,7 @@
         <highlight_content_pattern/>
         <list_attributes/>
         <max_characters>4000</max_characters>
-        <order>30</order>
+        <order>20</order>
         <override_word_wrap_user_pref>false</override_word_wrap_user_pref>
         <roles/>
         <sys_class_name>sys_ux_list</sys_class_name>
@@ -72,7 +72,7 @@
         <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
         <sys_updated_on>2026-09-17 14:27:49</sys_updated_on>
         <table>x_695068_bcfa_ap_invoice</table>
-        <title>AP Invoices — Exception</title>
+        <title>Invoice Review</title>
         <view/>
         <word_wrap>false</word_wrap>
     </sys_ux_list>

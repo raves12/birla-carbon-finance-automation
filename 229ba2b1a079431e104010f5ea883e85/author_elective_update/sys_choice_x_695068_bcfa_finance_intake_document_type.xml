@@ -1,51 +1,95 @@
-<?xml version="1.0"?>
-<record_update>
-  <sys_choice_set action="INSERT_OR_UPDATE" field="document_type" table="x_695068_bcfa_finance_intake" version="3" apply_defaults="true">
-    <sys_choice_set action="INSERT_OR_UPDATE" apply_defaults="true">
-      <sys_id>e272ae7667284ea7b44f80e7cd1b3228</sys_id>
-      <element>document_type</element>
-      <sys_update_name>sys_choice_x_695068_bcfa_finance_intake_document_type</sys_update_name>
-      <name>x_695068_bcfa_finance_intake</name>
-      <sys_class_name>sys_choice_set</sys_class_name>
-      <sys_scope display_value="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_scope>
-      <sys_package display_value="x_695068_bcfa" source="229ba2b1a079431e104010f5ea883e85">229ba2b1a079431e104010f5ea883e85</sys_package>
-      <sys_name>document_type</sys_name>
-    </sys_choice_set>
-    <sys_choice action="INSERT_OR_UPDATE" apply_defaults="true">
-      <sys_id>344028f55f614df980b62b6eff76fa40</sys_id>
-      <name>x_695068_bcfa_finance_intake</name>
-      <element>document_type</element>
-      <label>Unknown</label>
-      <value>unknown</value>
-      <sequence>1</sequence>
-      <language>en</language>
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_choice action="INSERT_OR_UPDATE" field="document_type" table="x_695068_bcfa_finance_intake" version="3">
+        <sys_choice_set action="INSERT_OR_UPDATE">
+            <element>document_type</element>
+            <name>x_695068_bcfa_finance_intake</name>
+            <sys_class_name>sys_choice_set</sys_class_name>
+            <sys_created_by>RaviMAdmin</sys_created_by>
+            <sys_created_on>2026-09-25 11:44:27</sys_created_on>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>document_type</sys_name>
+            <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+            <sys_update_name>sys_choice_x_695068_bcfa_finance_intake_document_type</sys_update_name>
+            <sys_updated_by>RaviMAdmin</sys_updated_by>
+            <sys_updated_on>2026-09-25 11:44:27</sys_updated_on>
+        </sys_choice_set>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>document_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Unknown</label>
+            <language>en</language>
+            <name>x_695068_bcfa_finance_intake</name>
+            <sequence>1</sequence>
+            <synonyms/>
+            <sys_created_by>RaviMAdmin</sys_created_by>
+            <sys_created_on>2026-09-25 11:44:40</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>RaviMAdmin</sys_updated_by>
+            <sys_updated_on>2026-09-25 11:44:40</sys_updated_on>
+            <value>unknown</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>document_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>AP Invoice</label>
+            <language>en</language>
+            <name>x_695068_bcfa_finance_intake</name>
+            <sequence>2</sequence>
+            <synonyms/>
+            <sys_created_by>RaviMAdmin</sys_created_by>
+            <sys_created_on>2026-09-25 11:44:40</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>RaviMAdmin</sys_updated_by>
+            <sys_updated_on>2026-09-25 11:44:40</sys_updated_on>
+            <value>ap_invoice</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>document_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>AR Payment Advice</label>
+            <language>en</language>
+            <name>x_695068_bcfa_finance_intake</name>
+            <sequence>3</sequence>
+            <synonyms/>
+            <sys_created_by>RaviMAdmin</sys_created_by>
+            <sys_created_on>2026-09-25 11:44:40</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>RaviMAdmin</sys_updated_by>
+            <sys_updated_on>2026-09-25 11:44:40</sys_updated_on>
+            <value>ar_payment_advice</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>document_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>AR Remittance</label>
+            <language>en</language>
+            <name>x_695068_bcfa_finance_intake</name>
+            <sequence>4</sequence>
+            <synonyms/>
+            <sys_created_by>RaviMAdmin</sys_created_by>
+            <sys_created_on>2026-09-25 11:44:40</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>RaviMAdmin</sys_updated_by>
+            <sys_updated_on>2026-09-25 11:44:40</sys_updated_on>
+            <value>ar_remittance</value>
+        </sys_choice>
     </sys_choice>
-    <sys_choice action="INSERT_OR_UPDATE" apply_defaults="true">
-      <sys_id>b5988a43975041c6895e04320e5c48be</sys_id>
-      <name>x_695068_bcfa_finance_intake</name>
-      <element>document_type</element>
-      <label>AP Invoice</label>
-      <value>ap_invoice</value>
-      <sequence>2</sequence>
-      <language>en</language>
-    </sys_choice>
-    <sys_choice action="INSERT_OR_UPDATE" apply_defaults="true">
-      <sys_id>ad6a683b8b2d4ce88e0f3e53a87dec5a</sys_id>
-      <name>x_695068_bcfa_finance_intake</name>
-      <element>document_type</element>
-      <label>AR Payment Advice</label>
-      <value>ar_payment_advice</value>
-      <sequence>3</sequence>
-      <language>en</language>
-    </sys_choice>
-    <sys_choice action="INSERT_OR_UPDATE" apply_defaults="true">
-      <sys_id>87754c3433e74ec49d4949ed9d697e0c</sys_id>
-      <name>x_695068_bcfa_finance_intake</name>
-      <element>document_type</element>
-      <label>AR Remittance</label>
-      <value>ar_remittance</value>
-      <sequence>4</sequence>
-      <language>en</language>
-    </sys_choice>
-  </sys_choice_set>
 </record_update>

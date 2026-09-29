@@ -3,7 +3,7 @@
         <sys_documentation action="INSERT_OR_UPDATE">
             <element>source</element>
             <help/>
-            <hint>Records which engine actually produced this extraction row. Claude is tried first when x_695068_bcfa.claude.enabled is true; the simulated fallback runs only if Claude is disabled or unavailable.</hint>
+            <hint>Records which engine produced this extraction row. Currently the simulated extraction; Claude rows are historical (removed in Phase 34).</hint>
             <label>Source</label>
             <language>en</language>
             <name>x_695068_bcfa_ap_extraction</name>

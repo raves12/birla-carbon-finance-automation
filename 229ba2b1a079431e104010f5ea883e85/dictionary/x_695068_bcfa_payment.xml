@@ -11,11 +11,13 @@
         <element label="Value Date" max_length="40" name="value_date" type="glide_date"/>
         <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Customer" max_length="32" name="customer" reference="x_695068_bcfa_customer" type="reference"/>
         <element label="Bank Account" max_length="40" name="bank_account" type="string"/>
-        <element hint="Managed by the Cash Application StateModel" label="State" max_length="40" name="state" type="string"/>
+        <element hint="Managed by the Cash Application Lifecycle state model; only its transitions are allowed (Phase 26)." label="State" max_length="40" name="state" read_only="true" type="string"/>
         <element label="Idempotency Key" max_length="128" name="idempotency_key" type="string" unique="true"/>
+        <element label="Review Summary" max_length="8000" name="review_summary" read_only="true" type="string"/>
         <element label="Posting Date" max_length="40" name="posting_date" type="glide_date"/>
         <element display="true" label="Bank Reference" mandatory="true" max_length="60" name="bank_reference" type="string"/>
         <element label="Currency" max_length="3" name="currency" type="string"/>
+        <element label="AI Match Explanation (advisory)" max_length="4000" name="ai_recommendation" read_only="true" type="string"/>
         <index name="index">
             <element name="customer"/>
         </index>

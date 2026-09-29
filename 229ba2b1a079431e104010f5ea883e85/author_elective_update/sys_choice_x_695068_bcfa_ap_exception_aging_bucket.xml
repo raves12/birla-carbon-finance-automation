@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_choice action="INSERT_OR_UPDATE" field="aging_bucket" table="x_695068_bcfa_ap_exception" version="3">
+        <sys_choice_set action="INSERT_OR_UPDATE">
+            <element>aging_bucket</element>
+            <name>x_695068_bcfa_ap_exception</name>
+            <sys_class_name>sys_choice_set</sys_class_name>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 09:15:26</sys_created_on>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>aging_bucket</sys_name>
+            <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+            <sys_update_name>sys_choice_x_695068_bcfa_ap_exception_aging_bucket</sys_update_name>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 09:15:26</sys_updated_on>
+        </sys_choice_set>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aging_bucket</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Under 1 day</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ap_exception</name>
+            <sequence>1</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 09:15:26</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 09:15:26</sys_updated_on>
+            <value>lt_1d</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aging_bucket</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>1-3 days</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ap_exception</name>
+            <sequence>2</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 09:15:26</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 09:15:26</sys_updated_on>
+            <value>1_3d</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aging_bucket</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>3-7 days</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ap_exception</name>
+            <sequence>3</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 09:15:26</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 09:15:26</sys_updated_on>
+            <value>3_7d</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aging_bucket</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Over 7 days</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ap_exception</name>
+            <sequence>4</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 09:15:26</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 09:15:26</sys_updated_on>
+            <value>gt_7d</value>
+        </sys_choice>
+    </sys_choice>
+</record_update>

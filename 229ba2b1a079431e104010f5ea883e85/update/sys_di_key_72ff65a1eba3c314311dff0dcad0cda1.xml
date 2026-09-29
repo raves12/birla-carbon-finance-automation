@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_di_key">
+    <sys_di_key action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <additional_details/>
+        <description/>
+        <display_name>Payment Reference</display_name>
+        <group_index>0</group_index>
+        <key_config/>
+        <key_group/>
+        <mandatory>true</mandatory>
+        <metadata/>
+        <name>paymentreference</name>
+        <order>2</order>
+        <prediction_method/>
+        <stp_threshold/>
+        <synonym/>
+        <sys_class_name>sys_di_key</sys_class_name>
+        <sys_created_by>RaviMAdmin</sys_created_by>
+        <sys_created_on>2026-09-25 12:52:11</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>72ff65a1eba3c314311dff0dcad0cda1</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Payment Reference</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_di_key_72ff65a1eba3c314311dff0dcad0cda1</sys_update_name>
+        <sys_updated_by>RaviMAdmin</sys_updated_by>
+        <sys_updated_on>2026-09-25 12:52:11</sys_updated_on>
+        <target_field/>
+        <target_table>x_695068_bcfa_remittance</target_table>
+        <task_definition display_value="BCFA AR Remittance Extraction">456fe961eba3c314311dff0dcad0cdf3</task_definition>
+        <total_used_positive_samples>0</total_used_positive_samples>
+        <type>Text</type>
+    </sys_di_key>
+</record_update>

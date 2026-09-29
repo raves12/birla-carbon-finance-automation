@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sn_aia_agent_tool_m2m">
+    <sn_aia_agent_tool_m2m action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <agent display_value="BCFA Customer Resolution Agent">132a20eb57aa4ed5971db8a267ce6395</agent>
+        <description>Finds customers whose name or active alias (legal, trade, bank remitter name, known misspelling) contains a keyword, with the evidence matched and each candidate's open items and open amount. Pass one distinctive word or short phrase, not a full sentence. Read-only.</description>
+        <display_output>false</display_output>
+        <document_status/>
+        <execution_mode>autopilot</execution_mode>
+        <inputs>[{"name":"name_keyword","description":"A distinctive keyword from the remitter or customer name, at least 3 characters, e.g. LONE STAR","mandatory":true}]</inputs>
+        <max_auto_executions>10</max_auto_executions>
+        <name>Search Customer Candidates</name>
+        <output_transformation_strategy/>
+        <post_message>Customer search complete.</post_message>
+        <post_processing_script/>
+        <pre_message>Searching customers and aliases...</pre_message>
+        <pre_run>false</pre_run>
+        <sys_class_name>sn_aia_agent_tool_m2m</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 02:15:36</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>994309093bf14feab7a9f782a919c7f9</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Search Customer Candidates</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sn_aia_agent_tool_m2m_994309093bf14feab7a9f782a919c7f9</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 02:15:36</sys_updated_on>
+        <timeout/>
+        <tool display_value="Search Customer Candidates">db6fb33083c849cabe13caf230a7fc94</tool>
+        <tool_attributes>{}</tool_attributes>
+        <transformation_instructions/>
+    </sn_aia_agent_tool_m2m>
+</record_update>

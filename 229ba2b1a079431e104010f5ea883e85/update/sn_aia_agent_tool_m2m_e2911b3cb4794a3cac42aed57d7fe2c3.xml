@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sn_aia_agent_tool_m2m">
+    <sn_aia_agent_tool_m2m action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <agent display_value="BCFA Customer Resolution Agent">132a20eb57aa4ed5971db8a267ce6395</agent>
+        <description>Looks up payments by exact bank reference and returns their sys_id, customer, amount, currency and state. Read-only.</description>
+        <display_output>false</display_output>
+        <document_status/>
+        <execution_mode>autopilot</execution_mode>
+        <inputs>[{"name":"bank_reference","description":"Exact bank reference, e.g. BANK-AR-005","mandatory":true}]</inputs>
+        <max_auto_executions>10</max_auto_executions>
+        <name>Find Payment (Customer Resolution)</name>
+        <output_transformation_strategy/>
+        <post_message>Payment lookup complete.</post_message>
+        <post_processing_script/>
+        <pre_message>Looking up the payment...</pre_message>
+        <pre_run>false</pre_run>
+        <sys_class_name>sn_aia_agent_tool_m2m</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 02:15:37</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>e2911b3cb4794a3cac42aed57d7fe2c3</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Find Payment (Customer Resolution)</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sn_aia_agent_tool_m2m_e2911b3cb4794a3cac42aed57d7fe2c3</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 02:15:37</sys_updated_on>
+        <timeout/>
+        <tool display_value="Find Payment (Customer Resolution)">f1dc57d300fa49a585a752c771293af0</tool>
+        <tool_attributes>{}</tool_attributes>
+        <transformation_instructions/>
+    </sn_aia_agent_tool_m2m>
+</record_update>

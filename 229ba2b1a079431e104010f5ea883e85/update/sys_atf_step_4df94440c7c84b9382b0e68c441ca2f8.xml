@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_atf_step">
+    <sys_atf_step action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <callable_outputs/>
+        <copied_from/>
+        <description/>
+        <display_name>Run Server Side Script</display_name>
+        <inputs/>
+        <mugshots_cache_json/>
+        <notes/>
+        <order>1</order>
+        <step_config display_value="Run Server Side Script">41de4a935332120028bc29cac2dc349a</step_config>
+        <sys_class_name>sys_atf_step</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 08:14:15</sys_created_on>
+        <sys_id>4df94440c7c84b9382b0e68c441ca2f8</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Run Server Side Script</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_atf_step_4df94440c7c84b9382b0e68c441ca2f8</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 08:14:15</sys_updated_on>
+        <table/>
+        <test display_value="Matching Engine — AR reference, amount, currency, alias, combinations, residuals">2a4aad791a2f4f1989f5d1ae5a3afa94</test>
+        <timeout/>
+        <warning_message/>
+    </sys_atf_step>
+    <sys_variable_value action="delete_multiple" query="document_key=4df94440c7c84b9382b0e68c441ca2f8"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>4df94440c7c84b9382b0e68c441ca2f8</document_key>
+        <order>200</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 08:14:15</sys_created_on>
+        <sys_id>8110832511d940f48f2137d502e89b6a</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 08:14:15</sys_updated_on>
+        <value>
+                (function(outputs, steps, params, stepResult, assertEqual) {
+                    var me = new MatchingEngine();
+                    var tag = 'T14R' + gs.generateGUID().substring(0, 6).toUpperCase();
+                    var ins = function(table, fields) {
+                        var g = new GlideRecord(table);
+                        g.initialize();
+                        for (var k in fields) g.setValue(k, fields[k]);
+                        return g.insert();
+                    };
+                    var c1 = ins('x_695068_bcfa_customer', { customer_code: tag + 'C1', name: tag + ' Alpha Tyres Ltd', currency: 'INR', active: true });
+                    var c2 = ins('x_695068_bcfa_customer', { customer_code: tag + 'C2', name: tag + ' Beta Rubber Ltd', currency: 'INR', active: true });
+                    var item = function(customer, suffix, amount, currency) {
+                        return ins('x_695068_bcfa_ar_open_item', { item_number: tag + suffix, customer: customer, currency: currency || 'INR',
+                            invoice_amount: amount, open_amount: amount, status: 'open' });
+                    };
+                    item(c1, 'I1', 50000); item(c1, 'I2', 30000); item(c1, 'I3', 20000); item(c1, 'I5', 30000);
+                    item(c1, 'I4', 50000, 'EUR');
+                    item(c2, 'J1', 50000); item(c2, 'J2', 30000); item(c2, 'J3', 12345, 'EUR');
+                    var payment = function(customer, amount, currency) {
+                        return ins('x_695068_bcfa_payment', { bank_reference: tag + '-' + gs.generateGUID().substring(0, 6), customer: customer || '',
+                            currency: currency || 'INR', amount: amount, state: 'MATCHING', idempotency_key: tag + gs.generateGUID() });
+                    };
+
+                    var exact = me.exactMatch(payment(c1, 50000));
+                    assertEqual({ name: 'exact amount matches the single INR item (EUR item of the same amount ignored)', shouldbe: true, value: exact.matched });
+                    var crossCurrency = me.exactMatch(payment(c2, 12345));
+                    assertEqual({ name: 'an INR payment never matches an EUR item', shouldbe: false, value: crossCurrency.matched });
+
+                    var unique = me.findExactCombinations(payment(c2, 80000), 3);
+                    assertEqual({ name: 'unique combination 50000 + 30000 found', shouldbe: 1, value: unique.solutions.length });
+                    var ambiguous = me.findExactCombinations(payment(c1, 80000), 3);
+                    assertEqual({ name: 'several exact combinations are reported, not chosen', shouldbe: true, value: ambiguous.solutions.length &gt; 1 });
+
+                    var remitPay = payment(c1, 50000);
+                    var remit = function(pay, lines) {
+                        ins('x_695068_bcfa_remittance', { payment: pay, remittance_reference: tag, extracted_fields: JSON.stringify({ invoice_lines: lines }) });
+                    };
+                    remit(remitPay, [{ invoice_reference: tag + 'I1', amount_applied: 50000 }]);
+                    assertEqual({ name: 'remittance reference resolves to the open item', shouldbe: true, value: me.resolveRemittanceReferences(remitPay).usable });
+                    var eurRemit = payment(c1, 50000);
+                    remit(eurRemit, [{ invoice_reference: tag + 'I4', amount_applied: 50000 }]);
+                    assertEqual({ name: 'remittance reference in another currency is flagged', shouldbe: 1, value: me.resolveRemittanceReferences(eurRemit).currencyMismatch.length });
+                    var unknownRemit = payment(c1, 1000);
+                    remit(unknownRemit, [{ invoice_reference: tag + 'NOPE', amount_applied: 1000 }]);
+                    assertEqual({ name: 'unknown remittance reference is unresolved', shouldbe: 1, value: me.resolveRemittanceReferences(unknownRemit).unresolved.length });
+
+                    ins('x_695068_bcfa_customer_alias', { customer: c1, alias_name: tag + ' ALPHA TYRES', alias_type: 'trade_name', confidence: 1, active: true });
+                    var alias = me.resolveCustomerByAlias(tag.toLowerCase() + ' alpha-tyres.');
+                    assertEqual({ name: 'normalized alias resolves to the customer', shouldbe: c1, value: alias.customerSysId });
+                    ins('x_695068_bcfa_customer_alias', { customer: c1, alias_name: tag + ' SHARED NAME', alias_type: 'trade_name', confidence: 1, active: true });
+                    ins('x_695068_bcfa_customer_alias', { customer: c2, alias_name: tag + ' SHARED NAME', alias_type: 'trade_name', confidence: 1, active: true });
+                    var shared = me.resolveCustomerByAlias(tag + ' Shared Name');
+                    assertEqual({ name: 'a name pointing to two customers is ambiguous, not resolved', shouldbe: true, value: !shared.resolved &amp;&amp; shared.ambiguous === true });
+                    var byName = me.resolveCustomerByAlias(tag + ' BETA RUBBER LTD');
+                    assertEqual({ name: 'exact customer name resolves', shouldbe: c2, value: byName.customerSysId });
+
+                    var bank = me.classifyResidual(payment(c1, 79500), 500);
+                    assertEqual({ name: 'residual 500 within the bank charge limit is suggested as bank_charge', shouldbe: 'bank_charge', value: bank.type });
+                    var note = ins('x_695068_bcfa_credit_note', { credit_note_number: tag + 'CN1', customer: c2, amount: 750, open_amount: 750, status: 'open' });
+                    var credit = me.classifyResidual(payment(c2, 1000), 750);
+                    assertEqual({ name: 'residual equal to an open credit note is suggested as credit_note_netting', shouldbe: note, value: credit.creditNoteSysId });
+                    var none = me.classifyResidual(payment(c2, 10000), 5000);
+                    assertEqual({ name: 'large residual with no credit note gets no suggestion', shouldbe: null, value: none.type });
+
+                    stepResult.setOutputMessage('AR matching rules checked with test tag ' + tag);
+                })(outputs, steps, params, stepResult, assertEqual);
+            </value>
+        <variable display_value="Test script">989d9e235324220002c6435723dc3484</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>4df94440c7c84b9382b0e68c441ca2f8</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 08:14:15</sys_created_on>
+        <sys_id>de6fb26d94fc4c91bfd2566f0e4c8a8c</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 08:14:15</sys_updated_on>
+        <value>3.1</value>
+        <variable display_value="Jasmine version">42f2564b73031300440211d8faf6a777</variable>
+    </sys_variable_value>
+</record_update>

@@ -1,13 +1,25 @@
-<?xml version="1.0"?>
-<record_update table="sys_ux_form_action">
-  <sys_ux_form_action action="INSERT_OR_UPDATE" apply_defaults="true">
-    <sys_id>aaf87f83a182415b955ee77df5673e82</sys_id>
-    <sys_scope display_value="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_scope>
-    <sys_update_name>sys_ux_form_action_aaf87f83a182415b955ee77df5673e82</sys_update_name>
-    <action_type>ui_action</action_type>
-    <active>true</active>
-    <name>Re-run Validation</name>
-    <table>x_695068_bcfa_ap_invoice</table>
-    <ui_action>2281a5684eea4af5b8e9850af7186ac9</ui_action>
-  </sys_ux_form_action>
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ux_form_action">
+    <sys_ux_form_action action="INSERT_OR_UPDATE">
+        <action_type>ui_action</action_type>
+        <active>true</active>
+        <declarative_action/>
+        <description/>
+        <name>Re-run Validation</name>
+        <specificity/>
+        <sys_class_name>sys_ux_form_action</sys_class_name>
+        <sys_created_by>RaviMAdmin</sys_created_by>
+        <sys_created_on>2026-09-25 11:44:38</sys_created_on>
+        <sys_id>aaf87f83a182415b955ee77df5673e82</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Re-run Validation</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_ux_form_action_aaf87f83a182415b955ee77df5673e82</sys_update_name>
+        <sys_updated_by>RaviMAdmin</sys_updated_by>
+        <sys_updated_on>2026-09-25 11:44:38</sys_updated_on>
+        <table>x_695068_bcfa_ap_invoice</table>
+        <ui_action display_value="Re-run Validation">2281a5684eea4af5b8e9850af7186ac9</ui_action>
+    </sys_ux_form_action>
+    <sys_translated_text action="delete_multiple" query="documentkey=aaf87f83a182415b955ee77df5673e82"/>
 </record_update>

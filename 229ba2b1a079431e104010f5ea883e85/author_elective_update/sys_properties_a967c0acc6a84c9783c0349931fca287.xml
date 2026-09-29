@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_properties">
+    <sys_properties action="DELETE">
+        <choices/>
+        <description>Master kill-switch for the Claude integration layer. When false, BCClaudeClient.invoke() short-circuits to a disabled result and no outbound call is made — the manual/simulated process continues to work.</description>
+        <ignore_cache>false</ignore_cache>
+        <is_private>false</is_private>
+        <name>x_695068_bcfa.claude.enabled</name>
+        <read_roles/>
+        <suffix>claude.enabled</suffix>
+        <sys_class_name>sys_properties</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 09:22:44</sys_created_on>
+        <sys_id>a967c0acc6a84c9783c0349931fca287</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>x_695068_bcfa.claude.enabled</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_properties_a967c0acc6a84c9783c0349931fca287</sys_update_name>
+        <sys_updated_by>system</sys_updated_by>
+        <sys_updated_on>2026-09-17 11:03:43</sys_updated_on>
+        <type>boolean</type>
+        <value>true</value>
+        <write_roles/>
+    </sys_properties>
+    <sys_translated_text action="DELETE" query="documentkey=a967c0acc6a84c9783c0349931fca287"/>
+    <sys_update_version action="INSERT_OR_UPDATE">
+        <action>DELETE</action>
+        <application display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</application>
+        <file_path/>
+        <instance_id>fc123fec1b958a5065324089bd4bcb56</instance_id>
+        <instance_name>pwcmanagementservicesdemo01</instance_name>
+        <name>sys_properties_a967c0acc6a84c9783c0349931fca287</name>
+        <payload><![CDATA[<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_properties"><sys_properties action="INSERT_OR_UPDATE"><choices/><description>Master kill-switch for the Claude integration layer. When false, BCClaudeClient.invoke() short-circuits to a disabled result and no outbound call is made — the manual/simulated process continues to work.</description><ignore_cache>false</ignore_cache><is_private>false</is_private><name>x_695068_bcfa.claude.enabled</name><read_roles/><suffix>claude.enabled</suffix><sys_class_name>sys_properties</sys_class_name><sys_created_by>Ravi_MCP_Admin</sys_created_by><sys_created_on>2026-09-17 09:22:44</sys_created_on><sys_id>a967c0acc6a84c9783c0349931fca287</sys_id><sys_mod_count>2</sys_mod_count><sys_name>x_695068_bcfa.claude.enabled</sys_name><sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package><sys_policy/><sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope><sys_update_name>sys_properties_a967c0acc6a84c9783c0349931fca287</sys_update_name><sys_updated_by>system</sys_updated_by><sys_updated_on>2026-09-17 11:03:43</sys_updated_on><type>boolean</type><value>true</value><write_roles/></sys_properties><sys_translated_text action="delete_multiple" query="documentkey=a967c0acc6a84c9783c0349931fca287"/></record_update>]]></payload>
+        <payload_hash>355666046</payload_hash>
+        <record_name>x_695068_bcfa.claude.enabled</record_name>
+        <reverted_from/>
+        <source>4bdfb6f4eb670fd0311dff0dcad0cd03</source>
+        <source_table>sys_update_set</source_table>
+        <state>previous</state>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-23 10:47:58</sys_created_on>
+        <sys_id>735007f8eb670fd0311dff0dcad0cd0d</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_recorded_at>1a0cde122550000001</sys_recorded_at>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-23 10:47:58</sys_updated_on>
+        <type>System Property</type>
+        <update_guid>bafb4847b1db8310b8537bc15fd97e75</update_guid>
+        <update_guid_history>bafb4847b1db8310b8537bc15fd97e75:0,d87a08cf749b8310f66eb37ec72efe15:355666046,7f6a84cfb19b8310ca669fa8bc9453c7:-141533103,6c53fbb21a9783101eaccca6ceeb6e5c:-948546589</update_guid_history>
+    </sys_update_version>
+    <sys_metadata_delete action="INSERT_OR_UPDATE">
+        <sys_audit_delete/>
+        <sys_class_name>sys_metadata_delete</sys_class_name>
+        <sys_created_by>system</sys_created_by>
+        <sys_created_on>2026-09-29 08:12:31</sys_created_on>
+        <sys_db_object display_value="" name="sys_properties">sys_properties</sys_db_object>
+        <sys_id>0d0c5eef6ede421e8122f0df661a56a4</sys_id>
+        <sys_metadata>a967c0acc6a84c9783c0349931fca287</sys_metadata>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_695068_bcfa.claude.enabled</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_parent/>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_scope_delete display_value="">2a2ac8703b554c088130bcc4b05f6e71</sys_scope_delete>
+        <sys_update_name>sys_properties_a967c0acc6a84c9783c0349931fca287</sys_update_name>
+        <sys_update_version display_value="sys_properties_a967c0acc6a84c9783c0349931fca287">735007f8eb670fd0311dff0dcad0cd0d</sys_update_version>
+        <sys_updated_by>system</sys_updated_by>
+        <sys_updated_on>2026-09-29 08:12:31</sys_updated_on>
+    </sys_metadata_delete>
+</record_update>

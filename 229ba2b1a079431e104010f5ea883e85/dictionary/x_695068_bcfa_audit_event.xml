@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?><database>
     <element db_object_id="56051bf2835f43103d769be0deaad3eb" label="Audit Event" max_length="40" name="x_695068_bcfa_audit_event" type="collection">
         <element label="Source Record" max_length="32" name="source_record" type="string"/>
+        <element label="Event Sequence" max_length="20" name="event_sequence" type="string"/>
+        <element label="AI Agent" max_length="100" name="ai_agent" type="string"/>
         <element attributes="edge_encryption_enabled=true" label="Before Value" max_length="4000" name="before_value" type="json"/>
         <element label="Occurred At" max_length="40" name="occurred_at" type="glide_date_time"/>
         <element label="Correlation ID" max_length="64" name="correlation_id" type="string"/>
@@ -8,21 +10,49 @@
             <choice>
                 <element inactive_on_update="false" label="System" sequence="2" value="system"/>
                 <element inactive_on_update="false" label="Simulated AI (advisory, legacy)" sequence="3" value="simulated_ai"/>
-                <element inactive_on_update="false" label="Claude (advisory)" sequence="4" value="claude_ai"/>
+                <element inactive_on_update="false" label="Now Assist (advisory)" sequence="5" value="now_assist_ai"/>
+                <element inactive_on_update="false" label="Claude (legacy, removed in Phase 34)" sequence="4" value="claude_ai"/>
                 <element inactive_on_update="false" label="User" sequence="1" value="user"/>
+            </choice>
+        </element>
+        <element choice="1" default="platform" label="Process" max_length="40" name="process" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Accounts Payable" sequence="1" value="ap"/>
+                <element inactive_on_update="false" label="Accounts Receivable" sequence="2" value="ar"/>
+                <element inactive_on_update="false" label="Platform" sequence="5" value="platform"/>
+                <element inactive_on_update="false" label="Document Intake" sequence="3" value="intake"/>
+                <element inactive_on_update="false" label="Integration" sequence="4" value="integration"/>
             </choice>
         </element>
         <element attributes="edge_encryption_enabled=true" display="true" label="Event Type" mandatory="true" max_length="40" name="event_type" type="choice">
             <choice>
-                <element inactive_on_update="false" label="State Transition" sequence="1" value="state_transition"/>
-                <element inactive_on_update="false" label="Approval Decision" sequence="2" value="approval_decision"/>
-                <element inactive_on_update="false" label="Exception Resolved" sequence="6" value="exception_resolved"/>
-                <element inactive_on_update="false" label="Integration Call" sequence="3" value="integration_call"/>
-                <element inactive_on_update="false" label="AI Recommendation" sequence="4" value="ai_recommendation"/>
-                <element inactive_on_update="false" label="Exception Created" sequence="5" value="exception_created"/>
+                <element inactive_on_update="false" label="Approval Requested" sequence="13" value="approval_requested"/>
+                <element inactive_on_update="false" label="Allocation" sequence="16" value="allocation"/>
+                <element inactive_on_update="false" label="AI Agent Invocation" sequence="10" value="ai_invocation"/>
+                <element inactive_on_update="false" label="Exception Escalated" sequence="9" value="exception_escalated"/>
+                <element inactive_on_update="false" label="Document Uploaded" sequence="2" value="document_uploaded"/>
+                <element inactive_on_update="false" label="SAP / Mock Result" sequence="19" value="integration_result"/>
+                <element inactive_on_update="false" label="Human Decision (legacy)" sequence="23" value="human_decision"/>
+                <element inactive_on_update="false" label="State Transition" sequence="22" value="state_transition"/>
+                <element inactive_on_update="false" label="Human Review" sequence="12" value="human_review"/>
+                <element inactive_on_update="false" label="Approval Decision" sequence="14" value="approval_decision"/>
+                <element inactive_on_update="false" label="Closure" sequence="21" value="closure"/>
+                <element inactive_on_update="false" label="Field Corrected" sequence="4" value="field_corrected"/>
+                <element inactive_on_update="false" label="Record Created" sequence="1" value="record_created"/>
+                <element inactive_on_update="false" label="Override" sequence="15" value="override"/>
+                <element inactive_on_update="false" label="Exception Resolved" sequence="8" value="exception_resolved"/>
+                <element inactive_on_update="false" label="Integration Call" sequence="18" value="integration_call"/>
+                <element inactive_on_update="false" label="Deduction" sequence="17" value="deduction"/>
+                <element inactive_on_update="false" label="AI Recommendation" sequence="11" value="ai_recommendation"/>
+                <element inactive_on_update="false" label="Match" sequence="6" value="match"/>
+                <element inactive_on_update="false" label="Exception Created" sequence="7" value="exception_created"/>
+                <element inactive_on_update="false" label="Document Extracted" sequence="3" value="document_extracted"/>
+                <element inactive_on_update="false" label="Rule Evaluated" sequence="5" value="rule_evaluated"/>
+                <element inactive_on_update="false" label="Reconciliation" sequence="20" value="reconciliation"/>
             </choice>
         </element>
         <element label="Source Table" max_length="80" name="source_table" type="string"/>
+        <element label="Reason" max_length="4000" name="reason" type="string"/>
         <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Actor" max_length="32" name="actor" reference="sys_user" type="reference"/>
         <element label="Description" max_length="4000" name="description" type="string"/>
         <element attributes="edge_encryption_enabled=true" label="After Value" max_length="4000" name="after_value" type="json"/>

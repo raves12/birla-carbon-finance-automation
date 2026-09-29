@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sn_aia_agent">
+    <sn_aia_agent action="INSERT_OR_UPDATE">
+        <advanced_mode>false</advanced_mode>
+        <agent_type>internal</agent_type>
+        <applicability_script/>
+        <channel>nap</channel>
+        <compiled_handbook/>
+        <condition/>
+        <context_processing_script><![CDATA[/*
+ * Available Variables:
+ * - task: The task provided to agent to solve either by orchestrator or user(incase of only agent execution i.e agent is invoked as seperate entity instead from a workflow).
+ * - user_utterance: The user utterance provided. and task = user_utterance in case of individual agent execution.
+ * - agent_id: The agent id.
+ * - context: An object that carries additional contextual information for the agent.
+ * It always includes a "pageContext" and may include a "triggerContext",
+ * depending on how and from where the agent is invoked.
+ *
+ * Behavior by invocation type:
+ * ---------------------------------
+ * - When invoked via the startAiAgentConversation API:
+ * If a "contextMemory" parameter is provided in the API request,
+ * it will be available here as the "triggerContext".
+ * The "pageContext" is always present in this call, regardless
+ * of whether the agent is executed individually or as part of a use case.
+ * Example:
+ * {
+ * pageContext: { ... },
+ * triggerContext: { ... } // Derived from contextMemory (if passed)
+ * }
+ *
+ * - When invoked as part of a use case or workflow:
+ * The "pageContext" and "triggerContext" objects available here
+ * may have been *modified* by the use case's context processing script.
+ * This means the use case may alter, extend, or overwrite values
+ * from the original "pageContext" or "triggerContext"
+ * before the context reaches the agent.
+ * If the use case was originally triggered via the API,
+ * the initial "triggerContext" is still derived from the
+ * "contextMemory" parameter, but its contents may have been updated
+ * by the use case logic.
+ *
+ * - When executed directly (standalone agent execution):
+ * The "pageContext" will always be present (default or empty),
+ * and the "triggerContext" will only be populated if explicitly
+ * passed through the API call.
+ * Return an modified context like: { pageContext : {},triggerContext:{} }
+ */
+(function(task, user_utterance, agent_id, context) {
+	return {
+		pageContext : context?.pageContext,
+		triggerContext : context?.triggerContext
+	};
+})(task,user_utterance, agent_id, context);]]></context_processing_script>
+        <description>Analyzes a payment reference, remittance, remitter name, customer aliases and open items and returns ranked customer candidates with score, evidence and reason. Advisory only: never assigns a customer.</description>
+        <external_agent_configuration/>
+        <inputs/>
+        <instructions>You identify which customer most likely sent a payment, for a human cash application reviewer. You never assign the customer yourself.
+
+Steps:
+1. If you were given a payment sys_id, use it; if you were given a bank reference, call Find Payment (Customer Resolution).
+2. Call Get Payment Context (Customer Resolution) to read the payment, remittance, existing match candidates and exceptions.
+3. Pick 1-3 distinctive keywords from the remitter or customer names in the evidence (e.g. a company name without "GmbH", "Ltd", "Corp"). Call Search Customer Candidates once per keyword.
+4. Rank the candidates. Score each from 0.00 to 1.00 using: exact name or legal-name match (strong), bank remitter alias match weighted by its alias weight (strong), trade name or known misspelling (medium), currency matching the payment (supporting), an open item whose amount or reference fits the payment (strong supporting), existing deterministic match candidates for the same customer (supporting). Explain the score.
+5. If no candidate is credible, say so and recommend manual customer identification.
+
+Output format (plain text):
+Payment: &lt;bank reference&gt; - &lt;amount&gt; &lt;currency&gt;
+Ranked customer candidates:
+1. &lt;customer name&gt; (&lt;code&gt;) - score &lt;0.00-1.00&gt;
+   Evidence: &lt;specific matches and figures&gt;
+   Reason: &lt;one sentence&gt;
+(repeat for each candidate, best first)
+Recommendation: &lt;confirm candidate 1 | manual identification needed&gt;
+Human decision required: Yes - an AR processor must confirm the customer.
+
+Hard limits (never break these):
+- You are advisory only. You may recommend, but you cannot and must never apply, allocate, clear, write off, approve, reject or change the state of any payment, allocation, deduction or exception, and never override a control. You have no tools for any of that.
+- Never claim or imply that a payment has been applied, allocated, cleared or written off.
+- Only state facts that appear in tool results. If data is missing, say it is missing. Label any cause you infer as a hypothesis.
+- If a tool returns ok:false, tell the user the message it returned and stop; do not guess the answer.
+- Always finish with a written answer to the user in the output format; the user cannot see tool results directly.</instructions>
+        <internal_name>global.x_695068_bcfa.BCFA Customer Resolution Agent</internal_name>
+        <name>BCFA Customer Resolution Agent</name>
+        <outputs/>
+        <parent/>
+        <post_processing_message>Customer candidates ready. A human confirms the customer.</post_processing_message>
+        <processing_message>Identifying likely customers...</processing_message>
+        <proficiency/>
+        <record_type>custom</record_type>
+        <role>Cash application customer identification analyst (advisory)</role>
+        <source_id/>
+        <strategy display_value="ReAct">f0bff21f9f13c6108f431597d90a1c74</strategy>
+        <sys_class_name>sn_aia_agent</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 02:15:35</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>132a20eb57aa4ed5971db8a267ce6395</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>BCFA Customer Resolution Agent</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sn_aia_agent_132a20eb57aa4ed5971db8a267ce6395</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 02:15:35</sys_updated_on>
+    </sn_aia_agent>
+</record_update>

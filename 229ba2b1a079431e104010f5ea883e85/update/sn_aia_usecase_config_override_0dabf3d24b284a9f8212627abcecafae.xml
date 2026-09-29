@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sn_aia_usecase_config_override">
+    <sn_aia_usecase_config_override action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <run_as_user display_value="BCFA AI Reviewer">b8efbc9ef2654167b89add3507667685</run_as_user>
+        <sys_class_name>sn_aia_usecase_config_override</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 02:32:15</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>0dabf3d24b284a9f8212627abcecafae</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name/>
+        <sys_overrides/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sn_aia_usecase_config_override_0dabf3d24b284a9f8212627abcecafae</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 02:32:15</sys_updated_on>
+        <usecase_configuration display_value="BCFA AP Invoice Review">53ff37dad1c14284be73d757e05ddd15</usecase_configuration>
+    </sn_aia_usecase_config_override>
+</record_update>

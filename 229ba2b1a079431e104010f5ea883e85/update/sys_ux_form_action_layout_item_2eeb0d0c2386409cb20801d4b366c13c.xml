@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ux_form_action_layout_item">
+    <sys_ux_form_action_layout_item action="INSERT_OR_UPDATE">
+        <action display_value="Approve Override">9ab47e77134d441f95794156f6cb8f5e</action>
+        <active>true</active>
+        <animate_icon>false</animate_icon>
+        <color>primary</color>
+        <description/>
+        <icon/>
+        <item_type>action</item_type>
+        <label>Approve Override</label>
+        <layout_group/>
+        <name>Approve Override</name>
+        <order>110</order>
+        <overflow>false</overflow>
+        <sys_class_name>sys_ux_form_action_layout_item</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 07:03:24</sys_created_on>
+        <sys_id>2eeb0d0c2386409cb20801d4b366c13c</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Approve Override</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_ux_form_action_layout_item_2eeb0d0c2386409cb20801d4b366c13c</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 07:03:24</sys_updated_on>
+        <table>x_695068_bcfa_ap_exception</table>
+    </sys_ux_form_action_layout_item>
+</record_update>

@@ -1,0 +1,769 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_hub_flow">
+    <sys_hub_flow action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <acls/>
+        <active>true</active>
+        <annotation/>
+        <attributes>timeFromCreateToActivate=24000</attributes>
+        <authored_on_release_version/>
+        <callable_by_client_api>false</callable_by_client_api>
+        <category/>
+        <copied_from/>
+        <copied_from_name/>
+        <description>A new payment is normalized and its customer identified (alias at the auto-match confidence, or the owner of the remittance invoices).</description>
+        <display_name_after_preview/>
+        <flow_priority>MEDIUM</flow_priority>
+        <generation_source>fluent</generation_source>
+        <internal_name>bcfa_ar_payment_intake_flow</internal_name>
+        <label_cache>[{"name":"Created_1.current","label":"Trigger - Record Created➛x_695068_bcfa_payment Record","type":"reference","base_type":"reference","usedInstances":{"7bef0632-ee84-4a45-9060-785982986d9a":["record"]},"attributes":{}},{"name":"Created_1.current.bank_reference","label":"Trigger - Record Created➛x_695068_bcfa_payment Record➛Bank Reference","type":"string","base_type":"string","usedInstances":{"a8992dad-c1e7-40d6-a962-5e3c4aceef62":["log_message"]},"attributes":{}}]</label_cache>
+        <master_snapshot>8f2f8ee6ebe34710311dff0dcad0cdd5</master_snapshot>
+        <master_snapshot_digest/>
+        <name>BCFA AR Payment Intake Flow</name>
+        <natlang/>
+        <outputs/>
+        <pre_compiled>false</pre_compiled>
+        <remote_trigger_id>932fcee6ebe34710311dff0dcad0cd63</remote_trigger_id>
+        <run_as>system</run_as>
+        <run_with_roles/>
+        <sc_callable>false</sc_callable>
+        <show_draft_actions>false</show_draft_actions>
+        <show_triggered_flows>false</show_triggered_flows>
+        <status>published</status>
+        <substatus/>
+        <sys_class_name>sys_hub_flow</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:01</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>90107bde15394521b47048b7af67162d</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>BCFA AR Payment Intake Flow</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_hub_flow_90107bde15394521b47048b7af67162d</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:12:50</sys_updated_on>
+        <type>flow</type>
+        <updation_source/>
+        <version>2</version>
+    </sys_hub_flow>
+    <sys_translated_text action="delete_multiple" query="documentkey=90107bde15394521b47048b7af67162d"/>
+    <sys_variable_value action="delete_multiple" query="document_key=90107bde15394521b47048b7af67162d"/>
+    <sys_flow_record_trigger action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <condition table="x_695068_bcfa_payment">state=RECEIVED<item endquery="false" field="state" goto="false" newquery="false" operator="=" or="false" value="RECEIVED"/>
+        </condition>
+        <name/>
+        <on_delete>false</on_delete>
+        <on_insert>true</on_insert>
+        <on_update>false</on_update>
+        <published_version/>
+        <run_flow_in>background</run_flow_in>
+        <run_on_extended>false</run_on_extended>
+        <run_when_setting>both</run_when_setting>
+        <run_when_user_list/>
+        <run_when_user_setting>any</run_when_user_setting>
+        <sys_class_name>sys_flow_record_trigger</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:25</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>932fcee6ebe34710311dff0dcad0cd63</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_overrides/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 17:42:25</sys_updated_on>
+        <table>x_695068_bcfa_payment</table>
+        <trigger_definition/>
+    </sys_flow_record_trigger>
+    <sys_trigger_runner_mapping action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <data>{"run_flow_in":"background","run_when_user_list":[],"run_when_setting":"both","run_when_user_setting":"any","run_on_extended":"false"}</data>
+        <identifier>90107bde15394521b47048b7af67162d</identifier>
+        <runner>FDTriggerRunner</runner>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:50:49</sys_created_on>
+        <sys_id>9e11da6eebe34710311dff0dcad0cd3b</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 17:50:49</sys_updated_on>
+        <trigger display_value="">932fcee6ebe34710311dff0dcad0cd63</trigger>
+    </sys_trigger_runner_mapping>
+    <sys_trigger_runner_mapping action="delete_multiple" query="identifier=90107bde15394521b47048b7af67162d^sys_idNOT IN9e11da6eebe34710311dff0dcad0cd3b"/>
+    <sys_hub_flow_stage action="delete_multiple" query="flow=90107bde15394521b47048b7af67162d"/>
+    <sys_flow_cat_variable_model action="delete_multiple" query="id=90107bde15394521b47048b7af67162d"/>
+    <sys_hub_flow_input action="delete_multiple" query="model=90107bde15394521b47048b7af67162d^sys_idNOT IN4b2f8ee6ebe34710311dff0dcad0cdbb,832f8ee6ebe34710311dff0dcad0cdac"/>
+    <sys_hub_flow_input action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <array>false</array>
+        <array_denormalized>false</array_denormalized>
+        <attributes>element_mapping_provider=com.glide.flow_design.action.data.FlowDesignVariableMapper,test_input_hidden=true,uiType=table_name</attributes>
+        <audit>false</audit>
+        <calculation><![CDATA[(function calculatedFieldValue(current) {
+
+	// Add your code here
+	return '';  // return the calculated value
+
+})(current);]]></calculation>
+        <choice/>
+        <choice_field/>
+        <choice_table/>
+        <column_label/>
+        <comments/>
+        <create_roles/>
+        <default_value/>
+        <defaultsort/>
+        <delete_roles/>
+        <dependent/>
+        <dependent_on_field/>
+        <display>false</display>
+        <dynamic_creation>false</dynamic_creation>
+        <dynamic_creation_script/>
+        <dynamic_default_value/>
+        <dynamic_ref_qual/>
+        <element>table_name</element>
+        <element_reference>false</element_reference>
+        <foreign_database/>
+        <formula/>
+        <function_definition/>
+        <function_field>false</function_field>
+        <help/>
+        <hint/>
+        <internal_type display_value="">table_name</internal_type>
+        <label>Table Name</label>
+        <mandatory>false</mandatory>
+        <max_length>200</max_length>
+        <model display_value="BCFA AR Payment Intake Flow">90107bde15394521b47048b7af67162d</model>
+        <model_id>90107bde15394521b47048b7af67162d</model_id>
+        <model_table>sys_hub_flow</model_table>
+        <name>var__m_sys_hub_flow_input_90107bde15394521b47048b7af67162d</name>
+        <next_element/>
+        <order>101</order>
+        <primary>false</primary>
+        <read_only>false</read_only>
+        <read_roles/>
+        <reference/>
+        <reference_cascade_rule/>
+        <reference_floats>false</reference_floats>
+        <reference_key/>
+        <reference_qual/>
+        <reference_qual_condition/>
+        <reference_type/>
+        <sizeclass/>
+        <spell_check>false</spell_check>
+        <staged>false</staged>
+        <sys_class_name>sys_hub_flow_input</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:24</sys_created_on>
+        <sys_id>4b2f8ee6ebe34710311dff0dcad0cdbb</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name/>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:12:48</sys_updated_on>
+        <table_reference>false</table_reference>
+        <text_index>false</text_index>
+        <unique>false</unique>
+        <use_dependent_field>false</use_dependent_field>
+        <use_dynamic_default>false</use_dynamic_default>
+        <use_reference_qualifier>simple</use_reference_qualifier>
+        <virtual>false</virtual>
+        <virtual_type>script</virtual_type>
+        <widget/>
+        <write_roles/>
+        <xml_view>false</xml_view>
+    </sys_hub_flow_input>
+    <sys_hub_action_input_action_instance action="delete_multiple" query="action_input=4b2f8ee6ebe34710311dff0dcad0cdbb"/>
+    <sys_hub_flow_input action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <array>false</array>
+        <array_denormalized>false</array_denormalized>
+        <attributes>element_mapping_provider=com.glide.flow_design.action.data.FlowDesignVariableMapper,timeFromCreateToActivate=16000,uiType=document_id</attributes>
+        <audit>false</audit>
+        <calculation><![CDATA[(function calculatedFieldValue(current) {
+
+	// Add your code here
+	return '';  // return the calculated value
+
+})(current);]]></calculation>
+        <choice/>
+        <choice_field/>
+        <choice_table/>
+        <column_label/>
+        <comments/>
+        <create_roles/>
+        <default_value/>
+        <defaultsort/>
+        <delete_roles/>
+        <dependent>table_name</dependent>
+        <dependent_on_field>table_name</dependent_on_field>
+        <display>false</display>
+        <dynamic_creation>false</dynamic_creation>
+        <dynamic_creation_script/>
+        <dynamic_default_value/>
+        <dynamic_ref_qual/>
+        <element>current</element>
+        <element_reference>false</element_reference>
+        <foreign_database/>
+        <formula/>
+        <function_definition/>
+        <function_field>false</function_field>
+        <help/>
+        <hint/>
+        <internal_type display_value="">document_id</internal_type>
+        <label>Record</label>
+        <mandatory>true</mandatory>
+        <max_length>200</max_length>
+        <model display_value="BCFA AR Payment Intake Flow">90107bde15394521b47048b7af67162d</model>
+        <model_id>90107bde15394521b47048b7af67162d</model_id>
+        <model_table>sys_hub_flow</model_table>
+        <name>var__m_sys_hub_flow_input_90107bde15394521b47048b7af67162d</name>
+        <next_element/>
+        <order>100</order>
+        <primary>false</primary>
+        <read_only>false</read_only>
+        <read_roles/>
+        <reference/>
+        <reference_cascade_rule/>
+        <reference_floats>false</reference_floats>
+        <reference_key/>
+        <reference_qual/>
+        <reference_qual_condition/>
+        <reference_type/>
+        <sizeclass/>
+        <spell_check>false</spell_check>
+        <staged>false</staged>
+        <sys_class_name>sys_hub_flow_input</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:24</sys_created_on>
+        <sys_id>832f8ee6ebe34710311dff0dcad0cdac</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name/>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:12:49</sys_updated_on>
+        <table_reference>false</table_reference>
+        <text_index>false</text_index>
+        <unique>false</unique>
+        <use_dependent_field>true</use_dependent_field>
+        <use_dynamic_default>false</use_dynamic_default>
+        <use_reference_qualifier>simple</use_reference_qualifier>
+        <virtual>false</virtual>
+        <virtual_type>script</virtual_type>
+        <widget/>
+        <write_roles/>
+        <xml_view>false</xml_view>
+    </sys_hub_flow_input>
+    <sys_hub_action_input_action_instance action="delete_multiple" query="action_input=832f8ee6ebe34710311dff0dcad0cdac"/>
+    <sys_hub_flow_output action="delete_multiple" query="model=90107bde15394521b47048b7af67162d"/>
+    <sys_hub_alias_mapping action="delete_multiple" query="source_id=90107bde15394521b47048b7af67162d"/>
+    <sys_hub_trigger_instance_v2 action="delete_multiple" query="flow=90107bde15394521b47048b7af67162d^sys_idNOT IN291293a55f4940c1b0ba626dbaec3be6"/>
+    <sys_hub_trigger_instance_v2 action="INSERT_OR_UPDATE">
+        <comment/>
+        <display_text/>
+        <flow display_value="BCFA AR Payment Intake Flow">90107bde15394521b47048b7af67162d</flow>
+        <generation_source/>
+        <name>Created</name>
+        <published_version/>
+        <remote_sys_id/>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:01</sys_created_on>
+        <sys_id>291293a55f4940c1b0ba626dbaec3be6</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 17:42:01</sys_updated_on>
+        <trigger_definition display_value="Created">798916a0c31322002841b63b12d3ae7c</trigger_definition>
+        <trigger_inputs>H4sIAAAAAAAACr1W32vbMBD+V4SeNvCge1jZAnvY2gwC3Qr9tYdShGKdEzHlFKRzUlP6vw85dio7TpMQt0/BJ+Xuu+++u9P9EyenJxNwI/QkMYXrwo8UH3CecCPHYPiA38ixAZ5wjQQOpbkp5sAHnIJZoJyFMwVzQAVIq7+mU6tTuNCe+OD+IeEziUqSdQUfkMsh4dYpcHzw+eQk4aWLyh9P+EKaPHw/itNvX05Ov4pxmkkxl8UsuE+40n5uZHG337VfGkyVj0+dntOPlPQC+CCTxkNAqo1ygCucc+nkDChAe+LUkWcLa5Oi5+dkHz6vcmSXyIaPFChTrPyz3yR4ReIOcp94VjMRmOUJzy6iOBZZmjsHSEyiYlDHpDpmNprJCawcZ9dgICVQa3ayWx9//dbea5xUhpDtOnhp2YxuihhCTdsxQZtqqi51yMnlKCyKOuNIWDXUlpBa5uOFs67fVkQ7FSGJnB7nBD74lWoRJKXqWj8fILi/U0B2Dd5rG36JAqVHS25sadouemYd+2lpykbBtyxZK8X3x+Kn2Fah6VOFaFHolxAxtMugxRrfFig9ItkHxa0Hx/qHcUiHLKeAwq/lsGjWtdUhTevbNEgL0B4S7q9HMmOXbITHt4XEYqMrgm+NTGLBUosEj9Sj2sYy/TdxNke1Le7LDfZBQSZzQx/7HP/WwesAmjfeSd4huNAYKztmqq3vjrO3UfkLrm799aPpM4tK02qgtBVdH/mDHm/b2U6jWDXXniTB96vh2XB0Nzzf5HvbeQ+cx+l1IOxiqMn5UiJ5QVZIpUTkbv3MmlkF5jxirqqH0DjPyfPniFdhMXo05h5ERHnwd+giLzdHb1u8a1xZV46q3IPrcUxYBGGzzoWoM1YRAIqNC0ZTYJk1xi41Tkoc/T4UQlHaYM4tQ0vMvQucg9d0CNqxq1fVa7VWw/iGm7qFaZdQe37Plt5LPW/0wMRoBcKszvoYcM2UK8d1DTYLsD/7pY8oy93VaOT2GrxXCdtZi4f/V3CjaR4QAAA=</trigger_inputs>
+        <trigger_outputs/>
+        <trigger_type>record_create</trigger_type>
+        <updation_source/>
+    </sys_hub_trigger_instance_v2>
+    <sys_hub_action_instance_v2 action="delete_multiple" query="flow=90107bde15394521b47048b7af67162d^sys_idNOT IN7bef0632ee844a459060785982986d9a,a8992dadc1e740d6a9625e3c4aceef62"/>
+    <sys_hub_action_instance_v2 action="INSERT_OR_UPDATE">
+        <action_type display_value="Fire Event">80a30edeff30311077a95dac793bf19b</action_type>
+        <action_type_parent display_value="">80a30edeff30311077a95dac793bf19b</action_type_parent>
+        <attributes>timeFromCreateToActivate=39000</attributes>
+        <comment>Run the deterministic stage: normalization and customer identification</comment>
+        <compiled_snapshot>80a30edeff30311077a95dac793bf19b</compiled_snapshot>
+        <display_text/>
+        <flow display_value="BCFA AR Payment Intake Flow">90107bde15394521b47048b7af67162d</flow>
+        <generation_source/>
+        <order>1</order>
+        <parent_ui_id/>
+        <sys_class_name>sys_hub_action_instance_v2</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:01</sys_created_on>
+        <sys_id>7bef0632ee844a459060785982986d9a</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 17:51:45</sys_updated_on>
+        <ui_id>7bef0632-ee84-4a45-9060-785982986d9a</ui_id>
+        <updation_source/>
+        <values>H4sIAAAAAAAA/+2XWW/bOBDHvwqhZ8uQKOrKWzZpFgF22yLp9qUohBEPW7u6SlFuvEa+e0lJtiXHcXqkARbdFwMcXv+Z4c8z+rCxSii4dWbVIAvXmlkryFszBplkpYJ/uLaxrKlzWL8/MqW36f2KS+tsY9FlljPJS+vsw8eZlTG9lkXgOZxxITzHc10nDCH2GdAw9lLhQqqPyCHluV76dnsUMjoOZKl1bYaNklm5GMZ/DBtvt8ZKMiOEzCx+p3jJuFYgIG/4zCqgZKAqud5ZJAf2psz3hqV2Sp92Xq5RFwSklqCQ5E2Vr3iDVIUA7e4v4K7J/tWSIsdxzGGCa8ep0WiNhskQut4sLkGBVttS1cphKV1WGeVNHzIdJ2hzdTG29Qve1Cqryn6LgjTf7q7ytihf97GydgdsM6UtbaNF8NpEw7g3+Cpul9Xnm63Kq6zsAjdM5hWFfDcCpX1OW2X0bKw2e3eQid7yIBc854W+MSmgrrUlqWW1yrpbtOhivsj1YC7y6rNW12SLcg7UeDjXWYL5lbZfdub3IDPj7p/6GL3ZXPdXmX1q+bV5XYHvxI6Dhc2CiNvEFdgGN45sjL3UZQElOIit+5nVrJuLHJpmHyidoeRTa9zswzYEKOljbLZQmdXqXIta8SEW97MdLX0K9rTcJUHsO0GUpFRAUsPa+P6QnMeWPUURpScpCkcUvRuUHQgd+OmGSTc3Zajbhl73EwNH3jdypB82n5DxK3IxifCUjUmMX4SPGBMigiiyUwzMJlFA7DR1Ijt0iYP1e8Ke7/0UPiSn+hGNANlsLvRDUZwl7py2UodX3d8/BORrWHBOskBGLNxsVRyqGmhgFW27JGTsAIfLYQZdX+55wKd56J//Y2XFpEtyhn43ie2FoSr9m1OFhKwKXWw44itz5RbZHUge/g+B1Efhxzma5mYK0jQ7L0KScCn4LvZs7IXUJjGN7Ihw/ZOmBJM4opgG30FSH+kncTJdEB7R9NvF1Tk6v0Fv+wqCrrt2DBlnHjJ1evGTDRw5iZs42sDhaQOHv7GB8/9v4H6RBk6QgHg0DG2i35jGKtIFKuS+7flMhISFNIjcn1Kgur/abZneYhW6gRe5AhgJPOJHJMZRFArAYcoYpc6RT6FJQ9dFY94oWHzNl1F0sqeL+QisV6u+TTymfeBq/36naN2M7ANd7nOUsdt1o3iBXvUVy3DWLKs2ZyjlSJgVpwqYzmbvg+SLrFHdszhGXH/6TbdIQsfPszN4TMsLQCluOUi6vMp4zg5T+giw4xRPmR0n+UWw5dzxOAuFHQIhNiF+qvtK4tnU8eMYHIyFi58R249fAGdIXVqnEAAA</values>
+    </sys_hub_action_instance_v2>
+    <sys_hub_alias_mapping action="delete_multiple" query="source_id=7bef0632ee844a459060785982986d9a"/>
+    <sys_hub_action_instance_v2 action="INSERT_OR_UPDATE">
+        <action_type display_value="Log">5bc1bcc6531003003bf1d9109ec587d4</action_type>
+        <action_type_parent display_value="">5bc1bcc6531003003bf1d9109ec587d4</action_type_parent>
+        <attributes>timeFromCreateToActivate=39000</attributes>
+        <comment>Record the hand-off in the flow log</comment>
+        <compiled_snapshot>5bc1bcc6531003003bf1d9109ec587d4</compiled_snapshot>
+        <display_text/>
+        <flow display_value="BCFA AR Payment Intake Flow">90107bde15394521b47048b7af67162d</flow>
+        <generation_source/>
+        <order>2</order>
+        <parent_ui_id/>
+        <sys_class_name>sys_hub_action_instance_v2</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:01</sys_created_on>
+        <sys_id>a8992dadc1e740d6a9625e3c4aceef62</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 17:51:45</sys_updated_on>
+        <ui_id>a8992dad-c1e7-40d6-a962-5e3c4aceef62</ui_id>
+        <updation_source/>
+        <values>H4sIAAAAAAAA/+VUTW/bMAz9K4bOiREnzbrm1qUrUKAfQwu0h6IwaJlOhMqSK8lpsyD/fVSsOEYbbAvQnQb4wucnkY965OOKKSiRTZjUs1TiAiXrsQXI2mNCFZrCXNhKwvI+oBcNWoGhkw4Nm6wYnwuZG1Rs8vjUYyIn2jjjScb5l/EoGQxG9GVFkp8kgxPk46/H+TFdISGjfBN2GfLuKcUtKw/xuRYcQ3wZjk23oDa5L2PQY/jmUOVI+QuQFnusBJWD02bZIgYhv1FyB8yFcnQb8+Q3K35SvqOB5xVIijg2/9owDe1o4OIMHNw5U3NXm0BtirXUi1Ursd+PrrXCqN/v9LdT+rq344YGv3uFwEy6zAcwSqhZh/xKyI487JK/G6NNh4ohDtzRml4uxwJq6aaHK0j+WsHwEAWjAxQceQVN828qJzS5kSXeM5DJ7dNoWZfquvEZa/XevzN8g57t9X1tyQJYeZt53wQTFXdz/Xq79ci5UJuKwk+pOcg2AueMyGrn+7tiKLGki9ISqooakVZGL8TmMBVbxjNJQVxI/UpJrZipGLiXFpOrIT4n/GwD34MRXuYVXUOH1z1ml3YqwdqdWLJw+lL7ShrpQUO6adTmCDeicqeUYIGhXN/+zliWaC3MsPMG36bnp9HpbfQDll5HdKEcPGPkK5tE1hE5ApOKBjX4UqN1mEeFNtFqNaVhpChNYl4b6pyLM1DPaTtr6/XH9fPvE/5psw1Hv9tsOO5stqu2X3ubGLabJUNsZqC73e624HbAPm27Dcfjz1lv+xbGxxE8aAL/vwF7+gXiuXqYhAcAAA==</values>
+    </sys_hub_action_instance_v2>
+    <sys_hub_alias_mapping action="delete_multiple" query="source_id=a8992dadc1e740d6a9625e3c4aceef62"/>
+    <sys_hub_sub_flow_instance_v2 action="delete_multiple" query="flow=90107bde15394521b47048b7af67162d"/>
+    <sys_hub_flow_logic_instance_v2 action="delete_multiple" query="flow=90107bde15394521b47048b7af67162d"/>
+    <sys_hub_pill_compound action="delete_multiple" query="attached_to=90107bde15394521b47048b7af67162d"/>
+    <sys_hub_flow_variable action="delete_multiple" query="model=90107bde15394521b47048b7af67162d"/>
+    <sys_documentation action="INSERT_OR_UPDATE">
+        <element>table_name</element>
+        <help/>
+        <hint/>
+        <label>Table Name</label>
+        <language>en</language>
+        <name>var__m_sys_hub_flow_input_90107bde15394521b47048b7af67162d</name>
+        <plural/>
+        <sys_class_name>sys_documentation</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:24</sys_created_on>
+        <sys_id>4b2f8ee6ebe34710311dff0dcad0cdc3</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name/>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 17:42:24</sys_updated_on>
+        <url/>
+        <url_target/>
+    </sys_documentation>
+    <sys_documentation action="INSERT_OR_UPDATE">
+        <element>current</element>
+        <help/>
+        <hint/>
+        <label>Record</label>
+        <language>en</language>
+        <name>var__m_sys_hub_flow_input_90107bde15394521b47048b7af67162d</name>
+        <plural/>
+        <sys_class_name>sys_documentation</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:24</sys_created_on>
+        <sys_id>872f8ee6ebe34710311dff0dcad0cdb7</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name/>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 17:42:24</sys_updated_on>
+        <url/>
+        <url_target/>
+    </sys_documentation>
+    <sys_choice action="delete_multiple" query="name=var__m_sys_hub_flow_input_90107bde15394521b47048b7af67162d"/>
+    <sys_choice action="delete_multiple" query="name=var__m_sys_hub_flow_output_90107bde15394521b47048b7af67162d"/>
+    <sys_hub_flow_snapshot action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <acls/>
+        <active>true</active>
+        <annotation/>
+        <attributes>timeFromCreateToActivate=16000</attributes>
+        <authored_on_release_version>-1</authored_on_release_version>
+        <callable_by_client_api>false</callable_by_client_api>
+        <category/>
+        <copied_from/>
+        <copied_from_name/>
+        <description>A new payment is normalized and its customer identified (alias at the auto-match confidence, or the owner of the remittance invoices).</description>
+        <flow_priority>MEDIUM</flow_priority>
+        <internal_name>bcfa_ar_payment_intake_flow</internal_name>
+        <label_cache>[{"name":"Created_1.current","label":"Trigger - Record Created➛x_695068_bcfa_payment Record","type":"reference","base_type":"reference","usedInstances":{"7bef0632-ee84-4a45-9060-785982986d9a":["record"]},"attributes":{}},{"name":"Created_1.current.bank_reference","label":"Trigger - Record Created➛x_695068_bcfa_payment Record➛Bank Reference","type":"string","base_type":"string","usedInstances":{"a8992dad-c1e7-40d6-a962-5e3c4aceef62":["log_message"]},"attributes":{}}]</label_cache>
+        <master>true</master>
+        <name>BCFA AR Payment Intake Flow</name>
+        <natlang/>
+        <outputs/>
+        <parent_flow display_value="BCFA AR Payment Intake Flow">90107bde15394521b47048b7af67162d</parent_flow>
+        <remote_trigger_id/>
+        <run_as>system</run_as>
+        <run_with_roles/>
+        <sc_callable>false</sc_callable>
+        <status>published</status>
+        <sys_class_name>sys_hub_flow_snapshot</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:24</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>8f2f8ee6ebe34710311dff0dcad0cdd5</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name/>
+        <sys_overrides/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name/>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:12:50</sys_updated_on>
+        <type>flow</type>
+        <version>2</version>
+    </sys_hub_flow_snapshot>
+    <sys_translated_text action="delete_multiple" query="documentkey=8f2f8ee6ebe34710311dff0dcad0cdd5"/>
+    <sys_variable_value action="delete_multiple" query="document_key=8f2f8ee6ebe34710311dff0dcad0cdd5"/>
+    <sys_hub_flow_stage action="delete_multiple" query="flow=8f2f8ee6ebe34710311dff0dcad0cdd5"/>
+    <sys_flow_cat_variable_model action="delete_multiple" query="id=8f2f8ee6ebe34710311dff0dcad0cdd5^sys_idNOT IN0b2f8ee6ebe34710311dff0dcad0cdd7"/>
+    <sys_flow_cat_variable_model action="INSERT_OR_UPDATE">
+        <id>8f2f8ee6ebe34710311dff0dcad0cdd5</id>
+        <name>BCFA AR Payment Intake Flow</name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:24</sys_created_on>
+        <sys_id>0b2f8ee6ebe34710311dff0dcad0cdd7</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 17:42:24</sys_updated_on>
+    </sys_flow_cat_variable_model>
+    <sys_flow_cat_variable action="delete_multiple" query="flow_catalog_model=0b2f8ee6ebe34710311dff0dcad0cdd7"/>
+    <sys_hub_flow_input action="delete_multiple" query="model=8f2f8ee6ebe34710311dff0dcad0cdd5^sys_idNOT IN072f8ee6ebe34710311dff0dcad0cde8,4b2f8ee6ebe34710311dff0dcad0cdd9"/>
+    <sys_hub_flow_input action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <array>false</array>
+        <array_denormalized>false</array_denormalized>
+        <attributes>element_mapping_provider=com.glide.flow_design.action.data.FlowDesignVariableMapper,test_input_hidden=true,uiType=table_name</attributes>
+        <audit>false</audit>
+        <calculation><![CDATA[(function calculatedFieldValue(current) {
+
+	// Add your code here
+	return '';  // return the calculated value
+
+})(current);]]></calculation>
+        <choice/>
+        <choice_field/>
+        <choice_table/>
+        <column_label/>
+        <comments/>
+        <create_roles/>
+        <default_value/>
+        <defaultsort/>
+        <delete_roles/>
+        <dependent/>
+        <dependent_on_field/>
+        <display>false</display>
+        <dynamic_creation>false</dynamic_creation>
+        <dynamic_creation_script/>
+        <dynamic_default_value/>
+        <dynamic_ref_qual/>
+        <element>table_name</element>
+        <element_reference>false</element_reference>
+        <foreign_database/>
+        <formula/>
+        <function_definition/>
+        <function_field>false</function_field>
+        <help/>
+        <hint/>
+        <internal_type display_value="">table_name</internal_type>
+        <label>Table Name</label>
+        <mandatory>false</mandatory>
+        <max_length>200</max_length>
+        <model display_value="BCFA AR Payment Intake Flow">8f2f8ee6ebe34710311dff0dcad0cdd5</model>
+        <model_id>8f2f8ee6ebe34710311dff0dcad0cdd5</model_id>
+        <model_table>sys_hub_flow_snapshot</model_table>
+        <name>var__m_sys_hub_flow_input_8f2f8ee6ebe34710311dff0dcad0cdd5</name>
+        <next_element/>
+        <order>101</order>
+        <primary>false</primary>
+        <read_only>false</read_only>
+        <read_roles/>
+        <reference/>
+        <reference_cascade_rule/>
+        <reference_floats>false</reference_floats>
+        <reference_key/>
+        <reference_qual/>
+        <reference_qual_condition/>
+        <reference_type/>
+        <sizeclass/>
+        <spell_check>false</spell_check>
+        <staged>false</staged>
+        <sys_class_name>sys_hub_flow_input</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:24</sys_created_on>
+        <sys_id>072f8ee6ebe34710311dff0dcad0cde8</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name/>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:12:46</sys_updated_on>
+        <table_reference>false</table_reference>
+        <text_index>false</text_index>
+        <unique>false</unique>
+        <use_dependent_field>false</use_dependent_field>
+        <use_dynamic_default>false</use_dynamic_default>
+        <use_reference_qualifier>simple</use_reference_qualifier>
+        <virtual>false</virtual>
+        <virtual_type>script</virtual_type>
+        <widget/>
+        <write_roles/>
+        <xml_view>false</xml_view>
+    </sys_hub_flow_input>
+    <sys_hub_action_input_action_instance action="delete_multiple" query="action_input=072f8ee6ebe34710311dff0dcad0cde8"/>
+    <sys_hub_flow_input action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <array>false</array>
+        <array_denormalized>false</array_denormalized>
+        <attributes>element_mapping_provider=com.glide.flow_design.action.data.FlowDesignVariableMapper,timeFromCreateToActivate=39000,uiType=document_id</attributes>
+        <audit>false</audit>
+        <calculation><![CDATA[(function calculatedFieldValue(current) {
+
+	// Add your code here
+	return '';  // return the calculated value
+
+})(current);]]></calculation>
+        <choice/>
+        <choice_field/>
+        <choice_table/>
+        <column_label/>
+        <comments/>
+        <create_roles/>
+        <default_value/>
+        <defaultsort/>
+        <delete_roles/>
+        <dependent>table_name</dependent>
+        <dependent_on_field>table_name</dependent_on_field>
+        <display>false</display>
+        <dynamic_creation>false</dynamic_creation>
+        <dynamic_creation_script/>
+        <dynamic_default_value/>
+        <dynamic_ref_qual/>
+        <element>current</element>
+        <element_reference>false</element_reference>
+        <foreign_database/>
+        <formula/>
+        <function_definition/>
+        <function_field>false</function_field>
+        <help/>
+        <hint/>
+        <internal_type display_value="">document_id</internal_type>
+        <label>Record</label>
+        <mandatory>true</mandatory>
+        <max_length>200</max_length>
+        <model display_value="BCFA AR Payment Intake Flow">8f2f8ee6ebe34710311dff0dcad0cdd5</model>
+        <model_id>8f2f8ee6ebe34710311dff0dcad0cdd5</model_id>
+        <model_table>sys_hub_flow_snapshot</model_table>
+        <name>var__m_sys_hub_flow_input_8f2f8ee6ebe34710311dff0dcad0cdd5</name>
+        <next_element/>
+        <order>100</order>
+        <primary>false</primary>
+        <read_only>false</read_only>
+        <read_roles/>
+        <reference/>
+        <reference_cascade_rule/>
+        <reference_floats>false</reference_floats>
+        <reference_key/>
+        <reference_qual/>
+        <reference_qual_condition/>
+        <reference_type/>
+        <sizeclass/>
+        <spell_check>false</spell_check>
+        <staged>false</staged>
+        <sys_class_name>sys_hub_flow_input</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:24</sys_created_on>
+        <sys_id>4b2f8ee6ebe34710311dff0dcad0cdd9</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name/>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:12:48</sys_updated_on>
+        <table_reference>false</table_reference>
+        <text_index>false</text_index>
+        <unique>false</unique>
+        <use_dependent_field>true</use_dependent_field>
+        <use_dynamic_default>false</use_dynamic_default>
+        <use_reference_qualifier>simple</use_reference_qualifier>
+        <virtual>false</virtual>
+        <virtual_type>script</virtual_type>
+        <widget/>
+        <write_roles/>
+        <xml_view>false</xml_view>
+    </sys_hub_flow_input>
+    <sys_hub_action_input_action_instance action="delete_multiple" query="action_input=4b2f8ee6ebe34710311dff0dcad0cdd9"/>
+    <sys_hub_flow_output action="delete_multiple" query="model=8f2f8ee6ebe34710311dff0dcad0cdd5"/>
+    <sys_hub_alias_mapping action="delete_multiple" query="source_id=8f2f8ee6ebe34710311dff0dcad0cdd5"/>
+    <sys_hub_trigger_instance_v2 action="delete_multiple" query="flow=8f2f8ee6ebe34710311dff0dcad0cdd5^sys_idNOT IN1b2fcee6ebe34710311dff0dcad0cd35"/>
+    <sys_hub_trigger_instance_v2 action="INSERT_OR_UPDATE">
+        <comment/>
+        <display_text/>
+        <flow display_value="BCFA AR Payment Intake Flow">8f2f8ee6ebe34710311dff0dcad0cdd5</flow>
+        <generation_source/>
+        <name>Created</name>
+        <published_version/>
+        <remote_sys_id/>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:25</sys_created_on>
+        <sys_id>1b2fcee6ebe34710311dff0dcad0cd35</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 17:42:25</sys_updated_on>
+        <trigger_definition display_value="Created">798916a0c31322002841b63b12d3ae7c</trigger_definition>
+        <trigger_inputs>H4sIAAAAAAAA/+1XbU/bMBD+K1Y+bVIndZqGNr5tvEiV2JCAsQ8MRW58aa25dmVfaDPEf985bzVpCgXCNk18an127p67ex7ncnEdoZWTCdiRdsh1Aqe5G4loN4oGkeJjUPT3jI8V0FpqBKu5OsvnQGb05ljzmd8TMActQGP5aDI1MoEj6Wh9cTmIZlwLjsbm0S7aDAZRas3sDGZzxZF8pVw5MhorwEa7b4fDQVT4rYKQwyuuMr9exjsf3w93PsTjJOXxnOczH5PiS0e+8vN7jiVTqYQFXaKac0tR0Me8Xsu2BQA7kq7wElpYok9fNKkECVcWC1wca5UHR5ZO/oLi+cxBHJSwOpGeTs3iBFIgxAkcSl2EqzaVSbhqVhypj+MMwVEuNzdNQQ4lqKqdLrFyjp8SlFd1yW8G2/T/JNPsWLODKkdWVMitE6Js+j1kuI7SukmeCbSdHgVxjGZJZilfZFRBVteVYR0zHc34BErH6SkoSDAoe/rNhasv0jmpJ0G2TfDCsh5d5SGEuvlPCXrZRYZt6W8zHRsdN/RaCaHG3yJ+bd6C6BvbujE2tvr8r/I/4uLKc1nUJHsGQXyfgmanQK02/hfRt/zJkhgbnLZJmRrLPpOdjbxvXsAtxPHV6DehrULTp0o0EUCuQoTQfC9ZjW8DlB6RbIOCnFnWP4wnK3hBXIldw5Gr281uKbiybingDTTcHPxFw4GylFkQX54uW67zNdV631KTUHOWGHK/xB7VMObJz4k1mRab4q5OsFcCUp4pfN3n69NYuBvA7RN/U34eEd1iofLC8rX1F+5tqcIVkTrDvmiuLNWe0UJieSG3FVdvuQd9TDyQDUkAoOYCoUX4kQ2H78TJwd7B6Pxgf50U3Ye2YEeYcgcI7Mj+2dhRfXk9lhwLrtHFaGIuRBwgbgb5mRGg9oPeVYwgEcwzdNFN0FmaLJuPq2cazoppoLfJrOuKp5HDX+9UZtvj1Wo0xCbtHHJkyqoC0Lw+zhlOgVAoumjIV4Gj3+HPt6kNZt8w2mD2j8DpZ/TySDrmr7KlLaWXxodMXy2e3RP85V3QVb5Cb2sanSgpIFblXv8vhYIHAbTOzlXRa86sE+YxbKnSvSsgdpTgP+TK5W/c2bsvghQAAA==</trigger_inputs>
+        <trigger_outputs/>
+        <trigger_type>record_create</trigger_type>
+        <updation_source/>
+    </sys_hub_trigger_instance_v2>
+    <sys_hub_action_instance_v2 action="delete_multiple" query="flow=8f2f8ee6ebe34710311dff0dcad0cdd5^sys_idNOT IN572fcee6ebe34710311dff0dcad0cd25,d72fcee6ebe34710311dff0dcad0cd22"/>
+    <sys_hub_action_instance_v2 action="INSERT_OR_UPDATE">
+        <action_type display_value="Log">5bc1bcc6531003003bf1d9109ec587d4</action_type>
+        <action_type_parent display_value="Log">0e0ae8c2531003003bf1d9109ec587c8</action_type_parent>
+        <attributes>timeFromCreateToActivate=39000</attributes>
+        <comment>Record the hand-off in the flow log</comment>
+        <compiled_snapshot>5bc1bcc6531003003bf1d9109ec587d4</compiled_snapshot>
+        <display_text/>
+        <flow display_value="BCFA AR Payment Intake Flow">8f2f8ee6ebe34710311dff0dcad0cdd5</flow>
+        <generation_source/>
+        <order>2</order>
+        <parent_ui_id/>
+        <sys_class_name>sys_hub_action_instance_v2</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:25</sys_created_on>
+        <sys_id>572fcee6ebe34710311dff0dcad0cd25</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 17:50:49</sys_updated_on>
+        <ui_id>a8992dad-c1e7-40d6-a962-5e3c4aceef62</ui_id>
+        <updation_source/>
+        <values>H4sIAAAAAAAA/+VUTW/bMAz9K4bOiREnzbrm1qUrUKAfQwu0h6IwaJlOhMqSK8lpsyD/fVSsOEYbbAvQnQb4wucnkY965OOKKSiRTZjUs1TiAiXrsQXI2mNCFZrCXNhKwvI+oBcNWoGhkw4Nm6wYnwuZG1Rs8vjUYyIn2jjjScb5l/EoGQxG9GVFkp8kgxPk46/H+TFdISGjfBN2GfLuKcUtKw/xuRYcQ3wZjk23oDa5L2PQY/jmUOVI+QuQFnusBJWD02bZIgYhv1FyB8yFcnQb8+Q3K35SvqOB5xVIijg2/9owDe1o4OIMHNw5U3NXm0BtirXUi1Ursd+PrrXCqN/v9LdT+rq344YGv3uFwEy6zAcwSqhZh/xKyI487JK/G6NNh4ohDtzRml4uxwJq6aaHK0j+WsHwEAWjAxQceQVN828qJzS5kSXeM5DJ7dNoWZfquvEZa/XevzN8g57t9X1tyQJYeZt53wQTFXdz/Xq79ci5UJuKwk+pOcg2AueMyGrn+7tiKLGki9ISqooakVZGL8TmMBVbxjNJQVxI/UpJrZipGLiXFpOrIT4n/GwD34MRXuYVXUOH1z1ml3YqwdqdWLJw+lL7ShrpQUO6adTmCDeicqeUYIGhXN/+zliWaC3MsPMG36bnp9HpbfQDll5HdKEcPGPkK5tE1hE5ApOKBjX4UqN1mEeFNtFqNaVhpChNYl4b6pyLM1DPaTtr6/XH9fPvE/5psw1Hv9tsOO5stqu2X3ubGLabJUNsZqC73e624HbAPm27Dcfjz1lv+xbGxxE8aAL/vwF7+gXiuXqYhAcAAA==</values>
+    </sys_hub_action_instance_v2>
+    <sys_hub_alias_mapping action="delete_multiple" query="source_id=572fcee6ebe34710311dff0dcad0cd25"/>
+    <sys_hub_action_instance_v2 action="INSERT_OR_UPDATE">
+        <action_type display_value="Fire Event">80a30edeff30311077a95dac793bf19b</action_type>
+        <action_type_parent display_value="Fire Event">15e10e5eff30311077a95dac793bf11e</action_type_parent>
+        <attributes>timeFromCreateToActivate=39000</attributes>
+        <comment>Run the deterministic stage: normalization and customer identification</comment>
+        <compiled_snapshot>80a30edeff30311077a95dac793bf19b</compiled_snapshot>
+        <display_text/>
+        <flow display_value="BCFA AR Payment Intake Flow">8f2f8ee6ebe34710311dff0dcad0cdd5</flow>
+        <generation_source/>
+        <order>1</order>
+        <parent_ui_id/>
+        <sys_class_name>sys_hub_action_instance_v2</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:25</sys_created_on>
+        <sys_id>d72fcee6ebe34710311dff0dcad0cd22</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 17:50:49</sys_updated_on>
+        <ui_id>7bef0632-ee84-4a45-9060-785982986d9a</ui_id>
+        <updation_source/>
+        <values>H4sIAAAAAAAA/+2XWW/bOBDHvwqhZ8uQKOrKWzZpFgF22yLp9qUohBEPW7u6SlFuvEa+e0lJtiXHcXqkARbdFwMcXv+Z4c8z+rCxSii4dWbVIAvXmlkryFszBplkpYJ/uLaxrKlzWL8/MqW36f2KS+tsY9FlljPJS+vsw8eZlTG9lkXgOZxxITzHc10nDCH2GdAw9lLhQqqPyCHluV76dnsUMjoOZKl1bYaNklm5GMZ/DBtvt8ZKMiOEzCx+p3jJuFYgIG/4zCqgZKAqud5ZJAf2psz3hqV2Sp92Xq5RFwSklqCQ5E2Vr3iDVIUA7e4v4K7J/tWSIsdxzGGCa8ep0WiNhskQut4sLkGBVttS1cphKV1WGeVNHzIdJ2hzdTG29Qve1Cqryn6LgjTf7q7ytihf97GydgdsM6UtbaNF8NpEw7g3+Cpul9Xnm63Kq6zsAjdM5hWFfDcCpX1OW2X0bKw2e3eQid7yIBc854W+MSmgrrUlqWW1yrpbtOhivsj1YC7y6rNW12SLcg7UeDjXWYL5lbZfdub3IDPj7p/6GL3ZXPdXmX1q+bV5XYHvxI6Dhc2CiNvEFdgGN45sjL3UZQElOIit+5nVrJuLHJpmHyidoeRTa9zswzYEKOljbLZQmdXqXIta8SEW97MdLX0K9rTcJUHsO0GUpFRAUsPa+P6QnMeWPUURpScpCkcUvRuUHQgd+OmGSTc3Zajbhl73EwNH3jdypB82n5DxK3IxifCUjUmMX4SPGBMigiiyUwzMJlFA7DR1Ijt0iYP1e8Ke7/0UPiSn+hGNANlsLvRDUZwl7py2UodX3d8/BORrWHBOskBGLNxsVRyqGmhgFW27JGTsAIfLYQZdX+55wKd56J//Y2XFpEtyhn43ie2FoSr9m1OFhKwKXWw44itz5RbZHUge/g+B1Efhxzma5mYK0jQ7L0KScCn4LvZs7IXUJjGN7Ihw/ZOmBJM4opgG30FSH+kncTJdEB7R9NvF1Tk6v0Fv+wqCrrt2DBlnHjJ1evGTDRw5iZs42sDhaQOHv7GB8/9v4H6RBk6QgHg0DG2i35jGKtIFKuS+7flMhISFNIjcn1Kgur/abZneYhW6gRe5AhgJPOJHJMZRFArAYcoYpc6RT6FJQ9dFY94oWHzNl1F0sqeL+QisV6u+TTymfeBq/36naN2M7ANd7nOUsdt1o3iBXvUVy3DWLKs2ZyjlSJgVpwqYzmbvg+SLrFHdszhGXH/6TbdIQsfPszN4TMsLQCluOUi6vMp4zg5T+giw4xRPmR0n+UWw5dzxOAuFHQIhNiF+qvtK4tnU8eMYHIyFi58R249fAGdIXVqnEAAA</values>
+    </sys_hub_action_instance_v2>
+    <sys_hub_alias_mapping action="delete_multiple" query="source_id=d72fcee6ebe34710311dff0dcad0cd22"/>
+    <sys_hub_sub_flow_instance_v2 action="delete_multiple" query="flow=8f2f8ee6ebe34710311dff0dcad0cdd5"/>
+    <sys_hub_flow_logic_instance_v2 action="delete_multiple" query="flow=8f2f8ee6ebe34710311dff0dcad0cdd5"/>
+    <sys_hub_pill_compound action="delete_multiple" query="attached_to=8f2f8ee6ebe34710311dff0dcad0cdd5"/>
+    <sys_hub_flow_variable action="delete_multiple" query="model=8f2f8ee6ebe34710311dff0dcad0cdd5"/>
+    <sys_documentation action="INSERT_OR_UPDATE">
+        <element>table_name</element>
+        <help/>
+        <hint/>
+        <label>Table Name</label>
+        <language>en</language>
+        <name>var__m_sys_hub_flow_input_8f2f8ee6ebe34710311dff0dcad0cdd5</name>
+        <plural/>
+        <sys_class_name>sys_documentation</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:24</sys_created_on>
+        <sys_id>072f8ee6ebe34710311dff0dcad0cdf0</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name/>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 17:42:24</sys_updated_on>
+        <url/>
+        <url_target/>
+    </sys_documentation>
+    <sys_documentation action="INSERT_OR_UPDATE">
+        <element>current</element>
+        <help/>
+        <hint/>
+        <label>Record</label>
+        <language>en</language>
+        <name>var__m_sys_hub_flow_input_8f2f8ee6ebe34710311dff0dcad0cdd5</name>
+        <plural/>
+        <sys_class_name>sys_documentation</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:24</sys_created_on>
+        <sys_id>432f8ee6ebe34710311dff0dcad0cde4</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name/>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 17:42:24</sys_updated_on>
+        <url/>
+        <url_target/>
+    </sys_documentation>
+    <sys_choice action="delete_multiple" query="name=var__m_sys_hub_flow_input_8f2f8ee6ebe34710311dff0dcad0cdd5"/>
+    <sys_choice action="delete_multiple" query="name=var__m_sys_hub_flow_output_8f2f8ee6ebe34710311dff0dcad0cdd5"/>
+    <sys_hub_flow action="UPDATE">
+        <sys_id>90107bde15394521b47048b7af67162d</sys_id>
+        <latest_snapshot>8f2f8ee6ebe34710311dff0dcad0cdd5</latest_snapshot>
+        <compiler_build>glide-yokohama-12-18-2024__patch13-hotfix5aw35-08-22-2026_08-26-2026_0028.zip</compiler_build>
+    </sys_hub_flow>
+    <sys_flow_trigger_plan action="delete_multiple" query="plan_id=90107bde15394521b47048b7af67162d^sys_idNOT IN1f2fcee6ebe34710311dff0dcad0cd65"/>
+    <sys_flow_trigger_plan action="INSERT_OR_UPDATE">
+        <binding_strategy>com.snc.process_flow.engine.binding.OncePerRecord</binding_strategy>
+        <plan>{"type":"PlanProxy","persistor":{"@class":".ChunkingPlanPersistor","table":"sys_flow_trigger_plan","id":"1f2fcee6ebe34710311dff0dcad0cd65","name":"plan","plan_signature":null}}</plan>
+        <plan_id>90107bde15394521b47048b7af67162d</plan_id>
+        <snapshot>0c511eaeebe34710311dff0dcad0cd35</snapshot>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:25</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>1f2fcee6ebe34710311dff0dcad0cd65</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_overrides/>
+        <sys_scope/>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 17:50:49</sys_updated_on>
+        <trigger display_value="">932fcee6ebe34710311dff0dcad0cd63</trigger>
+    </sys_flow_trigger_plan>
+    <sys_flow_subflow_plan action="delete_multiple" query="plan_id=90107bde15394521b47048b7af67162d"/>
+</record_update>

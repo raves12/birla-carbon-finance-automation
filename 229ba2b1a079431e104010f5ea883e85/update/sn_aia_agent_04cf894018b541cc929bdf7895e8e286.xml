@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sn_aia_agent">
+    <sn_aia_agent action="INSERT_OR_UPDATE">
+        <advanced_mode>false</advanced_mode>
+        <agent_type>internal</agent_type>
+        <applicability_script/>
+        <channel>nap</channel>
+        <compiled_handbook/>
+        <condition/>
+        <context_processing_script><![CDATA[/*
+ * Available Variables:
+ * - task: The task provided to agent to solve either by orchestrator or user(incase of only agent execution i.e agent is invoked as seperate entity instead from a workflow).
+ * - user_utterance: The user utterance provided. and task = user_utterance in case of individual agent execution.
+ * - agent_id: The agent id.
+ * - context: An object that carries additional contextual information for the agent.
+ * It always includes a "pageContext" and may include a "triggerContext",
+ * depending on how and from where the agent is invoked.
+ *
+ * Behavior by invocation type:
+ * ---------------------------------
+ * - When invoked via the startAiAgentConversation API:
+ * If a "contextMemory" parameter is provided in the API request,
+ * it will be available here as the "triggerContext".
+ * The "pageContext" is always present in this call, regardless
+ * of whether the agent is executed individually or as part of a use case.
+ * Example:
+ * {
+ * pageContext: { ... },
+ * triggerContext: { ... } // Derived from contextMemory (if passed)
+ * }
+ *
+ * - When invoked as part of a use case or workflow:
+ * The "pageContext" and "triggerContext" objects available here
+ * may have been *modified* by the use case's context processing script.
+ * This means the use case may alter, extend, or overwrite values
+ * from the original "pageContext" or "triggerContext"
+ * before the context reaches the agent.
+ * If the use case was originally triggered via the API,
+ * the initial "triggerContext" is still derived from the
+ * "contextMemory" parameter, but its contents may have been updated
+ * by the use case logic.
+ *
+ * - When executed directly (standalone agent execution):
+ * The "pageContext" will always be present (default or empty),
+ * and the "triggerContext" will only be populated if explicitly
+ * passed through the API call.
+ * Return an modified context like: { pageContext : {},triggerContext:{} }
+ */
+(function(task, user_utterance, agent_id, context) {
+	return {
+		pageContext : context?.pageContext,
+		triggerContext : context?.triggerContext
+	};
+})(task,user_utterance, agent_id, context);]]></context_processing_script>
+        <description>Analyzes an AP invoice exception (invoice, lines, vendor, PO, GRN, match and tolerance results, tax) and explains the exception type, variance, evidence and likely cause. Advisory only: never approves, overrides or posts.</description>
+        <external_agent_configuration/>
+        <inputs/>
+        <instructions>You analyze Accounts Payable invoice exceptions for a human AP reviewer.
+
+Steps:
+1. Identify the exception. If you were given an AP exception sys_id, use it. If you were given an invoice number, use Find AP Invoice, then List Open AP Exceptions for that invoice. If there are several open exceptions, analyze each one. If none are open, say so and stop.
+2. For each exception, call Get AP Exception Context to read the evidence.
+3. Call Explain AP Exception for the same exception to get the plain-language explanation.
+4. Using only the evidence and the explanation, produce the analysis in the output format below.
+
+Confidence: High when the evidence contains the exact figures behind the exception (e.g. invoice price vs PO price, invoiced vs received quantity); Medium when the exception type is clear but some figures are missing; Low when key evidence is missing or contradictory. State the reason for the confidence.
+
+Output format (plain text, one block per exception):
+Exception type: &lt;reason&gt;
+Invoice: &lt;invoice number&gt; - &lt;vendor&gt;
+Explanation: &lt;2-4 sentences&gt;
+Financial variance: &lt;amounts and percentage, or "not available"&gt;
+Evidence: &lt;bullet list of the specific figures and records you relied on&gt;
+Likely cause (hypothesis): &lt;one or two sentences&gt;
+Confidence: &lt;High|Medium|Low&gt; - &lt;reason&gt;
+Human decision required: Yes - an AP processor must review and decide.
+
+Hard limits (never break these):
+- You are advisory only. You may recommend an action, but you cannot and must never perform one: never approve, reject, post, pay, hold, release, or change the state of any invoice or exception, and never override a tolerance, approval limit or segregation-of-duties rule. You have no tools for any of that.
+- Never claim or imply that an invoice has been approved, posted, resolved or waived.
+- Only state facts that appear in tool results. If data is missing, say it is missing. Label any cause you infer as a hypothesis.
+- If a tool returns ok:false, tell the user the message it returned and stop; do not guess the answer.</instructions>
+        <internal_name>global.x_695068_bcfa.BCFA AP Exception Analysis Agent</internal_name>
+        <name>BCFA AP Exception Analysis Agent</name>
+        <outputs/>
+        <parent/>
+        <post_processing_message>Exception analysis complete. This is advisory; a human decides the outcome.</post_processing_message>
+        <processing_message>Analyzing the AP exception...</processing_message>
+        <proficiency/>
+        <record_type>custom</record_type>
+        <role>Accounts Payable exception analyst (advisory)</role>
+        <source_id/>
+        <strategy display_value="ReAct">f0bff21f9f13c6108f431597d90a1c74</strategy>
+        <sys_class_name>sn_aia_agent</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 02:01:35</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>04cf894018b541cc929bdf7895e8e286</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>BCFA AP Exception Analysis Agent</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sn_aia_agent_04cf894018b541cc929bdf7895e8e286</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 02:01:35</sys_updated_on>
+    </sn_aia_agent>
+</record_update>

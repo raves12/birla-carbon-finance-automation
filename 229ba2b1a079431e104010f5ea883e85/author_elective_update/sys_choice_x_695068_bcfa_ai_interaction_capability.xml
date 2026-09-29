@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_choice action="INSERT_OR_UPDATE" field="capability" table="x_695068_bcfa_ai_interaction" version="3">
+        <sys_choice_set action="INSERT_OR_UPDATE">
+            <element>capability</element>
+            <name>x_695068_bcfa_ai_interaction</name>
+            <sys_class_name>sys_choice_set</sys_class_name>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 14:22:04</sys_created_on>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>capability</sys_name>
+            <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+            <sys_update_name>sys_choice_x_695068_bcfa_ai_interaction_capability</sys_update_name>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 14:22:04</sys_updated_on>
+        </sys_choice_set>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>capability</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Document Classification</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ai_interaction</name>
+            <sequence>1</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 14:22:05</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 14:22:05</sys_updated_on>
+            <value>document_classification</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>capability</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Document Extraction</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ai_interaction</name>
+            <sequence>2</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 14:22:05</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 14:22:05</sys_updated_on>
+            <value>document_extraction</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>capability</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Summarization</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ai_interaction</name>
+            <sequence>3</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 14:22:05</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 14:22:05</sys_updated_on>
+            <value>summarization</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>capability</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Exception Explanation</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ai_interaction</name>
+            <sequence>4</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 14:22:05</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 14:22:05</sys_updated_on>
+            <value>exception_explanation</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>capability</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Next Action Recommendation</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ai_interaction</name>
+            <sequence>5</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 14:22:05</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 14:22:05</sys_updated_on>
+            <value>next_action_recommendation</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>capability</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Exception Review (agentic workflow)</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ai_interaction</name>
+            <sequence>6</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 14:22:05</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 14:22:05</sys_updated_on>
+            <value>exception_review</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>capability</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Match Explanation</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ai_interaction</name>
+            <sequence>7</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 14:22:05</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 14:22:05</sys_updated_on>
+            <value>match_explanation</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>capability</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Residual Explanation</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ai_interaction</name>
+            <sequence>8</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 14:22:05</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 14:22:05</sys_updated_on>
+            <value>residual_explanation</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>capability</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Cash Match Recommendation</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ai_interaction</name>
+            <sequence>9</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 14:22:05</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 14:22:05</sys_updated_on>
+            <value>cash_match_recommendation</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>capability</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Candidate Ranking</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ai_interaction</name>
+            <sequence>10</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 14:22:05</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 14:22:05</sys_updated_on>
+            <value>candidate_ranking</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>capability</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Communication Draft</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ai_interaction</name>
+            <sequence>11</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 14:22:05</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 14:22:05</sys_updated_on>
+            <value>communication_draft</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>capability</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Connectivity Test</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ai_interaction</name>
+            <sequence>12</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 14:22:05</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 14:22:05</sys_updated_on>
+            <value>connectivity_test</value>
+        </sys_choice>
+    </sys_choice>
+</record_update>

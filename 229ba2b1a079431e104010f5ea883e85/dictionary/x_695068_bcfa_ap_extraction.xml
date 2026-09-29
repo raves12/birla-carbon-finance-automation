@@ -4,11 +4,11 @@
         <element attributes="edge_encryption_enabled=true,scale=2" label="Confidence" max_length="15" name="confidence" type="decimal"/>
         <element attributes="edge_encryption_enabled=true" label="Requires Review" max_length="40" name="requires_review" type="boolean"/>
         <element attributes="edge_encryption_enabled=true,encode_utf8=false" display="true" label="AP Invoice" mandatory="true" max_length="32" name="ap_invoice" reference="x_695068_bcfa_ap_invoice" type="reference"/>
-        <element attributes="edge_encryption_enabled=true" default="claude_document_intelligence" hint="Records which engine actually produced this extraction row. Claude is tried first when x_695068_bcfa.claude.enabled is true; the simulated fallback runs only if Claude is disabled or unavailable." label="Source" max_length="40" name="source" type="choice">
+        <element attributes="edge_encryption_enabled=true" choice="1" default="simulated_document_intelligence" hint="Records which engine produced this extraction row. Currently the simulated extraction; Claude rows are historical (removed in Phase 34)." label="Source" max_length="40" name="source" type="choice">
             <choice>
                 <element inactive_on_update="false" label="Now Assist in Document Intelligence (not licensed in this PDI)" sequence="3" value="now_assist_document_intelligence"/>
-                <element inactive_on_update="false" label="Simulated (deterministic fallback, legacy)" sequence="2" value="simulated_document_intelligence"/>
-                <element inactive_on_update="false" label="Claude (JSON-context extraction)" sequence="1" value="claude_document_intelligence"/>
+                <element inactive_on_update="false" label="Simulated extraction (fixture values; DocIntel extraction not licensed)" sequence="2" value="simulated_document_intelligence"/>
+                <element inactive_on_update="false" label="Claude (legacy, removed in Phase 34)" sequence="1" value="claude_document_intelligence"/>
             </choice>
         </element>
         <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Reviewed By" max_length="32" name="reviewed_by" reference="sys_user" type="reference"/>

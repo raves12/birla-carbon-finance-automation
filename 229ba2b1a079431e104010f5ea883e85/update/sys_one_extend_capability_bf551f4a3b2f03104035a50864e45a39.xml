@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_one_extend_capability">
+    <sys_one_extend_capability action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description>Summarizes an AP invoice and its match or exception status for a human reviewer. Read-only: never approves, posts, or changes tolerances.</description>
+        <external>true</external>
+        <metadata>{"isGuidedStep":false}</metadata>
+        <name>bcfaApInvoiceSummary</name>
+        <short_description/>
+        <sys_class_name>sys_one_extend_capability</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-27 09:32:08</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>bf551f4a3b2f03104035a50864e45a39</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>bcfaApInvoiceSummary</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_one_extend_capability_bf551f4a3b2f03104035a50864e45a39</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-27 09:35:11</sys_updated_on>
+        <type>skill</type>
+    </sys_one_extend_capability>
+    <sys_translated_text action="delete_multiple" query="documentkey=bf551f4a3b2f03104035a50864e45a39"/>
+</record_update>

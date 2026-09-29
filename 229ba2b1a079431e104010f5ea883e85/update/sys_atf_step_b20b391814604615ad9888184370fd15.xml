@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_atf_step">
+    <sys_atf_step action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <callable_outputs/>
+        <copied_from/>
+        <description/>
+        <display_name>Run Server Side Script</display_name>
+        <inputs/>
+        <mugshots_cache_json/>
+        <notes/>
+        <order>1</order>
+        <step_config display_value="Run Server Side Script">41de4a935332120028bc29cac2dc349a</step_config>
+        <sys_class_name>sys_atf_step</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 18:37:06</sys_created_on>
+        <sys_id>b20b391814604615ad9888184370fd15</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>Run Server Side Script</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_atf_step_b20b391814604615ad9888184370fd15</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:37:06</sys_updated_on>
+        <table/>
+        <test display_value="AI identity — least privilege and never an approver">61d67daab2864456b6a8df9916cf2581</test>
+        <timeout/>
+        <warning_message/>
+    </sys_atf_step>
+    <sys_variable_value action="delete_multiple" query="document_key=b20b391814604615ad9888184370fd15"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>b20b391814604615ad9888184370fd15</document_key>
+        <order>200</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 18:37:06</sys_created_on>
+        <sys_id>2ea71246141646cf88ebae0a30a8a6d3</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:37:06</sys_updated_on>
+        <value>
+                (function(outputs, steps, params, stepResult, assertEqual) {
+                    var aiUser = new GlideRecord('sys_user');
+                    aiUser.get('user_name', 'bcfa.ai.reviewer');
+                    var roles = [];
+                    var has = new GlideRecord('sys_user_has_role');
+                    has.addQuery('user', aiUser.getUniqueValue());
+                    has.addQuery('state', 'active');
+                    has.query();
+                    while (has.next()) roles.push(has.role.name.toString());
+                    var bcfaRoles = roles.filter(function(r) { return r.indexOf('x_695068_bcfa.') === 0; });
+                    assertEqual({ name: 'AI identity holds only x_695068_bcfa.ai_agent among BCFA roles', shouldbe: 'x_695068_bcfa.ai_agent', value: bcfaRoles.join(',') });
+                    assertEqual({ name: 'AI identity is not admin', shouldbe: -1, value: roles.indexOf('admin') });
+
+                    var ap = new ApDomainService();
+                    var inv = ap.intakeInvoice({ invoiceNumber: 'ATF-AI-' + gs.generateGUID(), currency: 'INR', grossAmount: 100, netAmount: 100, taxAmount: 0 }).apInvoiceSysId;
+                    var approvalSysId = new ApprovalEngine().requestApInvoiceApproval(inv, gs.getUserID());
+                    var sod = new ApprovalEngine().checkSegregation({ process: 'ap', approvalSysId: approvalSysId }, aiUser.getUniqueValue());
+                    assertEqual({ name: 'segregation check refuses the AI identity as approver', shouldbe: false, value: sod.ok });
+                    var decision = new ApprovalEngine().decideApInvoiceApproval(approvalSysId, 'approved', aiUser.getUniqueValue(), 'ATF: AI attempts approval');
+                    assertEqual({ name: 'decision by the AI identity is refused', shouldbe: true, value: !!decision.error });
+                    var approval = new GlideRecord('x_695068_bcfa_ap_approval');
+                    approval.get(approvalSysId);
+                    assertEqual({ name: 'approval still pending', shouldbe: 'pending', value: approval.getValue('decision') });
+                })(outputs, steps, params, stepResult, assertEqual);
+            </value>
+        <variable display_value="Test script">989d9e235324220002c6435723dc3484</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>b20b391814604615ad9888184370fd15</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 18:37:06</sys_created_on>
+        <sys_id>ba7a3a311a1747f2bb20934e21370c24</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:37:06</sys_updated_on>
+        <value>3.1</value>
+        <variable display_value="Jasmine version">42f2564b73031300440211d8faf6a777</variable>
+    </sys_variable_value>
+</record_update>

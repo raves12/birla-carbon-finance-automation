@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_atf_step">
+    <sys_atf_step action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <callable_outputs/>
+        <copied_from/>
+        <description/>
+        <display_name>Run Server Side Script</display_name>
+        <inputs/>
+        <mugshots_cache_json/>
+        <notes/>
+        <order>1</order>
+        <step_config display_value="Run Server Side Script">41de4a935332120028bc29cac2dc349a</step_config>
+        <sys_class_name>sys_atf_step</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 18:37:06</sys_created_on>
+        <sys_id>52cae50388264749b436dc409dbc6a8a</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>Run Server Side Script</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_atf_step_52cae50388264749b436dc409dbc6a8a</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:37:06</sys_updated_on>
+        <table/>
+        <test display_value="Audit trail — events cannot be changed or deleted">7647a3d2630b486abb495746b335839d</test>
+        <timeout/>
+        <warning_message/>
+    </sys_atf_step>
+    <sys_variable_value action="delete_multiple" query="document_key=52cae50388264749b436dc409dbc6a8a"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>52cae50388264749b436dc409dbc6a8a</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 18:37:06</sys_created_on>
+        <sys_id>019926d5df344565898f9293f4178c72</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:37:06</sys_updated_on>
+        <value>3.1</value>
+        <variable display_value="Jasmine version">42f2564b73031300440211d8faf6a777</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>52cae50388264749b436dc409dbc6a8a</document_key>
+        <order>200</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 18:37:06</sys_created_on>
+        <sys_id>295478d99c4440caabd86ad7866f9d3e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:37:06</sys_updated_on>
+        <value>
+                (function(outputs, steps, params, stepResult, assertEqual) {
+                    var id = new AuditEngine().logEvent({ sourceTable: 'x_695068_bcfa_ap_invoice', sourceRecord: gs.generateGUID(), eventType: 'rule_evaluated', description: 'ATF append-only probe' });
+                    var ev = new GlideRecord('x_695068_bcfa_audit_event');
+                    ev.addQuery('description', 'ATF append-only probe');
+                    ev.orderByDesc('sys_created_on');
+                    ev.setLimit(1);
+                    ev.query();
+                    assertEqual({ name: 'probe event written', shouldbe: true, value: ev.next() });
+                    var sysId = ev.getUniqueValue();
+                    ev.setValue('description', 'tampered');
+                    ev.update();
+                    var check = new GlideRecord('x_695068_bcfa_audit_event');
+                    check.get(sysId);
+                    assertEqual({ name: 'update refused', shouldbe: 'ATF append-only probe', value: check.getValue('description') });
+                    check.deleteRecord();
+                    var still = new GlideRecord('x_695068_bcfa_audit_event');
+                    assertEqual({ name: 'delete refused', shouldbe: true, value: still.get(sysId) });
+                })(outputs, steps, params, stepResult, assertEqual);
+            </value>
+        <variable display_value="Test script">989d9e235324220002c6435723dc3484</variable>
+    </sys_variable_value>
+</record_update>

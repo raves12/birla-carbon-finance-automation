@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sn_aia_agent_tool_m2m">
+    <sn_aia_agent_tool_m2m action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <agent display_value="BCFA Cash Match Recommendation Agent">59b6817ef4724c9ea131e5aa57c3f250</agent>
+        <description>Saves the final recommendation text to an AR exception's advisory AI Recommendation field only. Changes nothing else and is audited.</description>
+        <display_output>false</display_output>
+        <document_status/>
+        <execution_mode>autopilot</execution_mode>
+        <inputs>[{"name":"ar_exception_sys_id","description":"sys_id of the AR exception","mandatory":true},{"name":"advice_text","description":"The final recommendation text, exactly as shown to the user","mandatory":true}]</inputs>
+        <max_auto_executions>10</max_auto_executions>
+        <name>Save AR Advisory Recommendation (Cash Match)</name>
+        <output_transformation_strategy/>
+        <post_message>Advisory recommendation saved to the exception.</post_message>
+        <post_processing_script/>
+        <pre_message>Saving the advisory recommendation...</pre_message>
+        <pre_run>false</pre_run>
+        <sys_class_name>sn_aia_agent_tool_m2m</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 02:15:37</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>febd7650ea7c467994f131526eb566ca</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Save AR Advisory Recommendation (Cash Match)</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sn_aia_agent_tool_m2m_febd7650ea7c467994f131526eb566ca</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 02:15:37</sys_updated_on>
+        <timeout/>
+        <tool display_value="Save AR Advisory Recommendation (Cash Match)">6296e518e68b4bb08e48ca6abdf9885d</tool>
+        <tool_attributes>{}</tool_attributes>
+        <transformation_instructions/>
+    </sn_aia_agent_tool_m2m>
+</record_update>

@@ -5,13 +5,13 @@
         <attributes>edge_encryption_enabled=true</attributes>
         <audit>false</audit>
         <calculation/>
-        <choice/>
+        <choice>1</choice>
         <choice_field/>
         <choice_table/>
         <column_label>Source</column_label>
         <comments/>
         <create_roles/>
-        <default_value>claude_document_intelligence</default_value>
+        <default_value>simulated_document_intelligence</default_value>
         <defaultsort/>
         <delete_roles/>
         <dependent/>
@@ -52,8 +52,8 @@
         <sys_policy/>
         <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
         <sys_update_name>sys_dictionary_x_695068_bcfa_ap_extraction_source</sys_update_name>
-        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
-        <sys_updated_on>2026-09-17 07:10:18</sys_updated_on>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-29 08:36:59</sys_updated_on>
         <table_reference>false</table_reference>
         <text_index>false</text_index>
         <unique>false</unique>

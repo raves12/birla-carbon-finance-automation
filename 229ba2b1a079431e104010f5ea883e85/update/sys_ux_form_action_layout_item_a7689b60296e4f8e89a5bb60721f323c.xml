@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ux_form_action_layout_item">
+    <sys_ux_form_action_layout_item action="INSERT_OR_UPDATE">
+        <action display_value="Request Clarification">fe5978885359408dad24a23b61b818da</action>
+        <active>true</active>
+        <animate_icon>false</animate_icon>
+        <color>secondary</color>
+        <description/>
+        <icon/>
+        <item_type>action</item_type>
+        <label>Request Clarification</label>
+        <layout_group/>
+        <name>Request Clarification</name>
+        <order>120</order>
+        <overflow>false</overflow>
+        <sys_class_name>sys_ux_form_action_layout_item</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 07:30:18</sys_created_on>
+        <sys_id>a7689b60296e4f8e89a5bb60721f323c</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Request Clarification</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_ux_form_action_layout_item_a7689b60296e4f8e89a5bb60721f323c</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 07:30:18</sys_updated_on>
+        <table>x_695068_bcfa_ar_exception</table>
+    </sys_ux_form_action_layout_item>
+</record_update>

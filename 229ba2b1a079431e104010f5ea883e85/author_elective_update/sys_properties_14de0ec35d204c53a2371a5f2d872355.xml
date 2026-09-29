@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_properties">
+    <sys_properties action="DELETE">
+        <choices/>
+        <description>Default max_tokens sent with every Claude Messages API request unless a specific call overrides it.</description>
+        <ignore_cache>false</ignore_cache>
+        <is_private>false</is_private>
+        <name>x_695068_bcfa.claude.max_tokens</name>
+        <read_roles/>
+        <suffix>claude.max_tokens</suffix>
+        <sys_class_name>sys_properties</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 09:22:44</sys_created_on>
+        <sys_id>14de0ec35d204c53a2371a5f2d872355</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_695068_bcfa.claude.max_tokens</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_properties_14de0ec35d204c53a2371a5f2d872355</sys_update_name>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-17 09:22:44</sys_updated_on>
+        <type>integer</type>
+        <value>2048</value>
+        <write_roles/>
+    </sys_properties>
+    <sys_translated_text action="DELETE" query="documentkey=14de0ec35d204c53a2371a5f2d872355"/>
+    <sys_update_version action="INSERT_OR_UPDATE">
+        <action>DELETE</action>
+        <application display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</application>
+        <file_path/>
+        <instance_id>fc123fec1b958a5065324089bd4bcb56</instance_id>
+        <instance_name>pwcmanagementservicesdemo01</instance_name>
+        <name>sys_properties_14de0ec35d204c53a2371a5f2d872355</name>
+        <payload><![CDATA[<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_properties"><sys_properties action="INSERT_OR_UPDATE"><choices/><description>Default max_tokens sent with every Claude Messages API request unless a specific call overrides it.</description><ignore_cache>false</ignore_cache><is_private>false</is_private><name>x_695068_bcfa.claude.max_tokens</name><read_roles/><suffix>claude.max_tokens</suffix><sys_class_name>sys_properties</sys_class_name><sys_created_by>Ravi_MCP_Admin</sys_created_by><sys_created_on>2026-09-17 09:22:44</sys_created_on><sys_id>14de0ec35d204c53a2371a5f2d872355</sys_id><sys_mod_count>0</sys_mod_count><sys_name>x_695068_bcfa.claude.max_tokens</sys_name><sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package><sys_policy/><sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope><sys_update_name>sys_properties_14de0ec35d204c53a2371a5f2d872355</sys_update_name><sys_updated_by>Ravi_MCP_Admin</sys_updated_by><sys_updated_on>2026-09-17 09:22:44</sys_updated_on><type>integer</type><value>2048</value><write_roles/></sys_properties><sys_translated_text action="delete_multiple" query="documentkey=14de0ec35d204c53a2371a5f2d872355"/></record_update>]]></payload>
+        <payload_hash>-1349443349</payload_hash>
+        <record_name>x_695068_bcfa.claude.max_tokens</record_name>
+        <reverted_from/>
+        <source>4bdfb6f4eb670fd0311dff0dcad0cd03</source>
+        <source_table>sys_update_set</source_table>
+        <state>previous</state>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-23 10:47:58</sys_created_on>
+        <sys_id>7b50c3f8eb670fd0311dff0dcad0cdef</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_recorded_at>1a0cde121ec0000001</sys_recorded_at>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-23 10:47:58</sys_updated_on>
+        <type>System Property</type>
+        <update_guid>6853fbb2a39783105aa54f3997bbe03d</update_guid>
+        <update_guid_history>6853fbb2a39783105aa54f3997bbe03d:1430798164</update_guid_history>
+    </sys_update_version>
+    <sys_metadata_delete action="INSERT_OR_UPDATE">
+        <sys_audit_delete/>
+        <sys_class_name>sys_metadata_delete</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-29 08:12:25</sys_created_on>
+        <sys_db_object display_value="" name="sys_properties">sys_properties</sys_db_object>
+        <sys_id>27c233f51bcd4f20895c9f6726f0df10</sys_id>
+        <sys_metadata>14de0ec35d204c53a2371a5f2d872355</sys_metadata>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_695068_bcfa.claude.max_tokens</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_parent/>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_scope_delete display_value="">2a2ac8703b554c088130bcc4b05f6e71</sys_scope_delete>
+        <sys_update_name>sys_properties_14de0ec35d204c53a2371a5f2d872355</sys_update_name>
+        <sys_update_version display_value="sys_properties_14de0ec35d204c53a2371a5f2d872355">7b50c3f8eb670fd0311dff0dcad0cdef</sys_update_version>
+        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
+        <sys_updated_on>2026-09-29 08:12:25</sys_updated_on>
+    </sys_metadata_delete>
+</record_update>

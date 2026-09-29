@@ -1,17 +1,26 @@
-<?xml version="1.0"?>
-<record_update table="sys_documentation">
-  <sys_documentation action="INSERT_OR_UPDATE" apply_defaults="true">
-    <sys_id>345104f9284a48a3ac84e724cd2dddb2</sys_id>
-    <sys_scope display_value="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_scope>
-    <sys_update_name>sys_documentation_x_695068_bcfa_finance_intake_attachment_hash_en</sys_update_name>
-    <element>attachment_hash</element>
-    <help/>
-    <hint>SHA-256 of the primary attachment content, computed at classification time. Phase 10 duplicate-intake detection key, independent of the existing AP Invoice duplicate_key check (vendor+invoice_number+amount), which only runs after a transaction already exists.</hint>
-    <label>Attachment Hash</label>
-    <language>en</language>
-    <name>x_695068_bcfa_finance_intake</name>
-    <plural>Attachment Hashes</plural>
-    <url/>
-    <url_target/>
-  </sys_documentation>
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_documentation element="attachment_hash" label="Attachment Hash" language="en" table="x_695068_bcfa_finance_intake">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>attachment_hash</element>
+            <help/>
+            <hint>SHA-256 of the primary attachment content, computed at classification time. Phase 10 duplicate-intake detection key, independent of the existing AP Invoice duplicate_key check (vendor+invoice_number+amount), which only runs after a transaction already exists.</hint>
+            <label>Attachment Hash</label>
+            <language>en</language>
+            <name>x_695068_bcfa_finance_intake</name>
+            <plural>Attachment Hashes</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>RaviMAdmin</sys_created_by>
+            <sys_created_on>2026-09-25 11:44:27</sys_created_on>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Attachment Hash</sys_name>
+            <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+            <sys_update_name>sys_documentation_x_695068_bcfa_finance_intake_attachment_hash_en</sys_update_name>
+            <sys_updated_by>RaviMAdmin</sys_updated_by>
+            <sys_updated_on>2026-09-25 11:44:27</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
 </record_update>

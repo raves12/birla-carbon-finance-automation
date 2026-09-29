@@ -4,21 +4,21 @@
         <acls/>
         <active>true</active>
         <annotation/>
-        <attributes>timeFromCreateToActivate=28063000</attributes>
+        <attributes>timeFromCreateToActivate=988250000</attributes>
         <authored_on_release_version/>
         <callable_by_client_api>false</callable_by_client_api>
         <category/>
         <copied_from/>
         <copied_from_name/>
-        <description>Daily sweep for AP Exceptions open more than 3 days; logs a warning for follow-up.</description>
+        <description>Hourly: ages every open AP exception, sets its SLA status and escalates breaches (level 1 owner and group, level 2 Finance Controllers) through ExceptionEngine.</description>
         <display_name_after_preview/>
         <flow_priority>MEDIUM</flow_priority>
         <generation_source>fluent</generation_source>
         <internal_name>ap_exception_aging_escalation</internal_name>
-        <label_cache>[{"name":"6b255813-3101-4cec-938e-1ed5a0805a2b.Count","label":"6b255813-3101-4cec-938e-1ed5a0805a2b➛Count","type":"integer","base_type":"integer","usedInstances":{"7d908a15-9c3f-48d0-8901-50a89f37f44b":["log_message"]},"attributes":{}}]</label_cache>
+        <label_cache>[{"name":"162e5f08-85e1-4dd3-a9d2-edf237f23366.Records","label":"162e5f08-85e1-4dd3-a9d2-edf237f23366➛Records","type":"array.object","base_type":"array.object","column_name":"Records","usedInstances":{"26949729-f294-4b2e-9482-3fda31863355":["items"]},"attributes":{}},{"name":"26949729-f294-4b2e-9482-3fda31863355.item.sys_id","label":"2 - For Each - ➛item➛Sys Id","type":"reference","base_type":"reference","usedInstances":{"5cf78cd1-6a11-44fd-a3b2-8ea0785fe9c0":["record"]},"attributes":{}},{"name":"162e5f08-85e1-4dd3-a9d2-edf237f23366.Count","label":"162e5f08-85e1-4dd3-a9d2-edf237f23366➛Count","type":"integer","base_type":"integer","usedInstances":{"71fd676d-f1dd-4cf1-be0d-eb4d70eb6031":["log_message"]},"attributes":{}}]</label_cache>
         <master_snapshot>8075d3fa835f43103d769be0deaad390</master_snapshot>
         <master_snapshot_digest/>
-        <name>AP Exception Aging Escalation</name>
+        <name>BCFA AP Aging/Escalation Flow</name>
         <natlang/>
         <outputs/>
         <pre_compiled>false</pre_compiled>
@@ -36,15 +36,15 @@
         <sys_domain>global</sys_domain>
         <sys_domain_path>/</sys_domain_path>
         <sys_id>8769e860868b4d1da62856fa0f7e0f76</sys_id>
-        <sys_mod_count>0</sys_mod_count>
-        <sys_name>AP Exception Aging Escalation</sys_name>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>BCFA AP Aging/Escalation Flow</sys_name>
         <sys_overrides/>
         <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
         <sys_policy/>
         <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
         <sys_update_name>sys_hub_flow_8769e860868b4d1da62856fa0f7e0f76</sys_update_name>
         <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
-        <sys_updated_on>2026-09-23 10:47:57</sys_updated_on>
+        <sys_updated_on>2026-09-28 17:50:47</sys_updated_on>
         <type>flow</type>
         <updation_source/>
         <version>2</version>
@@ -57,23 +57,59 @@
         <day_of_week/>
         <name/>
         <published_version/>
-        <run_period/>
-        <run_start>2026-09-17 07:12:10</run_start>
+        <run_period>1970-01-01 01:00:00</run_period>
+        <run_start/>
         <sys_class_name>sys_flow_timer_trigger</sys_class_name>
         <sys_created_by>Ravi_MCP_Admin</sys_created_by>
         <sys_created_on>2026-09-17 07:12:10</sys_created_on>
         <sys_domain>global</sys_domain>
         <sys_domain_path>/</sys_domain_path>
         <sys_id>4c7517fa835f43103d769be0deaad38d</sys_id>
-        <sys_mod_count>0</sys_mod_count>
+        <sys_mod_count>1</sys_mod_count>
         <sys_overrides/>
         <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
-        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
-        <sys_updated_on>2026-09-17 07:12:10</sys_updated_on>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 17:42:23</sys_updated_on>
         <time>1970-01-01 16:00:00</time>
-        <timer_type>11</timer_type>
+        <timer_type>1</timer_type>
         <trigger_definition display_value="Daily">89142dc0c32222002841b63b12d3ae8a</trigger_definition>
     </sys_flow_timer_trigger>
+    <sys_flow_trigger_auto_script action="delete_multiple" query="name=Trigger:4c7517fa835f43103d769be0deaad38d^sys_idNOT INb62f8ee6ebe34710311dff0dcad0cd30"/>
+    <sys_flow_trigger_auto_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <business_calendar/>
+        <condition/>
+        <conditional>false</conditional>
+        <entered_time/>
+        <max_drift/>
+        <name>Trigger:4c7517fa835f43103d769be0deaad38d</name>
+        <offset/>
+        <offset_type>0</offset_type>
+        <run_as display_value="Ravi Kumar Kumar">306974baebf99250f262ffb2cad0cd59</run_as>
+        <run_as_tz/>
+        <run_dayofmonth>1</run_dayofmonth>
+        <run_dayofweek/>
+        <run_period>1970-01-01 01:00:00</run_period>
+        <run_start/>
+        <run_time/>
+        <run_type>periodically</run_type>
+        <script><![CDATA[sn_flow_trigger.FlowTriggerAPI.fireTimerTrigger('4c7517fa835f43103d769be0deaad38d');]]></script>
+        <sys_class_name>sys_flow_trigger_auto_script</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:23</sys_created_on>
+        <sys_id>b62f8ee6ebe34710311dff0dcad0cd30</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name/>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:12:51</sys_updated_on>
+        <time_zone/>
+        <trigger display_value="">4c7517fa835f43103d769be0deaad38d</trigger>
+        <upgrade_safe>true</upgrade_safe>
+    </sys_flow_trigger_auto_script>
     <sys_trigger_runner_mapping action="delete_multiple" query="identifier=8769e860868b4d1da62856fa0f7e0f76"/>
     <sys_hub_flow_stage action="delete_multiple" query="flow=8769e860868b4d1da62856fa0f7e0f76"/>
     <sys_flow_cat_variable_model action="delete_multiple" query="id=8769e860868b4d1da62856fa0f7e0f76"/>
@@ -84,9 +120,9 @@
     <sys_hub_trigger_instance_v2 action="INSERT_OR_UPDATE">
         <comment/>
         <display_text/>
-        <flow display_value="AP Exception Aging Escalation">8769e860868b4d1da62856fa0f7e0f76</flow>
+        <flow display_value="BCFA AP Aging/Escalation Flow">8769e860868b4d1da62856fa0f7e0f76</flow>
         <generation_source/>
-        <name>Daily</name>
+        <name>Repeat</name>
         <published_version/>
         <remote_sys_id/>
         <sys_created_by>Ravi_MCP_Admin</sys_created_by>
@@ -96,63 +132,114 @@
         <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
         <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
         <sys_updated_on>2026-09-17 14:59:16</sys_updated_on>
-        <trigger_definition display_value="Daily">89142dc0c32222002841b63b12d3ae8a</trigger_definition>
-        <trigger_inputs>H4sIAAAAAAAA/31RwWrDMAz9leFzBs5pW267FAqDwRp2KaWotpIIHCfYStes5N+nNFnIxhjo4CfJeu9J+6viQGWJYesjgze46+PWqkypRDk4oZNnTjUKJM8YPLi8b1GypSOLR55qFlv0Fj1PP03VkMEXioL3h0TV4C1wE3qVcegwUUVo6hzr1gHLrAJclGQTLAaVpVonykM9kszjz+C6EaZPD/pepxJ3+jHTWmIkpyiD+vd/m0xFzgb0k6AWghDwSHf97fMnNf/hdhYqMvHCo2+7eFg5nTMBwb56169aLpE+8fa/i3hc7W7uKHZV8/GGBYpegxvyN7q56BoDbkHAcr9TxxjFyTAsy9gQuvmM0QRq+dkwnb93PRy+AM96iw75AQAA</trigger_inputs>
+        <trigger_definition display_value="Repeat">f63f0d94c32222002841b63b12d3aeed</trigger_definition>
+        <trigger_inputs>H4sIAAAAAAAACo2QsWoDMRBEfyVMLYOuClGXJmBIlZg0xpiNtLks6HRitWc4jP/dCCeNIZB22J15M/szTGUcWbelGZXI72vbJgTAIdMnZwS8cWUyOEgx1kJ5t1ZGwJgl8TEtSiZzgUPiyiVxsdt//J4l8qs0Q9gfHCYqiWzWFcF0YYdZEyvC4L1Doal76m/WifLSheHp0W/8sPHDgx+C98H7niStZlo//nP0Ipx/GrWoUu05mpwY4Yty444pOSmXG2QlpYmtc51hfxS9h71b6nI5XAHMyPxjWQEAAA==</trigger_inputs>
         <trigger_outputs/>
-        <trigger_type>daily</trigger_type>
+        <trigger_type>repeat</trigger_type>
         <updation_source/>
     </sys_hub_trigger_instance_v2>
-    <sys_hub_action_instance_v2 action="delete_multiple" query="flow=8769e860868b4d1da62856fa0f7e0f76^sys_idNOT IN6b25581331014cec938e1ed5a0805a2b,7d908a159c3f48d0890150a89f37f44b"/>
+    <sys_hub_action_instance_v2 action="delete_multiple" query="flow=8769e860868b4d1da62856fa0f7e0f76^sys_idNOT IN162e5f0885e14dd3a9d2edf237f23366,5cf78cd16a1144fda3b28ea0785fe9c0,71fd676df1dd4cf1be0deb4d70eb6031"/>
     <sys_hub_action_instance_v2 action="INSERT_OR_UPDATE">
         <action_type display_value="Look Up Records">43400a1587003300663ca1bb36cb0b4b</action_type>
         <action_type_parent display_value="">43400a1587003300663ca1bb36cb0b4b</action_type_parent>
-        <attributes>timeFromCreateToActivate=36000</attributes>
-        <comment>Find AP exceptions open more than 3 days</comment>
-        <compiled_snapshot/>
+        <attributes>timeFromCreateToActivate=39000</attributes>
+        <comment>Open AP exceptions</comment>
+        <compiled_snapshot>43400a1587003300663ca1bb36cb0b4b</compiled_snapshot>
         <display_text/>
-        <flow display_value="AP Exception Aging Escalation">8769e860868b4d1da62856fa0f7e0f76</flow>
+        <flow display_value="BCFA AP Aging/Escalation Flow">8769e860868b4d1da62856fa0f7e0f76</flow>
         <generation_source/>
         <order>1</order>
         <parent_ui_id/>
         <sys_class_name>sys_hub_action_instance_v2</sys_class_name>
-        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
-        <sys_created_on>2026-09-17 07:11:33</sys_created_on>
-        <sys_id>6b25581331014cec938e1ed5a0805a2b</sys_id>
-        <sys_mod_count>20</sys_mod_count>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:01</sys_created_on>
+        <sys_id>162e5f0885e14dd3a9d2edf237f23366</sys_id>
+        <sys_mod_count>1</sys_mod_count>
         <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
-        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
-        <sys_updated_on>2026-09-17 14:59:16</sys_updated_on>
-        <ui_id>6b255813-3101-4cec-938e-1ed5a0805a2b</ui_id>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:50:48</sys_updated_on>
+        <ui_id>162e5f08-85e1-4dd3-a9d2-edf237f23366</ui_id>
         <updation_source/>
-        <values>H4sIAAAAAAAA/+VXUU/bMBD+K1WeNqmqUloK9A2BkCYNkADxwph1sZ3Wm2tntlNaEP995zgJoQ0wtiKB9pi78913d9+dnau7SMGMR+OIasWEE1rZqBvNQeZeaB243H7L43jAdMbVd7u0hBoOjjOiVaGgP2AOlhqRufHE9hgs7f5Enzsw7tPgMzpjwmYSlpeb9JmBQdiOm2h8F9GpkMxwFY2vrruRYBhkNx3GMfS3d3fQ2yCOR6MBhX6SDEY0iZPtGF1ISLhE04Nm4m3FcMusVfa1zYE2zIPqdyO+cFwxjmhSkJZ3oxkoBk6bZS3BpNmpkg+CqVAOPUbeeGHFLcbFPGJvmXLMkPKgrT9JWdwgTg/BwbkzOXW5KU3pVAvKbagN4ynk0h00ZcHgNPMZhCMOElmd1jKfqZNQlah2UPUSJblFEDzzqXrsGBzzSM+n+uasAnkkVFGUMkmpKcj6C5wzIsmdh3MXccln6IfMIMuEmpDM6LkoDiOUWW8i8aOXSn2DMa2YqB5QjxsZ4qB3hPLDQnwJRvgkjtENHr7vRkiyAwnWPqSCNSS/co8kJFamQIoqhBL4cwUJ9zHKnJeY77v10ASzh3lZkNHedjzaJQlNgUBG+ILyUNm1OXjW9t/4PUwa/L4oMa5ALlldfJJC95jVxbHOSVCUrI43xurdj8TpMo13RmoEJCQyhIQWWp2bopRzQmVuC4UBZYOvvxiBl9lvtXGk4FHjxvAyXN3rfIeO053bP+B2/Pzu3mtw+xyjdS4CghZQ1eYu2LC6tSthye3Bxrg92NoMt+/qNOvStVS5Gk3fl8r+1tvDqj2Sq3Ggf982O6+K2X9tzK379dkcvGo4m/QKmsMnWLbhGU4ZSQWXjAglhSo2J950GOfNhpuRKR4t45EwieRGsAl3D9ErK6bdDcifbfqScaRqVJHe2+2D0MAmDx4971reg6v6l/YD3Xl2P2w39sOp510nWa6shxpjuSBCZ1suwSOvWLkEt/7PS/BdPuy6T83lm734sHnEcIulav4n9eN4ndhB+BKbh8/edqN+g83HsOic1bFbAZWERq7xSVGfJpu/1NKSysMN/qW8WypjG+Inr4t+N2g/xItvczv7+jcuv/0D+A8AAA==</values>
+        <values>H4sIAAAAAAAA/+VX207jMBD9lSrPUZXQC4U3BEJCWkACxAtC1sRxWmtdJ2s7vVD133ccJ2m2DQV2iwTax4zncmZ8Zjx5WnkSpsw79WgqY254KrXnezMQuRVqAybXVzdpxqTPJVFsxtkcFWKuMwHLx7f0MlDo3jDlna48OuEiVkx6p0/PvsdjNBwl/SCAcDA6DoJeLwiGwx6FMIp6QxoF0SBAFwIiJlD1vAmwDbRZZq2yH20OUhVbUKHvsYVhMmaIJgGhme9NQcZgUrWsJYpBfCvFRjDh0qBHzyovNH/BuJhHYDUThhlS5k7rT1IWzImTCzBwb1ROTa5KVTpJOWXa1SZmCeTCnDdlTuE2sxk4EwORqKxTkU/ljauKVzuo7gcluUYQLLOpWuwYHPNI7ifp/K4CecllUZQySZFSEPUXGKN4lBsLZ+Uxwaboh0why7gck0ylM14YI5Rpdyzwo5uIdI4xNR/LLlCLu4uFhe4lyi8K8SMobpO4RjdovPY9vdTnArTepII1JL9yi8QlVqZAiiq4Elg7qnhmzjDKjJWY135Nbqe24fWCDE8GwXBEIpoAgYywBWWusjvc3qv7b/zuRw1+P5QYtyCXrC4+SXH2J6sLs86NOyhZHRyM1aPvxOkyjS9GagTEBTKEuCvUaa6KUs4IFbkuDhRI7Xz9RQu8zX6dKkMKHjUmu5WBprt8h45JOy/v4Hawf3afNLh9j9E6Dw5BC6hqchds2J7albDkdu9g3O4dHYbbqzrNunQtVa5a095Lpf9i9WFbH8nVMAjXbb3zoZjhR2MerXd7s/eh5mzSy51cvMKyA/dwEpOEMxETLgWXxeTElw7jfFpzx2SCpmU84jqRzHk8ZmYTvdKKUzMH8bPtvGQcqS6qSO9T5gF2AG5oGi+lueuFuMDsToPQd+K3hkF/7zAYho1hcA2Lzl0dvhVTORCwZ9m4qHJzIlzV0pKu/QMucV/2uauup7Wbqlv6Fg/ipz1xroK7HH4Hfenx3rds0KDvrSVdJ1puPWV18JK7bgq1LGyX9mBrYTv6Pxe2L/kT4r/2hhz47+T5N/sVJlZ8DwAA</values>
     </sys_hub_action_instance_v2>
-    <sys_hub_alias_mapping action="delete_multiple" query="source_id=6b25581331014cec938e1ed5a0805a2b"/>
+    <sys_hub_alias_mapping action="delete_multiple" query="source_id=162e5f0885e14dd3a9d2edf237f23366"/>
+    <sys_hub_action_instance_v2 action="INSERT_OR_UPDATE">
+        <action_type display_value="Fire Event">80a30edeff30311077a95dac793bf19b</action_type>
+        <action_type_parent display_value="">80a30edeff30311077a95dac793bf19b</action_type_parent>
+        <attributes>timeFromCreateToActivate=39000</attributes>
+        <comment>Run the deterministic aging / escalation step (FinanceOrchestration ap_aging)</comment>
+        <compiled_snapshot>80a30edeff30311077a95dac793bf19b</compiled_snapshot>
+        <display_text/>
+        <flow display_value="BCFA AP Aging/Escalation Flow">8769e860868b4d1da62856fa0f7e0f76</flow>
+        <generation_source/>
+        <order>3</order>
+        <parent_ui_id>26949729-f294-4b2e-9482-3fda31863355</parent_ui_id>
+        <sys_class_name>sys_hub_action_instance_v2</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:01</sys_created_on>
+        <sys_id>5cf78cd16a1144fda3b28ea0785fe9c0</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:50:48</sys_updated_on>
+        <ui_id>5cf78cd1-6a11-44fd-a3b2-8ea0785fe9c0</ui_id>
+        <updation_source/>
+        <values>H4sIAAAAAAAA/+2WXW/bNhSG/4qga8uTSEqicpflYyiwtUXS9aYohCPy0NYgS65EpfGC/PeSkvwhO7XbLQ0wdDcGeMSP97yHj3k+PLglLNA9c5dQLwJ34t5B0doxLFOY5eXMhGTeLAtYvT/8YhaZ1Rpr9+zBFfO8kDWW7tmHjxM3l2aq5EB9lKgU9WkQ+HEMSShBxAnNVACZ2aKADAsz9e16K8eq2BOlV0s7bHTdn2vHvw8Lb9fBqpZWCJu4eK+xlGgUKCganLgLKCXoql5tIjWCfFMW28A8L7XZ7bxcOZ0Fjp6DdmpsquIOG0dXDjib8xdw3+R/G0nc9327mUKTuLAa3Z1hOjjXh9UlaDBqW6Hbepgq5lUusOktMz5BW+iL3Vg/4c1S51XZL9GQFevVVdEuyte9V+5mg3WhTKRtjAhcWjdsekOu6nZefb5Zq7zOy8644WNRCSg2I9Am56zVVs+D2+bv9irRRw5qgQUuzInpApZLE0mXdXWXd6cY0YvprDCDqSqqz0Zdk8/KKQib4dRUCabXJn7Zhd9Dndt0/zDbmMX2uD/L/FOLr+ztikI/8X2iPBlx9FigiAdBwj1CaBbISDASJe7jxG1WzUUBTbM1ylQo/dTaNHvbBoPS3mO7RNT5Up8bUXc4ePE42bDSl2DLyn0aJaEf8TQTClLDB94L7Et2QM/Ruad4EuIoT/EOT+8GjXuSB5K6Ydp9G9PULXNe9x8Gouh3EmWuOI4Y+RkJGTk8pmTk8YuQkhDGVMS5lxGQHuMR87LM514cMJ+Y+0RoSH8IKTUKc4l2UHl4MFCyJCaJp0jCPJYR9BLGiUeVBBrwiNIwnOYaF1OjJs3l4+MhRN+Cin8UFbaDys1a5L7oARZZibarUS73aLkcvjivLre4kOO49HR87f2x1axROr/ZuvfCnCr7C4V2VF0tzKuEDt7ZI9dEbzij5D/EWe/Cv8dsXJsxZ+PqvAhoKhAQBoR6hMbCY4ngHmdofrKMEZZwQUT0D0DrnT5Jm22XyA5sv15cnzvnb51z2679ctUYP8Hm5Nh0Dqk6Nf1kt8eOIqee7PbIuNsj39nthf93ez9Jt6dYxKiIY4+ZO2bQ4uYNizH0aChVzGQsIh78kDes+7tdv+RrtOIgojxQIFlEWchZQjiPFZA4k1IIH080fp0b00bDDL8BLH607UtwB6wrK3aL1Ej7wNX2/o7RutmJD3QFz/GU3a4a85o7V/2rZTlr5lVbSCdDR9kZxx4xU80+hxpneaO7a/EUcf3uN92kGoZ2+pkZfErLC0CpbhFqMb/OsZD7Jf0KsLslHjO7W+QXwRbRpyhj5cXATLvHwsy0nox6wg+TBHxCVECeEduPXwBVfgUm0hAAAA==</values>
+    </sys_hub_action_instance_v2>
+    <sys_hub_alias_mapping action="delete_multiple" query="source_id=5cf78cd16a1144fda3b28ea0785fe9c0"/>
     <sys_hub_action_instance_v2 action="INSERT_OR_UPDATE">
         <action_type display_value="Log">5bc1bcc6531003003bf1d9109ec587d4</action_type>
         <action_type_parent display_value="">5bc1bcc6531003003bf1d9109ec587d4</action_type_parent>
-        <attributes>timeFromCreateToActivate=36000</attributes>
-        <comment>Log aging exception count</comment>
-        <compiled_snapshot/>
+        <attributes>timeFromCreateToActivate=39000</attributes>
+        <comment>Record the sweep in the flow log</comment>
+        <compiled_snapshot>5bc1bcc6531003003bf1d9109ec587d4</compiled_snapshot>
         <display_text/>
-        <flow display_value="AP Exception Aging Escalation">8769e860868b4d1da62856fa0f7e0f76</flow>
+        <flow display_value="BCFA AP Aging/Escalation Flow">8769e860868b4d1da62856fa0f7e0f76</flow>
         <generation_source/>
-        <order>2</order>
+        <order>4</order>
         <parent_ui_id/>
         <sys_class_name>sys_hub_action_instance_v2</sys_class_name>
-        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
-        <sys_created_on>2026-09-17 07:11:33</sys_created_on>
-        <sys_id>7d908a159c3f48d0890150a89f37f44b</sys_id>
-        <sys_mod_count>20</sys_mod_count>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:01</sys_created_on>
+        <sys_id>71fd676df1dd4cf1be0deb4d70eb6031</sys_id>
+        <sys_mod_count>1</sys_mod_count>
         <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
-        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
-        <sys_updated_on>2026-09-17 14:59:16</sys_updated_on>
-        <ui_id>7d908a15-9c3f-48d0-8901-50a89f37f44b</ui_id>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:50:48</sys_updated_on>
+        <ui_id>71fd676d-f1dd-4cf1-be0d-eb4d70eb6031</ui_id>
         <updation_source/>
-        <values>H4sIAAAAAAAA/+VUXWvbMBT9K0ZPG8TGjuM2zVtJVxj0Y6zQPZQSZPk6EciSJ8n5WMh/35WtJO5atgUKexj45R4f6d5zdO992hJJKyATItR8JmAJggzIkorGYSuqJYYFN7Wgm0ePfkOUyzn+qKnGwxY0mWwJW3BRaJBk8vQ8ILxAZpazJGfsLEuTOE7xy8ukuEjiC2DZ+Lw4xysEzTHlhNz41G9UYze1g9hCcQY+vvHHpntQ6cKVEQ8IrC3IAjB/SYWBAamoLKhVenNANNDiXoojsODS4m3EkdeG/8B8o9jxSkBFDLp/h3DmHeng8opa+mB1w2yjPbUr1qAX24PEMAzulIQgDHsW90rfDY7cz7JUPRbvQs9M+szja/zyap487JM/aa10jwo+9tx0hy9XQEkbYaenK0j+WsHwFAXpCQpGTkFn/n1tucJuJInrGZqL/dMo0VTyruszctD7+LJQj169bH0vqjHYAlC7NnN945uofFio1dd9j1xz2VbkfwrFqDhE1FrN88Y6f7cEBFR40ayidY1GzGqtlrw9jMVW0VxgEJVCrTCp4XMZUeakRdjVNLpG/KqFH6nmTuYtXoOHdwNiNmYqqDFHsdjCs++Nq6ST7jXMWqPaI0zz2l5igiX4cp39vbGswBg6h94bXH4JYM2g9Tugc5QQmBVAHZSqkUWw3Z7lwywbJ2mIeyAJRwxYeJGOIUygyGg8jjM6zKMpku1uFyis6XjfB/MxUALNCOyCyiANCrox0eul9E9q+NP+G6a/23+Q9fbf7cHVN632O9Bg27ST0t+BD3twP4bvtgPRsfdZgm+tldeDetKc/n9j+PwTKLF1y60HAAA=</values>
+        <values>H4sIAAAAAAAA/+VUUWvbMBD+K0ZPG8RZbNdpm7csbWHQdmOF7qGUoEjnRCBLriSnzUL++062kpg2bAv0YTBIHvT5pPu+u+/uYU0ULYGMiNTzqYQlSNIjSyprjwlVaDxyYStJV/cB/dKiFTV404EhozVhCyG5AUVGD489IjiG5TOWzBgb5lkyGGT4mxUJP08G58Dys1N+ik9IOsN8I3Id8h6g4laVh9hCCwbhfB2uTbagNtzTGPQIvDhQHDB/QaWFHimp4tRps9ohBij/quQeWAjl8DXig1+s+In5TgY+rgBUxKD9tjtOQzlauLigjt45UzNXmxDakrVYi/VOYhxHt1pBFMed+naob3r72FDgV10IkUk38gc1Sqh5J/gZkX1w2g2+NEabTiiEc4jNNtg5DgWtpZscryD5awXpMQqyIxSceAVt8b9WTmh0I0m8Z+hMblujZV2q29ZnZKf3/pXhW/TioO9rixaAytvM+yaYqLhb6OfvW49cCdUwCh+lZlTuTtQ5I2a18/VdE5BQ4kPTklYVFmJaGb0UzWUkW/bnEg/9QupnTGrFXPUp89L66Grav0L8ooHvqRFe5g0+g5c3PWJXdiKptXuxaOHpU+2ZtNKDhmlTqOYKM6JyY0ywhEDXl78zliVYS+fQ6cHnydU4Gn+LxnNk/+nSolLqCUae2yiiHo5wCCPYfzLwVIN1wKNCm2i9ToYp5MXgLD7LIYlPOM9ies7TGHiRZqf4z4bD/kTXym02kUbaPiG8MGi6/MF+fLuk/hVaf9qSafa7LQl5Z0ve7Gp/sCFhU1o0VzNP3U15twW3w/pumzLN8/dZlYeWz9txPmqa/79hffwFnK5nedAHAAA=</values>
     </sys_hub_action_instance_v2>
-    <sys_hub_alias_mapping action="delete_multiple" query="source_id=7d908a159c3f48d0890150a89f37f44b"/>
+    <sys_hub_alias_mapping action="delete_multiple" query="source_id=71fd676df1dd4cf1be0deb4d70eb6031"/>
     <sys_hub_sub_flow_instance_v2 action="delete_multiple" query="flow=8769e860868b4d1da62856fa0f7e0f76"/>
-    <sys_hub_flow_logic_instance_v2 action="delete_multiple" query="flow=8769e860868b4d1da62856fa0f7e0f76"/>
+    <sys_hub_flow_logic_instance_v2 action="delete_multiple" query="flow=8769e860868b4d1da62856fa0f7e0f76^sys_idNOT IN26949729f2944b2e94823fda31863355"/>
+    <sys_hub_flow_logic_instance_v2 action="INSERT_OR_UPDATE">
+        <attributes/>
+        <block/>
+        <comment>Age, SLA and escalation per exception</comment>
+        <connected_to/>
+        <decision_table/>
+        <display_text/>
+        <flow display_value="BCFA AP Aging/Escalation Flow">8769e860868b4d1da62856fa0f7e0f76</flow>
+        <flow_variables_assigned/>
+        <generation_source/>
+        <logic_definition display_value="For Each">098e1dc5c3e232002841b63b12d3ae33</logic_definition>
+        <order>2</order>
+        <outputs_assigned/>
+        <parent_ui_id/>
+        <sys_class_name>sys_hub_flow_logic_instance_v2</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:01</sys_created_on>
+        <sys_id>26949729f2944b2e94823fda31863355</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 17:42:01</sys_updated_on>
+        <ui_id>26949729-f294-4b2e-9482-3fda31863355</ui_id>
+        <updation_source/>
+        <values>H4sIAAAAAAAACp2NMQ+CMBSE/8ubqdFWENkcXQ1xMQyVvpoXS0soSEjT/24aNWF2u/vuchfATWM/jb52J+/pYaG6NRm85EDybtB/rMKWPDlbJ3a2qf8NFis7atdodsNTGzevGf10AFJQAWRgZYdQAY3YeUiHZko+hF3BMdfbkpU57theKcHkUXGGSnNx0FyIothcsHWD8jFCBop8b+Ry/XchNvEN5h9i3QYBAAA=</values>
+        <workflow_reference/>
+    </sys_hub_flow_logic_instance_v2>
     <sys_hub_pill_compound action="delete_multiple" query="attached_to=8769e860868b4d1da62856fa0f7e0f76"/>
     <sys_hub_flow_variable action="delete_multiple" query="model=8769e860868b4d1da62856fa0f7e0f76"/>
     <sys_choice action="delete_multiple" query="name=var__m_sys_hub_flow_input_8769e860868b4d1da62856fa0f7e0f76"/>
@@ -168,15 +255,15 @@
         <category/>
         <copied_from/>
         <copied_from_name/>
-        <description>Daily sweep for AP Exceptions open more than 3 days; logs a warning for follow-up.</description>
+        <description>Hourly: ages every open AP exception, sets its SLA status and escalates breaches (level 1 owner and group, level 2 Finance Controllers) through ExceptionEngine.</description>
         <flow_priority>MEDIUM</flow_priority>
         <internal_name>ap_exception_aging_escalation</internal_name>
-        <label_cache>[{"name":"6b255813-3101-4cec-938e-1ed5a0805a2b.Count","label":"6b255813-3101-4cec-938e-1ed5a0805a2b➛Count","type":"integer","base_type":"integer","usedInstances":{"7d908a15-9c3f-48d0-8901-50a89f37f44b":["log_message"]},"attributes":{}}]</label_cache>
+        <label_cache>[{"name":"162e5f08-85e1-4dd3-a9d2-edf237f23366.Records","label":"162e5f08-85e1-4dd3-a9d2-edf237f23366➛Records","type":"array.object","base_type":"array.object","column_name":"Records","usedInstances":{"26949729-f294-4b2e-9482-3fda31863355":["items"]},"attributes":{}},{"name":"26949729-f294-4b2e-9482-3fda31863355.item.sys_id","label":"2 - For Each - ➛item➛Sys Id","type":"reference","base_type":"reference","usedInstances":{"5cf78cd1-6a11-44fd-a3b2-8ea0785fe9c0":["record"]},"attributes":{}},{"name":"162e5f08-85e1-4dd3-a9d2-edf237f23366.Count","label":"162e5f08-85e1-4dd3-a9d2-edf237f23366➛Count","type":"integer","base_type":"integer","usedInstances":{"71fd676d-f1dd-4cf1-be0d-eb4d70eb6031":["log_message"]},"attributes":{}}]</label_cache>
         <master>true</master>
-        <name>AP Exception Aging Escalation</name>
+        <name>BCFA AP Aging/Escalation Flow</name>
         <natlang/>
         <outputs/>
-        <parent_flow display_value="AP Exception Aging Escalation">8769e860868b4d1da62856fa0f7e0f76</parent_flow>
+        <parent_flow display_value="BCFA AP Aging/Escalation Flow">8769e860868b4d1da62856fa0f7e0f76</parent_flow>
         <remote_trigger_id/>
         <run_as>system</run_as>
         <run_with_roles/>
@@ -188,15 +275,15 @@
         <sys_domain>global</sys_domain>
         <sys_domain_path>/</sys_domain_path>
         <sys_id>8075d3fa835f43103d769be0deaad390</sys_id>
-        <sys_mod_count>19</sys_mod_count>
+        <sys_mod_count>22</sys_mod_count>
         <sys_name/>
         <sys_overrides/>
-        <sys_package/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
         <sys_policy/>
         <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
         <sys_update_name/>
-        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
-        <sys_updated_on>2026-09-17 14:59:17</sys_updated_on>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:12:49</sys_updated_on>
         <type>flow</type>
         <version>2</version>
     </sys_hub_flow_snapshot>
@@ -211,75 +298,126 @@
     <sys_hub_trigger_instance_v2 action="INSERT_OR_UPDATE">
         <comment/>
         <display_text/>
-        <flow display_value="AP Exception Aging Escalation">8075d3fa835f43103d769be0deaad390</flow>
+        <flow display_value="BCFA AP Aging/Escalation Flow">8075d3fa835f43103d769be0deaad390</flow>
         <generation_source/>
-        <name>Daily</name>
+        <name>Repeat</name>
         <published_version/>
         <remote_sys_id/>
         <sys_created_by>Ravi_MCP_Admin</sys_created_by>
         <sys_created_on>2026-09-17 07:12:10</sys_created_on>
         <sys_id>cc75d3fa835f43103d769be0deaad3f6</sys_id>
-        <sys_mod_count>0</sys_mod_count>
+        <sys_mod_count>1</sys_mod_count>
         <sys_scope/>
-        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
-        <sys_updated_on>2026-09-17 07:12:10</sys_updated_on>
-        <trigger_definition display_value="Daily">89142dc0c32222002841b63b12d3ae8a</trigger_definition>
-        <trigger_inputs>H4sIAAAAAAAA/31RwWrDMAz9leFzBs5pW267FAqDwRp2KaWotpIIHCfYStes5N+nNFnIxhjo4CfJeu9J+6viQGWJYesjgze46+PWqkypRDk4oZNnTjUKJM8YPLi8b1GypSOLR55qFlv0Fj1PP03VkMEXioL3h0TV4C1wE3qVcegwUUVo6hzr1gHLrAJclGQTLAaVpVonykM9kszjz+C6EaZPD/pepxJ3+jHTWmIkpyiD+vd/m0xFzgb0k6AWghDwSHf97fMnNf/hdhYqMvHCo2+7eFg5nTMBwb56169aLpE+8fa/i3hc7W7uKHZV8/GGBYpegxvyN7q56BoDbkHAcr9TxxjFyTAsy9gQuvmM0QRq+dkwnb93PRy+AM96iw75AQAA</trigger_inputs>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 17:42:21</sys_updated_on>
+        <trigger_definition display_value="Repeat">f63f0d94c32222002841b63b12d3aeed</trigger_definition>
+        <trigger_inputs>H4sIAAAAAAAA/31RTWvDMAz9K8PnDJzTaG67FAqDQVt2KWWottIKHDvIStes9L9PadOubGygg/308d6TVkcjTNst8ixmgehw0eeZN5UxhQmwwaDPObYIogBFQY4Qln2Lim8DeXz3HYNQipr3Whg9Rrn0u10ihy+U9b9aF6aB6EES96YS7rAwNadmiU0bQHReDSErmNgjm6q0tjARmoGIrwL2ELoBKCdP9tGWGg+2rKzVGOgp66j+7d8it6PgGeNFUgusFDIQHn/7/Ukvf/geJatgPMiwAX9zc+d5RBjBv8bQ35UcMn3iub/LOvh7i2NFvdiljznWqLodTime6cZkSA7C7Qei99x0glkdnU63pUwJw3jW7JhaeXZC++vWT+sv6egOAQkCAAA=</trigger_inputs>
         <trigger_outputs/>
-        <trigger_type>daily</trigger_type>
+        <trigger_type>repeat</trigger_type>
         <updation_source/>
     </sys_hub_trigger_instance_v2>
-    <sys_hub_action_instance_v2 action="delete_multiple" query="flow=8075d3fa835f43103d769be0deaad390^sys_idNOT IN0875d3fa835f43103d769be0deaad3f5,0c75d3fa835f43103d769be0deaad3f3"/>
+    <sys_hub_action_instance_v2 action="delete_multiple" query="flow=8075d3fa835f43103d769be0deaad390^sys_idNOT IN1e2f4ee6ebe34710311dff0dcad0cd97,9a2f4ee6ebe34710311dff0dcad0cd9a,d62f4ee6ebe34710311dff0dcad0cd94"/>
+    <sys_hub_action_instance_v2 action="INSERT_OR_UPDATE">
+        <action_type display_value="Fire Event">80a30edeff30311077a95dac793bf19b</action_type>
+        <action_type_parent display_value="Fire Event">15e10e5eff30311077a95dac793bf11e</action_type_parent>
+        <attributes>timeFromCreateToActivate=39000</attributes>
+        <comment>Run the deterministic aging / escalation step (FinanceOrchestration ap_aging)</comment>
+        <compiled_snapshot>80a30edeff30311077a95dac793bf19b</compiled_snapshot>
+        <display_text/>
+        <flow display_value="BCFA AP Aging/Escalation Flow">8075d3fa835f43103d769be0deaad390</flow>
+        <generation_source/>
+        <order>3</order>
+        <parent_ui_id>26949729-f294-4b2e-9482-3fda31863355</parent_ui_id>
+        <sys_class_name>sys_hub_action_instance_v2</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:21</sys_created_on>
+        <sys_id>1e2f4ee6ebe34710311dff0dcad0cd97</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 17:50:46</sys_updated_on>
+        <ui_id>5cf78cd1-6a11-44fd-a3b2-8ea0785fe9c0</ui_id>
+        <updation_source/>
+        <values>H4sIAAAAAAAA/+2WXW/bNhSG/4qga8uTSEqicpflYyiwtUXS9aYohCPy0NYgS65EpfGC/PeSkvwhO7XbLQ0wdDcGeMSP97yHj3k+PLglLNA9c5dQLwJ34t5B0doxLFOY5eXMhGTeLAtYvT/8YhaZ1Rpr9+zBFfO8kDWW7tmHjxM3l2aq5EB9lKgU9WkQ+HEMSShBxAnNVACZ2aKADAsz9e16K8eq2BOlV0s7bHTdn2vHvw8Lb9fBqpZWCJu4eK+xlGgUKCganLgLKCXoql5tIjWCfFMW28A8L7XZ7bxcOZ0Fjp6DdmpsquIOG0dXDjib8xdw3+R/G0nc9327mUKTuLAa3Z1hOjjXh9UlaDBqW6Hbepgq5lUusOktMz5BW+iL3Vg/4c1S51XZL9GQFevVVdEuyte9V+5mg3WhTKRtjAhcWjdsekOu6nZefb5Zq7zOy8644WNRCSg2I9Am56zVVs+D2+bv9irRRw5qgQUuzInpApZLE0mXdXWXd6cY0YvprDCDqSqqz0Zdk8/KKQib4dRUCabXJn7Zhd9Dndt0/zDbmMX2uD/L/FOLr+ztikI/8X2iPBlx9FigiAdBwj1CaBbISDASJe7jxG1WzUUBTbM1ylQo/dTaNHvbBoPS3mO7RNT5Up8bUXc4ePE42bDSl2DLyn0aJaEf8TQTClLDB94L7Et2QM/Ruad4EuIoT/EOT+8GjXuSB5K6Ydp9G9PULXNe9x8Gouh3EmWuOI4Y+RkJGTk8pmTk8YuQkhDGVMS5lxGQHuMR87LM514cMJ+Y+0RoSH8IKTUKc4l2UHl4MFCyJCaJp0jCPJYR9BLGiUeVBBrwiNIwnOYaF1OjJs3l4+MhRN+Cin8UFbaDys1a5L7oARZZibarUS73aLkcvjivLre4kOO49HR87f2x1axROr/ZuvfCnCr7C4V2VF0tzKuEDt7ZI9dEbzij5D/EWe/Cv8dsXJsxZ+PqvAhoKhAQBoR6hMbCY4ngHmdofrKMEZZwQUT0D0DrnT5Jm22XyA5sv15cnzvnb51z2679ctUYP8Hm5Nh0Dqk6Nf1kt8eOIqee7PbIuNsj39nthf93ez9Jt6dYxKiIY4+ZO2bQ4uYNizH0aChVzGQsIh78kDes+7tdv+RrtOIgojxQIFlEWchZQjiPFZA4k1IIH080fp0b00bDDL8BLH607UtwB6wrK3aL1Ej7wNX2/o7RutmJD3QFz/GU3a4a85o7V/2rZTlr5lVbSCdDR9kZxx4xU80+hxpneaO7a/EUcf3uN92kGoZ2+pkZfErLC0CpbhFqMb/OsZD7Jf0KsLslHjO7W+QXwRbRpyhj5cXATLvHwsy0nox6wg+TBHxCVECeEduPXwBVfgUm0hAAAA==</values>
+    </sys_hub_action_instance_v2>
+    <sys_hub_alias_mapping action="delete_multiple" query="source_id=1e2f4ee6ebe34710311dff0dcad0cd97"/>
     <sys_hub_action_instance_v2 action="INSERT_OR_UPDATE">
         <action_type display_value="Log">5bc1bcc6531003003bf1d9109ec587d4</action_type>
         <action_type_parent display_value="Log">0e0ae8c2531003003bf1d9109ec587c8</action_type_parent>
-        <attributes>timeFromCreateToActivate=36000</attributes>
-        <comment>Log aging exception count</comment>
+        <attributes>timeFromCreateToActivate=39000</attributes>
+        <comment>Record the sweep in the flow log</comment>
         <compiled_snapshot>5bc1bcc6531003003bf1d9109ec587d4</compiled_snapshot>
         <display_text/>
-        <flow display_value="AP Exception Aging Escalation">8075d3fa835f43103d769be0deaad390</flow>
+        <flow display_value="BCFA AP Aging/Escalation Flow">8075d3fa835f43103d769be0deaad390</flow>
         <generation_source/>
-        <order>2</order>
+        <order>4</order>
         <parent_ui_id/>
         <sys_class_name>sys_hub_action_instance_v2</sys_class_name>
-        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
-        <sys_created_on>2026-09-17 07:12:10</sys_created_on>
-        <sys_id>0875d3fa835f43103d769be0deaad3f5</sys_id>
-        <sys_mod_count>1</sys_mod_count>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:21</sys_created_on>
+        <sys_id>9a2f4ee6ebe34710311dff0dcad0cd9a</sys_id>
+        <sys_mod_count>2</sys_mod_count>
         <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
-        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
-        <sys_updated_on>2026-09-17 09:23:06</sys_updated_on>
-        <ui_id>7d908a15-9c3f-48d0-8901-50a89f37f44b</ui_id>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 17:50:46</sys_updated_on>
+        <ui_id>71fd676d-f1dd-4cf1-be0d-eb4d70eb6031</ui_id>
         <updation_source/>
-        <values>H4sIAAAAAAAA/+VUXWvbMBT9K0ZPG8TGjuM2zVtJVxj0Y6zQPZQSZPk6EciSJ8n5WMh/35WtJO5atgUKexj45R4f6d5zdO992hJJKyATItR8JmAJggzIkorGYSuqJYYFN7Wgm0ePfkOUyzn+qKnGwxY0mWwJW3BRaJBk8vQ8ILxAZpazJGfsLEuTOE7xy8ukuEjiC2DZ+Lw4xysEzTHlhNz41G9UYze1g9hCcQY+vvHHpntQ6cKVEQ8IrC3IAjB/SYWBAamoLKhVenNANNDiXoojsODS4m3EkdeG/8B8o9jxSkBFDLp/h3DmHeng8opa+mB1w2yjPbUr1qAX24PEMAzulIQgDHsW90rfDY7cz7JUPRbvQs9M+szja/zyap487JM/aa10jwo+9tx0hy9XQEkbYaenK0j+WsHwFAXpCQpGTkFn/n1tucJuJInrGZqL/dMo0VTyruszctD7+LJQj169bH0vqjHYAlC7NnN945uofFio1dd9j1xz2VbkfwrFqDhE1FrN88Y6f7cEBFR40ayidY1GzGqtlrw9jMVW0VxgEJVCrTCp4XMZUeakRdjVNLpG/KqFH6nmTuYtXoOHdwNiNmYqqDFHsdjCs++Nq6ST7jXMWqPaI0zz2l5igiX4cp39vbGswBg6h94bXH4JYM2g9Tugc5QQmBVAHZSqkUWw3Z7lwywbJ2mIeyAJRwxYeJGOIUygyGg8jjM6zKMpku1uFyis6XjfB/MxUALNCOyCyiANCrox0eul9E9q+NP+G6a/23+Q9fbf7cHVN632O9Bg27ST0t+BD3twP4bvtgPRsfdZgm+tldeDetKc/n9j+PwTKLF1y60HAAA=</values>
+        <values>H4sIAAAAAAAA/+VUUWvbMBD+K0ZPG8RZbNdpm7csbWHQdmOF7qGUoEjnRCBLriSnzUL++062kpg2bAv0YTBIHvT5pPu+u+/uYU0ULYGMiNTzqYQlSNIjSyprjwlVaDxyYStJV/cB/dKiFTV404EhozVhCyG5AUVGD489IjiG5TOWzBgb5lkyGGT4mxUJP08G58Dys1N+ik9IOsN8I3Id8h6g4laVh9hCCwbhfB2uTbagNtzTGPQIvDhQHDB/QaWFHimp4tRps9ohBij/quQeWAjl8DXig1+s+In5TgY+rgBUxKD9tjtOQzlauLigjt45UzNXmxDakrVYi/VOYhxHt1pBFMed+naob3r72FDgV10IkUk38gc1Sqh5J/gZkX1w2g2+NEabTiiEc4jNNtg5DgWtpZscryD5awXpMQqyIxSceAVt8b9WTmh0I0m8Z+hMblujZV2q29ZnZKf3/pXhW/TioO9rixaAytvM+yaYqLhb6OfvW49cCdUwCh+lZlTuTtQ5I2a18/VdE5BQ4kPTklYVFmJaGb0UzWUkW/bnEg/9QupnTGrFXPUp89L66Grav0L8ooHvqRFe5g0+g5c3PWJXdiKptXuxaOHpU+2ZtNKDhmlTqOYKM6JyY0ywhEDXl78zliVYS+fQ6cHnydU4Gn+LxnNk/+nSolLqCUae2yiiHo5wCCPYfzLwVIN1wKNCm2i9ToYp5MXgLD7LIYlPOM9ies7TGHiRZqf4z4bD/kTXym02kUbaPiG8MGi6/MF+fLuk/hVaf9qSafa7LQl5Z0ve7Gp/sCFhU1o0VzNP3U15twW3w/pumzLN8/dZlYeWz9txPmqa/79hffwFnK5nedAHAAA=</values>
     </sys_hub_action_instance_v2>
-    <sys_hub_alias_mapping action="delete_multiple" query="source_id=0875d3fa835f43103d769be0deaad3f5"/>
+    <sys_hub_alias_mapping action="delete_multiple" query="source_id=9a2f4ee6ebe34710311dff0dcad0cd9a"/>
     <sys_hub_action_instance_v2 action="INSERT_OR_UPDATE">
         <action_type display_value="Look Up Records">43400a1587003300663ca1bb36cb0b4b</action_type>
         <action_type_parent display_value="Look Up Records">d1c56ec50b30030085c083eb37673a50</action_type_parent>
-        <attributes>timeFromCreateToActivate=36000</attributes>
-        <comment>Find AP exceptions open more than 3 days</comment>
+        <attributes>timeFromCreateToActivate=39000</attributes>
+        <comment>Open AP exceptions</comment>
         <compiled_snapshot>43400a1587003300663ca1bb36cb0b4b</compiled_snapshot>
         <display_text/>
-        <flow display_value="AP Exception Aging Escalation">8075d3fa835f43103d769be0deaad390</flow>
+        <flow display_value="BCFA AP Aging/Escalation Flow">8075d3fa835f43103d769be0deaad390</flow>
         <generation_source/>
         <order>1</order>
         <parent_ui_id/>
         <sys_class_name>sys_hub_action_instance_v2</sys_class_name>
-        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
-        <sys_created_on>2026-09-17 07:12:10</sys_created_on>
-        <sys_id>0c75d3fa835f43103d769be0deaad3f3</sys_id>
-        <sys_mod_count>1</sys_mod_count>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:21</sys_created_on>
+        <sys_id>d62f4ee6ebe34710311dff0dcad0cd94</sys_id>
+        <sys_mod_count>2</sys_mod_count>
         <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
-        <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
-        <sys_updated_on>2026-09-17 09:23:06</sys_updated_on>
-        <ui_id>6b255813-3101-4cec-938e-1ed5a0805a2b</ui_id>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 17:50:46</sys_updated_on>
+        <ui_id>162e5f08-85e1-4dd3-a9d2-edf237f23366</ui_id>
         <updation_source/>
-        <values>H4sIAAAAAAAA/+VXUU/bMBD+K1WeNqmqUloK9A2BkCYNkADxwph1sZ3Wm2tntlNaEP995zgJoQ0wtiKB9pi78913d9+dnau7SMGMR+OIasWEE1rZqBvNQeZeaB243H7L43jAdMbVd7u0hBoOjjOiVaGgP2AOlhqRufHE9hgs7f5Enzsw7tPgMzpjwmYSlpeb9JmBQdiOm2h8F9GpkMxwFY2vrruRYBhkNx3GMfS3d3fQ2yCOR6MBhX6SDEY0iZPtGF1ISLhE04Nm4m3FcMusVfa1zYE2zIPqdyO+cFwxjmhSkJZ3oxkoBk6bZS3BpNmpkg+CqVAOPUbeeGHFLcbFPGJvmXLMkPKgrT9JWdwgTg/BwbkzOXW5KU3pVAvKbagN4ynk0h00ZcHgNPMZhCMOElmd1jKfqZNQlah2UPUSJblFEDzzqXrsGBzzSM+n+uasAnkkVFGUMkmpKcj6C5wzIsmdh3MXccln6IfMIMuEmpDM6LkoDiOUWW8i8aOXSn2DMa2YqB5QjxsZ4qB3hPLDQnwJRvgkjtENHr7vRkiyAwnWPqSCNSS/co8kJFamQIoqhBL4cwUJ9zHKnJeY77v10ASzh3lZkNHedjzaJQlNgUBG+ILyUNm1OXjW9t/4PUwa/L4oMa5ALlldfJJC95jVxbHOSVCUrI43xurdj8TpMo13RmoEJCQyhIQWWp2bopRzQmVuC4UBZYOvvxiBl9lvtXGk4FHjxvAyXN3rfIeO053bP+B2/Pzu3mtw+xyjdS4CghZQ1eYu2LC6tSthye3Bxrg92NoMt+/qNOvStVS5Gk3fl8r+1tvDqj2Sq3Ggf982O6+K2X9tzK379dkcvGo4m/QKmsMnWLbhGU4ZSQWXjAglhSo2J950GOfNhpuRKR4t45EwieRGsAl3D9ErK6bdDcifbfqScaRqVJHe2+2D0MAmDx4971reg6v6l/YD3Xl2P2w39sOp510nWa6shxpjuSBCZ1suwSOvWLkEt/7PS/BdPuy6T83lm734sHnEcIulav4n9eN4ndhB+BKbh8/edqN+g83HsOic1bFbAZWERq7xSVGfJpu/1NKSysMN/qW8WypjG+Inr4t+N2g/xItvczv7+jcuv/0D+A8AAA==</values>
+        <values>H4sIAAAAAAAA/+VX207jMBD9lSrPUZXQC4U3BEJCWkACxAtC1sRxWmtdJ2s7vVD133ccJ2m2DQV2iwTax4zncmZ8Zjx5WnkSpsw79WgqY254KrXnezMQuRVqAybXVzdpxqTPJVFsxtkcFWKuMwHLx7f0MlDo3jDlna48OuEiVkx6p0/PvsdjNBwl/SCAcDA6DoJeLwiGwx6FMIp6QxoF0SBAFwIiJlD1vAmwDbRZZq2yH20OUhVbUKHvsYVhMmaIJgGhme9NQcZgUrWsJYpBfCvFRjDh0qBHzyovNH/BuJhHYDUThhlS5k7rT1IWzImTCzBwb1ROTa5KVTpJOWXa1SZmCeTCnDdlTuE2sxk4EwORqKxTkU/ljauKVzuo7gcluUYQLLOpWuwYHPNI7ifp/K4CecllUZQySZFSEPUXGKN4lBsLZ+Uxwaboh0why7gck0ylM14YI5Rpdyzwo5uIdI4xNR/LLlCLu4uFhe4lyi8K8SMobpO4RjdovPY9vdTnArTepII1JL9yi8QlVqZAiiq4Elg7qnhmzjDKjJWY135Nbqe24fWCDE8GwXBEIpoAgYywBWWusjvc3qv7b/zuRw1+P5QYtyCXrC4+SXH2J6sLs86NOyhZHRyM1aPvxOkyjS9GagTEBTKEuCvUaa6KUs4IFbkuDhRI7Xz9RQu8zX6dKkMKHjUmu5WBprt8h45JOy/v4Hawf3afNLh9j9E6Dw5BC6hqchds2J7albDkdu9g3O4dHYbbqzrNunQtVa5a095Lpf9i9WFbH8nVMAjXbb3zoZjhR2MerXd7s/eh5mzSy51cvMKyA/dwEpOEMxETLgWXxeTElw7jfFpzx2SCpmU84jqRzHk8ZmYTvdKKUzMH8bPtvGQcqS6qSO9T5gF2AG5oGi+lueuFuMDsToPQd+K3hkF/7zAYho1hcA2Lzl0dvhVTORCwZ9m4qHJzIlzV0pKu/QMucV/2uauup7Wbqlv6Fg/ipz1xroK7HH4Hfenx3rds0KDvrSVdJ1puPWV18JK7bgq1LGyX9mBrYTv6Pxe2L/kT4r/2hhz47+T5N/sVJlZ8DwAA</values>
     </sys_hub_action_instance_v2>
-    <sys_hub_alias_mapping action="delete_multiple" query="source_id=0c75d3fa835f43103d769be0deaad3f3"/>
+    <sys_hub_alias_mapping action="delete_multiple" query="source_id=d62f4ee6ebe34710311dff0dcad0cd94"/>
     <sys_hub_sub_flow_instance_v2 action="delete_multiple" query="flow=8075d3fa835f43103d769be0deaad390"/>
-    <sys_hub_flow_logic_instance_v2 action="delete_multiple" query="flow=8075d3fa835f43103d769be0deaad390"/>
+    <sys_hub_flow_logic_instance_v2 action="delete_multiple" query="flow=8075d3fa835f43103d769be0deaad390^sys_idNOT INd22f4ee6ebe34710311dff0dcad0cd9e"/>
+    <sys_hub_flow_logic_instance_v2 action="INSERT_OR_UPDATE">
+        <attributes>timeFromCreateToActivate=39000</attributes>
+        <block display_value="">29115a6eebe34710311dff0dcad0cddc</block>
+        <comment>Age, SLA and escalation per exception</comment>
+        <connected_to/>
+        <decision_table/>
+        <display_text/>
+        <flow display_value="BCFA AP Aging/Escalation Flow">8075d3fa835f43103d769be0deaad390</flow>
+        <flow_variables_assigned/>
+        <generation_source/>
+        <logic_definition display_value="For Each">098e1dc5c3e232002841b63b12d3ae33</logic_definition>
+        <order>2</order>
+        <outputs_assigned/>
+        <parent_ui_id/>
+        <sys_class_name>sys_hub_flow_logic_instance_v2</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:42:21</sys_created_on>
+        <sys_id>d22f4ee6ebe34710311dff0dcad0cd9e</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 17:50:46</sys_updated_on>
+        <ui_id>26949729-f294-4b2e-9482-3fda31863355</ui_id>
+        <updation_source/>
+        <values>H4sIAAAAAAAA/51TTU/jMBD9Lz6nUT4g2/aGQEhIsEgFcVmhampPWmsdO2s7Ldko/33HdRoQxz1E8bz5eu/FGZjpfNt592punJN7zda/3hMmdcDoPDAp2JqxhGlokE7SY+MoPILqQjwMeVXgdZ0tF8trzBdXQpQLWIligaIuyh/0lFWVbpAbK9w4UquQrlXQv/3/hBYssfFo2Xpg/CCVsHhhHujmK1Gv8mzFy6Iqiywrllf5rip3eSFKQFHRCAU7VFT6MOn5Js/3bQhtXDoBj1PPZkbpFUgUWcLww6MWSOtrUA4T1oAW4I3t2drbjgCLIJ616ueKg9Q+mtvAh5N/aWOeZaGwRhLEMSbncDs5F+H6Djy80GjuOzuV8oORHF20QmANnfK3X7FY8Nx6aXRs8bBTl26jukb/jE6wecDlQxHSOSKBbRAaqE866peDOW0uLO+lPpsyJZXhoOYIvLdy1/nAZ2CosKFB2wbaVur9trXmKM/NxKVJ94qCtFbmREvD5UyBB+Ip+QrpPeF3Z/gNrAwqnmgMNY8Jc727VeDcpxYycfunC0yisknDNtoQWriVrb+hBUec6I7v4Z7H2bOnXDqi8Bqwh8tfEhI93SDJv0InY38H8p/Y+A+nKQfKbwMAAA==</values>
+        <workflow_reference/>
+    </sys_hub_flow_logic_instance_v2>
     <sys_hub_pill_compound action="delete_multiple" query="attached_to=8075d3fa835f43103d769be0deaad390"/>
     <sys_hub_flow_variable action="delete_multiple" query="model=8075d3fa835f43103d769be0deaad390"/>
     <sys_choice action="delete_multiple" query="name=var__m_sys_hub_flow_input_8075d3fa835f43103d769be0deaad390"/>
@@ -287,14 +425,14 @@
     <sys_hub_flow action="UPDATE">
         <sys_id>8769e860868b4d1da62856fa0f7e0f76</sys_id>
         <latest_snapshot>8075d3fa835f43103d769be0deaad390</latest_snapshot>
-        <compiler_build/>
+        <compiler_build>glide-yokohama-12-18-2024__patch13-hotfix5aw35-08-22-2026_08-26-2026_0028.zip</compiler_build>
     </sys_hub_flow>
     <sys_flow_trigger_plan action="delete_multiple" query="plan_id=8769e860868b4d1da62856fa0f7e0f76^sys_idNOT IN447557fa835f43103d769be0deaad388"/>
     <sys_flow_trigger_plan action="INSERT_OR_UPDATE">
         <binding_strategy>com.snc.process_flow.engine.binding.RunAlways</binding_strategy>
-        <plan/>
+        <plan>{"type":"PlanProxy","persistor":{"@class":".ChunkingPlanPersistor","table":"sys_flow_trigger_plan","id":"447557fa835f43103d769be0deaad388","name":"plan","plan_signature":null}}</plan>
         <plan_id>8769e860868b4d1da62856fa0f7e0f76</plan_id>
-        <snapshot>8075d3fa835f43103d769be0deaad390</snapshot>
+        <snapshot>45de9666ebe74710311dff0dcad0cdfc</snapshot>
         <sys_created_by>Ravi_MCP_Admin</sys_created_by>
         <sys_created_on>2026-09-17 07:12:10</sys_created_on>
         <sys_domain>global</sys_domain>

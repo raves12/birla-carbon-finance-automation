@@ -2,7 +2,7 @@
     <sys_user_role action="INSERT_OR_UPDATE">
         <assignable_by/>
         <can_delegate>true</can_delegate>
-        <description>Approves AP posting and AR clearing. Cannot modify source transaction data after approval.</description>
+        <description>Approves AP posting and AR clearing (contains AP Approver and AR Approver). Cannot modify source transaction data after approval.</description>
         <elevated_privilege>false</elevated_privilege>
         <encryption_context/>
         <federated_id>nI+rEHtLfTlTv3bQgvmSTPzSDHuzFb32zOjEHzOn590=</federated_id>

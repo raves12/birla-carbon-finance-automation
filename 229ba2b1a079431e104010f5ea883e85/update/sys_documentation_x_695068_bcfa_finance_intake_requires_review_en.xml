@@ -1,17 +1,26 @@
-<?xml version="1.0"?>
-<record_update table="sys_documentation">
-  <sys_documentation action="INSERT_OR_UPDATE" apply_defaults="true">
-    <sys_id>76aa1156c21a47dfabdb737cf517e82e</sys_id>
-    <sys_scope display_value="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_scope>
-    <sys_update_name>sys_documentation_x_695068_bcfa_finance_intake_requires_review_en</sys_update_name>
-    <element>requires_review</element>
-    <help/>
-    <hint/>
-    <label>Requires Review</label>
-    <language>en</language>
-    <name>x_695068_bcfa_finance_intake</name>
-    <plural>Requires Reviews</plural>
-    <url/>
-    <url_target/>
-  </sys_documentation>
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_documentation element="requires_review" label="Requires Review" language="en" table="x_695068_bcfa_finance_intake">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>requires_review</element>
+            <help/>
+            <hint/>
+            <label>Requires Review</label>
+            <language>en</language>
+            <name>x_695068_bcfa_finance_intake</name>
+            <plural>Requires Reviews</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>RaviMAdmin</sys_created_by>
+            <sys_created_on>2026-09-25 11:44:27</sys_created_on>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Requires Review</sys_name>
+            <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+            <sys_update_name>sys_documentation_x_695068_bcfa_finance_intake_requires_review_en</sys_update_name>
+            <sys_updated_by>RaviMAdmin</sys_updated_by>
+            <sys_updated_on>2026-09-25 11:44:27</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
 </record_update>

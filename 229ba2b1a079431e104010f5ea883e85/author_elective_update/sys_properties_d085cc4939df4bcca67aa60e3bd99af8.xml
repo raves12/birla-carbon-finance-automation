@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_properties">
+    <sys_properties action="DELETE">
+        <choices/>
+        <description>Anthropic Messages API model ID used for every Claude call. Confirm/update this value directly — it is never hardcoded into any script.</description>
+        <ignore_cache>false</ignore_cache>
+        <is_private>false</is_private>
+        <name>x_695068_bcfa.claude.model</name>
+        <read_roles/>
+        <suffix>claude.model</suffix>
+        <sys_class_name>sys_properties</sys_class_name>
+        <sys_created_by>Ravi_MCP_Admin</sys_created_by>
+        <sys_created_on>2026-09-17 09:22:44</sys_created_on>
+        <sys_id>d085cc4939df4bcca67aa60e3bd99af8</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>x_695068_bcfa.claude.model</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_properties_d085cc4939df4bcca67aa60e3bd99af8</sys_update_name>
+        <sys_updated_by>system</sys_updated_by>
+        <sys_updated_on>2026-09-17 11:03:53</sys_updated_on>
+        <type>string</type>
+        <value>claude-sonnet-4-5-20250929</value>
+        <write_roles/>
+    </sys_properties>
+    <sys_translated_text action="DELETE" query="documentkey=d085cc4939df4bcca67aa60e3bd99af8"/>
+    <sys_update_version action="INSERT_OR_UPDATE">
+        <action>DELETE</action>
+        <application display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</application>
+        <file_path/>
+        <instance_id>fc123fec1b958a5065324089bd4bcb56</instance_id>
+        <instance_name>pwcmanagementservicesdemo01</instance_name>
+        <name>sys_properties_d085cc4939df4bcca67aa60e3bd99af8</name>
+        <payload><![CDATA[<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_properties"><sys_properties action="INSERT_OR_UPDATE"><choices/><description>Anthropic Messages API model ID used for every Claude call. Confirm/update this value directly — it is never hardcoded into any script.</description><ignore_cache>false</ignore_cache><is_private>false</is_private><name>x_695068_bcfa.claude.model</name><read_roles/><suffix>claude.model</suffix><sys_class_name>sys_properties</sys_class_name><sys_created_by>Ravi_MCP_Admin</sys_created_by><sys_created_on>2026-09-17 09:22:44</sys_created_on><sys_id>d085cc4939df4bcca67aa60e3bd99af8</sys_id><sys_mod_count>2</sys_mod_count><sys_name>x_695068_bcfa.claude.model</sys_name><sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package><sys_policy/><sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope><sys_update_name>sys_properties_d085cc4939df4bcca67aa60e3bd99af8</sys_update_name><sys_updated_by>system</sys_updated_by><sys_updated_on>2026-09-17 11:03:53</sys_updated_on><type>string</type><value>claude-sonnet-4-5-20250929</value><write_roles/></sys_properties><sys_translated_text action="delete_multiple" query="documentkey=d085cc4939df4bcca67aa60e3bd99af8"/></record_update>]]></payload>
+        <payload_hash>595221058</payload_hash>
+        <record_name>x_695068_bcfa.claude.model</record_name>
+        <reverted_from/>
+        <source>4bdfb6f4eb670fd0311dff0dcad0cd03</source>
+        <source_table>sys_update_set</source_table>
+        <state>previous</state>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-23 10:47:58</sys_created_on>
+        <sys_id>3f5007f8eb670fd0311dff0dcad0cd12</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_recorded_at>1a0cde122770000001</sys_recorded_at>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-23 10:47:58</sys_updated_on>
+        <type>System Property</type>
+        <update_guid>befb484740db83106258567f6b84d67b</update_guid>
+        <update_guid_history>befb484740db83106258567f6b84d67b:0,808ac8cf219b831099f5aef82dc7d972:595221058,c67a88cfde9b83101d7d2835c23d5c64:335639275,2053fbb2ff978310606b27dd7424db63:-1999989657</update_guid_history>
+    </sys_update_version>
+    <sys_metadata_delete action="INSERT_OR_UPDATE">
+        <sys_audit_delete/>
+        <sys_class_name>sys_metadata_delete</sys_class_name>
+        <sys_created_by>system</sys_created_by>
+        <sys_created_on>2026-09-29 08:12:33</sys_created_on>
+        <sys_db_object display_value="" name="sys_properties">sys_properties</sys_db_object>
+        <sys_id>03af15293a314a40809e12b45d8e5dc4</sys_id>
+        <sys_metadata>d085cc4939df4bcca67aa60e3bd99af8</sys_metadata>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_695068_bcfa.claude.model</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_parent/>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_scope_delete display_value="">2a2ac8703b554c088130bcc4b05f6e71</sys_scope_delete>
+        <sys_update_name>sys_properties_d085cc4939df4bcca67aa60e3bd99af8</sys_update_name>
+        <sys_update_version display_value="sys_properties_d085cc4939df4bcca67aa60e3bd99af8">3f5007f8eb670fd0311dff0dcad0cd12</sys_update_version>
+        <sys_updated_by>system</sys_updated_by>
+        <sys_updated_on>2026-09-29 08:12:33</sys_updated_on>
+    </sys_metadata_delete>
+</record_update>

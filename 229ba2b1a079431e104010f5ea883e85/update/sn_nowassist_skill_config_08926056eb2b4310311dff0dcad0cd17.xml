@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sn_nowassist_skill_config">
+    <sn_nowassist_skill_config action="INSERT_OR_UPDATE">
+        <active>false</active>
+        <description><![CDATA[Suggests the next procedural step a human AP processor could take on an exception. Advisory only - never executes or approves anything.]]></description>
+        <edited_in_nask>false</edited_in_nask>
+        <in_product_active>false</in_product_active>
+        <in_product_roles/>
+        <internal_name>bcfaaprecommendednextaction.08926056eb2b4310311dff0dcad0cd17</internal_name>
+        <is_template>false</is_template>
+        <name>bcfaApRecommendedNextAction</name>
+        <nap_skill_applicability/>
+        <order>100</order>
+        <parent/>
+        <skill_family display_value="Other">a5efaf1c93764210aa5730f16489186d</skill_family>
+        <skill_id>3f822056eb2b4310311dff0dcad0cda4</skill_id>
+        <skill_table>sys_one_extend_capability</skill_table>
+        <state>1</state>
+        <success_message/>
+        <sys_class_name>sn_nowassist_skill_config</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-27 15:09:24</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>08926056eb2b4310311dff0dcad0cd17</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>bcfaApRecommendedNextAction</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sn_nowassist_skill_config_08926056eb2b4310311dff0dcad0cd17</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-27 16:34:57</sys_updated_on>
+    </sn_nowassist_skill_config>
+    <sys_translated_text action="delete_multiple" query="documentkey=08926056eb2b4310311dff0dcad0cd17"/>
+</record_update>

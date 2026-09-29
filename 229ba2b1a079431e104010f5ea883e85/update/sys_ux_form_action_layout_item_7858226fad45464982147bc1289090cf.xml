@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ux_form_action_layout_item">
+    <sys_ux_form_action_layout_item action="INSERT_OR_UPDATE">
+        <action display_value="Reject Invoice">9d6e0aefd44a403ba372fb0e90cc9afb</action>
+        <active>true</active>
+        <animate_icon>false</animate_icon>
+        <color>critical</color>
+        <description/>
+        <icon/>
+        <item_type>action</item_type>
+        <label>Reject Invoice</label>
+        <layout_group/>
+        <name>Reject Invoice</name>
+        <order>120</order>
+        <overflow>false</overflow>
+        <sys_class_name>sys_ux_form_action_layout_item</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 07:03:24</sys_created_on>
+        <sys_id>7858226fad45464982147bc1289090cf</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Reject Invoice</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_ux_form_action_layout_item_7858226fad45464982147bc1289090cf</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 07:03:24</sys_updated_on>
+        <table>x_695068_bcfa_ap_exception</table>
+    </sys_ux_form_action_layout_item>
+</record_update>

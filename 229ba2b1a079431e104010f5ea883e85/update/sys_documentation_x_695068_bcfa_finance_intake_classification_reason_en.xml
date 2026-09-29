@@ -1,17 +1,26 @@
-<?xml version="1.0"?>
-<record_update table="sys_documentation">
-  <sys_documentation action="INSERT_OR_UPDATE" apply_defaults="true">
-    <sys_id>b184a2bd107340d08b8eb25491429fd8</sys_id>
-    <sys_scope display_value="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_scope>
-    <sys_update_name>sys_documentation_x_695068_bcfa_finance_intake_classification_reason_en</sys_update_name>
-    <element>classification_reason</element>
-    <help/>
-    <hint>Claude's stated reason for the document_type it returned. Advisory only, shown for reviewer context.</hint>
-    <label>Classification Reason</label>
-    <language>en</language>
-    <name>x_695068_bcfa_finance_intake</name>
-    <plural>Classification Reasons</plural>
-    <url/>
-    <url_target/>
-  </sys_documentation>
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_documentation element="classification_reason" label="Classification Reason" language="en" table="x_695068_bcfa_finance_intake">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>classification_reason</element>
+            <help/>
+            <hint>How the document type was decided (set at upload; model classification is not licensed). Older rows hold the reason the Claude classifier returned (removed in Phase 34).</hint>
+            <label>Classification Reason</label>
+            <language>en</language>
+            <name>x_695068_bcfa_finance_intake</name>
+            <plural>Classification Reasons</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>RaviMAdmin</sys_created_by>
+            <sys_created_on>2026-09-25 11:44:26</sys_created_on>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Classification Reason</sys_name>
+            <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+            <sys_update_name>sys_documentation_x_695068_bcfa_finance_intake_classification_reason_en</sys_update_name>
+            <sys_updated_by>RaviMAdmin</sys_updated_by>
+            <sys_updated_on>2026-09-25 11:44:26</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
 </record_update>

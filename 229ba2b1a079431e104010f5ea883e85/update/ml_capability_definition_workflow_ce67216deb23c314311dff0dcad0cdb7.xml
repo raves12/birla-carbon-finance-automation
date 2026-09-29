@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="ml_capability_definition_workflow">
+    <ml_capability_definition_workflow action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <capability display_value="Workflow">d12a03f173212010c0bbb63854f6a7b9</capability>
+        <current_solution_version>2</current_solution_version>
+        <dataset_language>en</dataset_language>
+        <description>DocIntel PDF preprocessing workflow</description>
+        <fields/>
+        <filter/>
+        <pretrained>false</pretrained>
+        <request_source>api</request_source>
+        <solution_label>docintel_pdf_preprocessing_workflow_0267216deb23c314311dff0dcad0cd8e</solution_label>
+        <solution_name>ml_x_pcmsl_x_695068_bcfa_global_docintel_pdf_preprocessing_workflow_0267216deb23c314311dff0dcad0cd8e</solution_name>
+        <solution_parameters/>
+        <solution_properties>{"concurrency_policy":"allow","description":"DocIntel PDF preprocessing workflow","label":"docintel_pdf_preprocessing_workflow_0267216deb23c314311dff0dcad0cd8e","predictPipeline":{},"schedulingInfo":{"useCase":"docintel_pdf2img_workflow","overrideCapability":{"name":"docintel_trainer","version":"27.1"}},"tags":"docintel,pdf,workflow,prediction","trainingPipeline":{"pipelineName":"docintel_multipage_preprocessing_v27_1","pipelineInput":{"datasets":{"pdf_input":{"encodedQuery":"state\u003dassigned^task_definition\u003d0267216deb23c314311dff0dcad0cd8e","fieldNames":["pdf","data","task_definition","task"],"name":"pdf_input","fetchDisplayValue":false,"tableName":"sys_di_pdf_input"}},"config":{"save_format":"JPEG","ocr_configs":{"document_deskewing_model":"document-deskewing-2.0.0","recognition_model":"shi-1.4.0","detection_model":"fcos-text_checkbox-1.1.8","document_orientation_model":"document-orientation-1.3.0"},"pdf_component_version":"27.1","max_pages":25.0,"quality":95.0}}},"workflowConfiguration":{"trainingFrequency":"run_once"},"workflowLanguageVersion":"1.0.0"}</solution_properties>
+        <stopwords>a6282a25533333008c5bddeeff7b12c3</stopwords>
+        <sys_class_name>ml_capability_definition_workflow</sys_class_name>
+        <sys_created_by>RaviMAdmin</sys_created_by>
+        <sys_created_on>2026-09-25 12:14:44</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>ce67216deb23c314311dff0dcad0cdb7</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>DocIntel PDF preprocessing workflow</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>ml_capability_definition_workflow_ce67216deb23c314311dff0dcad0cdb7</sys_update_name>
+        <sys_updated_by>RaviMAdmin</sys_updated_by>
+        <sys_updated_on>2026-09-25 12:27:26</sys_updated_on>
+        <table/>
+        <tags>docintel,pdf,workflow,prediction</tags>
+        <training_frequency>run_once</training_frequency>
+        <triggered_source>API</triggered_source>
+        <word_vector_corpus/>
+    </ml_capability_definition_workflow>
+</record_update>

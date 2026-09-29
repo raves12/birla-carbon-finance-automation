@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_properties">
+    <sys_properties action="INSERT_OR_UPDATE">
+        <choices/>
+        <description>POC ASSUMPTION. sys_id of the group new AP exceptions are assigned to (demo group BCFA AP Operations).</description>
+        <ignore_cache>false</ignore_cache>
+        <is_private>false</is_private>
+        <name>x_695068_bcfa.ap.exception.assignment_group</name>
+        <read_roles/>
+        <suffix>ap.exception.assignment_group</suffix>
+        <sys_class_name>sys_properties</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 07:03:23</sys_created_on>
+        <sys_id>6a096d9a4fe146fe8c10441d98710ca1</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_695068_bcfa.ap.exception.assignment_group</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_properties_6a096d9a4fe146fe8c10441d98710ca1</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 07:03:23</sys_updated_on>
+        <type>string</type>
+        <value>6c3107e75eeec3146f95ff49b9011def</value>
+        <write_roles/>
+    </sys_properties>
+    <sys_translated_text action="delete_multiple" query="documentkey=6a096d9a4fe146fe8c10441d98710ca1"/>
+</record_update>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ux_form_action">
+    <sys_ux_form_action action="INSERT_OR_UPDATE">
+        <action_type>ui_action</action_type>
+        <active>true</active>
+        <declarative_action/>
+        <description/>
+        <name>Reject</name>
+        <specificity/>
+        <sys_class_name>sys_ux_form_action</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 12:48:10</sys_created_on>
+        <sys_id>ce39c03194e94b22bf72399c96130d2a</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>Reject</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_ux_form_action_ce39c03194e94b22bf72399c96130d2a</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:12:52</sys_updated_on>
+        <table>x_695068_bcfa_ap_approval</table>
+        <ui_action display_value="Reject">f29961302c0743959f4a401af6d6c9fa</ui_action>
+    </sys_ux_form_action>
+    <sys_translated_text action="delete_multiple" query="documentkey=ce39c03194e94b22bf72399c96130d2a"/>
+</record_update>

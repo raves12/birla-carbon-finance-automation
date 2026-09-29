@@ -30,7 +30,7 @@
         <order>100</order>
         <script><![CDATA[
         var service = new ApDomainService();
-        var result = service.decideApproval(current.getValue('ap_invoice'), current.getUniqueValue(), 'approved', gs.getUserID(), 'Approved via UI.');
+        var result = service.decideApproval(current.getValue('ap_invoice'), current.getUniqueValue(), 'approved', gs.getUserID(), current.getValue('decision_notes') || 'Approved via UI.');
         if (result.error) {
             gs.addErrorMessage(result.error);
         } else {

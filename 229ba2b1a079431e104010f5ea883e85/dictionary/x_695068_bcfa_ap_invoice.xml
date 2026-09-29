@@ -12,12 +12,13 @@
             </choice>
         </element>
         <element label="Invoice Date" max_length="40" name="invoice_date" type="glide_date"/>
-        <element hint="Managed by the AP Invoice StateModel" label="State" max_length="40" name="state" type="string"/>
+        <element hint="Managed by the AP Invoice Lifecycle state model; only its transitions are allowed (Phase 26)." label="State" max_length="40" name="state" read_only="true" type="string"/>
         <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Purchase Order" max_length="32" name="purchase_order" reference="x_695068_bcfa_purchase_order" type="reference"/>
         <element label="Correlation ID" max_length="64" name="correlation_id" type="string"/>
         <element display="true" label="Invoice Number" mandatory="true" max_length="40" name="invoice_number" type="string"/>
         <element attributes="edge_encryption_enabled=true,scale=2" label="Gross Amount" max_length="15" name="gross_amount" type="decimal"/>
         <element hint="Hash of vendor+invoice_number+amount used for duplicate detection" label="Duplicate Key" max_length="100" name="duplicate_key" type="string"/>
+        <element label="Review Summary" max_length="8000" name="review_summary" read_only="true" type="string"/>
         <element hint="Kept generic pending clarification of what &quot;SO&quot; means in AP invoice processing (workbook D-08 — open item)" label="Sales Order Reference" max_length="40" name="sales_order_reference" type="string"/>
         <element label="External Reference" max_length="64" name="external_reference" type="string"/>
         <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Vendor" max_length="32" name="vendor" reference="x_695068_bcfa_vendor" type="reference"/>

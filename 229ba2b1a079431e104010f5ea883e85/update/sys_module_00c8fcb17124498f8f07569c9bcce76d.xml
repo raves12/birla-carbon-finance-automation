@@ -200,10 +200,21 @@ MockSAPAdapter.prototype = {
     getPostingStatus: function(operation, idempotencyKey) {
         var committed = this._deterministicallyCommitted(idempotencyKey);
         if (committed) {
-            var prefix = operation === 'clearPayment' ? 'FB05' : 'MIRO';
+            var prefix = (operation === 'clearPayment' || operation === 'clearCustomerPayment') ? 'FB05' : 'MIRO';
             return { outcome: 'COMMITTED', sapDocumentId: this._sapDocId(prefix, idempotencyKey) };
         }
         return { outcome: 'NOT_FOUND' };
+    },
+
+    // ---- Canonical operation names (Phase 18) --------------------------------
+    // The integration contract (RealSAPAdapter.CANONICAL_OPERATIONS); the
+    // older names above stay as aliases for existing callers and records.
+
+    getPurchaseOrder: function(poNumber) { return this.getPO(poNumber); },
+    getOpenItems: function(customerSysId) { return this.getOpenARItems(customerSysId); },
+    clearCustomerPayment: function(payload) { return this.clearPayment(payload); },
+    queryTransactionStatus: function(operation, idempotencyKey, externalReference) {
+        return this.getPostingStatus(operation, idempotencyKey);
     },
 
     type: 'MockSAPAdapter'

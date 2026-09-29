@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_security_acl_role">
+    <sys_security_acl_role action="INSERT_OR_UPDATE">
+        <sys_class_name>sys_security_acl_role</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-27 15:29:17</sys_created_on>
+        <sys_id>9317ac12eb6b4310311dff0dcad0cd25</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>bcfacashapplicationsummary.4c17e812eb6b4310311dff0dcad0cd09.x_695068_bcfa.ar_processor</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_security_acl display_value="bcfacashapplicationsummary.4c17e812eb6b4310311dff0dcad0cd09">c417e812eb6b4310311dff0dcad0cd58</sys_security_acl>
+        <sys_update_name>sys_security_acl_role_9317ac12eb6b4310311dff0dcad0cd25</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-27 15:29:17</sys_updated_on>
+        <sys_user_role display_value="x_695068_bcfa.ar_processor" name="x_695068_bcfa.ar_processor">588d615a5fea475bbe3422f50e91c218</sys_user_role>
+    </sys_security_acl_role>
+</record_update>

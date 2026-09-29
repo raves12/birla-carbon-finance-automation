@@ -25,13 +25,13 @@
             <name>x_695068_bcfa_integration_txn</name>
             <sequence>1</sequence>
             <synonyms/>
-            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
-            <sys_created_on>2026-09-17 14:59:08</sys_created_on>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 13:40:45</sys_created_on>
             <sys_domain>global</sys_domain>
             <sys_domain_path>/</sys_domain_path>
             <sys_mod_count>0</sys_mod_count>
-            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
-            <sys_updated_on>2026-09-17 14:59:08</sys_updated_on>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 13:40:45</sys_updated_on>
             <value>mock_sap</value>
         </sys_choice>
         <sys_choice action="INSERT_OR_UPDATE">
@@ -44,13 +44,13 @@
             <name>x_695068_bcfa_integration_txn</name>
             <sequence>2</sequence>
             <synonyms/>
-            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
-            <sys_created_on>2026-09-17 14:59:08</sys_created_on>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 13:40:45</sys_created_on>
             <sys_domain>global</sys_domain>
             <sys_domain_path>/</sys_domain_path>
             <sys_mod_count>0</sys_mod_count>
-            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
-            <sys_updated_on>2026-09-17 14:59:08</sys_updated_on>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 13:40:45</sys_updated_on>
             <value>mock_bank</value>
         </sys_choice>
         <sys_choice action="INSERT_OR_UPDATE">
@@ -63,14 +63,33 @@
             <name>x_695068_bcfa_integration_txn</name>
             <sequence>3</sequence>
             <synonyms/>
-            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
-            <sys_created_on>2026-09-17 14:59:08</sys_created_on>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 13:40:45</sys_created_on>
             <sys_domain>global</sys_domain>
             <sys_domain_path>/</sys_domain_path>
             <sys_mod_count>0</sys_mod_count>
-            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
-            <sys_updated_on>2026-09-17 14:59:08</sys_updated_on>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 13:40:45</sys_updated_on>
             <value>mock_archive</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>adapter</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Real SAP Adapter (seam, not configured)</label>
+            <language>en</language>
+            <name>x_695068_bcfa_integration_txn</name>
+            <sequence>4</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 13:40:45</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 13:40:45</sys_updated_on>
+            <value>real_sap</value>
         </sys_choice>
     </sys_choice>
 </record_update>

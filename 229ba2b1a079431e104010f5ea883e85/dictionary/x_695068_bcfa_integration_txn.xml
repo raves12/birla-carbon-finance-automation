@@ -16,6 +16,16 @@
         <element display="true" label="Correlation ID" mandatory="true" max_length="64" name="correlation_id" type="string"/>
         <element hint="Canonical business-level operation name, e.g. postVendorInvoice, clearPayment, getVendor" label="Operation" mandatory="true" max_length="64" name="operation" type="string"/>
         <element hint="sys_id of the AP/AR record this call was made for" label="Source Record" max_length="32" name="source_record" type="string"/>
+        <element label="External Reference" max_length="100" name="external_reference" read_only="true" type="string"/>
+        <element choice="1" default="not_required" label="Reconciliation State" max_length="40" name="reconciliation_state" read_only="true" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Pending (outcome unknown)" sequence="2" value="pending"/>
+                <element inactive_on_update="false" label="Escalated (retry limit)" sequence="5" value="escalated"/>
+                <element inactive_on_update="false" label="Not Required" sequence="1" value="not_required"/>
+                <element inactive_on_update="false" label="Confirmed Committed" sequence="3" value="confirmed_committed"/>
+                <element inactive_on_update="false" label="Confirmed Not Committed (safe to retry)" sequence="4" value="confirmed_not_committed"/>
+            </choice>
+        </element>
         <element attributes="edge_encryption_enabled=true" default="1" label="Attempt" max_length="40" name="attempt" type="integer"/>
         <element label="Completed At" max_length="40" name="completed_at" type="glide_date_time"/>
         <element attributes="edge_encryption_enabled=true" label="Response Payload" max_length="4000" name="response_payload" type="json"/>
@@ -24,6 +34,7 @@
         <element label="Source Table" max_length="80" name="source_table" type="string"/>
         <element attributes="edge_encryption_enabled=true" label="Adapter" mandatory="true" max_length="40" name="adapter" type="choice">
             <choice>
+                <element inactive_on_update="false" label="Real SAP Adapter (seam, not configured)" sequence="4" value="real_sap"/>
                 <element inactive_on_update="false" label="Mock SAP Adapter" sequence="1" value="mock_sap"/>
                 <element inactive_on_update="false" label="Mock Archive Adapter" sequence="3" value="mock_archive"/>
                 <element inactive_on_update="false" label="Mock Bank Adapter" sequence="2" value="mock_bank"/>
@@ -34,6 +45,7 @@
         <element label="Requested At" max_length="40" name="requested_at" type="glide_date_time"/>
         <element attributes="edge_encryption_enabled=true" label="Request Payload" max_length="4000" name="request_payload" type="json"/>
         <element label="Error Code" max_length="64" name="error_code" type="string"/>
+        <element label="Request Hash" max_length="64" name="request_hash" read_only="true" type="string"/>
         <index name="index" unique="true">
             <element name="idempotency_key"/>
         </index>

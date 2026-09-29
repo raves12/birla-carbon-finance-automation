@@ -1,13 +1,25 @@
-<?xml version="1.0"?>
-<record_update table="sys_ux_form_action">
-  <sys_ux_form_action action="INSERT_OR_UPDATE" apply_defaults="true">
-    <sys_id>4edc47eab4c9497fac4283e8a388e4cf</sys_id>
-    <sys_scope display_value="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_scope>
-    <sys_update_name>sys_ux_form_action_4edc47eab4c9497fac4283e8a388e4cf</sys_update_name>
-    <action_type>ui_action</action_type>
-    <active>true</active>
-    <name>Reprocess</name>
-    <table>x_695068_bcfa_finance_intake</table>
-    <ui_action>d6364c9589c84fea88ccac365a8fdbcc</ui_action>
-  </sys_ux_form_action>
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ux_form_action">
+    <sys_ux_form_action action="INSERT_OR_UPDATE">
+        <action_type>ui_action</action_type>
+        <active>true</active>
+        <declarative_action/>
+        <description/>
+        <name>Reprocess</name>
+        <specificity/>
+        <sys_class_name>sys_ux_form_action</sys_class_name>
+        <sys_created_by>RaviMAdmin</sys_created_by>
+        <sys_created_on>2026-09-25 11:44:38</sys_created_on>
+        <sys_id>4edc47eab4c9497fac4283e8a388e4cf</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Reprocess</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_ux_form_action_4edc47eab4c9497fac4283e8a388e4cf</sys_update_name>
+        <sys_updated_by>RaviMAdmin</sys_updated_by>
+        <sys_updated_on>2026-09-25 11:44:38</sys_updated_on>
+        <table>x_695068_bcfa_finance_intake</table>
+        <ui_action display_value="Reprocess">d6364c9589c84fea88ccac365a8fdbcc</ui_action>
+    </sys_ux_form_action>
+    <sys_translated_text action="delete_multiple" query="documentkey=4edc47eab4c9497fac4283e8a388e4cf"/>
 </record_update>

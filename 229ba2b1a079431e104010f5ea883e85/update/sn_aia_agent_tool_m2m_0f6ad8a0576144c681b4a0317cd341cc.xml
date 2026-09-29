@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sn_aia_agent_tool_m2m">
+    <sn_aia_agent_tool_m2m action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <agent display_value="BCFA Cash Application Communication Agent">9fd2181abab54e2eb93dffe220d11d93</agent>
+        <description>Looks up payments by exact bank reference and returns their sys_id, customer, amount, currency and state. Read-only.</description>
+        <display_output>false</display_output>
+        <document_status/>
+        <execution_mode>autopilot</execution_mode>
+        <inputs>[{"name":"bank_reference","description":"Exact bank reference, e.g. BANK-AR-002","mandatory":true}]</inputs>
+        <max_auto_executions>10</max_auto_executions>
+        <name>Find Payment (Communication)</name>
+        <output_transformation_strategy/>
+        <post_message>Payment lookup complete.</post_message>
+        <post_processing_script/>
+        <pre_message>Looking up the payment...</pre_message>
+        <pre_run>false</pre_run>
+        <sys_class_name>sn_aia_agent_tool_m2m</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 02:15:36</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>0f6ad8a0576144c681b4a0317cd341cc</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Find Payment (Communication)</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sn_aia_agent_tool_m2m_0f6ad8a0576144c681b4a0317cd341cc</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 02:15:36</sys_updated_on>
+        <timeout/>
+        <tool display_value="Find Payment (Communication)">57ee3e4472a04037af78c88d6e8c05cb</tool>
+        <tool_attributes>{}</tool_attributes>
+        <transformation_instructions/>
+    </sn_aia_agent_tool_m2m>
+</record_update>

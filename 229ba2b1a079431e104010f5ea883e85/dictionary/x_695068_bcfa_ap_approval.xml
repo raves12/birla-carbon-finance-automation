@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><database>
     <element audit="true" db_object_id="410557f2835f43103d769be0deaad38e" label="AP Approval" max_length="40" name="x_695068_bcfa_ap_approval" type="collection">
+        <element label="Override Reason" max_length="4000" name="override_reason" read_only="true" type="string"/>
         <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Requested By" max_length="32" name="requested_by" reference="sys_user" type="reference"/>
         <element attributes="edge_encryption_enabled=true" default="pending" label="Decision" max_length="40" name="decision" type="choice">
             <choice>
@@ -8,6 +9,17 @@
                 <element inactive_on_update="false" label="Rejected" sequence="3" value="rejected"/>
             </choice>
         </element>
+        <element choice="1" default="standard" label="Approval Type" max_length="40" name="approval_type" read_only="true" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Tolerance Override" sequence="2" value="override"/>
+                <element inactive_on_update="false" label="Configured Rule (no approver)" sequence="3" value="rule"/>
+                <element inactive_on_update="false" label="Standard" sequence="1" value="standard"/>
+            </choice>
+        </element>
+        <element label="State After" max_length="40" name="state_after" read_only="true" type="string"/>
+        <element label="Approval Group" max_length="32" name="approval_group" read_only="true" reference="sys_user_group" type="reference"/>
+        <element label="State Before" max_length="40" name="state_before" read_only="true" type="string"/>
+        <element label="SoD Check" max_length="1000" name="sod_check" read_only="true" type="string"/>
         <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Approver" max_length="32" name="approver" reference="sys_user" type="reference"/>
         <element label="Decision Notes" max_length="4000" name="decision_notes" type="string"/>
         <element attributes="edge_encryption_enabled=true,encode_utf8=false" display="true" label="AP Invoice" mandatory="true" max_length="32" name="ap_invoice" reference="x_695068_bcfa_ap_invoice" type="reference"/>
@@ -16,9 +28,12 @@
             <element name="ap_invoice"/>
         </index>
         <index name="index2">
-            <element name="approver"/>
+            <element name="approval_group"/>
         </index>
         <index name="index3">
+            <element name="approver"/>
+        </index>
+        <index name="index4">
             <element name="requested_by"/>
         </index>
     </element>

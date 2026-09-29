@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_properties">
+    <sys_properties action="INSERT_OR_UPDATE">
+        <choices/>
+        <description>POC ASSUMPTION. Matched invoices with a gross amount at or below this value need no human approval. 0 means every invoice needs a finance approver (requester and approver must differ).</description>
+        <ignore_cache>false</ignore_cache>
+        <is_private>false</is_private>
+        <name>x_695068_bcfa.ap.approval.auto_approve_limit</name>
+        <read_roles/>
+        <suffix>ap.approval.auto_approve_limit</suffix>
+        <sys_class_name>sys_properties</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 07:03:23</sys_created_on>
+        <sys_id>fd29e9bc0f194f17b70dbcf8a3b3ab00</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_695068_bcfa.ap.approval.auto_approve_limit</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_properties_fd29e9bc0f194f17b70dbcf8a3b3ab00</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 07:03:23</sys_updated_on>
+        <type>string</type>
+        <value>0</value>
+        <write_roles/>
+    </sys_properties>
+    <sys_translated_text action="delete_multiple" query="documentkey=fd29e9bc0f194f17b70dbcf8a3b3ab00"/>
+</record_update>

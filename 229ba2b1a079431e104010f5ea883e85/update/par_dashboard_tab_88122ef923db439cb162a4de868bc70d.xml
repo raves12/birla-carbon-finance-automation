@@ -4,7 +4,7 @@
         <background_color/>
         <dashboard display_value="BCFA Overview">1261313489914f5f8c098758149de3cf</dashboard>
         <name>Overview</name>
-        <order>0</order>
+        <order>1</order>
         <sys_class_name>par_dashboard_tab</sys_class_name>
         <sys_created_by>Ravi_MCP_Admin</sys_created_by>
         <sys_created_on>2026-09-17 14:27:33</sys_created_on>

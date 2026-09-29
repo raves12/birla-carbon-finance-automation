@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_action_role">
+    <sys_ui_action_role action="INSERT_OR_UPDATE">
+        <sys_class_name>sys_ui_action_role</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 07:03:24</sys_created_on>
+        <sys_id>df5110d31c534f2cbc0045d0d934985f</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Hold.x_695068_bcfa.ap_processor</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_ui_action display_value="Hold">54fd7ad7c8464892b8bf250dcc7c24f5</sys_ui_action>
+        <sys_update_name>sys_ui_action_role_df5110d31c534f2cbc0045d0d934985f</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 07:03:24</sys_updated_on>
+        <sys_user_role display_value="x_695068_bcfa.ap_processor" name="x_695068_bcfa.ap_processor">bf505b5092574a7fa59a01048550571a</sys_user_role>
+    </sys_ui_action_role>
+</record_update>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_atf_step">
+    <sys_atf_step action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <callable_outputs/>
+        <copied_from/>
+        <description/>
+        <display_name>Run Server Side Script</display_name>
+        <inputs/>
+        <mugshots_cache_json/>
+        <notes/>
+        <order>1</order>
+        <step_config display_value="Run Server Side Script">41de4a935332120028bc29cac2dc349a</step_config>
+        <sys_class_name>sys_atf_step</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 18:37:06</sys_created_on>
+        <sys_id>2a9014c939634358ab3a7bd1696d7733</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>Run Server Side Script</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_atf_step_2a9014c939634358ab3a7bd1696d7733</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:37:06</sys_updated_on>
+        <table/>
+        <test display_value="Orchestration — flow hand-off, inline mode and state-guarded stages">c98429799fcf464b90d8c73cf10a9842</test>
+        <timeout/>
+        <warning_message/>
+    </sys_atf_step>
+    <sys_variable_value action="delete_multiple" query="document_key=2a9014c939634358ab3a7bd1696d7733"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>2a9014c939634358ab3a7bd1696d7733</document_key>
+        <order>200</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 18:37:06</sys_created_on>
+        <sys_id>2175aa5443a3423c8e21efdc512b0152</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:37:06</sys_updated_on>
+        <value>
+                (function(outputs, steps, params, stepResult, assertEqual) {
+                    var orch = new FinanceOrchestration();
+                    assertEqual({ name: 'flow mode by default', shouldbe: false, value: FinanceOrchestration.isInline() });
+                    assertEqual({ name: 'runInline switches to inline for the call', shouldbe: true, value: FinanceOrchestration.runInline(function() { return FinanceOrchestration.isInline(); }) });
+                    assertEqual({ name: 'back to flow mode after runInline', shouldbe: false, value: FinanceOrchestration.isInline() });
+                    assertEqual({ name: 'unknown stage rejected', shouldbe: 'error', value: orch.run('ap_everything', gs.generateGUID()).outcome });
+
+                    var vendor = new GlideRecord('x_695068_bcfa_vendor');
+                    vendor.get('vendor_code', 'V001');
+                    var r = new ApDomainService().intakeAndAutoProcess({ invoiceNumber: 'ATF-ORCH-' + gs.generateGUID(), vendor: vendor.getUniqueValue(), companyCode: '1000', currency: 'INR', grossAmount: 100, netAmount: 100, taxAmount: 0 });
+                    assertEqual({ name: 'flow mode: intake hands off to the AP Invoice Intake Flow', shouldbe: 'RECEIVED', value: r.stoppedAt });
+                    assertEqual({ name: 'hand-off named', shouldbe: 'AP Invoice Intake Flow', value: r.handedTo });
+                    var skipped = orch.run('ap_validation', r.apInvoiceSysId);
+                    assertEqual({ name: 'validation stage skipped while the invoice is RECEIVED', shouldbe: 'skipped', value: skipped.outcome });
+                    var ran = orch.run('ap_intake', r.apInvoiceSysId);
+                    var gr = new GlideRecord('x_695068_bcfa_ap_invoice');
+                    gr.get(r.apInvoiceSysId);
+                    assertEqual({ name: 'intake stage ran (extraction)', shouldbe: 'ran', value: ran.outcome });
+                    assertEqual({ name: 'invoice EXTRACTED after the intake stage', shouldbe: 'EXTRACTED', value: gr.getValue('state') });
+                    assertEqual({ name: 'intake stage does not run twice', shouldbe: 'skipped', value: orch.run('ap_intake', r.apInvoiceSysId).outcome });
+                })(outputs, steps, params, stepResult, assertEqual);
+            </value>
+        <variable display_value="Test script">989d9e235324220002c6435723dc3484</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>2a9014c939634358ab3a7bd1696d7733</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 18:37:06</sys_created_on>
+        <sys_id>a057a41816cd4e16b09c898829930451</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:37:06</sys_updated_on>
+        <value>3.1</value>
+        <variable display_value="Jasmine version">42f2564b73031300440211d8faf6a777</variable>
+    </sys_variable_value>
+</record_update>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_generative_ai_prompt_config">
+    <sys_generative_ai_prompt_config action="INSERT_OR_UPDATE">
+        <ai_config display_value="OneExtend Capability Definition: bcfaApInvoiceSummary (Now LLM Service - Now LLM Generic)">9fb834deebeb4310311dff0dcad0cdb5</ai_config>
+        <definition display_value="bcfaApInvoiceSummary (Now LLM Service - Now LLM Generic)">8c651f4a3b2f03104035a50864e45a4e</definition>
+        <filter_properties>{}</filter_properties>
+        <filter_type>default</filter_type>
+        <is_default>true</is_default>
+        <order>0</order>
+        <sys_class_name>sys_generative_ai_prompt_config</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-27 16:46:17</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>1bb8f8deebeb4310311dff0dcad0cd47</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>9fb834deebeb4310311dff0dcad0cdb5</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_generative_ai_prompt_config_1bb8f8deebeb4310311dff0dcad0cd47</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-27 16:48:36</sys_updated_on>
+    </sys_generative_ai_prompt_config>
+</record_update>

@@ -1,41 +1,117 @@
 <?xml version="1.0" encoding="UTF-8"?><database>
-    <element audit="true" db_object_id="04233f32839783103d769be0deaad30e" label="AI Interaction" max_length="40" name="x_695068_bcfa_ai_interaction" type="collection">
-        <element label="Claude Request ID" max_length="100" name="claude_request_id" type="string"/>
-        <element label="Claude Model" max_length="100" name="claude_model" type="string"/>
+    <element audit="true" db_object_id="04233f32839783103d769be0deaad30e" label="AI Interaction Log" max_length="40" name="x_695068_bcfa_ai_interaction" type="collection">
+        <element label="Provider Request ID" max_length="100" name="claude_request_id" type="string"/>
+        <element choice="1" label="Provider" max_length="40" name="provider" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Claude (legacy, removed in Phase 34)" sequence="3" value="claude_legacy"/>
+                <element inactive_on_update="false" label="Now Assist (Now LLM)" sequence="1" value="now_assist"/>
+                <element inactive_on_update="false" label="Simulated (deterministic, no model)" sequence="2" value="simulated"/>
+            </choice>
+        </element>
+        <element label="Model" max_length="100" name="claude_model" type="string"/>
         <element attributes="edge_encryption_enabled=true" label="Status" mandatory="true" max_length="40" name="status" type="choice">
             <choice>
                 <element inactive_on_update="false" label="Timeout" sequence="3" value="timeout"/>
+                <element inactive_on_update="false" label="Failed" sequence="9" value="failed"/>
                 <element inactive_on_update="false" label="HTTP Error" sequence="2" value="http_error"/>
                 <element inactive_on_update="false" label="Invalid Response" sequence="4" value="invalid_response"/>
                 <element inactive_on_update="false" label="Credential Error" sequence="5" value="credential_error"/>
                 <element inactive_on_update="false" label="Disabled" sequence="6" value="disabled"/>
                 <element inactive_on_update="false" label="Success" sequence="1" value="success"/>
+                <element inactive_on_update="false" label="Started" sequence="8" value="started"/>
                 <element inactive_on_update="false" label="Refused" sequence="7" value="refused"/>
             </choice>
         </element>
         <element attributes="edge_encryption_enabled=true" label="Input Tokens" max_length="40" name="input_tokens" type="integer"/>
         <element attributes="edge_encryption_enabled=true,scale=2" label="Confidence" max_length="15" name="confidence" type="decimal"/>
+        <element label="Input Context Size (chars)" max_length="40" name="input_context_size" type="integer"/>
+        <element label="Agentic Workflow" max_length="100" name="agentic_workflow" type="string"/>
+        <element label="Human Decided At" max_length="40" name="human_decided_at" type="glide_date_time"/>
+        <element label="Override Reason" max_length="1000" name="override_reason" type="string"/>
         <element label="Source Record" max_length="32" name="source_record" type="string"/>
+        <element label="Skill" max_length="100" name="skill" type="string"/>
+        <element label="Human Overridden" max_length="40" name="human_overridden" type="boolean"/>
+        <element label="AI Agent" max_length="100" name="agent" type="string"/>
+        <element label="Human Accepted" max_length="40" name="human_accepted" type="boolean"/>
+        <element choice="1" label="AI Capability" max_length="40" name="capability" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Document Classification" sequence="1" value="document_classification"/>
+                <element inactive_on_update="false" label="Exception Explanation" sequence="4" value="exception_explanation"/>
+                <element inactive_on_update="false" label="Match Explanation" sequence="7" value="match_explanation"/>
+                <element inactive_on_update="false" label="Document Extraction" sequence="2" value="document_extraction"/>
+                <element inactive_on_update="false" label="Next Action Recommendation" sequence="5" value="next_action_recommendation"/>
+                <element inactive_on_update="false" label="Exception Review (agentic workflow)" sequence="6" value="exception_review"/>
+                <element inactive_on_update="false" label="Connectivity Test" sequence="12" value="connectivity_test"/>
+                <element inactive_on_update="false" label="Cash Match Recommendation" sequence="9" value="cash_match_recommendation"/>
+                <element inactive_on_update="false" label="Candidate Ranking" sequence="10" value="candidate_ranking"/>
+                <element inactive_on_update="false" label="Residual Explanation" sequence="8" value="residual_explanation"/>
+                <element inactive_on_update="false" label="Communication Draft" sequence="11" value="communication_draft"/>
+                <element inactive_on_update="false" label="Summarization" sequence="3" value="summarization"/>
+            </choice>
+        </element>
+        <element label="Human Decided By" max_length="32" name="human_decided_by" reference="sys_user" type="reference"/>
+        <element choice="1" default="none" label="Guardrail Action" max_length="40" name="guardrail_action" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Output sanitized" sequence="2" value="sanitized"/>
+                <element inactive_on_update="false" label="Blocked by Now Assist Guardian" sequence="4" value="guardian_blocked"/>
+                <element inactive_on_update="false" label="Blocked (not sent)" sequence="3" value="blocked"/>
+                <element inactive_on_update="false" label="None" sequence="1" value="none"/>
+            </choice>
+        </element>
         <element label="Prompt Version" max_length="20" name="prompt_version" type="string"/>
         <element attributes="edge_encryption_enabled=true" label="HTTP Status" max_length="40" name="http_status" type="integer"/>
         <element attributes="edge_encryption_enabled=true" display="true" label="Operation" mandatory="true" max_length="40" name="operation" type="choice">
             <choice>
+                <element inactive_on_update="false" label="AP Clarification Draft" sequence="15" value="ap_clarification_draft"/>
+                <element inactive_on_update="false" label="Extract AR Remittance Document" sequence="11" value="extract_ar_remittance_document"/>
                 <element inactive_on_update="false" label="Explain AP Exception" sequence="4" value="explain_ap_exception"/>
+                <element inactive_on_update="false" label="Customer Clarification Draft" sequence="20" value="customer_clarification_draft"/>
+                <element inactive_on_update="false" label="Extract AP Invoice Document" sequence="9" value="extract_ap_invoice_document"/>
                 <element inactive_on_update="false" label="Recommend Cash Match" sequence="6" value="recommend_cash_match"/>
+                <element inactive_on_update="false" label="AP Recommended Next Action" sequence="14" value="ap_recommended_next_action"/>
+                <element inactive_on_update="false" label="Extract AR Payment Advice Document" sequence="10" value="extract_ar_payment_advice_document"/>
+                <element inactive_on_update="false" label="AR Residual Explanation" sequence="18" value="ar_residual_explanation"/>
+                <element inactive_on_update="false" label="Suggest Top Candidate" sequence="22" value="suggest_top_candidate"/>
                 <element inactive_on_update="false" label="Rank Candidates (Fuzzy Match)" sequence="7" value="rank_candidates"/>
+                <element inactive_on_update="false" label="AP Invoice Summary" sequence="12" value="ap_invoice_summary"/>
+                <element inactive_on_update="false" label="Exception Review" sequence="21" value="exception_review"/>
+                <element inactive_on_update="false" label="Classify Finance Document" sequence="8" value="classify_finance_document"/>
+                <element inactive_on_update="false" label="AP Match Exception Explanation" sequence="13" value="ap_match_exception_explanation"/>
+                <element inactive_on_update="false" label="AR Recommended Next Action" sequence="19" value="ar_recommended_next_action"/>
+                <element inactive_on_update="false" label="Cash Application Summary" sequence="16" value="cash_application_summary"/>
                 <element inactive_on_update="false" label="Extract Remittance" sequence="3" value="extract_remittance"/>
                 <element inactive_on_update="false" label="Explain AR Exception" sequence="5" value="explain_ar_exception"/>
                 <element inactive_on_update="false" label="Connectivity Test" sequence="1" value="connectivity_test"/>
                 <element inactive_on_update="false" label="Extract Invoice" sequence="2" value="extract_invoice"/>
+                <element inactive_on_update="false" label="AR Match Explanation" sequence="17" value="ar_match_explanation"/>
             </choice>
         </element>
+        <element label="Human Decision" max_length="100" name="human_decision" type="string"/>
+        <element label="Guardrail Reason" max_length="1000" name="guardrail_reason" type="string"/>
         <element hint="Human-readable failure description only — never exception internals, request/response bodies, or credential material." label="Safe Error" max_length="4000" name="safe_error" type="string"/>
-        <element attributes="edge_encryption_enabled=true" label="Latency (ms)" max_length="40" name="latency_ms" type="integer"/>
+        <element attributes="edge_encryption_enabled=true" label="Duration (ms)" max_length="40" name="latency_ms" type="integer"/>
         <element attributes="edge_encryption_enabled=true" label="Output Tokens" max_length="40" name="output_tokens" type="integer"/>
         <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Initiated By" max_length="32" name="initiated_by" reference="sys_user" type="reference"/>
+        <element label="Started At" max_length="40" name="started_at" type="glide_date_time"/>
+        <element choice="1" default="platform" label="Process" max_length="40" name="process" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Accounts Payable" sequence="1" value="ap"/>
+                <element inactive_on_update="false" label="Accounts Receivable" sequence="2" value="ar"/>
+                <element inactive_on_update="false" label="Platform" sequence="5" value="platform"/>
+                <element inactive_on_update="false" label="Integration" sequence="4" value="integration"/>
+                <element inactive_on_update="false" label="Document Intake" sequence="3" value="intake"/>
+            </choice>
+        </element>
+        <element label="Completed At" max_length="40" name="completed_at" type="glide_date_time"/>
         <element label="Source Table" max_length="80" name="source_table" type="string"/>
         <element label="Correlation ID" max_length="64" name="correlation_id" type="string"/>
+        <element label="Result" max_length="1000" name="result_summary" type="string"/>
+        <element label="Recommendation" max_length="1000" name="recommendation" type="string"/>
+        <element label="Input Context ID" max_length="80" name="input_context_id" type="string"/>
         <index name="index">
+            <element name="human_decided_by"/>
+        </index>
+        <index name="index2">
             <element name="initiated_by"/>
         </index>
     </element>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_generative_ai_config">
+    <sys_generative_ai_config action="INSERT_OR_UPDATE">
+        <active>false</active>
+        <additional_configurations>{"skill_config_id":"54651f4a3b2f03104035a50864e45ac5"}</additional_configurations>
+        <ai_suggested>false</ai_suggested>
+        <definition>8c651f4a3b2f03104035a50864e45a4e</definition>
+        <definition_table>sys_one_extend_capability_definition</definition_table>
+        <documentation/>
+        <max_tokens>500</max_tokens>
+        <min_word_count>-1</min_word_count>
+        <model>llm_generic_small</model>
+        <name>AP Invoice Summary</name>
+        <parent/>
+        <prompt>You are a finance operations assistant supporting an Accounts Payable reviewer. Summarize the AP invoice below in plain language, in no more than 200 words.
+
+Your summary must include, when the data is available:
+- Vendor name and invoice number
+- Invoice date and posting date 
+- Gross amount, net amount, tax amount, and currency
+- Approval state and posting state
+- Any indication of a match or extraction issue (e.g. low extraction confidence, missing purchase order)
+
+Strict rules:
+- You are read-only. Never state or imply that the invoice has been approved, posted, or cleared.
+- Never recommend overriding a tolerance, approval limit, or control.
+- If required data is missing, say so plainly instead of guessing.
+- Output plain text only, organized as short labeled lines, not JSON.
+
+Invoice data:
+{{ap_invoice}}
+ {{ap_invoice.purchase_order}}  {{ap_invoice.tax_amount}} {{ap_invoice.vendor}} </prompt>
+        <prompt_template_role>user</prompt_template_role>
+        <provider_company/>
+        <request_tokens>32018</request_tokens>
+        <show_in_prompt_library>true</show_in_prompt_library>
+        <state>archived</state>
+        <sys_class_name>sys_generative_ai_config</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-27 09:32:09</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>00651f4a3b2f03104035a50864e45a73</sys_id>
+        <sys_mod_count>12</sys_mod_count>
+        <sys_name>8c651f4a3b2f03104035a50864e45a4e</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_generative_ai_config_00651f4a3b2f03104035a50864e45a73</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-27 16:49:11</sys_updated_on>
+        <temperature>0.2</temperature>
+        <thinking_tokens>0</thinking_tokens>
+        <version>1</version>
+    </sys_generative_ai_config>
+</record_update>

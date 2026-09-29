@@ -98,6 +98,34 @@
             <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
             <sys_updated_on>2026-09-17 07:11:49</sys_updated_on>
         </sys_ui_related_list_entry>
+        <sys_ui_related_list_entry action="INSERT_OR_UPDATE">
+            <filter/>
+            <list_id display_value="Payment - Default view" name="x_695068_bcfa_payment" related_list="NULL" sys_domain="global" view="Default view">6427ece927454448ba28afb659ba11f5</list_id>
+            <order_by/>
+            <position>7</position>
+            <related_list>x_695068_bcfa_finance_intake.payment</related_list>
+            <sys_class_name>sys_ui_related_list_entry</sys_class_name>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 17:19:18</sys_created_on>
+            <sys_id>4fc5f2cc6a244959ae97f017fc658c86</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 17:19:18</sys_updated_on>
+        </sys_ui_related_list_entry>
+        <sys_ui_related_list_entry action="INSERT_OR_UPDATE">
+            <filter/>
+            <list_id display_value="Payment - Default view" name="x_695068_bcfa_payment" related_list="NULL" sys_domain="global" view="Default view">6427ece927454448ba28afb659ba11f5</list_id>
+            <order_by/>
+            <position>8</position>
+            <related_list>REL:b806fcfa861f41fbb7d3b2aed99e7851</related_list>
+            <sys_class_name>sys_ui_related_list_entry</sys_class_name>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 17:19:18</sys_created_on>
+            <sys_id>e952e1b265c64df79aaf6c0058ea4ab6</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 17:19:18</sys_updated_on>
+        </sys_ui_related_list_entry>
         <sys_ui_related_list action="INSERT_OR_UPDATE">
             <calculated_name>Payment - Default view</calculated_name>
             <filter/>

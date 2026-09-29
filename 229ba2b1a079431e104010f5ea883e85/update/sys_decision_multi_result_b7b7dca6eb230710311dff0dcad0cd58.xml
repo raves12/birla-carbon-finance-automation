@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_decision_multi_result">
+    <sys_decision_multi_result action="INSERT_OR_UPDATE">
+        <decision_table display_value="BCFA AP Tolerance">bcb758a6eb230710311dff0dcad0cd77</decision_table>
+        <label>Strategic vendors (POC example; no vendor has this type yet)</label>
+        <result_elements/>
+        <sys_class_name>sys_decision_multi_result</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 09:00:38</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>b7b7dca6eb230710311dff0dcad0cd58</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Strategic vendors (POC example; no vendor has this type yet)</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_decision_multi_result_b7b7dca6eb230710311dff0dcad0cd58</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 09:00:38</sys_updated_on>
+    </sys_decision_multi_result>
+    <sys_variable_value action="delete_multiple" query="document_key=b7b7dca6eb230710311dff0dcad0cd58"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_decision_multi_result</document>
+        <document_key>b7b7dca6eb230710311dff0dcad0cd58</document_key>
+        <order>300</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 09:00:38</sys_created_on>
+        <sys_id>40c7dca6eb230710311dff0dcad0cd5c</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 09:00:38</sys_updated_on>
+        <value>1</value>
+        <variable display_value="Tax Tolerance Abs">a7b79ca6eb230710311dff0dcad0cd78</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_decision_multi_result</document>
+        <document_key>b7b7dca6eb230710311dff0dcad0cd58</document_key>
+        <order>400</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 09:00:38</sys_created_on>
+        <sys_id>48c7dca6eb230710311dff0dcad0cd5d</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 09:00:38</sys_updated_on>
+        <value>0.02</value>
+        <variable display_value="Tax Tolerance Pct">7fb79ca6eb230710311dff0dcad0cdf1</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_decision_multi_result</document>
+        <document_key>b7b7dca6eb230710311dff0dcad0cd58</document_key>
+        <order>200</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 09:00:38</sys_created_on>
+        <sys_id>4cc7dca6eb230710311dff0dcad0cd5c</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 09:00:38</sys_updated_on>
+        <value>0.02</value>
+        <variable display_value="Price Tolerance Pct">c7b75ca6eb230710311dff0dcad0cdcd</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_decision_multi_result</document>
+        <document_key>b7b7dca6eb230710311dff0dcad0cd58</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 09:00:38</sys_created_on>
+        <sys_id>c8c7dca6eb230710311dff0dcad0cd5a</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 09:00:38</sys_updated_on>
+        <value>0.05</value>
+        <variable display_value="Quantity Tolerance Pct">feb71ca6eb230710311dff0dcad0cde1</variable>
+    </sys_variable_value>
+</record_update>

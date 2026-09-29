@@ -1,13 +1,25 @@
-<?xml version="1.0"?>
-<record_update table="sys_ux_form_action">
-  <sys_ux_form_action action="INSERT_OR_UPDATE" apply_defaults="true">
-    <sys_id>ffda0ddd70c14e0fa4a15bc99f9e3110</sys_id>
-    <sys_scope display_value="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_scope>
-    <sys_update_name>sys_ux_form_action_ffda0ddd70c14e0fa4a15bc99f9e3110</sys_update_name>
-    <action_type>ui_action</action_type>
-    <active>true</active>
-    <name>Re-run Match</name>
-    <table>x_695068_bcfa_ap_invoice</table>
-    <ui_action>aa49bcfe92ea415bab51ed26ca7b3d9f</ui_action>
-  </sys_ux_form_action>
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ux_form_action">
+    <sys_ux_form_action action="INSERT_OR_UPDATE">
+        <action_type>ui_action</action_type>
+        <active>true</active>
+        <declarative_action/>
+        <description/>
+        <name>Re-run Match</name>
+        <specificity/>
+        <sys_class_name>sys_ux_form_action</sys_class_name>
+        <sys_created_by>RaviMAdmin</sys_created_by>
+        <sys_created_on>2026-09-25 11:44:38</sys_created_on>
+        <sys_id>ffda0ddd70c14e0fa4a15bc99f9e3110</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Re-run Match</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_ux_form_action_ffda0ddd70c14e0fa4a15bc99f9e3110</sys_update_name>
+        <sys_updated_by>RaviMAdmin</sys_updated_by>
+        <sys_updated_on>2026-09-25 11:44:38</sys_updated_on>
+        <table>x_695068_bcfa_ap_invoice</table>
+        <ui_action display_value="Re-run Match">aa49bcfe92ea415bab51ed26ca7b3d9f</ui_action>
+    </sys_ux_form_action>
+    <sys_translated_text action="delete_multiple" query="documentkey=ffda0ddd70c14e0fa4a15bc99f9e3110"/>
 </record_update>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_atf_step">
+    <sys_atf_step action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <callable_outputs/>
+        <copied_from/>
+        <description/>
+        <display_name>Run Server Side Script</display_name>
+        <inputs/>
+        <mugshots_cache_json/>
+        <notes/>
+        <order>1</order>
+        <step_config display_value="Run Server Side Script">41de4a935332120028bc29cac2dc349a</step_config>
+        <sys_class_name>sys_atf_step</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 18:37:06</sys_created_on>
+        <sys_id>afbc586ff40d451f84051ff7bb26e926</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>Run Server Side Script</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_atf_step_afbc586ff40d451f84051ff7bb26e926</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:37:06</sys_updated_on>
+        <table/>
+        <test display_value="Finance Operations KPIs — all 19 computed">83c03e2ddee5469b93dabf55981422c6</test>
+        <timeout/>
+        <warning_message/>
+    </sys_atf_step>
+    <sys_variable_value action="delete_multiple" query="document_key=afbc586ff40d451f84051ff7bb26e926"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>afbc586ff40d451f84051ff7bb26e926</document_key>
+        <order>200</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 18:37:06</sys_created_on>
+        <sys_id>1501bbcb2ce246cd8152bcaae07d1908</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:37:06</sys_updated_on>
+        <value>
+                (function(outputs, steps, params, stepResult, assertEqual) {
+                    new FinanceKpiService().refresh();
+                    var k = new GlideRecord('x_695068_bcfa_kpi');
+                    k.query();
+                    var total = 0, numeric = 0;
+                    while (k.next()) { total++; if (!isNaN(parseFloat(k.getValue('value')))) numeric++; }
+                    assertEqual({ name: '19 KPI rows', shouldbe: 19, value: total });
+                    assertEqual({ name: 'every KPI has a numeric value', shouldbe: total, value: numeric });
+                })(outputs, steps, params, stepResult, assertEqual);
+            </value>
+        <variable display_value="Test script">989d9e235324220002c6435723dc3484</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>afbc586ff40d451f84051ff7bb26e926</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 18:37:06</sys_created_on>
+        <sys_id>68d7f43da2c34911a6c0ba91b7b446fb</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:37:06</sys_updated_on>
+        <value>3.1</value>
+        <variable display_value="Jasmine version">42f2564b73031300440211d8faf6a777</variable>
+    </sys_variable_value>
+</record_update>

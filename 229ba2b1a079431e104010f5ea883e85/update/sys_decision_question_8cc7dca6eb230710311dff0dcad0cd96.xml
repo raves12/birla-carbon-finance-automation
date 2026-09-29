@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_decision_question">
+    <sys_decision_question action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <answer>b7b7dca6eb230710311dff0dcad0cd58</answer>
+        <condition>vendor_type=strategic^EQ</condition>
+        <decision_table display_value="BCFA AP Tolerance">bcb758a6eb230710311dff0dcad0cd77</decision_table>
+        <default_answer>false</default_answer>
+        <input_table/>
+        <label>BCFA AP Tolerance - Strategic vendors (POC example; no vendor has this type yet)</label>
+        <marked_for_deletion>false</marked_for_deletion>
+        <order>100</order>
+        <sys_class_name>sys_decision_question</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 09:00:38</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>8cc7dca6eb230710311dff0dcad0cd96</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>BCFA AP Tolerance - Strategic vendors (POC example; no vendor has this type yet)</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_decision_question_8cc7dca6eb230710311dff0dcad0cd96</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 09:00:38</sys_updated_on>
+    </sys_decision_question>
+</record_update>

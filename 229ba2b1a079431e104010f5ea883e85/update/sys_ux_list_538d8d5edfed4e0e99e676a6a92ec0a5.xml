@@ -2,8 +2,9 @@
     <sys_ux_list action="INSERT_OR_UPDATE">
         <active>true</active>
         <category display_value="Accounts Payable">94c1902c1d9342d68648c3a231d20a9d</category>
-        <columns>invoice_number,vendor,state,approval_state,posting_state,gross_amount,currency,extraction_confidence</columns>
-        <condition/>
+        <columns>invoice_number,vendor,state,approval_state,posting_state,gross_amount,currency,extraction_confidence,sys_created_on</columns>
+        <condition table="x_695068_bcfa_ap_invoice">stateNOT INPOSTED,RECONCILED,CLOSED,REJECTED<item endquery="false" field="state" goto="false" newquery="false" operator="NOT IN" or="false" value="POSTED,RECONCILED,CLOSED,REJECTED"/>
+        </condition>
         <configuration display_value="BCFA Workspace List Configuration">fb16c25153c543d2a3b3d6085a42ac55</configuration>
         <fixed_query/>
         <group_by_column/>
@@ -71,7 +72,7 @@
         <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
         <sys_updated_on>2026-09-17 14:27:48</sys_updated_on>
         <table>x_695068_bcfa_ap_invoice</table>
-        <title>AP Invoices — All</title>
+        <title>Invoice Queue</title>
         <view/>
         <word_wrap>false</word_wrap>
     </sys_ux_list>

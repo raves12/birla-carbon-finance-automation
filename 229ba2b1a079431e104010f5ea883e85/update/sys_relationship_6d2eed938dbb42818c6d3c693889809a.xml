@@ -8,8 +8,8 @@
         <name>Payment to Audit Events</name>
         <query_from/>
         <query_with><![CDATA[(function refineQuery(current, parent) {
-    current.addQuery('source_table', 'x_695068_bcfa_payment');
-    current.addQuery('source_record', parent.sys_id);
+    var q = current.addQuery('source_record', parent.sys_id);
+    if (parent.getValue('correlation_id')) q.addOrCondition('correlation_id', parent.getValue('correlation_id'));
 })(current, parent);]]></query_with>
         <reference_field/>
         <related_list/>

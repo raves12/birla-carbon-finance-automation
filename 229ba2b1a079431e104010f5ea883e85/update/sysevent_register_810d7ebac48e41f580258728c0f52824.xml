@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sysevent_register">
+    <sysevent_register action="INSERT_OR_UPDATE">
+        <caller_access/>
+        <derived_priority/>
+        <description>An AR exception breached its SLA and was escalated (parm1 = recipients, parm2 = level).</description>
+        <event_name>x_695068_bcfa.ar_exception.escalated</event_name>
+        <fired_by>ExceptionEngine</fired_by>
+        <priority/>
+        <queue/>
+        <suffix/>
+        <sys_class_name>sysevent_register</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 09:15:26</sys_created_on>
+        <sys_id>810d7ebac48e41f580258728c0f52824</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_695068_bcfa.ar_exception.escalated</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sysevent_register_810d7ebac48e41f580258728c0f52824</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 09:15:26</sys_updated_on>
+        <table>x_695068_bcfa_ar_exception</table>
+    </sysevent_register>
+</record_update>

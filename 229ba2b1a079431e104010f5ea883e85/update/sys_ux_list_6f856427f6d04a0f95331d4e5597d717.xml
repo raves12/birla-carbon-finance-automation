@@ -2,7 +2,7 @@
     <sys_ux_list action="INSERT_OR_UPDATE">
         <active>true</active>
         <category display_value="AI &amp; Audit">015ec263d267417d9c0ac2f5093ca969</category>
-        <columns>operation,status,claude_model,confidence,http_status,latency_ms,initiated_by</columns>
+        <columns>started_at,process,provider,capability,skill,agent,agentic_workflow,status,confidence,latency_ms,initiated_by,human_accepted,human_overridden</columns>
         <condition/>
         <configuration display_value="BCFA Workspace List Configuration">fb16c25153c543d2a3b3d6085a42ac55</configuration>
         <fixed_query/>

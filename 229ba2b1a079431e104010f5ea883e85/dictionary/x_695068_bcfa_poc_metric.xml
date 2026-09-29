@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element db_object_id="c97786e011264324af510a7449f296d6" label="POC Success Metric" max_length="40" name="x_695068_bcfa_poc_metric" type="collection">
+        <element choice="1" label="Status" max_length="40" name="status" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Information (no target)" sequence="4" value="info"/>
+                <element inactive_on_update="false" label="No data yet" sequence="3" value="no_data"/>
+                <element inactive_on_update="false" label="Met" sequence="1" value="met"/>
+                <element inactive_on_update="false" label="Not met" sequence="2" value="not_met"/>
+            </choice>
+        </element>
+        <element choice="1" label="Target Rule" max_length="40" name="comparator" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="At least" sequence="1" value="gte"/>
+                <element inactive_on_update="false" label="At most" sequence="2" value="lte"/>
+            </choice>
+        </element>
+        <element attributes="scale=2" label="Value" max_length="20" name="value" type="decimal"/>
+        <element label="Code" mandatory="true" max_length="60" name="code" type="string" unique="true"/>
+        <element attributes="scale=2" label="Proposed Target" max_length="20" name="target_value" type="decimal"/>
+        <element label="Detail" max_length="1000" name="detail" type="string"/>
+        <element choice="1" label="Pillar" max_length="40" name="pillar" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Control" sequence="3" value="control"/>
+                <element inactive_on_update="false" label="AI safety" sequence="4" value="ai_safety"/>
+                <element inactive_on_update="false" label="Automation" sequence="1" value="automation"/>
+                <element inactive_on_update="false" label="Speed" sequence="2" value="speed"/>
+                <element inactive_on_update="false" label="AI value" sequence="5" value="ai_value"/>
+            </choice>
+        </element>
+        <element choice="1" label="Unit" max_length="40" name="unit" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Ratio" sequence="5" value="ratio"/>
+                <element inactive_on_update="false" label="Hours" sequence="3" value="hours"/>
+                <element inactive_on_update="false" label="Percent" sequence="1" value="percent"/>
+                <element inactive_on_update="false" label="Count" sequence="2" value="count"/>
+                <element inactive_on_update="false" label="Milliseconds" sequence="4" value="ms"/>
+            </choice>
+        </element>
+        <element label="Sample Size" max_length="40" name="sample_size" type="integer"/>
+        <element display="true" label="Metric" mandatory="true" max_length="100" name="label" type="string"/>
+        <element label="Computed At" max_length="40" name="computed_at" type="glide_date_time"/>
+    </element>
+</database>

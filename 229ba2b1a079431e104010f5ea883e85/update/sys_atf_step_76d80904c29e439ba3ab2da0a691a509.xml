@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_atf_step">
+    <sys_atf_step action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <callable_outputs/>
+        <copied_from/>
+        <description/>
+        <display_name>Run Server Side Script</display_name>
+        <inputs/>
+        <mugshots_cache_json/>
+        <notes/>
+        <order>1</order>
+        <step_config display_value="Run Server Side Script">41de4a935332120028bc29cac2dc349a</step_config>
+        <sys_class_name>sys_atf_step</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 18:37:06</sys_created_on>
+        <sys_id>76d80904c29e439ba3ab2da0a691a509</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>Run Server Side Script</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_atf_step_76d80904c29e439ba3ab2da0a691a509</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:37:06</sys_updated_on>
+        <table/>
+        <test display_value="Lifecycle — illegal state change refused and audited, legal one allowed">a93e389547e243dda3c7550a2d2b5b01</test>
+        <timeout/>
+        <warning_message/>
+    </sys_atf_step>
+    <sys_variable_value action="delete_multiple" query="document_key=76d80904c29e439ba3ab2da0a691a509"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>76d80904c29e439ba3ab2da0a691a509</document_key>
+        <order>200</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 18:37:06</sys_created_on>
+        <sys_id>76a7a376c8944b0c9df2e1665bef01f2</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:37:06</sys_updated_on>
+        <value>
+                (function(outputs, steps, params, stepResult, assertEqual) {
+                    var ap = new ApDomainService();
+                    var inv = ap.intakeInvoice({ invoiceNumber: 'ATF-LC-' + gs.generateGUID(), currency: 'INR', grossAmount: 100, netAmount: 100, taxAmount: 0 }).apInvoiceSysId;
+                    var error = '';
+                    try { ap._setState(inv, 'CLOSED', null, 'ATF illegal jump'); } catch (e) { error = String(e); }
+                    var gr = new GlideRecord('x_695068_bcfa_ap_invoice');
+                    gr.get(inv);
+                    assertEqual({ name: 'RECEIVED -&gt; CLOSED throws a lifecycle error', shouldbe: true, value: error.indexOf('BCFA lifecycle') &gt;= 0 });
+                    assertEqual({ name: 'state unchanged after the refusal', shouldbe: 'RECEIVED', value: gr.getValue('state') });
+                    var audit = new GlideRecord('x_695068_bcfa_audit_event');
+                    audit.addQuery('source_record', inv);
+                    audit.addQuery('after_value', 'CONTAINS', '"result":"REFUSED"');
+                    audit.query();
+                    assertEqual({ name: 'refusal audited', shouldbe: 1, value: audit.getRowCount() });
+
+                    gr.setValue('state', 'POSTED');
+                    gr.update();
+                    gr.get(inv);
+                    assertEqual({ name: 'direct update RECEIVED -&gt; POSTED aborted by the backstop rule', shouldbe: 'RECEIVED', value: gr.getValue('state') });
+
+                    ap._setState(inv, 'EXTRACTING', null, 'ATF legal step');
+                    gr.get(inv);
+                    assertEqual({ name: 'RECEIVED -&gt; EXTRACTING allowed', shouldbe: 'EXTRACTING', value: gr.getValue('state') });
+                    ap._setState(inv, 'EXTRACTING', null, 'ATF same state');
+                    assertEqual({ name: 'staying in the same state allowed', shouldbe: true, value: true });
+                    var lc = new FinanceLifecycle();
+                    assertEqual({ name: 'Phase 26 transition RECEIVED -&gt; EXTRACTED modelled', shouldbe: true, value: lc.evaluate('x_695068_bcfa_ap_invoice', 'RECEIVED', 'EXTRACTED').allowed });
+                    assertEqual({ name: 'test-run path MATCHED -&gt; MATCHING not modelled', shouldbe: false, value: lc.evaluate('x_695068_bcfa_ap_invoice', 'MATCHED', 'MATCHING').allowed });
+                })(outputs, steps, params, stepResult, assertEqual);
+            </value>
+        <variable display_value="Test script">989d9e235324220002c6435723dc3484</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>76d80904c29e439ba3ab2da0a691a509</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 18:37:06</sys_created_on>
+        <sys_id>aa4bb7812f2245e89ab853e294ee701e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:37:06</sys_updated_on>
+        <value>3.1</value>
+        <variable display_value="Jasmine version">42f2564b73031300440211d8faf6a777</variable>
+    </sys_variable_value>
+</record_update>

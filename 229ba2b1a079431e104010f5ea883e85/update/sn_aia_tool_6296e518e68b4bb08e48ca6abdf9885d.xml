@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sn_aia_tool">
+    <sn_aia_tool action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description>Saves the final recommendation text to an AR exception's advisory AI Recommendation field only. Changes nothing else and is audited.</description>
+        <input_schema>[{"name":"ar_exception_sys_id","description":"sys_id of the AR exception","mandatory":true},{"name":"advice_text","description":"The final recommendation text, exactly as shown to the user","mandatory":true}]</input_schema>
+        <name>Save AR Advisory Recommendation (Cash Match)</name>
+        <record_type>custom</record_type>
+        <script><![CDATA[(function(inputs) {
+    return new x_695068_bcfa.FinanceAgentTools().recordExceptionAdvice('ar', inputs.ar_exception_sys_id, inputs.advice_text);
+})(inputs);]]></script>
+        <sys_class_name>sn_aia_tool</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 02:15:35</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>6296e518e68b4bb08e48ca6abdf9885d</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Save AR Advisory Recommendation (Cash Match)</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sn_aia_tool_6296e518e68b4bb08e48ca6abdf9885d</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 02:15:35</sys_updated_on>
+        <target_document/>
+        <target_document_table>sn_aia_tool</target_document_table>
+        <type>script</type>
+    </sn_aia_tool>
+</record_update>

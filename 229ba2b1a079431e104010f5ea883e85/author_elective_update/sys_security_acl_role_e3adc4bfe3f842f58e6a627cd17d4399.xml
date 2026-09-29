@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_security_acl_role">
+    <sys_security_acl_role action="DELETE">
+        <sys_class_name>sys_security_acl_role</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 02:01:34</sys_created_on>
+        <sys_id>e3adc4bfe3f842f58e6a627cd17d4399</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>global.x_695068_bcfa.BCFA AP Communication Agent.x_695068_bcfa.admin</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_security_acl display_value="global.x_695068_bcfa.BCFA AP Communication Agent">ddc8714aa5f844578bcc2b309059210c</sys_security_acl>
+        <sys_update_name>sys_security_acl_role_e3adc4bfe3f842f58e6a627cd17d4399</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 02:01:34</sys_updated_on>
+        <sys_user_role display_value="x_695068_bcfa.admin" name="x_695068_bcfa.admin">4411dd9103de4bdbb5468924b1e5459f</sys_user_role>
+    </sys_security_acl_role>
+    <sys_update_version action="INSERT_OR_UPDATE">
+        <action>DELETE</action>
+        <application display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</application>
+        <file_path/>
+        <instance_id>fc123fec1b958a5065324089bd4bcb56</instance_id>
+        <instance_name>pwcmanagementservicesdemo01</instance_name>
+        <name>sys_security_acl_role_e3adc4bfe3f842f58e6a627cd17d4399</name>
+        <payload><![CDATA[<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_security_acl_role"><sys_security_acl_role action="INSERT_OR_UPDATE"><sys_class_name>sys_security_acl_role</sys_class_name><sys_created_by>ravi.n.kumar@pwc.com</sys_created_by><sys_created_on>2026-09-28 02:01:34</sys_created_on><sys_id>e3adc4bfe3f842f58e6a627cd17d4399</sys_id><sys_mod_count>0</sys_mod_count><sys_name>global.x_695068_bcfa.BCFA AP Communication Agent.x_695068_bcfa.admin</sys_name><sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package><sys_policy/><sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope><sys_security_acl display_value="global.x_695068_bcfa.BCFA AP Communication Agent">ddc8714aa5f844578bcc2b309059210c</sys_security_acl><sys_update_name>sys_security_acl_role_e3adc4bfe3f842f58e6a627cd17d4399</sys_update_name><sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by><sys_updated_on>2026-09-28 02:01:34</sys_updated_on><sys_user_role display_value="x_695068_bcfa.admin" name="x_695068_bcfa.admin">4411dd9103de4bdbb5468924b1e5459f</sys_user_role></sys_security_acl_role></record_update>]]></payload>
+        <payload_hash>-563041942</payload_hash>
+        <record_name>global.x_695068_bcfa.BCFA AP Communication Agent.x_695068_bcfa.admin</record_name>
+        <reverted_from/>
+        <source>7f529901eb030310311dff0dcad0cd72</source>
+        <source_table>sys_upgrade_history</source_table>
+        <state>previous</state>
+        <sys_created_by/>
+        <sys_created_on>2026-08-30 00:54:29</sys_created_on>
+        <sys_id>1e5ba16eeb6f0710311dff0dcad0cde1</sys_id>
+        <sys_mod_count/>
+        <sys_recorded_at>1a0502925880000000</sys_recorded_at>
+        <sys_updated_by/>
+        <sys_updated_on/>
+        <type>Access Roles</type>
+        <update_guid>da5ba16eeb6f0710ba4bbbcce23ae4e1</update_guid>
+        <update_guid_history>da5ba16eeb6f0710ba4bbbcce23ae4e1:-563041942</update_guid_history>
+    </sys_update_version>
+    <sys_metadata_delete action="INSERT_OR_UPDATE">
+        <sys_audit_delete display_value="global.x_695068_bcfa.BCFA AP Communication Agent.x_695068_bcfa.admin">125ba16eeb6f0710311dff0dcad0cddf</sys_audit_delete>
+        <sys_class_name>sys_metadata_delete</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 15:05:53</sys_created_on>
+        <sys_db_object display_value="" name="sys_security_acl_role">sys_security_acl_role</sys_db_object>
+        <sys_id>321a8920582f46229c204c3f6c24b219</sys_id>
+        <sys_metadata>e3adc4bfe3f842f58e6a627cd17d4399</sys_metadata>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>global.x_695068_bcfa.BCFA AP Communication Agent.x_695068_bcfa.admin</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_parent display_value="global.x_695068_bcfa.BCFA AP Communication Agent">ddc8714aa5f844578bcc2b309059210c</sys_parent>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_scope_delete display_value="">2a2ac8703b554c088130bcc4b05f6e71</sys_scope_delete>
+        <sys_update_name>sys_security_acl_role_e3adc4bfe3f842f58e6a627cd17d4399</sys_update_name>
+        <sys_update_version display_value="sys_security_acl_role_e3adc4bfe3f842f58e6a627cd17d4399">1e5ba16eeb6f0710311dff0dcad0cde1</sys_update_version>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 15:05:53</sys_updated_on>
+    </sys_metadata_delete>
+</record_update>

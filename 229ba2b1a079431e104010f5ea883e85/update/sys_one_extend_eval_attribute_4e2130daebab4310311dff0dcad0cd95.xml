@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_one_extend_eval_attribute">
+    <sys_one_extend_eval_attribute action="INSERT_OR_UPDATE">
+        <advanced>false</advanced>
+        <capability display_value="bcfaCustomerClarificationDraft">3d2130daebab4310311dff0dcad0cd48</capability>
+        <capability_attribute display_value="response">4e2130daebab4310311dff0dcad0cd91</capability_attribute>
+        <data_type>string</data_type>
+        <label>Golden Response</label>
+        <name>response</name>
+        <sys_class_name>sys_one_extend_eval_attribute</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-27 16:13:10</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>4e2130daebab4310311dff0dcad0cd95</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Golden Response</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_one_extend_eval_attribute_4e2130daebab4310311dff0dcad0cd95</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-27 16:13:10</sys_updated_on>
+        <template/>
+        <template_script><![CDATA[(function getValue(response) {
+   // response would give the response from capability 
+})(response);]]></template_script>
+    </sys_one_extend_eval_attribute>
+</record_update>

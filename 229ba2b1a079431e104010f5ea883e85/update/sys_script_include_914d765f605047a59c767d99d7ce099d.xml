@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>x_695068_bcfa.FinanceKpiService</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description>Computes the 19 Finance Operations KPIs (AP, AR, AI, integration) from the records and stores them in x_695068_bcfa_kpi for the workspace landing page.</description>
+        <mobile_callable>false</mobile_callable>
+        <name>FinanceKpiService</name>
+        <sandbox_callable>false</sandbox_callable>
+        <script><![CDATA[// Finance Operations KPIs (Phase 24) for the BCFA workspace landing page.
+// refresh() recomputes all 19 KPIs from the records and upserts one
+// x_695068_bcfa_kpi row per KPI (value, unit, how it was computed). It runs
+// every 15 minutes (BCFA - Finance KPI Refresh) and on demand. The landing
+// page reads counts live from the records; rates and averages come from here.
+var FinanceKpiService = Class.create();
+
+FinanceKpiService.TABLE = 'x_695068_bcfa_kpi';
+// Payment states reached only after a match was found.
+FinanceKpiService.AR_MATCHED_STATES = ['MATCHED', 'PARTIALLY_MATCHED', 'ALLOCATION', 'PENDING_APPROVAL', 'APPROVED', 'CLEARING', 'CLEARED',
+    'UNKNOWN_OUTCOME', 'RECONCILED', 'CLOSED'];
+// Payment states before matching has run.
+FinanceKpiService.AR_PRE_MATCH_STATES = ['RECEIVED', 'NORMALIZED', 'CUSTOMER_RESOLUTION', 'MATCHING'];
+FinanceKpiService.AR_SETTLED_STATES = ['CLEARED', 'RECONCILED', 'CLOSED'];
+FinanceKpiService.INTEGRATION_FAILED = ['failed', 'technical_error', 'validation_error'];
+
+FinanceKpiService.prototype = {
+    initialize: function() {},
+
+    // Returns { code: { value, unit, detail } } after saving every KPI.
+    refresh: function() {
+        var k = {};
+        var now = new GlideDateTime();
+
+        // --- Accounts Payable ---------------------------------------------
+        var received = this._count('x_695068_bcfa_ap_invoice', '');
+        var posted = this._count('x_695068_bcfa_ap_invoice', 'posting_state=posted');
+        k.ap_invoices_received = this._kpi('ap', 'Invoices received', received, 'count', 'All AP invoices.');
+        k.ap_invoices_posted = this._kpi('ap', 'Invoices posted', posted, 'count', 'AP invoices with posting state Posted.');
+        var stp = 0;
+        var inv = new GlideRecord('x_695068_bcfa_ap_invoice');
+        inv.addQuery('posting_state', 'posted');
+        inv.query();
+        while (inv.next()) {
+            if (this._count('x_695068_bcfa_ap_exception', 'ap_invoice=' + inv.getUniqueValue()) === 0) stp++;
+        }
+        k.ap_stp_rate = this._kpi('ap', 'AP straight-through rate', this._pct(stp, posted), 'percent',
+            stp + ' of ' + posted + ' posted invoices were posted without any exception.');
+        k.ap_open_exceptions = this._kpi('ap', 'Open AP exceptions', this._count('x_695068_bcfa_ap_exception', 'statusINopen,in_review'), 'count', 'Status open or in review.');
+        k.ap_pending_approvals = this._kpi('ap', 'Pending AP approvals', this._count('x_695068_bcfa_ap_approval', 'decision=pending'), 'count', 'AP approvals awaiting a decision.');
+        var age = this._averageAgeHours('x_695068_bcfa_ap_exception', now);
+        k.ap_avg_exception_age = this._kpi('ap', 'Average AP exception age', age.hours, 'hours',
+            'Mean hours since opened across ' + age.count + ' open AP exception(s).');
+
+        // --- Accounts Receivable ------------------------------------------
+        var payments = this._count('x_695068_bcfa_payment', '');
+        var matched = this._count('x_695068_bcfa_payment', 'stateIN' + FinanceKpiService.AR_MATCHED_STATES.join(','));
+        k.ar_payments_received = this._kpi('ar', 'Payments received', payments, 'count', 'All payments.');
+        k.ar_payments_matched = this._kpi('ar', 'Payments matched', matched, 'count', 'Payments in a state reached only after a match (' + FinanceKpiService.AR_MATCHED_STATES.join(', ') + ').');
+        var unapplied = this._unappliedCash();
+        k.ar_unapplied_cash = this._kpi('ar', 'Unapplied cash (INR)', unapplied.inr, 'amount',
+            'Payments not yet cleared, INR: ' + unapplied.inr + (unapplied.other.length ? '; other currencies (not converted): ' + unapplied.other.join(', ') : '') + '.');
+        var attempted = 0, auto = 0;
+        var pay = new GlideRecord('x_695068_bcfa_payment');
+        pay.addQuery('state', 'NOT IN', FinanceKpiService.AR_PRE_MATCH_STATES.join(','));
+        pay.query();
+        while (pay.next()) {
+            attempted++;
+            if (this._count('x_695068_bcfa_ar_exception', 'payment=' + pay.getUniqueValue()) === 0) auto++;
+        }
+        k.ar_auto_match_rate = this._kpi('ar', 'AR auto-match rate', this._pct(auto, attempted), 'percent',
+            auto + ' of ' + attempted + ' payments that went through matching were matched and allocated without any exception.');
+        k.ar_open_exceptions = this._kpi('ar', 'Open AR exceptions', this._count('x_695068_bcfa_ar_exception', 'statusINopen,in_review'), 'count', 'Status open or in review.');
+        k.ar_pending_approvals = this._kpi('ar', 'Pending AR approvals', this._count('x_695068_bcfa_ar_approval', 'decision=pending'), 'count', 'AR approvals awaiting a decision.');
+
+        // --- AI -----------------------------------------------------------------
+        k.ai_assisted_reviews = this._kpi('ai', 'AI-assisted reviews', this._count('x_695068_bcfa_ai_interaction', 'capability=exception_review^status=success'), 'count',
+            'Exception reviews completed by an agentic workflow or Explain with Now Assist.');
+        var accepted = this._count('x_695068_bcfa_ai_interaction', 'human_accepted=true');
+        var overridden = this._count('x_695068_bcfa_ai_interaction', 'human_overridden=true');
+        k.ai_acceptance_rate = this._kpi('ai', 'AI recommendation acceptance', this._pct(accepted, accepted + overridden), 'percent',
+            accepted + ' accepted of ' + (accepted + overridden) + ' AI outputs a person decided on.');
+        k.ai_overrides = this._kpi('ai', 'AI overrides', overridden, 'count', 'AI outputs a person overrode (with a reason).');
+        var low = this._lowConfidence();
+        k.ai_low_confidence_documents = this._kpi('ai', 'Low-confidence documents', low.total, 'count', low.detail);
+
+        // --- Integration ---------------------------------------------------------
+        k.int_failures = this._kpi('integration', 'Integration failures', this._count('x_695068_bcfa_integration_txn', 'statusIN' + FinanceKpiService.INTEGRATION_FAILED.join(',')), 'count',
+            'Integration transactions with status ' + FinanceKpiService.INTEGRATION_FAILED.join(' / ') + '.');
+        k.int_unknown_outcome = this._kpi('integration', 'UNKNOWN_OUTCOME', this._count('x_695068_bcfa_integration_txn', 'unknown_outcome_flag=true'), 'count',
+            'Writes whose outcome is unknown (timeout) and not yet reconciled.');
+        k.int_pending_reconciliation = this._kpi('integration', 'Pending reconciliation', this._count('x_695068_bcfa_integration_txn', 'reconciliation_state=pending'), 'count',
+            'Unknown-outcome transactions waiting for a status query.');
+
+        for (var code in k) this._save(code, k[code], now);
+        return k;
+    },
+
+    _kpi: function(category, label, value, unit, detail) {
+        return { category: category, label: label, value: Math.round(value * 100) / 100, unit: unit, detail: detail };
+    },
+
+    _save: function(code, kpi, now) {
+        var gr = new GlideRecord(FinanceKpiService.TABLE);
+        if (!gr.get('code', code)) {
+            gr.initialize();
+            gr.setValue('code', code);
+        }
+        gr.setValue('label', kpi.label);
+        gr.setValue('category', kpi.category);
+        gr.setValue('value', kpi.value);
+        gr.setValue('unit', kpi.unit);
+        gr.setValue('detail', kpi.detail);
+        gr.setValue('computed_at', now.getValue());
+        if (gr.isNewRecord()) gr.insert(); else gr.update();
+    },
+
+    _count: function(table, query) {
+        var ga = new GlideAggregate(table);
+        if (query) ga.addEncodedQuery(query);
+        ga.addAggregate('COUNT');
+        ga.query();
+        return ga.next() ? parseInt(ga.getAggregate('COUNT'), 10) : 0;
+    },
+
+    _pct: function(part, whole) {
+        return whole ? (part * 100) / whole : 0;
+    },
+
+    _averageAgeHours: function(table, now) {
+        var gr = new GlideRecord(table);
+        gr.addQuery('status', 'IN', 'open,in_review');
+        gr.query();
+        var total = 0, n = 0;
+        while (gr.next()) {
+            var opened = gr.getValue('opened_at') || gr.getValue('sys_created_on');
+            total += (now.getNumericValue() - new GlideDateTime(opened).getNumericValue()) / 3600000;
+            n++;
+        }
+        return { hours: n ? total / n : 0, count: n };
+    },
+
+    _unappliedCash: function() {
+        var byCurrency = {};
+        var gr = new GlideRecord('x_695068_bcfa_payment');
+        gr.addQuery('state', 'NOT IN', FinanceKpiService.AR_SETTLED_STATES.join(','));
+        gr.query();
+        while (gr.next()) {
+            var c = gr.getValue('currency') || '?';
+            byCurrency[c] = (byCurrency[c] || 0) + parseFloat(gr.getValue('amount') || '0');
+        }
+        var other = [];
+        for (var cur in byCurrency) if (cur !== 'INR') other.push(cur + ' ' + (Math.round(byCurrency[cur] * 100) / 100));
+        return { inr: Math.round((byCurrency.INR || 0) * 100) / 100, other: other };
+    },
+
+    // Documents whose extraction confidence is below the review threshold:
+    // AP extractions, remittances and document intakes.
+    _lowConfidence: function() {
+        var threshold = new FinancePolicy().extractionConfidenceThreshold();
+        var ap = this._count('x_695068_bcfa_ap_extraction', 'confidence<' + threshold);
+        var rem = this._count('x_695068_bcfa_remittance', 'confidenceISNOTEMPTY^confidence<' + threshold);
+        var intake = this._count('x_695068_bcfa_finance_intake', 'extraction_confidenceISNOTEMPTY^extraction_confidence<' + threshold);
+        return { total: ap + rem + intake,
+            detail: 'Extraction confidence below ' + threshold + ': ' + ap + ' AP extraction(s), ' + rem + ' remittance(s), ' + intake + ' document intake(s).' };
+    },
+
+    type: 'FinanceKpiService'
+};
+]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 17:19:16</sys_created_on>
+        <sys_id>914d765f605047a59c767d99d7ce099d</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>FinanceKpiService</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_script_include_914d765f605047a59c767d99d7ce099d</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:12:50</sys_updated_on>
+    </sys_script_include>
+</record_update>

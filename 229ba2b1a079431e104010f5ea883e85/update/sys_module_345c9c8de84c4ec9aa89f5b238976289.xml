@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_module">
+    <sys_module action="INSERT_OR_UPDATE">
+        <content><![CDATA[// The seam for a real SAP connection (Phase 18). It implements the same
+// canonical interface as MockSAPAdapter, so IntegrationService, the domain
+// services and the Integration Transaction log do not change when SAP is
+// connected; only this class does (e.g. calls to SAP through SAP Integration
+// Suite / CPI with a ServiceNow Connection & Credential alias).
+//
+// Until that connection is configured every method returns
+// { status: 'NOT_CONFIGURED' } and sends nothing. IntegrationService treats
+// that as a definite, safe failure (nothing was sent, so nothing can have
+// committed). No real SAP interface details have been provided for this POC
+// (docs/OPEN_SAP_GAPS.md); Mock SAP stays authoritative.
+var RealSAPAdapter = Class.create();
+
+// The canonical operations every SAP adapter must implement.
+RealSAPAdapter.CANONICAL_OPERATIONS = [
+    'getVendor', 'getCustomer', 'getPurchaseOrder', 'getReceipt', 'getOpenItems',
+    'postVendorInvoice', 'clearCustomerPayment', 'queryTransactionStatus'
+];
+
+RealSAPAdapter.prototype = {
+    initialize: function() {},
+
+    _notConfigured: function(operation) {
+        return { status: 'NOT_CONFIGURED', found: false, operation: operation,
+            message: 'Real SAP adapter is not configured: no SAP connection has been defined for this POC.' };
+    },
+
+    getVendor: function(vendorCode) { return this._notConfigured('getVendor'); },
+    getCustomer: function(customerCode) { return this._notConfigured('getCustomer'); },
+    getPurchaseOrder: function(poNumber) { return this._notConfigured('getPurchaseOrder'); },
+    getReceipt: function(receiptNumber) { return this._notConfigured('getReceipt'); },
+    getOpenItems: function(customerSysId) { return this._notConfigured('getOpenItems'); },
+    postVendorInvoice: function(payload) { return this._notConfigured('postVendorInvoice'); },
+    clearCustomerPayment: function(payload) { return this._notConfigured('clearCustomerPayment'); },
+    // Would ask SAP whether a write with this idempotency key / external
+    // reference committed (e.g. by the reference stored in the SAP document).
+    queryTransactionStatus: function(operation, idempotencyKey, externalReference) {
+        return { outcome: 'UNAVAILABLE', message: 'Real SAP adapter is not configured.' };
+    },
+
+    type: 'RealSAPAdapter'
+};
+]]></content>
+        <external_source>false</external_source>
+        <path>x_695068_bcfa/birla-carbon-finance-automation/0.0.1/src/server/script-includes/RealSAPAdapter.server.js</path>
+        <sys_class_name>sys_module</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 13:40:45</sys_created_on>
+        <sys_id>345c9c8de84c4ec9aa89f5b238976289</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>x_695068_bcfa/birla-carbon-finance-automation/0.0.1/src/server/script-includes/RealSAPAdapter.server.js</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_module_345c9c8de84c4ec9aa89f5b238976289</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:12:47</sys_updated_on>
+    </sys_module>
+</record_update>

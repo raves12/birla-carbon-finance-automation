@@ -3,6 +3,8 @@
         <element attributes="edge_encryption_enabled=true" label="Match Type" mandatory="true" max_length="40" name="match_type" type="choice">
             <choice>
                 <element inactive_on_update="false" label="Exact" sequence="1" value="exact"/>
+                <element inactive_on_update="false" label="Remittance Reference (deterministic)" sequence="4" value="remittance"/>
+                <element inactive_on_update="false" label="Exact Combination (deterministic)" sequence="5" value="combination"/>
                 <element inactive_on_update="false" label="AI Suggested (advisory)" sequence="3" value="ai_suggested"/>
                 <element inactive_on_update="false" label="Fuzzy (deterministic)" sequence="2" value="fuzzy"/>
             </choice>

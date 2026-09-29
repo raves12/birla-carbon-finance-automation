@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_choice action="INSERT_OR_UPDATE" field="reconciliation_state" table="x_695068_bcfa_integration_txn" version="3">
+        <sys_choice_set action="INSERT_OR_UPDATE">
+            <element>reconciliation_state</element>
+            <name>x_695068_bcfa_integration_txn</name>
+            <sys_class_name>sys_choice_set</sys_class_name>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 13:40:45</sys_created_on>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>reconciliation_state</sys_name>
+            <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+            <sys_update_name>sys_choice_x_695068_bcfa_integration_txn_reconciliation_state</sys_update_name>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 13:40:45</sys_updated_on>
+        </sys_choice_set>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>reconciliation_state</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Not Required</label>
+            <language>en</language>
+            <name>x_695068_bcfa_integration_txn</name>
+            <sequence>1</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 13:40:45</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 13:40:45</sys_updated_on>
+            <value>not_required</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>reconciliation_state</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Pending (outcome unknown)</label>
+            <language>en</language>
+            <name>x_695068_bcfa_integration_txn</name>
+            <sequence>2</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 13:40:45</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 13:40:45</sys_updated_on>
+            <value>pending</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>reconciliation_state</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Confirmed Committed</label>
+            <language>en</language>
+            <name>x_695068_bcfa_integration_txn</name>
+            <sequence>3</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 13:40:45</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 13:40:45</sys_updated_on>
+            <value>confirmed_committed</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>reconciliation_state</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Confirmed Not Committed (safe to retry)</label>
+            <language>en</language>
+            <name>x_695068_bcfa_integration_txn</name>
+            <sequence>4</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 13:40:45</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 13:40:45</sys_updated_on>
+            <value>confirmed_not_committed</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>reconciliation_state</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Escalated (retry limit)</label>
+            <language>en</language>
+            <name>x_695068_bcfa_integration_txn</name>
+            <sequence>5</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 13:40:45</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 13:40:45</sys_updated_on>
+            <value>escalated</value>
+        </sys_choice>
+    </sys_choice>
+</record_update>

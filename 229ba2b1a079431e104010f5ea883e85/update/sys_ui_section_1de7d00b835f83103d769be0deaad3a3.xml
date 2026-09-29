@@ -168,6 +168,90 @@
             <sys_user/>
             <type>.end_split</type>
         </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>approval_group</element>
+            <position>12</position>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 08:57:06</sys_created_on>
+            <sys_id>94f6d426eb230710311dff0dcad0cde5</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_695068_bcfa_ap_approval" sys_domain="global" view="Default view">1de7d00b835f83103d769be0deaad3a3</sys_ui_section>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 08:57:06</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>approval_type</element>
+            <position>13</position>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 12:48:02</sys_created_on>
+            <sys_id>cbcbcdaaeb2b0710311dff0dcad0cd47</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_695068_bcfa_ap_approval" sys_domain="global" view="Default view">1de7d00b835f83103d769be0deaad3a3</sys_ui_section>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 12:48:02</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>override_reason</element>
+            <position>14</position>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 12:48:03</sys_created_on>
+            <sys_id>93cbcdaaeb2b0710311dff0dcad0cd75</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_695068_bcfa_ap_approval" sys_domain="global" view="Default view">1de7d00b835f83103d769be0deaad3a3</sys_ui_section>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 12:48:03</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>state_before</element>
+            <position>15</position>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 12:48:03</sys_created_on>
+            <sys_id>13cbcdaaeb2b0710311dff0dcad0cda2</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_695068_bcfa_ap_approval" sys_domain="global" view="Default view">1de7d00b835f83103d769be0deaad3a3</sys_ui_section>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 12:48:03</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>state_after</element>
+            <position>16</position>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 12:48:03</sys_created_on>
+            <sys_id>dfcbcdaaeb2b0710311dff0dcad0cdda</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_695068_bcfa_ap_approval" sys_domain="global" view="Default view">1de7d00b835f83103d769be0deaad3a3</sys_ui_section>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 12:48:03</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>sod_check</element>
+            <position>17</position>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 12:48:04</sys_created_on>
+            <sys_id>23cb01eaeb2b0710311dff0dcad0cd14</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_695068_bcfa_ap_approval" sys_domain="global" view="Default view">1de7d00b835f83103d769be0deaad3a3</sys_ui_section>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 12:48:04</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
         <sys_ui_section action="INSERT_OR_UPDATE">
             <caption/>
             <header>false</header>

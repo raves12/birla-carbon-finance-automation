@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="ml_capability_definition_workflow">
+    <ml_capability_definition_workflow action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <capability display_value="Workflow">d12a03f173212010c0bbb63854f6a7b9</capability>
+        <current_solution_version/>
+        <dataset_language>en</dataset_language>
+        <description>DocIntel Prediction workflow</description>
+        <fields/>
+        <filter/>
+        <pretrained>false</pretrained>
+        <request_source>api</request_source>
+        <solution_label>docintel_prediction_workflow_456fe961eba3c314311dff0dcad0cdf3</solution_label>
+        <solution_name>ml_x_pcmsl_x_695068_bcfa_global_docintel_prediction_workflow_456fe961eba3c314311dff0dcad0cdf3</solution_name>
+        <solution_parameters/>
+        <solution_properties>{"concurrency_policy":"allow","description":"DocIntel Prediction workflow","label":"docintel_prediction_workflow_456fe961eba3c314311dff0dcad0cdf3","predictPipeline":{},"schedulingInfo":{"useCase":"docintel_prediction_workflow","overrideCapability":{"name":"docintel_trainer","version":"27.1"}},"tags":"docintel,workflow,prediction","trainingPipeline":{"pipelineOutput":{"info":{"predictionInfo":"::docintel_prediction.info"},"models":{"output":"::docintel_prediction.output","metrics":"::docintel_prediction.metrics"}},"steps":[{"name":"docintel_prediction","component":"docintel_prediction","input":{"dataset":"::pipelineInput.datasets.prediction_input","keys":"::pipelineInput.datasets.keys","key_groups":"::pipelineInput.datasets.key_groups","key_hints":"::pipelineInput.datasets.key_hints","prediction_component_version":"27.1"}}],"pipelineInput":{"config":{},"datasets":{"keys":{"tableName":"sys_di_key","fieldNames":["name","display_name","key_group","group_index","order","type","synonym","key_config","mandatory"],"encodedQuery":"task_definition\u003d456fe961eba3c314311dff0dcad0cdf3","name":"keys","fetchDisplayValue":false},"key_hints":{"tableName":"sys_di_key_hint","fieldNames":["label","type","synonym_list"],"name":"key_hints","fetchDisplayValue":false},"prediction_input":{"tableName":"sys_di_prediction_input","fieldNames":["task_definition","task","data","chunk_number"],"encodedQuery":"ready_for_processing\u003dtrue^is_processed\u003dfalse^task_definition\u003d456fe961eba3c314311dff0dcad0cdf3","name":"prediction_input","fetchDisplayValue":false},"key_groups":{"tableName":"sys_di_key_group","fieldNames":["type","is_list","display_name"],"encodedQuery":"task_definition\u003d456fe961eba3c314311dff0dcad0cdf3","name":"key_groups","fetchDisplayValue":false}}}},"workflowConfiguration":{"trainingFrequency":"run_once"},"workflowLanguageVersion":"1.0.0"}</solution_properties>
+        <stopwords>a6282a25533333008c5bddeeff7b12c3</stopwords>
+        <sys_class_name>ml_capability_definition_workflow</sys_class_name>
+        <sys_created_by>RaviMAdmin</sys_created_by>
+        <sys_created_on>2026-09-25 12:49:37</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>816fe1a1eba3c314311dff0dcad0cd3e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>DocIntel Prediction workflow</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>ml_capability_definition_workflow_816fe1a1eba3c314311dff0dcad0cd3e</sys_update_name>
+        <sys_updated_by>RaviMAdmin</sys_updated_by>
+        <sys_updated_on>2026-09-25 12:49:37</sys_updated_on>
+        <table/>
+        <tags>docintel,workflow,prediction</tags>
+        <training_frequency>run_once</training_frequency>
+        <triggered_source>API</triggered_source>
+        <word_vector_corpus/>
+    </ml_capability_definition_workflow>
+</record_update>

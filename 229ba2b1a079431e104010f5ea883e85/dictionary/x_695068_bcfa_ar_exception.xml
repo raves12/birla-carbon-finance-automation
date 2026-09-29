@@ -1,16 +1,94 @@
 <?xml version="1.0" encoding="UTF-8"?><database>
     <element audit="true" db_object_id="050557f2835f43103d769be0deaad312" label="AR Exception" max_length="40" name="x_695068_bcfa_ar_exception" type="collection">
+        <element label="Credit Note" max_length="32" name="credit_note" reference="x_695068_bcfa_credit_note" type="reference"/>
+        <element choice="1" label="Aging" max_length="40" name="aging_bucket" read_only="true" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Over 7 days" sequence="4" value="gt_7d"/>
+                <element inactive_on_update="false" label="Under 1 day" sequence="1" value="lt_1d"/>
+                <element inactive_on_update="false" label="3-7 days" sequence="3" value="3_7d"/>
+                <element inactive_on_update="false" label="1-3 days" sequence="2" value="1_3d"/>
+            </choice>
+        </element>
+        <element choice="1" label="Decision" max_length="40" name="decision" read_only="true" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Request Clarification" sequence="2" value="request_clarification"/>
+                <element inactive_on_update="false" label="Hold" sequence="3" value="hold"/>
+                <element inactive_on_update="false" label="Approve Deduction" sequence="1" value="approve_deduction"/>
+            </choice>
+        </element>
+        <element default="0" label="Escalation Level" max_length="40" name="escalation_level" read_only="true" type="integer"/>
+        <element choice="1" default="medium" label="Severity" max_length="40" name="severity" read_only="true" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Low" sequence="1" value="low"/>
+                <element inactive_on_update="false" label="High" sequence="3" value="high"/>
+                <element inactive_on_update="false" label="Medium" sequence="2" value="medium"/>
+                <element inactive_on_update="false" label="Critical" sequence="4" value="critical"/>
+            </choice>
+        </element>
+        <element choice="1" default="ar" label="Process" max_length="40" name="process" read_only="true" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Accounts Receivable" sequence="2" value="ar"/>
+                <element inactive_on_update="false" label="Accounts Payable" sequence="1" value="ap"/>
+            </choice>
+        </element>
         <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Assigned To" max_length="32" name="assigned_to" reference="sys_user" type="reference"/>
-        <element hint="Simulated-AI output only. Never read by deterministic rules or approval/clearing logic." label="AI Recommendation (advisory)" max_length="4000" name="ai_recommendation" type="string"/>
+        <element hint="Advisory AI output only (Now Assist, or the legacy simulation). Never read by deterministic rules or approval/clearing logic." label="AI Recommendation (advisory)" max_length="4000" name="ai_recommendation" type="string"/>
         <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Payment" mandatory="true" max_length="32" name="payment" reference="x_695068_bcfa_payment" type="reference"/>
         <element label="Description" max_length="4000" name="description" type="string"/>
-        <element attributes="edge_encryption_enabled=true" display="true" label="Reason Code" mandatory="true" max_length="40" name="reason_code" type="choice">
+        <element label="AI Explanation (advisory)" max_length="4000" name="ai_explanation" read_only="true" type="string"/>
+        <element attributes="ignore_filter_on_new=true" default="javascript:global.getNextObjNumberPadded();" display="true" label="Number" max_length="40" name="number" type="string"/>
+        <element choice="1" label="Resolution Code" max_length="40" name="resolution_code" read_only="true" type="choice">
             <choice>
+                <element inactive_on_update="false" label="Corrected and Retried" sequence="4" value="corrected_and_retried"/>
+                <element inactive_on_update="false" label="Other" sequence="6" value="other"/>
+                <element inactive_on_update="false" label="Rejected" sequence="2" value="rejected"/>
+                <element inactive_on_update="false" label="Withdrawn" sequence="5" value="withdrawn"/>
+                <element inactive_on_update="false" label="Override Approved" sequence="1" value="override_approved"/>
+                <element inactive_on_update="false" label="Deduction Approved" sequence="3" value="deduction_approved"/>
+            </choice>
+        </element>
+        <element label="Resolved By" max_length="32" name="resolved_by" read_only="true" reference="sys_user" type="reference"/>
+        <element choice="1" label="Deduction Type" max_length="40" name="deduction_type" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Short Pay" sequence="3" value="short_pay"/>
+                <element inactive_on_update="false" label="Bank Charge" sequence="1" value="bank_charge"/>
+                <element inactive_on_update="false" label="Unapplied Cash" sequence="5" value="unapplied"/>
+                <element inactive_on_update="false" label="TCS" sequence="2" value="tcs"/>
+                <element inactive_on_update="false" label="Credit Note Netting" sequence="4" value="credit_note_netting"/>
+            </choice>
+        </element>
+        <element label="Decided By" max_length="32" name="decided_by" read_only="true" reference="sys_user" type="reference"/>
+        <element label="Subtype" max_length="100" name="subtype" read_only="true" type="string"/>
+        <element choice="1" label="SLA Status" max_length="40" name="sla_status" read_only="true" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Met" sequence="4" value="met"/>
+                <element inactive_on_update="false" label="At Risk" sequence="2" value="at_risk"/>
+                <element inactive_on_update="false" label="Breached" sequence="3" value="breached"/>
+                <element inactive_on_update="false" label="On Track" sequence="1" value="on_track"/>
+                <element inactive_on_update="false" label="Missed" sequence="5" value="missed"/>
+            </choice>
+        </element>
+        <element label="Opened" max_length="40" name="opened_at" read_only="true" type="glide_date_time"/>
+        <element choice="1" label="AI Confidence" max_length="40" name="ai_confidence" read_only="true" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="High" sequence="1" value="high"/>
+                <element inactive_on_update="false" label="Medium" sequence="2" value="medium"/>
+                <element inactive_on_update="false" label="Low" sequence="3" value="low"/>
+            </choice>
+        </element>
+        <element label="Resolved" max_length="40" name="resolved_at" read_only="true" type="glide_date_time"/>
+        <element label="Assignment Group" max_length="32" name="assignment_group" reference="sys_user_group" type="reference"/>
+        <element label="Evidence" max_length="4000" name="evidence" read_only="true" type="string"/>
+        <element label="Rule Result" max_length="1000" name="rule_result" read_only="true" type="string"/>
+        <element attributes="scale=2" label="Residual Amount" max_length="20" name="residual_amount" read_only="true" type="decimal"/>
+        <element attributes="edge_encryption_enabled=true" choice="1" label="Reason Code" mandatory="true" max_length="40" name="reason_code" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Ambiguous Match" sequence="7" value="ambiguous_match"/>
                 <element inactive_on_update="false" label="Over Pay" sequence="4" value="over_pay"/>
                 <element inactive_on_update="false" label="Short Pay" sequence="3" value="short_pay"/>
                 <element inactive_on_update="false" label="Customer Ambiguous" sequence="2" value="customer_ambiguous"/>
                 <element inactive_on_update="false" label="Duplicate Payment" sequence="5" value="duplicate"/>
-                <element inactive_on_update="false" label="Other" sequence="7" value="other"/>
+                <element inactive_on_update="false" label="Other" sequence="8" value="other"/>
                 <element inactive_on_update="false" label="Unmatched Payment" sequence="1" value="unmatched"/>
                 <element inactive_on_update="false" label="Currency Mismatch" sequence="6" value="currency_mismatch"/>
             </choice>
@@ -24,11 +102,35 @@
             </choice>
         </element>
         <element label="Resolution Notes" max_length="4000" name="resolution_notes" type="string"/>
+        <element choice="1" default="3" label="Priority" max_length="40" name="priority" read_only="true" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="3 - Moderate" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="2 - High" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="4 - Low" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="1 - Critical" sequence="1" value="1"/>
+            </choice>
+        </element>
+        <element label="Decided At" max_length="40" name="decided_at" read_only="true" type="glide_date_time"/>
+        <element label="SLA Due" max_length="40" name="sla_due" read_only="true" type="glide_date_time"/>
+        <element label="Decision Reason" max_length="4000" name="decision_reason" type="string"/>
+        <element label="Correlation ID" max_length="64" name="correlation_id" read_only="true" type="string"/>
         <index name="index">
             <element name="assigned_to"/>
         </index>
         <index name="index2">
+            <element name="assignment_group"/>
+        </index>
+        <index name="index3">
+            <element name="credit_note"/>
+        </index>
+        <index name="index4">
+            <element name="decided_by"/>
+        </index>
+        <index name="index5">
             <element name="payment"/>
+        </index>
+        <index name="index6">
+            <element name="resolved_by"/>
         </index>
     </element>
 </database>

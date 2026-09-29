@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sn_aia_usecase">
+    <sn_aia_usecase action="INSERT_OR_UPDATE">
+        <advanced_mode>false</advanced_mode>
+        <applicability_script/>
+        <base_plan>Goal: give the AP processor an advisory review of one AP invoice exception. The exception sys_id is in the task.
+
+Steps:
+1. Ask the BCFA AP Exception Analysis Agent to analyze the AP exception with the sys_id from the task.
+2. Ask the BCFA AP Resolution Recommendation Agent to recommend the next action for the same AP exception sys_id. Do not ask it to save yet.
+3. Only if the recommendation is "Request invoice correction from the vendor" or otherwise requires contacting the vendor, ask the BCFA AP Communication Agent to draft a vendor clarification for the same AP exception sys_id. Otherwise skip this step.
+4. Compose one advisory note in plain text, under 3,500 characters, with these sections:
+   AI REVIEW (advisory only - a human must decide)
+   Analysis: exception type, explanation, financial variance, key evidence, likely cause (hypothesis), confidence
+   Recommendation: the recommended action, rationale, confidence, human action required
+   Draft vendor message (NOT sent): include only if step 3 ran
+5. Ask the BCFA AP Resolution Recommendation Agent to save exactly that note to the same AP exception using its Save Advisory Recommendation tool.
+6. Finish with a one-line summary: the exception sys_id, the recommended action and whether the note was saved.
+
+Hard limits:
+- This workflow is advisory. Never approve, reject, post, pay, hold, release or change the state of the invoice or the exception, and never override a tolerance or approval rule. No team member has tools for that, and you must not attempt it.
+- Stop after step 6. Approval and posting continue only through the normal AP application workflow and a human decision.
+- If an agent reports a tool error, include the error in the summary and do not save a note built on missing data.</base_plan>
+        <condition/>
+        <context_processing_script/>
+        <description>Reviews an AP invoice exception raised by deterministic validation or matching: analyzes it, recommends a next action, optionally drafts a vendor message, and records one advisory note on the exception for the AP processor. Stops before any approval or posting.</description>
+        <execution_mode>autopilot</execution_mode>
+        <internal_name>global.x_695068_bcfa.BCFA AP Invoice Review</internal_name>
+        <name>BCFA AP Invoice Review</name>
+        <parent/>
+        <record_type>custom</record_type>
+        <source_id/>
+        <strategy display_value="ReActive Planner">b264c470ff1022106c36ffffffffff67</strategy>
+        <sys_class_name>sn_aia_usecase</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 02:32:15</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>53ff37dad1c14284be73d757e05ddd15</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>BCFA AP Invoice Review</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sn_aia_usecase_53ff37dad1c14284be73d757e05ddd15</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 02:32:15</sys_updated_on>
+        <team display_value="BCFA AP Invoice Review Team">cf363437369f408cbfba3a0e11f4dcd7</team>
+    </sn_aia_usecase>
+</record_update>

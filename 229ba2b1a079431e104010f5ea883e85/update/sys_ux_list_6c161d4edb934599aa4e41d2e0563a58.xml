@@ -2,7 +2,7 @@
     <sys_ux_list action="INSERT_OR_UPDATE">
         <active>true</active>
         <category display_value="Cash Application">1c32786c2e0d48549ba24b54c3be329d</category>
-        <columns>bank_reference,customer,state,amount,currency</columns>
+        <columns>bank_reference,customer,state,amount,currency,value_date,sys_created_on</columns>
         <condition/>
         <configuration display_value="BCFA Workspace List Configuration">fb16c25153c543d2a3b3d6085a42ac55</configuration>
         <fixed_query/>
@@ -71,7 +71,7 @@
         <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
         <sys_updated_on>2026-09-17 14:27:48</sys_updated_on>
         <table>x_695068_bcfa_payment</table>
-        <title>Payments — All</title>
+        <title>Payments</title>
         <view/>
         <word_wrap>false</word_wrap>
     </sys_ux_list>

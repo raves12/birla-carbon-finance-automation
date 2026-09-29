@@ -3,7 +3,7 @@
         <sys_documentation action="INSERT_OR_UPDATE">
             <element>state</element>
             <help/>
-            <hint>Managed by the Cash Application StateModel</hint>
+            <hint>Managed by the Cash Application Lifecycle state model; only its transitions are allowed (Phase 26).</hint>
             <label>State</label>
             <language>en</language>
             <name>x_695068_bcfa_payment</name>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sn_aia_tool">
+    <sn_aia_tool action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description>Lists the open or in-review exceptions for one AP invoice (sys_id, reason, status, description). Read-only.</description>
+        <input_schema>[{"name":"ap_invoice_sys_id","description":"sys_id of the AP invoice","mandatory":true}]</input_schema>
+        <name>List Open AP Exceptions</name>
+        <record_type>custom</record_type>
+        <script><![CDATA[(function(inputs) {
+            return new x_695068_bcfa.FinanceAgentTools().listOpenApExceptions(inputs.ap_invoice_sys_id);
+        })(inputs);]]></script>
+        <sys_class_name>sn_aia_tool</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 02:01:34</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>c25c19c756e64e3cb07fb398e1340750</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>List Open AP Exceptions</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sn_aia_tool_c25c19c756e64e3cb07fb398e1340750</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 02:01:34</sys_updated_on>
+        <target_document/>
+        <target_document_table>sn_aia_tool</target_document_table>
+        <type>script</type>
+    </sn_aia_tool>
+</record_update>

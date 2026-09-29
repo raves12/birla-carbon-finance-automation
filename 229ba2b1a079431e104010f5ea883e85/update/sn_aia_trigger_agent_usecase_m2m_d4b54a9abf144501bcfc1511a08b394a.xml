@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sn_aia_trigger_agent_usecase_m2m">
+    <sn_aia_trigger_agent_usecase_m2m action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <objective_template><![CDATA[Review AR exception ${sys_id} (reason: ${reason_code}) on payment ${payment} and record an advisory recommendation on it.]]></objective_template>
+        <related_resource_record>59bf2aa9400542f2953c44d3af44a164</related_resource_record>
+        <related_resource_table>sn_aia_usecase</related_resource_table>
+        <sys_class_name>sn_aia_trigger_agent_usecase_m2m</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 02:45:20</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>d4b54a9abf144501bcfc1511a08b394a</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name/>
+        <sys_overrides/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sn_aia_trigger_agent_usecase_m2m_d4b54a9abf144501bcfc1511a08b394a</sys_update_name>
+        <sys_updated_by>RaviMAdmin</sys_updated_by>
+        <sys_updated_on>2026-09-28 02:59:06</sys_updated_on>
+        <trigger_configuration display_value="x_695068_bcfa_ar_exception">3451a56d5bbc41bd90721bcf51505d9b</trigger_configuration>
+    </sn_aia_trigger_agent_usecase_m2m>
+</record_update>

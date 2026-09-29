@@ -7,7 +7,7 @@
         <condition/>
         <controlled_by_refs/>
         <decision_type>allow</decision_type>
-        <description>A finance approver may set the decision field on any AR Approval they did not request themselves — blocks self-approval.</description>
+        <description>An AR approver may set the decision field on any AR Approval they did not request themselves — blocks self-approval. ApprovalEngine applies the full segregation-of-duties gate (Phase 17).</description>
         <local_or_existing/>
         <name>x_695068_bcfa_ar_approval.decision</name>
         <operation display_value="write">write</operation>

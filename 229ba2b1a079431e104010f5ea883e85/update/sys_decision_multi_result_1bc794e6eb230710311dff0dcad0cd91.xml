@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_decision_multi_result">
+    <sys_decision_multi_result action="INSERT_OR_UPDATE">
+        <decision_table display_value="BCFA AR Deduction">86c7d0e6eb230710311dff0dcad0cd1d</decision_table>
+        <label>Any other type (e.g. unapplied cash) is not a deduction</label>
+        <result_elements/>
+        <sys_class_name>sys_decision_multi_result</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 09:00:52</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>1bc794e6eb230710311dff0dcad0cd91</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Any other type (e.g. unapplied cash) is not a deduction</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_decision_multi_result_1bc794e6eb230710311dff0dcad0cd91</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 09:00:52</sys_updated_on>
+    </sys_decision_multi_result>
+    <sys_variable_value action="delete_multiple" query="document_key=1bc794e6eb230710311dff0dcad0cd91"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_decision_multi_result</document>
+        <document_key>1bc794e6eb230710311dff0dcad0cd91</document_key>
+        <order>200</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 09:00:52</sys_created_on>
+        <sys_id>13c794e6eb230710311dff0dcad0cdac</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 09:00:52</sys_updated_on>
+        <value>1</value>
+        <variable display_value="Approval Required">07c754e6eb230710311dff0dcad0cd34</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_decision_multi_result</document>
+        <document_key>1bc794e6eb230710311dff0dcad0cd91</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 09:00:52</sys_created_on>
+        <sys_id>17c794e6eb230710311dff0dcad0cdab</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 09:00:52</sys_updated_on>
+        <value>0</value>
+        <variable display_value="Allowed">36c714e6eb230710311dff0dcad0cde0</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_decision_multi_result</document>
+        <document_key>1bc794e6eb230710311dff0dcad0cd91</document_key>
+        <order>300</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 09:00:52</sys_created_on>
+        <sys_id>1fc794e6eb230710311dff0dcad0cdac</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 09:00:52</sys_updated_on>
+        <value>e34ee8a159fd504893d4fc248a6632a7</value>
+        <variable display_value="Approval Group">47c754e6eb230710311dff0dcad0cdad</variable>
+    </sys_variable_value>
+</record_update>

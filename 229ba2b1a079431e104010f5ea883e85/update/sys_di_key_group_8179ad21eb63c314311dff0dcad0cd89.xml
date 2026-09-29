@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_di_key_group">
+    <sys_di_key_group action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <additional_details/>
+        <description/>
+        <display_name>Invoice Lines</display_name>
+        <is_list>false</is_list>
+        <mandatory>false</mandatory>
+        <parent_key_group/>
+        <parent_mapping_to_field>global</parent_mapping_to_field>
+        <prediction_method/>
+        <stp_threshold/>
+        <sys_class_name>sys_di_key_group</sys_class_name>
+        <sys_created_by>RaviMAdmin</sys_created_by>
+        <sys_created_on>2026-09-25 12:23:40</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>8179ad21eb63c314311dff0dcad0cd89</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Invoice Lines</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_di_key_group_8179ad21eb63c314311dff0dcad0cd89</sys_update_name>
+        <sys_updated_by>RaviMAdmin</sys_updated_by>
+        <sys_updated_on>2026-09-25 12:23:40</sys_updated_on>
+        <target_table/>
+        <task_definition display_value="BCFA AP Invoice Extraction">0267216deb23c314311dff0dcad0cd8e</task_definition>
+        <type>table</type>
+    </sys_di_key_group>
+</record_update>

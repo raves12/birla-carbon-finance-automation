@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sttrm_state_transition">
+    <sttrm_state_transition action="INSERT_OR_UPDATE">
+        <automatic>false</automatic>
+        <from_state display_value="Received">4ddf6751a7964b07a689f1eba73dafd1</from_state>
+        <name>Received to Extracted</name>
+        <sys_class_name>sttrm_state_transition</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 18:05:07</sys_created_on>
+        <sys_id>4a013c673754475da5022c2ebe96d95f</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>Received to Extracted</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sttrm_state_transition_4a013c673754475da5022c2ebe96d95f</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 18:12:48</sys_updated_on>
+        <to_state display_value="Extracted">df5a92bcb2a4424c936e41c2343d667c</to_state>
+    </sttrm_state_transition>
+    <sys_translated_text action="delete_multiple" query="documentkey=4a013c673754475da5022c2ebe96d95f"/>
+</record_update>

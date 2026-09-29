@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_decision">
+    <sys_decision action="DELETE">
+        <access>public</access>
+        <active>true</active>
+        <answer_table>sys_decision_multi_result</answer_table>
+        <answer_type>reference</answer_type>
+        <delta/>
+        <description>AP 3-way match tolerances by company, vendor country, vendor type and invoice type (POC ASSUMPTION).</description>
+        <enable_publishing>false</enable_publishing>
+        <label>BCFA AP Tolerance</label>
+        <name>BCFA AP Tolerance</name>
+        <reference_qualifier/>
+        <status/>
+        <sys_class_name>sys_decision</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 08:57:37</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>b3075c26eb230710311dff0dcad0cd66</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>BCFA AP Tolerance</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_decision_b3075c26eb230710311dff0dcad0cd66</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 08:57:37</sys_updated_on>
+    </sys_decision>
+    <sys_update_version action="INSERT_OR_UPDATE">
+        <action>DELETE</action>
+        <application display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</application>
+        <file_path/>
+        <instance_id>fc123fec1b958a5065324089bd4bcb56</instance_id>
+        <instance_name>pwcmanagementservicesdemo01</instance_name>
+        <name>sys_decision_b3075c26eb230710311dff0dcad0cd66</name>
+        <payload><![CDATA[<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_decision"><sys_decision action="INSERT_OR_UPDATE"><access>public</access><active>true</active><answer_table>sys_decision_multi_result</answer_table><answer_type>reference</answer_type><delta/><description>AP 3-way match tolerances by company, vendor country, vendor type and invoice type (POC ASSUMPTION).</description><enable_publishing>false</enable_publishing><label>BCFA AP Tolerance</label><name>BCFA AP Tolerance</name><reference_qualifier/><status/><sys_class_name>sys_decision</sys_class_name><sys_created_by>ravi.n.kumar@pwc.com</sys_created_by><sys_created_on>2026-09-28 08:57:37</sys_created_on><sys_domain>global</sys_domain><sys_domain_path>/</sys_domain_path><sys_id>b3075c26eb230710311dff0dcad0cd66</sys_id><sys_mod_count>0</sys_mod_count><sys_name>BCFA AP Tolerance</sys_name><sys_overrides/><sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package><sys_policy/><sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope><sys_update_name>sys_decision_b3075c26eb230710311dff0dcad0cd66</sys_update_name><sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by><sys_updated_on>2026-09-28 08:57:37</sys_updated_on></sys_decision></record_update>]]></payload>
+        <payload_hash>1760500643</payload_hash>
+        <record_name>BCFA AP Tolerance</record_name>
+        <reverted_from/>
+        <source>02b1db4e3beb03104035a50864e45a5b</source>
+        <source_table>sys_update_set</source_table>
+        <state>previous</state>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 08:57:37</sys_created_on>
+        <sys_id>f7075c26eb230710311dff0dcad0cd6c</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_recorded_at>1a0e73be54a0000001</sys_recorded_at>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 08:57:37</sys_updated_on>
+        <type>Decision Table</type>
+        <update_guid>7f075c26ae230710fe5654665451f26a</update_guid>
+        <update_guid_history>7f075c26ae230710fe5654665451f26a:1760500643</update_guid_history>
+    </sys_update_version>
+    <sys_metadata_delete action="INSERT_OR_UPDATE">
+        <sys_audit_delete/>
+        <sys_class_name>sys_metadata_delete</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 09:00:25</sys_created_on>
+        <sys_db_object display_value="" name="sys_decision">sys_decision</sys_db_object>
+        <sys_id>0697edf2ee734f068036f48899677864</sys_id>
+        <sys_metadata>b3075c26eb230710311dff0dcad0cd66</sys_metadata>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>BCFA AP Tolerance</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_parent/>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_scope_delete display_value="">2a2ac8703b554c088130bcc4b05f6e71</sys_scope_delete>
+        <sys_update_name>sys_decision_b3075c26eb230710311dff0dcad0cd66</sys_update_name>
+        <sys_update_version display_value="sys_decision_b3075c26eb230710311dff0dcad0cd66">f7075c26eb230710311dff0dcad0cd6c</sys_update_version>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 09:00:25</sys_updated_on>
+    </sys_metadata_delete>
+</record_update>

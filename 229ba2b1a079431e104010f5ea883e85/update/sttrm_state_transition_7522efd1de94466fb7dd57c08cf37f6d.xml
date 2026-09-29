@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sttrm_state_transition">
+    <sttrm_state_transition action="INSERT_OR_UPDATE">
+        <automatic>false</automatic>
+        <from_state display_value="Exception">4b9c85b2e93e40c183f41b78d3a93d12</from_state>
+        <name>Exception to On Hold</name>
+        <sys_class_name>sttrm_state_transition</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 07:03:23</sys_created_on>
+        <sys_id>7522efd1de94466fb7dd57c08cf37f6d</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Exception to On Hold</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sttrm_state_transition_7522efd1de94466fb7dd57c08cf37f6d</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 07:03:23</sys_updated_on>
+        <to_state display_value="On Hold">7e0dddf8a7c84e8b9690bdd9d50e9c4b</to_state>
+    </sttrm_state_transition>
+    <sys_translated_text action="delete_multiple" query="documentkey=7522efd1de94466fb7dd57c08cf37f6d"/>
+</record_update>

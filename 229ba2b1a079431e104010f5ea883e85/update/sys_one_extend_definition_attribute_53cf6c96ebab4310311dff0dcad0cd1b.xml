@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_one_extend_definition_attribute">
+    <sys_one_extend_definition_attribute action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <advanced>false</advanced>
+        <apply_filter>false</apply_filter>
+        <attribute_label/>
+        <capability display_value="bcfaArResidualExplanation">96afe496ebab4310311dff0dcad0cd50</capability>
+        <choice_list/>
+        <contains_large_input>false</contains_large_input>
+        <data_type>string</data_type>
+        <default_value>Remittance Reference: REM-0003; Invoice Number: INV-AR-006; Invoice Amount: 8000.00; Payment Amount: 7950.00; Residual Amount: 50.00; Residual Type: short_pay; Likely Cause Hint: bank_charge</default_value>
+        <definition/>
+        <description>Structured remittance, matched invoice, and residual amount details assembled by the calling script</description>
+        <group/>
+        <hidden>false</hidden>
+        <info/>
+        <label>context</label>
+        <mandatory>true</mandatory>
+        <name>context</name>
+        <order/>
+        <schema>{}</schema>
+        <sys_class_name>sys_one_extend_definition_attribute</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-27 16:07:14</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>53cf6c96ebab4310311dff0dcad0cd1b</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>context</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_one_extend_definition_attribute_53cf6c96ebab4310311dff0dcad0cd1b</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-27 16:07:14</sys_updated_on>
+        <translate>false</translate>
+        <truncate>false</truncate>
+        <type>input</type>
+        <user_query>false</user_query>
+    </sys_one_extend_definition_attribute>
+    <sys_translated_text action="delete_multiple" query="documentkey=53cf6c96ebab4310311dff0dcad0cd1b"/>
+</record_update>

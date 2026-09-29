@@ -4,6 +4,7 @@
             <choice>
                 <element inactive_on_update="false" label="Mock SAP Adapter" sequence="1" value="mock_sap"/>
                 <element inactive_on_update="false" label="Mock Bank Adapter" sequence="2" value="mock_bank"/>
+                <element inactive_on_update="false" label="Real SAP Adapter (seam, not configured)" sequence="4" value="real_sap"/>
                 <element inactive_on_update="false" label="Mock Archive Adapter" sequence="3" value="mock_archive"/>
             </choice>
         </element>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sn_aia_agent_tool_m2m">
+    <sn_aia_agent_tool_m2m action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <agent display_value="BCFA AP Exception Analysis Agent">04cf894018b541cc929bdf7895e8e286</agent>
+        <description>Returns the full evidence for one AP exception as text: exception reason and description, invoice header, vendor, PO, invoice lines with PO ordered/received quantity and PO price, match results with variances, and other open exceptions. Read-only.</description>
+        <display_output>false</display_output>
+        <document_status/>
+        <execution_mode>autopilot</execution_mode>
+        <inputs>[{"name":"ap_exception_sys_id","description":"sys_id of the AP exception","mandatory":true}]</inputs>
+        <max_auto_executions>10</max_auto_executions>
+        <name>Get AP Exception Context</name>
+        <output_transformation_strategy/>
+        <post_message>Evidence gathered.</post_message>
+        <post_processing_script/>
+        <pre_message>Gathering the exception evidence...</pre_message>
+        <pre_run>false</pre_run>
+        <sys_class_name>sn_aia_agent_tool_m2m</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 02:01:35</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>fe00fe77163c41f1ab7c8ab5ab0d2dc9</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Get AP Exception Context</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sn_aia_agent_tool_m2m_fe00fe77163c41f1ab7c8ab5ab0d2dc9</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 02:01:35</sys_updated_on>
+        <timeout/>
+        <tool display_value="Get AP Exception Context">0edc4add126141c6ada6301ab546faad</tool>
+        <tool_attributes>{}</tool_attributes>
+        <transformation_instructions/>
+    </sn_aia_agent_tool_m2m>
+</record_update>

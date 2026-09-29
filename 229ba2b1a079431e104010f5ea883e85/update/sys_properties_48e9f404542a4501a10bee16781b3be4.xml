@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_properties">
+    <sys_properties action="INSERT_OR_UPDATE">
+        <choices/>
+        <description>POC ASSUMPTION. sys_id of the user who owns new AP exceptions (demo user bcfa.ap.processor). The owner is the maker in maker/checker: an override is requested in their name and must be approved by a different user.</description>
+        <ignore_cache>false</ignore_cache>
+        <is_private>false</is_private>
+        <name>x_695068_bcfa.ap.exception.default_owner</name>
+        <read_roles/>
+        <suffix>ap.exception.default_owner</suffix>
+        <sys_class_name>sys_properties</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 07:03:23</sys_created_on>
+        <sys_id>48e9f404542a4501a10bee16781b3be4</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_695068_bcfa.ap.exception.default_owner</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_properties_48e9f404542a4501a10bee16781b3be4</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 07:03:23</sys_updated_on>
+        <type>string</type>
+        <value>6fe2fbfa188d7aa5829b61d52b3202c9</value>
+        <write_roles/>
+    </sys_properties>
+    <sys_translated_text action="delete_multiple" query="documentkey=48e9f404542a4501a10bee16781b3be4"/>
+</record_update>

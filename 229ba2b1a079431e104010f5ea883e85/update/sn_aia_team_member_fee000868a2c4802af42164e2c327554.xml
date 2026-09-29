@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sn_aia_team_member">
+    <sn_aia_team_member action="INSERT_OR_UPDATE">
+        <agent display_value="BCFA AP Resolution Recommendation Agent">ef84e321673c4969b17dea9d03c4dae5</agent>
+        <memory_scope>global</memory_scope>
+        <sys_class_name>sn_aia_team_member</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-28 02:32:15</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>fee000868a2c4802af42164e2c327554</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sn_aia_team_member_fee000868a2c4802af42164e2c327554</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-28 02:32:15</sys_updated_on>
+        <team display_value="BCFA AP Invoice Review Team">cf363437369f408cbfba3a0e11f4dcd7</team>
+    </sn_aia_team_member>
+</record_update>

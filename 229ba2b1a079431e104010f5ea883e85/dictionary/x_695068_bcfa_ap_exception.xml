@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><database>
     <element audit="true" db_object_id="23f413f2835f43103d769be0deaad3f1" label="AP Exception" max_length="40" name="x_695068_bcfa_ap_exception" type="collection">
+        <element label="Correlation ID" max_length="64" name="correlation_id" read_only="true" type="string"/>
         <element attributes="edge_encryption_enabled=true" default="open" label="Status" max_length="40" name="status" type="choice">
             <choice>
                 <element inactive_on_update="false" label="Closed" sequence="4" value="closed"/>
@@ -8,12 +9,21 @@
                 <element inactive_on_update="false" label="In Review" sequence="2" value="in_review"/>
             </choice>
         </element>
-        <element attributes="edge_encryption_enabled=true" display="true" label="Reason Code" mandatory="true" max_length="40" name="reason_code" type="choice">
+        <element choice="1" default="ap" label="Process" max_length="40" name="process" read_only="true" type="choice">
             <choice>
-                <element inactive_on_update="false" label="Other" sequence="9" value="other"/>
+                <element inactive_on_update="false" label="Accounts Receivable" sequence="2" value="ar"/>
+                <element inactive_on_update="false" label="Accounts Payable" sequence="1" value="ap"/>
+            </choice>
+        </element>
+        <element hint="Required before choosing Approve Override, Reject, Request Correction or Hold." label="Decision Reason" max_length="4000" name="decision_reason" type="string"/>
+        <element attributes="edge_encryption_enabled=true" choice="1" label="Reason Code" mandatory="true" max_length="40" name="reason_code" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Other" sequence="11" value="other"/>
+                <element inactive_on_update="false" label="Goods Receipt Missing" sequence="9" value="grn_missing"/>
                 <element inactive_on_update="false" label="Duplicate Invoice" sequence="1" value="duplicate"/>
                 <element inactive_on_update="false" label="Quantity Tolerance Failure" sequence="3" value="quantity_tolerance"/>
                 <element inactive_on_update="false" label="Price Tolerance Failure" sequence="4" value="price_tolerance"/>
+                <element inactive_on_update="false" label="Line Total Mismatch" sequence="10" value="line_total_mismatch"/>
                 <element inactive_on_update="false" label="Vendor Invalid" sequence="8" value="vendor_invalid"/>
                 <element inactive_on_update="false" label="PO Mismatch" sequence="2" value="po_mismatch"/>
                 <element inactive_on_update="false" label="Low-Confidence Extraction" sequence="6" value="low_confidence"/>
@@ -21,16 +31,98 @@
                 <element inactive_on_update="false" label="Tax Validation Failure" sequence="5" value="tax_validation"/>
             </choice>
         </element>
-        <element hint="Simulated-AI output only. Never read by deterministic rules or approval/posting logic." label="AI Recommendation (advisory)" max_length="4000" name="ai_recommendation" type="string"/>
+        <element hint="Deterministic validation / 3-way match result that raised this exception." label="Rule Result" max_length="1000" name="rule_result" read_only="true" type="string"/>
+        <element label="Resolved" max_length="40" name="resolved_at" read_only="true" type="glide_date_time"/>
+        <element choice="1" label="SLA Status" max_length="40" name="sla_status" read_only="true" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="On Track" sequence="1" value="on_track"/>
+                <element inactive_on_update="false" label="Breached" sequence="3" value="breached"/>
+                <element inactive_on_update="false" label="At Risk" sequence="2" value="at_risk"/>
+                <element inactive_on_update="false" label="Missed" sequence="5" value="missed"/>
+                <element inactive_on_update="false" label="Met" sequence="4" value="met"/>
+            </choice>
+        </element>
+        <element label="Resolved By" max_length="32" name="resolved_by" read_only="true" reference="sys_user" type="reference"/>
+        <element choice="1" default="3" label="Priority" max_length="40" name="priority" read_only="true" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="4 - Low" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="2 - High" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="1 - Critical" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="3 - Moderate" sequence="3" value="3"/>
+            </choice>
+        </element>
+        <element choice="1" label="AI Confidence" max_length="40" name="ai_confidence" read_only="true" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Low" sequence="3" value="low"/>
+                <element inactive_on_update="false" label="Medium" sequence="2" value="medium"/>
+                <element inactive_on_update="false" label="High" sequence="1" value="high"/>
+            </choice>
+        </element>
+        <element choice="1" default="medium" label="Severity" max_length="40" name="severity" read_only="true" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Low" sequence="1" value="low"/>
+                <element inactive_on_update="false" label="Critical" sequence="4" value="critical"/>
+                <element inactive_on_update="false" label="High" sequence="3" value="high"/>
+                <element inactive_on_update="false" label="Medium" sequence="2" value="medium"/>
+            </choice>
+        </element>
+        <element label="Opened" max_length="40" name="opened_at" read_only="true" type="glide_date_time"/>
+        <element choice="1" label="Decision" max_length="40" name="decision" read_only="true" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Approve Override" sequence="1" value="approve_override"/>
+                <element inactive_on_update="false" label="Reject" sequence="2" value="reject"/>
+                <element inactive_on_update="false" label="Request Correction" sequence="3" value="request_correction"/>
+                <element inactive_on_update="false" label="Hold" sequence="4" value="hold"/>
+            </choice>
+        </element>
+        <element choice="1" label="Resolution Code" max_length="40" name="resolution_code" read_only="true" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Deduction Approved" sequence="3" value="deduction_approved"/>
+                <element inactive_on_update="false" label="Rejected" sequence="2" value="rejected"/>
+                <element inactive_on_update="false" label="Override Approved" sequence="1" value="override_approved"/>
+                <element inactive_on_update="false" label="Other" sequence="6" value="other"/>
+                <element inactive_on_update="false" label="Corrected and Retried" sequence="4" value="corrected_and_retried"/>
+                <element inactive_on_update="false" label="Withdrawn" sequence="5" value="withdrawn"/>
+            </choice>
+        </element>
+        <element hint="Advisory AI output only (Now Assist, or the legacy simulation). Never read by deterministic rules or approval/posting logic." label="AI Recommendation (advisory)" max_length="4000" name="ai_recommendation" type="string"/>
+        <element default="0" label="Escalation Level" max_length="40" name="escalation_level" read_only="true" type="integer"/>
+        <element attributes="ignore_filter_on_new=true" default="javascript:global.getNextObjNumberPadded();" display="true" label="Number" max_length="40" name="number" type="string"/>
+        <element label="Assignment Group" max_length="32" name="assignment_group" reference="sys_user_group" type="reference"/>
+        <element label="Decided At" max_length="40" name="decided_at" read_only="true" type="glide_date_time"/>
         <element label="Description" max_length="4000" name="description" type="string"/>
         <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Assigned To" max_length="32" name="assigned_to" reference="sys_user" type="reference"/>
+        <element label="Subtype" max_length="100" name="subtype" read_only="true" type="string"/>
+        <element label="AI Explanation (advisory)" max_length="4000" name="ai_explanation" read_only="true" type="string"/>
+        <element attributes="scale=2" hint="Value of the variance in invoice currency." label="Variance Amount" max_length="20" name="variance_amount" read_only="true" type="decimal"/>
+        <element choice="1" label="Aging" max_length="40" name="aging_bucket" read_only="true" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Over 7 days" sequence="4" value="gt_7d"/>
+                <element inactive_on_update="false" label="1-3 days" sequence="2" value="1_3d"/>
+                <element inactive_on_update="false" label="3-7 days" sequence="3" value="3_7d"/>
+                <element inactive_on_update="false" label="Under 1 day" sequence="1" value="lt_1d"/>
+            </choice>
+        </element>
+        <element hint="Source facts: invoice, PO and GRN quantities and prices, tax, duplicate key." label="Evidence" max_length="4000" name="evidence" read_only="true" type="string"/>
         <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="AP Invoice" mandatory="true" max_length="32" name="ap_invoice" reference="x_695068_bcfa_ap_invoice" type="reference"/>
         <element label="Resolution Notes" max_length="4000" name="resolution_notes" type="string"/>
+        <element attributes="scale=2" label="Variance %" max_length="20" name="variance_pct" read_only="true" type="decimal"/>
+        <element label="Decided By" max_length="32" name="decided_by" read_only="true" reference="sys_user" type="reference"/>
+        <element hint="Set from the severity and x_695068_bcfa.ap.exception.sla_hours (POC ASSUMPTION)." label="SLA Due" max_length="40" name="sla_due" read_only="true" type="glide_date_time"/>
         <index name="index">
             <element name="ap_invoice"/>
         </index>
         <index name="index2">
             <element name="assigned_to"/>
+        </index>
+        <index name="index3">
+            <element name="assignment_group"/>
+        </index>
+        <index name="index4">
+            <element name="decided_by"/>
+        </index>
+        <index name="index5">
+            <element name="resolved_by"/>
         </index>
     </element>
 </database>

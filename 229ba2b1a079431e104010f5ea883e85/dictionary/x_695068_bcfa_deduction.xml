@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><database>
     <element db_object_id="3905d7f2835f43103d769be0deaad392" label="Deduction" max_length="40" name="x_695068_bcfa_deduction" type="collection">
+        <element label="Approved By" max_length="32" name="approved_by" read_only="true" reference="sys_user" type="reference"/>
         <element attributes="edge_encryption_enabled=true,scale=2" label="Amount" max_length="15" name="amount" type="decimal"/>
         <element attributes="edge_encryption_enabled=true" default="proposed" label="Status" max_length="40" name="status" type="choice">
             <choice>
@@ -9,6 +10,7 @@
             </choice>
         </element>
         <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Payment Allocation" max_length="32" name="payment_allocation" reference="x_695068_bcfa_payment_allocation" type="reference"/>
+        <element label="Approved At" max_length="40" name="approved_at" read_only="true" type="glide_date_time"/>
         <element attributes="edge_encryption_enabled=true" display="true" label="Deduction Type" mandatory="true" max_length="40" name="deduction_type" type="choice">
             <choice>
                 <element inactive_on_update="false" label="Unapplied Cash" sequence="5" value="unapplied"/>
@@ -21,9 +23,12 @@
         <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Credit Note" max_length="32" name="credit_note" reference="x_695068_bcfa_credit_note" type="reference"/>
         <element label="Notes" max_length="4000" name="notes" type="string"/>
         <index name="index">
-            <element name="credit_note"/>
+            <element name="approved_by"/>
         </index>
         <index name="index2">
+            <element name="credit_note"/>
+        </index>
+        <index name="index3">
             <element name="payment_allocation"/>
         </index>
     </element>

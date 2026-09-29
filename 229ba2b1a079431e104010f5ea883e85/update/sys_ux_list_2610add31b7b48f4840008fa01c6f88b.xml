@@ -2,8 +2,10 @@
     <sys_ux_list action="INSERT_OR_UPDATE">
         <active>true</active>
         <category display_value="Accounts Payable">94c1902c1d9342d68648c3a231d20a9d</category>
-        <columns>ap_invoice,source,confidence,requires_review</columns>
-        <condition/>
+        <columns>requested_at,operation,status,attempt,reconciliation_state,external_document_id,error_code,external_reference</columns>
+        <condition table="x_695068_bcfa_integration_txn">source_table=x_695068_bcfa_ap_invoice^operationNOT INarchive,queryTransactionStatus<item endquery="false" field="source_table" goto="false" newquery="false" operator="=" or="false" value="x_695068_bcfa_ap_invoice"/>
+            <item endquery="false" field="operation" goto="false" newquery="false" operator="NOT IN" or="false" value="archive,queryTransactionStatus"/>
+        </condition>
         <configuration display_value="BCFA Workspace List Configuration">fb16c25153c543d2a3b3d6085a42ac55</configuration>
         <fixed_query/>
         <group_by_column/>
@@ -70,8 +72,8 @@
         <sys_update_name>sys_ux_list_2610add31b7b48f4840008fa01c6f88b</sys_update_name>
         <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
         <sys_updated_on>2026-09-17 14:27:48</sys_updated_on>
-        <table>x_695068_bcfa_ap_extraction</table>
-        <title>AP Extractions</title>
+        <table>x_695068_bcfa_integration_txn</table>
+        <title>Integration Status</title>
         <view/>
         <word_wrap>false</word_wrap>
     </sys_ux_list>

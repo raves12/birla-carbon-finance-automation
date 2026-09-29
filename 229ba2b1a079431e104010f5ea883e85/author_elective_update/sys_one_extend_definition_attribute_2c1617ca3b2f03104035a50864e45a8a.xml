@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_one_extend_definition_attribute">
+    <sys_one_extend_definition_attribute action="DELETE">
+        <active>true</active>
+        <advanced>false</advanced>
+        <apply_filter>false</apply_filter>
+        <attribute_label/>
+        <capability display_value="bcfaApInvoiceSummary">bf551f4a3b2f03104035a50864e45a39</capability>
+        <choice_list/>
+        <contains_large_input>false</contains_large_input>
+        <data_type>glide_record</data_type>
+        <default_value/>
+        <definition/>
+        <description>The AP invoice record to summarize, including match and exception status.</description>
+        <group/>
+        <hidden>false</hidden>
+        <info/>
+        <label>apInvoice</label>
+        <mandatory>true</mandatory>
+        <name>apinvoice</name>
+        <order/>
+        <schema>{"tableName":"x_695068_bcfa_ap_invoice"}</schema>
+        <sys_class_name>sys_one_extend_definition_attribute</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-27 09:35:11</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>2c1617ca3b2f03104035a50864e45a8a</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>apinvoice</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_one_extend_definition_attribute_2c1617ca3b2f03104035a50864e45a8a</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-27 09:35:11</sys_updated_on>
+        <translate>false</translate>
+        <truncate>false</truncate>
+        <type>input</type>
+        <user_query>false</user_query>
+    </sys_one_extend_definition_attribute>
+    <sys_translated_text action="DELETE" query="documentkey=2c1617ca3b2f03104035a50864e45a8a"/>
+    <sys_update_version action="INSERT_OR_UPDATE">
+        <action>DELETE</action>
+        <application display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</application>
+        <file_path/>
+        <instance_id>fc123fec1b958a5065324089bd4bcb56</instance_id>
+        <instance_name>pwcmanagementservicesdemo01</instance_name>
+        <name>sys_one_extend_definition_attribute_2c1617ca3b2f03104035a50864e45a8a</name>
+        <payload><![CDATA[<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_one_extend_definition_attribute"><sys_one_extend_definition_attribute action="INSERT_OR_UPDATE"><active>true</active><advanced>false</advanced><apply_filter>false</apply_filter><attribute_label/><capability display_value="bcfaApInvoiceSummary">bf551f4a3b2f03104035a50864e45a39</capability><choice_list/><contains_large_input>false</contains_large_input><data_type>glide_record</data_type><default_value/><definition/><description>The AP invoice record to summarize, including match and exception status.</description><group/><hidden>false</hidden><info/><label>apInvoice</label><mandatory>true</mandatory><name>apinvoice</name><order/><schema>{"tableName":"x_695068_bcfa_ap_invoice"}</schema><sys_class_name>sys_one_extend_definition_attribute</sys_class_name><sys_created_by>ravi.n.kumar@pwc.com</sys_created_by><sys_created_on>2026-09-27 09:35:11</sys_created_on><sys_domain>global</sys_domain><sys_domain_path>/</sys_domain_path><sys_id>2c1617ca3b2f03104035a50864e45a8a</sys_id><sys_mod_count>0</sys_mod_count><sys_name>apinvoice</sys_name><sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package><sys_policy/><sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope><sys_update_name>sys_one_extend_definition_attribute_2c1617ca3b2f03104035a50864e45a8a</sys_update_name><sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by><sys_updated_on>2026-09-27 09:35:11</sys_updated_on><translate>false</translate><truncate>false</truncate><type>input</type><user_query>false</user_query></sys_one_extend_definition_attribute><sys_translated_text action="delete_multiple" query="documentkey=2c1617ca3b2f03104035a50864e45a8a"/></record_update>]]></payload>
+        <payload_hash>411079477</payload_hash>
+        <record_name>apinvoice</record_name>
+        <reverted_from/>
+        <source>02b1db4e3beb03104035a50864e45a5b</source>
+        <source_table>sys_update_set</source_table>
+        <state>previous</state>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-27 09:35:11</sys_created_on>
+        <sys_id>6416dbca3b2f03104035a50864e45ad8</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_recorded_at>1a0e237ed800000001</sys_recorded_at>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-27 09:35:11</sys_updated_on>
+        <type>OneExtend Capability Attribute</type>
+        <update_guid>2016dbca182f0310e434c0d327e40dd7</update_guid>
+        <update_guid_history>2016dbca182f0310e434c0d327e40dd7:411079477</update_guid_history>
+    </sys_update_version>
+    <sys_metadata_delete action="INSERT_OR_UPDATE">
+        <sys_audit_delete/>
+        <sys_class_name>sys_metadata_delete</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-27 10:07:14</sys_created_on>
+        <sys_db_object display_value="" name="sys_one_extend_definition_attribute">sys_one_extend_definition_attribute</sys_db_object>
+        <sys_id>6721fecc471248edb2e40fd81e0bc8e1</sys_id>
+        <sys_metadata>2c1617ca3b2f03104035a50864e45a8a</sys_metadata>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>apinvoice</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_parent/>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_scope_delete display_value="">2a2ac8703b554c088130bcc4b05f6e71</sys_scope_delete>
+        <sys_update_name>sys_one_extend_definition_attribute_2c1617ca3b2f03104035a50864e45a8a</sys_update_name>
+        <sys_update_version display_value="sys_one_extend_definition_attribute_2c1617ca3b2f03104035a50864e45a8a">6416dbca3b2f03104035a50864e45ad8</sys_update_version>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-27 10:07:14</sys_updated_on>
+    </sys_metadata_delete>
+</record_update>

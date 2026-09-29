@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_choice action="INSERT_OR_UPDATE" field="guardrail_action" table="x_695068_bcfa_ai_interaction" version="3">
+        <sys_choice_set action="INSERT_OR_UPDATE">
+            <element>guardrail_action</element>
+            <name>x_695068_bcfa_ai_interaction</name>
+            <sys_class_name>sys_choice_set</sys_class_name>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 14:51:38</sys_created_on>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>guardrail_action</sys_name>
+            <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+            <sys_update_name>sys_choice_x_695068_bcfa_ai_interaction_guardrail_action</sys_update_name>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 14:51:38</sys_updated_on>
+        </sys_choice_set>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>guardrail_action</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>None</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ai_interaction</name>
+            <sequence>1</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 14:51:38</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 14:51:38</sys_updated_on>
+            <value>none</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>guardrail_action</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Output sanitized</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ai_interaction</name>
+            <sequence>2</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 14:51:38</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 14:51:38</sys_updated_on>
+            <value>sanitized</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>guardrail_action</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Blocked (not sent)</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ai_interaction</name>
+            <sequence>3</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 14:51:38</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 14:51:38</sys_updated_on>
+            <value>blocked</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>guardrail_action</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Blocked by Now Assist Guardian</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ai_interaction</name>
+            <sequence>4</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 14:51:38</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 14:51:38</sys_updated_on>
+            <value>guardian_blocked</value>
+        </sys_choice>
+    </sys_choice>
+</record_update>

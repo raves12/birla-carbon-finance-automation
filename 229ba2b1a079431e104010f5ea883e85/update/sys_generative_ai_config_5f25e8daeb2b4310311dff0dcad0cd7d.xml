@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_generative_ai_config">
+    <sys_generative_ai_config action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <additional_configurations>{"skill_config_id":"a325e8daeb2b4310311dff0dcad0cd9f"}</additional_configurations>
+        <ai_suggested>false</ai_suggested>
+        <definition>db25e8daeb2b4310311dff0dcad0cd6e</definition>
+        <definition_table>sys_one_extend_capability_definition</definition_table>
+        <documentation/>
+        <max_tokens>500</max_tokens>
+        <min_word_count>-1</min_word_count>
+        <model>llm_generic_small</model>
+        <name>AP Clarification Draft</name>
+        <parent/>
+        <prompt>You are a finance operations assistant supporting an Accounts Payable reviewer. Draft a short, polite email to the vendor below asking them to clarify the invoice discrepancy, in no more than 150 words.
+
+The draft must:
+- Reference the invoice number, PO number, and the specific discrepancy
+- Ask a clear, specific question the vendor needs to answer
+- Use a neutral, professional tone
+- End with a placeholder signature line "[Your name], Accounts Payable"
+
+Strict rules:
+- This is a DRAFT for a human to review and send. Never claim the email has been sent.
+- Never state or imply that the invoice has been approved, posted, or paid.
+- If required data is missing, say so plainly instead of guessing at vendor details.
+- Output the email body as plain text only, no JSON, no subject-line metadata beyond a single "Subject:" line at the top.
+
+Discrepancy data:
+{{context}}</prompt>
+        <prompt_template_role>user</prompt_template_role>
+        <provider_company/>
+        <request_tokens>32018</request_tokens>
+        <show_in_prompt_library>true</show_in_prompt_library>
+        <state>published</state>
+        <sys_class_name>sys_generative_ai_config</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-27 15:20:49</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>5f25e8daeb2b4310311dff0dcad0cd7d</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>db25e8daeb2b4310311dff0dcad0cd6e</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_generative_ai_config_5f25e8daeb2b4310311dff0dcad0cd7d</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-27 16:32:58</sys_updated_on>
+        <temperature>0.2</temperature>
+        <thinking_tokens>0</thinking_tokens>
+        <version>1</version>
+    </sys_generative_ai_config>
+</record_update>

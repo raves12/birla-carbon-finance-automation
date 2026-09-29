@@ -98,6 +98,34 @@
             <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
             <sys_updated_on>2026-09-17 07:11:49</sys_updated_on>
         </sys_ui_related_list_entry>
+        <sys_ui_related_list_entry action="INSERT_OR_UPDATE">
+            <filter/>
+            <list_id display_value="AP Invoice - Default view" name="x_695068_bcfa_ap_invoice" related_list="NULL" sys_domain="global" view="Default view">5204fb0dd10e4066aef1705e63edf016</list_id>
+            <order_by/>
+            <position>7</position>
+            <related_list>x_695068_bcfa_finance_intake.ap_invoice</related_list>
+            <sys_class_name>sys_ui_related_list_entry</sys_class_name>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 17:19:18</sys_created_on>
+            <sys_id>94a472b18dc242ef9e596d1959a72230</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 17:19:18</sys_updated_on>
+        </sys_ui_related_list_entry>
+        <sys_ui_related_list_entry action="INSERT_OR_UPDATE">
+            <filter/>
+            <list_id display_value="AP Invoice - Default view" name="x_695068_bcfa_ap_invoice" related_list="NULL" sys_domain="global" view="Default view">5204fb0dd10e4066aef1705e63edf016</list_id>
+            <order_by/>
+            <position>8</position>
+            <related_list>REL:189404d256084f4aa5455e92b9fad0b3</related_list>
+            <sys_class_name>sys_ui_related_list_entry</sys_class_name>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-09-28 17:19:18</sys_created_on>
+            <sys_id>c7d478f7b3b34b02863a9f92abaacedd</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-09-28 17:19:18</sys_updated_on>
+        </sys_ui_related_list_entry>
         <sys_ui_related_list action="INSERT_OR_UPDATE">
             <calculated_name>AP Invoice - Default view</calculated_name>
             <filter/>
