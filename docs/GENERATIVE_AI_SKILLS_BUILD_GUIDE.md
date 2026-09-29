@@ -483,3 +483,13 @@ Rule to add:
 ```
 
 The rest of v2 is unchanged, including the advisory-only and no-bypass rules.
+
+**Applied 2026-09-29.** The rule was not published through the Skill Kit UI. It was added in place to the published
+prompt of *AR Recommended Next Action*: `sys_generative_ai_config` `7460f81aebab4310311dff0dcad0cd48`, field
+`prompt`, updated over the Table API.
+
+- **Nothing else changed:** model `llm_generic_small`, temperature 0.2, 500 max tokens.
+- **Version number:** the Skill Kit still shows version 1, now with this text.
+- **Rollback:** the record's version history keeps the previous text. To restore it, remove the last bullet under
+  "Your suggestion must:".
+- **The AICT record for the skill** (`docs/AI_GOVERNANCE.md`) should note the change at the next governance review.

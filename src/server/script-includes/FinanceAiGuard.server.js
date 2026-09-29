@@ -19,7 +19,10 @@ FinanceAiGuard.INJECTION_PATTERNS = [
     { id: 'override_instructions', re: /\b(ignore|disregard|forget|override)\b[^.\n]{0,40}\b(previous|prior|above|earlier|all|your|the system)\b[^.\n]{0,20}\b(instructions?|prompts?|rules|guidelines|directions)\b/i },
     { id: 'reveal_prompt', re: /\b(reveal|show|print|repeat|output|display)\b[^.\n]{0,20}\b(your|the)\b[^.\n]{0,15}\b(system prompt|prompt|instructions)\b/i },
     { id: 'role_change', re: /\b(you are now|from now on you|act as|pretend to be|roleplay as)\b/i },
-    { id: 'role_marker', re: /(^|\n)\s*(system|assistant|developer)\s*:/i },
+    // At the start of a line, or after a field label ("Notes: system: ...",
+    // found by the Phase 29 ATF test): document text reaches the context
+    // behind a label.
+    { id: 'role_marker', re: /(^|\n|:)\s*(system|assistant|developer)\s*:\s/i },
     { id: 'financial_instruction', re: /\b(approve|post|clear|release|pay|write off|settle)\b[^.\n]{0,25}\b(this|the)\b[^.\n]{0,15}\b(invoice|payment|exception|allocation)\b[^.\n]{0,25}\b(now|immediately|automatically|without (approval|review))\b/i },
     // "override" is left out: a person's decision may legitimately mention a
     // tolerance override, and that text is part of the context.
