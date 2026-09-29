@@ -84,13 +84,13 @@ export const x_695068_bcfa_finance_intake = Table({
         classification_reason: StringColumn({
             label: 'Classification Reason',
             maxLength: 1000,
-            hint: 'Claude\'s stated reason for the document_type it returned. Advisory only, shown for reviewer context.',
+            hint: 'How the document type was decided (set at upload; model classification is not licensed). Older rows hold the reason the Claude classifier returned (removed in Phase 34).',
         }),
         extraction_confidence: DecimalColumn({ label: 'Extraction Confidence', scale: 2 }),
         company_code: StringColumn({ label: 'Company Code', maxLength: 10 }),
         currency: StringColumn({ label: 'Currency', maxLength: 3 }),
         correlation_id: StringColumn({ label: 'Correlation ID', maxLength: 64 }),
-        claude_request_id: StringColumn({ label: 'Claude Request ID', maxLength: 100 }),
+        claude_request_id: StringColumn({ label: 'Provider Request ID (legacy)', maxLength: 100 }),
         attachment_hash: StringColumn({
             label: 'Attachment Hash',
             maxLength: 64,
@@ -106,7 +106,7 @@ export const x_695068_bcfa_finance_intake = Table({
         }),
         extraction_json: JsonColumn({
             label: 'Extraction JSON',
-            hint: 'Full, unedited structured result Claude returned (classification + extraction). Retained verbatim for audit even after a reviewer corrects a value — see Phase 9/11.',
+            hint: 'Full, unedited structured extraction result. Retained verbatim for audit even after a reviewer corrects a value — see Phase 9/11.',
         }),
         requires_review: BooleanColumn({ label: 'Requires Review', default: false }),
         reviewed_by: ReferenceColumn({ label: 'Reviewed By', referenceTable: 'sys_user' }),

@@ -10,7 +10,6 @@ ArDomainService.prototype = {
         this.approvalEngine = new ApprovalEngine();
         this.integrationService = new IntegrationService();
         this.aiSimulation = new AISimulationService();
-        this.claudeClient = new BCClaudeClient();
         this.policy = new FinancePolicy();
     },
 
@@ -140,8 +139,8 @@ ArDomainService.prototype = {
 
     // fields.extractedFields: fields already read from a remittance document
     // (Finance Document Intake), stored as is with fields.confidence.
-    // fields.seedFields: the legacy JSON-context path (Claude only when the
-    // provider is claude, otherwise the deterministic simulation).
+    // fields.seedFields: the seeded JSON-context path, read by the
+    // deterministic simulation (no external AI since Phase 34).
     intakeRemittance: function(paymentSysId, fields) {
         var remittance = new GlideRecord('x_695068_bcfa_remittance');
         remittance.initialize();
@@ -165,41 +164,9 @@ ArDomainService.prototype = {
             afterValue: { payment: paymentSysId, remittance_reference: fields.remittanceReference || '', confidence: fields.confidence }
         });
         if (!fields.extractedFields && fields.seedFields) {
-            var claudeResult = this.policy.aiProvider() === 'claude' ? this._runClaudeRemittanceExtraction(sysId, fields.seedFields, fields.options) : null;
-            if (!claudeResult) this.aiSimulation.simulateArExtraction(sysId, fields.seedFields, fields.options);
+            this.aiSimulation.simulateArExtraction(sysId, fields.seedFields, fields.options);
         }
         return { remittanceSysId: sysId };
-    },
-
-    // Returns a simulateArExtraction()-shaped result on success, or null if
-    // Claude is disabled/unavailable/invalid so the caller falls back —
-    // same pattern as ApDomainService._runClaudeExtraction.
-    _runClaudeRemittanceExtraction: function(remittanceSysId, seedFields, options) {
-        if (!this.claudeClient.isEnabled()) return null;
-
-        var envelope = this.claudeClient.extractRemittance(remittanceSysId, seedFields);
-        if (!envelope.ok) return null;
-
-        var data = envelope.data;
-        var forcedConfidence = options && options.forceConfidence !== undefined ? options.forceConfidence : null;
-        var confidence = forcedConfidence !== null ? forcedConfidence : data.confidence;
-
-        var remittance = new GlideRecord('x_695068_bcfa_remittance');
-        if (!remittance.get(remittanceSysId)) return null;
-        remittance.setValue('extracted_fields', JSON.stringify(data));
-        remittance.setValue('confidence', confidence);
-        remittance.update();
-
-        this.auditEngine.logEvent({
-            sourceTable: 'x_695068_bcfa_remittance',
-            sourceRecord: remittanceSysId,
-            eventType: 'document_extracted',
-            actorType: 'claude_ai',
-            description: 'Claude remittance extraction, confidence ' + confidence + (data.warnings && data.warnings.length ? '; warnings: ' + data.warnings.join('; ') : ''),
-            afterValue: { confidence: confidence }
-        });
-
-        return { confidence: confidence };
     },
 
     normalizePayment: function(paymentSysId) {
@@ -326,7 +293,7 @@ ArDomainService.prototype = {
     },
 
     // Deterministic, coarse pre-filter for the customer_ambiguous
-    // explanation — Claude only ever sees this short candidate list, never
+    // explanation — the AI only ever sees this short candidate list, never
     // the full customer table. Matches on the first token of the attempted
     // remitter name (e.g. "ACME" out of "ACME Trdg Co") since that's the
     // most stable fragment across abbreviations/misspellings.
@@ -405,11 +372,9 @@ ArDomainService.prototype = {
         }
 
         var multi = this.matchingEngine.multiInvoiceSuggestion(paymentSysId);
-        // Legacy AI suggestions only; with the native provider the Cash
+        // Simulated suggestions only; with the native provider the Cash
         // Application Review workflow advises on any exception instead.
-        var provider = this.policy.aiProvider();
-        if (provider === 'claude') this._recommendClaudeCashMatch(paymentSysId) || this.aiSimulation.suggestTopCandidate(paymentSysId);
-        else if (provider === 'simulated') this.aiSimulation.suggestTopCandidate(paymentSysId);
+        if (this.policy.aiProvider() === 'simulated') this.aiSimulation.suggestTopCandidate(paymentSysId);
         if (!multi.matched) {
             var exceptionSysId = this.exceptionEngine.createArException(paymentSysId, 'unmatched', 'No open item combination matched this payment.', {
                 ruleResult: 'FAIL matching: no open item of the customer equals the payment and no combination was found' +
@@ -429,52 +394,6 @@ ArDomainService.prototype = {
 
         this._setState(paymentSysId, 'PARTIALLY_MATCHED', null, 'Partial multi-invoice candidate found, residual ' + multi.residual);
         return { matched: true, mode: 'partial', residual: multi.residual, arOpenItemSysIds: multi.arOpenItemSysIds };
-    },
-
-    // Returns a suggestTopCandidate()-shaped result on success, or null if
-    // Claude is disabled/unavailable/invalid so the caller falls back to
-    // the deterministic heuristic. Reuses the exact same candidate
-    // population multiInvoiceSuggestion just considered (this customer's
-    // not-cleared open items) — Claude never sees a broader population.
-    _recommendClaudeCashMatch: function(paymentSysId) {
-        if (!this.claudeClient.isEnabled()) return null;
-
-        var payment = new GlideRecord('x_695068_bcfa_payment');
-        if (!payment.get(paymentSysId) || !payment.getValue('customer')) return null;
-
-        var item = new GlideRecord('x_695068_bcfa_ar_open_item');
-        item.addQuery('customer', payment.getValue('customer'));
-        item.addQuery('status', '!=', 'cleared');
-        item.query();
-        var candidateSysIds = [];
-        while (item.next()) candidateSysIds.push(item.getUniqueValue());
-        if (candidateSysIds.length === 0) return null;
-
-        var envelope = this.claudeClient.recommendCashMatch(paymentSysId, candidateSysIds);
-        if (!envelope.ok) return null;
-
-        var data = envelope.data;
-        var suggestion = new GlideRecord('x_695068_bcfa_match_candidate');
-        suggestion.initialize();
-        suggestion.setValue('payment', paymentSysId);
-        if (data.recommended_open_item_sys_id) suggestion.setValue('ar_open_item', data.recommended_open_item_sys_id);
-        suggestion.setValue('customer_candidate', payment.getValue('customer'));
-        suggestion.setValue('match_type', 'ai_suggested');
-        suggestion.setValue('confidence', data.confidence);
-        suggestion.setValue('rank', 0);
-        suggestion.setValue('selected', false);
-        var sysId = suggestion.insert();
-
-        this.auditEngine.logEvent({
-            sourceTable: 'x_695068_bcfa_payment',
-            sourceRecord: paymentSysId,
-            eventType: 'ai_recommendation',
-            actorType: 'claude_ai',
-            description: 'Claude cash-match recommendation: ' + data.match_type + ', confidence ' + data.confidence + '. ' + (data.explanation || ''),
-            afterValue: { matchType: data.match_type, recommendedItemNumber: data.recommended_item_number || null }
-        });
-
-        return { suggested: true, matchCandidateSysId: sysId, matchType: data.match_type };
     },
 
     _paymentCurrency: function(paymentSysId) {
@@ -500,9 +419,9 @@ ArDomainService.prototype = {
 
     // Advisory explanation for a newly raised AR exception. native
     // (default): the BCFA Cash Application Review workflow starts on the
-    // exception's creation and records the note asynchronously. claude:
-    // legacy Claude path with simulation fallback. simulated: templates.
-    // candidateCustomers is legacy context for customer_ambiguous.
+    // exception's creation and records the note asynchronously. simulated:
+    // templates. candidateCustomers is kept for the call sites (it was
+    // context for the Claude path, removed in Phase 34).
     _explainArException: function(exceptionSysId, candidateCustomers) {
         var provider = this.policy.aiProvider();
         if (provider === 'native') {
@@ -517,28 +436,6 @@ ArDomainService.prototype = {
             new AiInteractionLog().start({ sourceTable: 'x_695068_bcfa_ar_exception', sourceRecord: exceptionSysId, provider: 'now_assist',
                 operation: 'exception_review', capability: 'exception_review', workflow: 'BCFA Cash Application Review' });
             return { deferred: true, workflow: 'BCFA Cash Application Review' };
-        }
-        if (provider === 'claude' && this.claudeClient.isEnabled()) {
-            var envelope = this.claudeClient.explainCashException(exceptionSysId, candidateCustomers);
-            if (envelope.ok && !envelope.data.insufficient_information) {
-                var recommendation = envelope.data.explanation +
-                    (envelope.data.recommended_action ? ' Recommended next step: ' + envelope.data.recommended_action : '') +
-                    (envelope.data.evidence && envelope.data.evidence.length ? ' Evidence: ' + envelope.data.evidence.join('; ') + '.' : '');
-                var exception = new GlideRecord('x_695068_bcfa_ar_exception');
-                if (exception.get(exceptionSysId)) {
-                    exception.setValue('ai_recommendation', recommendation);
-                    exception.update();
-                }
-                this.auditEngine.logEvent({
-                    sourceTable: 'x_695068_bcfa_ar_exception',
-                    sourceRecord: exceptionSysId,
-                    eventType: 'ai_recommendation',
-                    actorType: 'claude_ai',
-                    description: 'Claude exception explanation, confidence ' + envelope.data.confidence,
-                    afterValue: { recommendation: recommendation }
-                });
-                return { recommendation: recommendation };
-            }
         }
         return this.aiSimulation.recommendArExceptionResolution(exceptionSysId);
     },

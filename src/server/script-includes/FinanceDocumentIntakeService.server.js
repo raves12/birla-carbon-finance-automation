@@ -17,13 +17,12 @@ FinanceDocumentIntakeService.prototype = {
         this.arService = new ArDomainService();
         this.matchingEngine = new MatchingEngine();
         this.lineResolver = new ApLineResolutionService();
-        this.claudeClient = new BCClaudeClient();
         this.auditEngine = new AuditEngine();
         this.policy = new FinancePolicy();
         this.simulatedExtraction = new SimulatedDocumentExtraction();
     },
 
-    // ==== Entry point (backs "Process with Claude" / "Reprocess") =========
+    // ==== Entry point (backs "Process Document" / "Reprocess") ============
 
     // Idempotent re-entry: resumes from wherever this intake record already
     // is, rather than assuming a fresh start. Safe to click more than once.
@@ -94,7 +93,7 @@ FinanceDocumentIntakeService.prototype = {
                 });
                 return this._dispatchByDocumentType(intakeSysId, documentType);
             }
-            return { requiresReview: true, reason: 'document_type is still unknown — set it manually, then run Process with Claude again.' };
+            return { requiresReview: true, reason: 'document_type is still unknown — set it manually, then run Process Document again.' };
         }
 
         // new / failed / classifying (an interrupted prior attempt) — safe
@@ -119,43 +118,11 @@ FinanceDocumentIntakeService.prototype = {
 
     // ==== Phase 3 — Classification ==========================================
 
+    // Document Intelligence classification is not licensed on this
+    // instance, so the document type chosen at upload is used as is.
+    // Without one, the document goes to manual review; nothing guesses.
+    // (Model classification with Claude was removed in Phase 34.)
     classifyFinanceDocument: function(intakeSysId) {
-        if (this.policy.aiProvider() !== 'claude') return this._classifyWithoutModel(intakeSysId);
-        this._setStatus(intakeSysId, 'classifying', 'Classifying uploaded document with Claude.');
-
-        var envelope = this.claudeClient.classifyFinanceDocument(intakeSysId);
-        if (!envelope.ok) {
-            this._fail(intakeSysId, 'Classification failed: ' + envelope.safeError);
-            return { classified: false };
-        }
-
-        var data = envelope.data;
-        var mappedType = this._mapClaudeDocumentType(data.document_type);
-
-        var intake = new GlideRecord('x_695068_bcfa_finance_intake');
-        intake.get(intakeSysId);
-        intake.setValue('document_type', mappedType);
-        intake.setValue('classification_confidence', data.confidence);
-        intake.setValue('classification_reason', data.reason || '');
-        intake.setValue('claude_request_id', envelope.requestId || intake.getValue('claude_request_id'));
-        intake.update();
-
-        var threshold = this.claudeClient.confidenceThreshold();
-        if (mappedType === 'unknown' || data.confidence < threshold) {
-            this.sendToManualReview(intakeSysId,
-                mappedType === 'unknown'
-                    ? 'Claude could not confidently classify this document.'
-                    : 'Classification confidence ' + data.confidence + ' is below the ' + threshold + ' review threshold.');
-            return { classified: true, documentType: mappedType, requiresReview: true };
-        }
-
-        return { classified: true, documentType: mappedType };
-    },
-
-    // Native provider: Document Intelligence classification is not licensed
-    // on this instance, so the document type chosen at upload is used as
-    // is. Without one, the document goes to manual review; nothing guesses.
-    _classifyWithoutModel: function(intakeSysId) {
         var intake = new GlideRecord('x_695068_bcfa_finance_intake');
         intake.get(intakeSysId);
         var preset = intake.getValue('document_type');
@@ -166,16 +133,6 @@ FinanceDocumentIntakeService.prototype = {
         }
         this.sendToManualReview(intakeSysId, 'Set the document type (AP invoice, payment advice or remittance), then process the document again. Automatic classification is not available on this instance.');
         return { classified: true, documentType: 'unknown', requiresReview: true };
-    },
-
-    _mapClaudeDocumentType: function(claudeType) {
-        var map = {
-            AP_INVOICE: 'ap_invoice',
-            AR_PAYMENT_ADVICE: 'ar_payment_advice',
-            AR_REMITTANCE: 'ar_remittance',
-            UNKNOWN: 'unknown',
-        };
-        return map[claudeType] || 'unknown';
     },
 
     // ==== Phase 4/5 — AP invoice document extraction + transaction creation
@@ -191,25 +148,18 @@ FinanceDocumentIntakeService.prototype = {
             return this._resumeApInvoicePipeline(intakeSysId, apInvoiceSysId);
         }
 
-        var useClaude = this.policy.aiProvider() === 'claude';
-        this._setStatus(intakeSysId, 'extracting', useClaude
-            ? 'Extracting AP invoice fields from the attached document.'
-            : 'Reading AP invoice fields (SIMULATED extraction: fixture values, Document Intelligence extraction not licensed).');
-        var envelope = useClaude
-            ? this.claudeClient.extractApInvoiceDocument(intakeSysId)
-            : this.simulatedExtraction.extractApInvoiceDocument(intakeSysId);
+        this._setStatus(intakeSysId, 'extracting', 'Reading AP invoice fields (SIMULATED extraction: fixture values, Document Intelligence extraction not licensed).');
+        var envelope = this.simulatedExtraction.extractApInvoiceDocument(intakeSysId);
         if (!envelope.ok) {
-            if (useClaude) return this._fail(intakeSysId, 'AP invoice extraction failed: ' + envelope.safeError);
             this.sendToManualReview(intakeSysId, envelope.safeError);
             return { requiresReview: true };
         }
-        var extractionSource = useClaude ? 'claude_document_intelligence' : SimulatedDocumentExtraction.SOURCE;
+        var extractionSource = SimulatedDocumentExtraction.SOURCE;
 
         var data = envelope.data;
         intake.setValue('extraction_json', JSON.stringify(data));
         this._auditExtraction(intake, data);
         intake.setValue('extraction_confidence', data.confidence);
-        if (useClaude) intake.setValue('claude_request_id', envelope.requestId || intake.getValue('claude_request_id'));
         intake.update();
 
         var threshold = this.policy.extractionConfidenceThreshold();
@@ -419,74 +369,14 @@ FinanceDocumentIntakeService.prototype = {
             return this._resumePaymentPipeline(intakeSysId, paymentSysId);
         }
 
-        if (this.policy.aiProvider() !== 'claude') {
-            // Bank payments arrive from the bank statement; payment advice
-            // documents have no simulated extraction, and Document
-            // Intelligence extraction is not licensed on this instance.
-            this.sendToManualReview(intakeSysId, 'Payment advice documents are not read automatically on this instance (Document Intelligence extraction not licensed). Enter the payment from the bank statement, then upload the remittance.');
-            return { requiresReview: true };
-        }
-        this._setStatus(intakeSysId, 'extracting', 'Extracting AR payment advice fields from the attached document.');
-        var envelope = this.claudeClient.extractArPaymentAdviceDocument(intakeSysId);
-        if (!envelope.ok) {
-            return this._fail(intakeSysId, 'AR payment advice extraction failed: ' + envelope.safeError);
-        }
-
-        var data = envelope.data;
-        intake.setValue('extraction_json', JSON.stringify(data));
-        this._auditExtraction(intake, data);
-        intake.setValue('extraction_confidence', data.confidence);
-        intake.setValue('claude_request_id', envelope.requestId || intake.getValue('claude_request_id'));
-        intake.update();
-
-        var threshold = this.claudeClient.confidenceThreshold();
-        if (data.confidence < threshold) {
-            this.sendToManualReview(intakeSysId, 'Extraction confidence ' + data.confidence + ' is below the ' + threshold + ' review threshold.');
-            return { requiresReview: true };
-        }
-
-        // Deterministic resolution attempt up front; if it fails, the raw
-        // customer name is still passed through to ArDomainService.resolveCustomer
-        // below (Phase 8 step 3), which has its own alias/exact-name logic
-        // and customer_ambiguous exception path — not duplicated here.
-        var customerResolution = this.resolveCustomer(data.customer_code, data.customer_name);
-
-        var paymentIntake = this.arService.intakePayment({
-            correlationId: intake.getValue('correlation_id') || undefined,
-            bankReference: data.bank_reference,
-            valueDate: data.value_date || undefined,
-            customer: customerResolution.resolved ? customerResolution.customerSysId : undefined,
-            currency: data.currency,
-            amount: data.amount,
-            source: 'workspace_upload',
-        });
-        paymentSysId = paymentIntake.paymentSysId;
-
-        intake.setValue('payment', paymentSysId);
-        intake.setValue('correlation_id', paymentIntake.correlationId);
-        new AiInteractionLog().linkCorrelation(intakeSysId, paymentIntake.correlationId);
-        intake.setValue('currency', data.currency || '');
-        intake.setValue('processing_status', 'processing');
-        intake.update();
-
-        this.auditEngine.logEvent({
-            correlationId: paymentIntake.correlationId,
-            sourceTable: 'x_695068_bcfa_finance_intake',
-            sourceRecord: intakeSysId,
-            eventType: 'record_created',
-            actorType: 'system',
-            description: 'Finance Document Intake created Payment ' + data.bank_reference + ' from the uploaded document.',
-            afterValue: { payment: paymentSysId },
-        });
-
-        if (data.remittance_reference) {
-            this.arService.intakeRemittance(paymentSysId, {
-                remittanceReference: data.remittance_reference,
-                source: 'workspace_upload',
-            });
-        }
-
-        return this._resumePaymentPipeline(intakeSysId, paymentSysId, data.customer_name);
+        // Bank payments arrive from the bank statement; payment advice
+        // documents have no simulated extraction, and Document Intelligence
+        // extraction is not licensed on this instance. The document-to-payment
+        // creation path read payment advices with Claude only and was removed
+        // with it in Phase 34 (see git history before Phase 34 for when
+        // Document Intelligence extraction is licensed).
+        this.sendToManualReview(intakeSysId, 'Payment advice documents are not read automatically on this instance (Document Intelligence extraction not licensed). Enter the payment from the bank statement, then upload the remittance.');
+        return { requiresReview: true };
     },
 
     // Runs (or re-runs) the EXISTING deterministic AR pipeline against an
@@ -544,15 +434,9 @@ FinanceDocumentIntakeService.prototype = {
             return linkedPayment ? this._resumePaymentPipeline(intakeSysId, linkedPayment) : { stoppedAt: 'ALREADY_LINKED' };
         }
 
-        var useClaude = this.policy.aiProvider() === 'claude';
-        this._setStatus(intakeSysId, 'extracting', useClaude
-            ? 'Extracting AR remittance fields from the attached document.'
-            : 'Reading AR remittance fields (SIMULATED extraction: fixture values, Document Intelligence extraction not licensed).');
-        var envelope = useClaude
-            ? this.claudeClient.extractArRemittanceDocument(intakeSysId)
-            : this.simulatedExtraction.extractArRemittanceDocument(intakeSysId);
+        this._setStatus(intakeSysId, 'extracting', 'Reading AR remittance fields (SIMULATED extraction: fixture values, Document Intelligence extraction not licensed).');
+        var envelope = this.simulatedExtraction.extractArRemittanceDocument(intakeSysId);
         if (!envelope.ok) {
-            if (useClaude) return this._fail(intakeSysId, 'AR remittance extraction failed: ' + envelope.safeError);
             this.sendToManualReview(intakeSysId, envelope.safeError);
             return { requiresReview: true };
         }
@@ -561,7 +445,6 @@ FinanceDocumentIntakeService.prototype = {
         intake.setValue('extraction_json', JSON.stringify(data));
         this._auditExtraction(intake, data);
         intake.setValue('extraction_confidence', data.confidence);
-        if (useClaude) intake.setValue('claude_request_id', envelope.requestId || intake.getValue('claude_request_id'));
         intake.update();
 
         var threshold = this.policy.extractionConfidenceThreshold();
@@ -582,9 +465,9 @@ FinanceDocumentIntakeService.prototype = {
             });
             if (candidates.length !== 1) {
                 // Zero or multiple candidates — never auto-link an ambiguous
-                // match. Persist the candidate list alongside Claude's own
+                // match. Persist the candidate list alongside the extracted
                 // result so a reviewer can pick, then stop.
-                intake.setValue('extraction_json', JSON.stringify({ claude: data, candidatePaymentSysIds: candidates }));
+                intake.setValue('extraction_json', JSON.stringify({ extracted: data, candidatePaymentSysIds: candidates }));
                 intake.update();
                 this.sendToManualReview(intakeSysId,
                     candidates.length === 0
@@ -793,26 +676,22 @@ FinanceDocumentIntakeService.prototype = {
     // document_extracted: the structured fields read from the document and
     // the confidence (the full result stays in extraction_json).
     _auditExtraction: function(intake, data) {
-        var claude = this.policy.aiProvider() === 'claude';
         var fields = [];
         for (var k in data) if (k !== 'confidence' && k !== 'warnings' && data[k] !== null && data[k] !== '' && typeof data[k] !== 'object') fields.push(k);
-        // Claude calls are logged by BCClaudeClient itself.
-        if (!claude) {
-            var type = intake.getValue('document_type');
-            new AiInteractionLog().log({
-                sourceTable: 'x_695068_bcfa_finance_intake', sourceRecord: intake.getUniqueValue(), process: 'intake', provider: 'simulated',
-                operation: type === 'ap_invoice' ? 'extract_ap_invoice_document' : type === 'ar_payment_advice' ? 'extract_ar_payment_advice_document' : 'extract_ar_remittance_document',
-                capability: 'document_extraction', skill: 'SimulatedDocumentExtraction', status: 'success', durationMs: 0,
-                result: 'Extracted fields: ' + fields.join(', '), confidence: data.confidence, model: 'fixture'
-            });
-        }
+        var type = intake.getValue('document_type');
+        new AiInteractionLog().log({
+            sourceTable: 'x_695068_bcfa_finance_intake', sourceRecord: intake.getUniqueValue(), process: 'intake', provider: 'simulated',
+            operation: type === 'ap_invoice' ? 'extract_ap_invoice_document' : type === 'ar_payment_advice' ? 'extract_ar_payment_advice_document' : 'extract_ar_remittance_document',
+            capability: 'document_extraction', skill: 'SimulatedDocumentExtraction', status: 'success', durationMs: 0,
+            result: 'Extracted fields: ' + fields.join(', '), confidence: data.confidence, model: 'fixture'
+        });
         this.auditEngine.logEvent({
             correlationId: intake.getValue('correlation_id'),
             sourceTable: 'x_695068_bcfa_finance_intake',
             sourceRecord: intake.getUniqueValue(),
             eventType: 'document_extracted',
-            actorType: claude ? 'claude_ai' : 'simulated_ai',
-            description: (claude ? 'Claude' : 'Simulated Document Intelligence') + ' extraction of ' + intake.getDisplayValue('document_type') + ' ' +
+            actorType: 'simulated_ai',
+            description: 'Simulated Document Intelligence extraction of ' + intake.getDisplayValue('document_type') + ' ' +
                 intake.getValue('number') + ', confidence ' + data.confidence + '; fields: ' + fields.join(', '),
             afterValue: { confidence: data.confidence, fields: fields, warnings: data.warnings || [] }
         });

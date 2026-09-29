@@ -140,11 +140,11 @@ FinancePolicy.prototype = {
     },
 
     // 'native' (ServiceNow AI: Now Assist skills/agents, simulated document
-    // extraction until DocIntel extraction is licensed), 'claude' (legacy,
-    // removed in Phase 34) or 'simulated' (deterministic templates only).
+    // extraction until DocIntel extraction is licensed) or 'simulated'
+    // (deterministic templates only: the process runs with AI switched off).
+    // Any other value, including the removed 'claude' (Phase 34), is native.
     aiProvider: function() {
-        var value = this._string('ai.provider');
-        return value === 'claude' || value === 'simulated' ? value : 'native';
+        return this._string('ai.provider') === 'simulated' ? 'simulated' : 'native';
     },
 
     // context (optional): { company, country, vendorType, invoiceType }.

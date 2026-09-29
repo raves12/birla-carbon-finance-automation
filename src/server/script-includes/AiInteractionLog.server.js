@@ -1,6 +1,7 @@
 // AI Interaction Log (Phase 20): one row per AI execution, whichever
 // provider ran it (Now Assist skills and agentic workflows, the simulated
-// Document Intelligence extraction, the legacy Claude client). It records
+// Document Intelligence extraction; historically the Claude client, removed
+// in Phase 34, whose rows are kept as evidence). It records
 // what ran, on which record, for which process, with what result, status,
 // confidence and duration, who started it, and later what the human did with
 // it (accepted or overrode it, and why).
@@ -196,6 +197,7 @@ AiInteractionLog.prototype = {
         gr.setValue('agent', p.agent || '');
         gr.setValue('agentic_workflow', p.workflow || '');
         gr.setValue('initiated_by', p.initiatedBy || gs.getUserID());
+        // Column names predate Phase 34; the labels are provider-neutral.
         if (p.model) gr.setValue('claude_model', p.model);
         if (p.requestId) gr.setValue('claude_request_id', p.requestId);
         if (p.context) this._context(gr, p.context);

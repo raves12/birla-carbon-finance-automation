@@ -54,7 +54,7 @@ AuditEngine.PROCESS_BY_TABLE = {
 // Default AI agent label when an AI actor type is given without one.
 AuditEngine.AI_AGENT_BY_ACTOR = {
     simulated_ai: 'Simulated Document Intelligence',
-    claude_ai: 'Claude (legacy provider)',
+    claude_ai: 'Claude (legacy provider, removed in Phase 34; historical events only)',
     now_assist_ai: 'Now Assist'
 };
 

@@ -17,7 +17,7 @@ export const aiProvider = Property({
     type: 'string',
     value: 'native',
     description:
-        'AI provider for the AP/AR pipelines. native = ServiceNow AI (Now Assist skills and AI agents; document reading uses simulated extraction until Document Intelligence extraction is licensed on this instance). claude = legacy external path, removed in Phase 34. simulated = deterministic templates only. AI output is advisory in every mode.',
+        'AI provider for the AP/AR pipelines. native = ServiceNow AI (Now Assist skills and AI agents; document reading uses simulated extraction until Document Intelligence extraction is licensed on this instance). simulated = deterministic templates only (the process runs with AI switched off). No external AI provider exists (Claude was removed in Phase 34). AI output is advisory in every mode.',
 })
 
 export const apQuantityTolerance = Property({

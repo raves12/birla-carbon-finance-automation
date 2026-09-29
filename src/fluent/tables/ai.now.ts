@@ -11,14 +11,14 @@ import {
 
 // AI Interaction Log (Phase 20: provider-agnostic) — one row per AI
 // execution: Now Assist skills and agentic workflows, the simulated Document
-// Intelligence extraction, and the legacy Claude client (until Phase 34).
-// Written by AiInteractionLog (and BCClaudeClient for legacy calls). Prompts
+// Intelligence extraction; the Claude client wrote rows until it was removed
+// in Phase 34 (kept as evidence). Written by AiInteractionLog. Prompts
 // are never stored: the input is identified by input_context_id (SHA-256)
 // and input_context_size. The claude_model / claude_request_id columns keep
 // their names but hold the model and provider request ID of any provider.
 //
 // Originally a dedicated, minimal audit trail for every outbound
-// call to Claude, separate from Integration Transaction (x_695068_bcfa_
+// call to Claude (removed in Phase 34), separate from Integration Transaction (x_695068_bcfa_
 // integration_txn) on purpose: that table's mandatory-unique idempotency_key
 // and closed mock_sap/mock_bank/mock_archive adapter list are shaped for
 // idempotent financial-system writes, not advisory AI calls, and mixing the

@@ -1,8 +1,8 @@
 import { ScriptInclude } from '@servicenow/sdk/core'
 
-// Native ServiceNow AI (Phase 7). These replace the Claude path
-// (BCClaudeClient) once the agents built on them are proven — see
-// docs/AI_AGENT_TOOLS.md and IMPLEMENTATION_BACKLOG.md Phase 34.
+// Native ServiceNow AI (Phase 7). These replaced the Claude path
+// (BCClaudeClient), which was removed in Phase 34 — see
+// docs/AI_AGENT_TOOLS.md and docs/AI_GOVERNANCE.md.
 
 export const nowAssistSkillClient = ScriptInclude({
     $id: Now.ID['si-now-assist-skill-client'],
@@ -28,7 +28,7 @@ export const aiInteractionLog = ScriptInclude({
     name: 'AiInteractionLog',
     active: true,
     apiName: 'x_695068_bcfa.AiInteractionLog',
-    description: 'Writes the AI Interaction Log: one row per AI execution (Now Assist skills and agentic workflows, simulated extraction, legacy Claude) with capability, skill, agent, workflow, hashed input context, result, confidence, status, duration and the human outcome. Never stores prompts.',
+    description: 'Writes the AI Interaction Log: one row per AI execution (Now Assist skills and agentic workflows, simulated extraction; historical Claude rows until Phase 34) with capability, skill, agent, workflow, hashed input context, result, confidence, status, duration and the human outcome. Never stores prompts.',
     script: Now.include('../../server/script-includes/AiInteractionLog.server.js'),
 })
 

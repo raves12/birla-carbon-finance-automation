@@ -197,6 +197,13 @@ The logged prompt was still v2, so the edit never reached the skill. It was reve
 - **Run 3 (2026-09-29): 13/13 pass.** The test fix was applied to the instance's step script. The 13 tests were
   started from Scripts - Background with `sn_atf.ExecuteUserTest`: this instance has no `ExecuteUserTestSuite` API, and
   its ATF REST plugin is inactive.
+- **Run 4 (2026-09-29, after the Phase 33 late-remittance fix): 13/13 pass.**
+- **Run 5 (2026-09-29, after the Phase 34 Claude removal): 12/13.** *Demo reset — refused without the confirmation text*
+  failed with "nothing deleted should have been 21 but was 30". The reset was correctly refused. The test counted
+  every AP invoice, and the 12 tests started at the same moment insert (and roll back) their own invoices meanwhile.
+  Run alone, it passed. The step now counts only invoices created before it started (source and instance step
+  patched).
+- **Run 6 (2026-09-29, all 13 started together again, after the step fix): 13/13 pass.**
 
 **Conclusion (Phase 29).**
 

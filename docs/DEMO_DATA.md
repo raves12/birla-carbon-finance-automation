@@ -141,12 +141,8 @@ clears automatically" tail end doesn't replay identically on this instance.
 Worth a closer look during Phase 13 (Cash Application journey testing) but
 not a Phase 3 blocker.
 
-## Not seeded (intentionally deferred)
+## Not seeded, and removed (Phase 34)
 
-`DemoDataSeeder.seedClaudeDemoScenarios()` (AP-BC-1001/1002, CASH-BC-0001/2)
-was **not** run. It's a Claude-specific demo dataset built for the prior
-Finance Document Intake work, and Phase 34 of this program removes Claude as
-an active runtime dependency — seeding more Claude-branded demo data now
-would just need to be relabeled or removed again shortly. Revisit once the
-native-AI replacement for Finance Document Intake (Phase 5) exists, with an
-equivalent native-AI demo dataset if still useful at that point.
+`DemoDataSeeder.seedClaudeDemoScenarios()` (AP-BC-1001/1002, CASH-BC-0001/2) was never run. It was a Claude-specific
+demo dataset from the earlier Finance Document Intake work. It was removed with the Claude client in Phase 34, together
+with its one-time job. The POC demo uses the 20 scenarios above and the POC 2 cash journeys (`POC_DEMO_SCRIPT.md`).

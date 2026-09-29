@@ -1702,6 +1702,7 @@ declare global {
                     'job-claude-connectivity-test-v1': {
                         table: 'sysauto_script'
                         id: 'e7e65a52158a4f729e4d512d736f65cd'
+                        deleted: true
                     }
                     'job-claude-credential-diagnostic-v1': {
                         table: 'sysauto_script'
@@ -1716,6 +1717,7 @@ declare global {
                     'job-claude-demo-seed-v1': {
                         table: 'sysauto_script'
                         id: '3ea0bc119c5b439682351ff485c661b8'
+                        deleted: true
                     }
                     'job-claude-phase5-hardening-test-v1': {
                         table: 'sysauto_script'
@@ -1934,30 +1936,37 @@ declare global {
                     'prop-claude-allowed-attachment-types': {
                         table: 'sys_properties'
                         id: '0c3449e02fbb483986cd89720c2c89f7'
+                        deleted: true
                     }
                     'prop-claude-confidence-threshold': {
                         table: 'sys_properties'
                         id: '19d3680cb7374fd7a900a3686ce4a353'
+                        deleted: true
                     }
                     'prop-claude-enabled': {
                         table: 'sys_properties'
                         id: 'a967c0acc6a84c9783c0349931fca287'
+                        deleted: true
                     }
                     'prop-claude-max-attachment-size': {
                         table: 'sys_properties'
                         id: 'c44f2ecec805459caba6836a50ef1252'
+                        deleted: true
                     }
                     'prop-claude-max-tokens': {
                         table: 'sys_properties'
                         id: '14de0ec35d204c53a2371a5f2d872355'
+                        deleted: true
                     }
                     'prop-claude-model': {
                         table: 'sys_properties'
                         id: 'd085cc4939df4bcca67aa60e3bd99af8'
+                        deleted: true
                     }
                     'prop-claude-timeout': {
                         table: 'sys_properties'
                         id: '732add1fdb044f53b34565facd13fd3a'
+                        deleted: true
                     }
                     'prop-demo-reset-clears-ai-log': {
                         table: 'sys_properties'
@@ -2034,6 +2043,7 @@ declare global {
                     'si-bc-claude-client': {
                         table: 'sys_script_include'
                         id: 'b8b296d6009944209283a8e91a573ae6'
+                        deleted: true
                     }
                     'si-demo-data-seeder': {
                         table: 'sys_script_include'
@@ -2178,6 +2188,7 @@ declare global {
                     'src_server_script-includes_BCClaudeClient_server_js': {
                         table: 'sys_module'
                         id: 'e137a0eb5f8e419d888a2aa239178dba'
+                        deleted: true
                     }
                     'src_server_script-includes_DemoDataSeeder_server_js': {
                         table: 'sys_module'

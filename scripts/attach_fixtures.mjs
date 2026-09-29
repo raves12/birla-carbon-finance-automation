@@ -27,7 +27,7 @@ if (!SN_INSTANCE || !SN_USERNAME || !SN_PASSWORD || !SN_CLIENT_ID || !SN_CLIENT_
 const instance = SN_INSTANCE.replace(/\/$/, "");
 
 // Maps each fixture file to the finance_intake record it should seed.
-// document_type mirrors what Content Understanding / Claude classification
+// document_type mirrors what Content Understanding classification
 // would eventually assign — set here since these are pre-classified fixtures
 // meant to demonstrate the extraction/matching step, not the classification
 // step itself.

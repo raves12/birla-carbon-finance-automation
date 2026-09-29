@@ -12,7 +12,6 @@ ApDomainService.prototype = {
         this.approvalEngine = new ApprovalEngine();
         this.integrationService = new IntegrationService();
         this.aiSimulation = new AISimulationService();
-        this.claudeClient = new BCClaudeClient();
         this.policy = new FinancePolicy();
     },
 
@@ -156,58 +155,17 @@ ApDomainService.prototype = {
     },
 
     // seedFields stands in for whatever partial, as-if-OCR'd fields a real
-    // extraction step would have produced. With the native provider (the
-    // default) this is the deterministic simulated extraction
-    // (AISimulationService): Document Intelligence extraction is not
-    // licensed on this instance (see docs/CONTENT_UNDERSTANDING.md). Claude
-    // is only used when x_695068_bcfa.ai.provider = claude (legacy, removed
-    // in Phase 34). Extraction never blocks the pipeline on an AI outage.
+    // extraction step would have produced. This is the deterministic
+    // simulated extraction (AISimulationService): Document Intelligence
+    // extraction is not licensed on this instance (see
+    // docs/CONTENT_UNDERSTANDING.md). No external AI is called (the Claude
+    // path was removed in Phase 34). Extraction never blocks the pipeline
+    // on an AI outage.
     runExtraction: function(apInvoiceSysId, seedFields, options) {
         this._setState(apInvoiceSysId, 'EXTRACTING', null, 'Beginning extraction');
-        var claudeResult = this.policy.aiProvider() === 'claude' ? this._runClaudeExtraction(apInvoiceSysId, seedFields, options) : null;
-        var result = claudeResult || this.aiSimulation.simulateApExtraction(apInvoiceSysId, seedFields, options);
+        var result = this.aiSimulation.simulateApExtraction(apInvoiceSysId, seedFields, options);
         this._setState(apInvoiceSysId, 'EXTRACTED', null, 'Extraction complete, confidence ' + result.confidence);
         return result;
-    },
-
-    // Returns a simulateApExtraction()-shaped result on success, or null if
-    // Claude is disabled/unavailable/invalid so the caller falls back.
-    _runClaudeExtraction: function(apInvoiceSysId, seedFields, options) {
-        if (!this.claudeClient.isEnabled()) return null;
-
-        var envelope = this.claudeClient.extractInvoice(apInvoiceSysId, seedFields);
-        if (!envelope.ok) return null;
-
-        var data = envelope.data;
-        var forcedConfidence = options && options.forceConfidence !== undefined ? options.forceConfidence : null;
-        var confidence = forcedConfidence !== null ? forcedConfidence : data.confidence;
-        var requiresReview = confidence < this.policy.extractionConfidenceThreshold();
-
-        var extraction = new GlideRecord('x_695068_bcfa_ap_extraction');
-        extraction.initialize();
-        extraction.setValue('ap_invoice', apInvoiceSysId);
-        extraction.setValue('extracted_fields', JSON.stringify(data));
-        extraction.setValue('confidence', confidence);
-        extraction.setValue('source', 'claude_document_intelligence');
-        extraction.setValue('requires_review', requiresReview);
-        var extractionSysId = extraction.insert();
-
-        var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
-        if (invoice.get(apInvoiceSysId)) {
-            invoice.setValue('extraction_confidence', confidence);
-            invoice.update();
-        }
-
-        this.auditEngine.logEvent({
-            sourceTable: 'x_695068_bcfa_ap_invoice',
-            sourceRecord: apInvoiceSysId,
-            eventType: 'document_extracted',
-            actorType: 'claude_ai',
-            description: 'Claude invoice extraction, confidence ' + confidence + (data.warnings && data.warnings.length ? '; warnings: ' + data.warnings.join('; ') : ''),
-            afterValue: { confidence: confidence, requiresReview: requiresReview }
-        });
-
-        return { extractionSysId: extractionSysId, confidence: confidence, requiresReview: requiresReview };
     },
 
     validateInvoice: function(apInvoiceSysId) {
@@ -408,8 +366,8 @@ ApDomainService.prototype = {
     // native (default): nothing runs here. The BCFA AP Invoice Review
     // agentic workflow is triggered by the exception's creation, runs as
     // the AI user and saves its note asynchronously.
-    // claude (legacy): Claude, falling back to the simulation.
-    // simulated: deterministic templated explanation only.
+    // simulated: deterministic templated explanation only (the Claude
+    // provider was removed in Phase 34).
     _explainApException: function(exceptionSysId) {
         var provider = this.policy.aiProvider();
         if (provider === 'native') {
@@ -424,28 +382,6 @@ ApDomainService.prototype = {
             new AiInteractionLog().start({ sourceTable: 'x_695068_bcfa_ap_exception', sourceRecord: exceptionSysId, provider: 'now_assist',
                 operation: 'exception_review', capability: 'exception_review', workflow: 'BCFA AP Invoice Review' });
             return { deferred: true, workflow: 'BCFA AP Invoice Review' };
-        }
-        if (provider === 'claude' && this.claudeClient.isEnabled()) {
-            var envelope = this.claudeClient.explainInvoiceException(exceptionSysId);
-            if (envelope.ok && !envelope.data.insufficient_information) {
-                var recommendation = envelope.data.explanation +
-                    (envelope.data.recommended_action ? ' Recommended next step: ' + envelope.data.recommended_action : '') +
-                    (envelope.data.evidence && envelope.data.evidence.length ? ' Evidence: ' + envelope.data.evidence.join('; ') + '.' : '');
-                var exception = new GlideRecord('x_695068_bcfa_ap_exception');
-                if (exception.get(exceptionSysId)) {
-                    exception.setValue('ai_recommendation', recommendation);
-                    exception.update();
-                }
-                this.auditEngine.logEvent({
-                    sourceTable: 'x_695068_bcfa_ap_exception',
-                    sourceRecord: exceptionSysId,
-                    eventType: 'ai_recommendation',
-                    actorType: 'claude_ai',
-                    description: 'Claude exception explanation, confidence ' + envelope.data.confidence,
-                    afterValue: { recommendation: recommendation }
-                });
-                return { recommendation: recommendation };
-            }
         }
         return this.aiSimulation.recommendApExceptionResolution(exceptionSysId);
     },

@@ -224,7 +224,10 @@ Test(
             $id: Now.ID['test-p29-demo-reset-guard-step'],
             script: `
                 (function(outputs, steps, params, stepResult, assertEqual) {
-                    var count = function() { var a = new GlideAggregate('x_695068_bcfa_ap_invoice'); a.addAggregate('COUNT'); a.query(); return a.next() ? a.getAggregate('COUNT') : '0'; };
+                    // Only invoices that existed before this step: tests started at the
+                    // same time insert (and roll back) their own invoices meanwhile.
+                    var start = new GlideDateTime().getValue();
+                    var count = function() { var a = new GlideAggregate('x_695068_bcfa_ap_invoice'); a.addQuery('sys_created_on', '<', start); a.addAggregate('COUNT'); a.query(); return a.next() ? a.getAggregate('COUNT') : '0'; };
                     var before = count();
                     var r = new DemoDataSeeder().resetDemoData('yes please');
                     assertEqual({ name: 'reset refused', shouldbe: true, value: r.refused === true });

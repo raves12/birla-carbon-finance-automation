@@ -717,7 +717,7 @@ Acl({
 // --- Finance Document Intake -------------------------------------------------
 // Same read population as the rest of the app; write/create scoped to the two
 // processing roles (either can trigger document intake, since a raw document
-// isn't known to be AP or AR until Claude classifies it) plus admin.
+// isn't known to be AP or AR until its document type is set) plus admin.
 
 Acl({
     $id: Now.ID['acl-read-x_695068_bcfa_finance_intake'],

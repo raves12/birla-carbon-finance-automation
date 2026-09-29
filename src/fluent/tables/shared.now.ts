@@ -234,7 +234,7 @@ export const x_695068_bcfa_audit_event = Table({
                 user: 'User',
                 system: 'System',
                 simulated_ai: 'Simulated AI (advisory, legacy)',
-                claude_ai: 'Claude (advisory)',
+                claude_ai: 'Claude (legacy, removed in Phase 34)',
                 now_assist_ai: 'Now Assist (advisory)',
             },
         }),

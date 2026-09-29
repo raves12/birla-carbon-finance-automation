@@ -104,13 +104,13 @@ export const x_695068_bcfa_ap_extraction = Table({
         confidence: DecimalColumn({ label: 'Confidence', scale: 2 }),
         source: ChoiceColumn({
             label: 'Source',
-            default: 'claude_document_intelligence',
+            default: 'simulated_document_intelligence',
             choices: {
-                claude_document_intelligence: 'Claude (JSON-context extraction)',
+                claude_document_intelligence: 'Claude (legacy, removed in Phase 34)',
                 simulated_document_intelligence: 'Simulated extraction (fixture values; DocIntel extraction not licensed)',
                 now_assist_document_intelligence: 'Now Assist in Document Intelligence (not licensed in this PDI)',
             },
-            hint: 'Records which engine produced this extraction row. With x_695068_bcfa.ai.provider = native (default) this is the simulated extraction; Claude is used only when the provider is claude (legacy, removed in Phase 34).',
+            hint: 'Records which engine produced this extraction row. Currently the simulated extraction; Claude rows are historical (removed in Phase 34).',
         }),
         requires_review: BooleanColumn({ label: 'Requires Review', default: false }),
         reviewed_by: ReferenceColumn({ label: 'Reviewed By', referenceTable: 'sys_user' }),

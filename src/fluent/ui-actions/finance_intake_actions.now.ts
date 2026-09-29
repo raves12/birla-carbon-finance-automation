@@ -5,12 +5,12 @@ import { UiAction, Record } from '@servicenow/sdk/core'
 // Every script here calls straight into FinanceDocumentIntakeService or the
 // existing ApDomainService; none of it duplicates their logic.
 
-export const intakeProcessWithClaude = UiAction({
+export const intakeProcessDocument = UiAction({
     $id: Now.ID['ui-action-intake-process-with-claude'],
     table: 'x_695068_bcfa_finance_intake',
     name: 'Process Document',
     actionName: 'process_document_intake',
-    hint: 'Processes the attached document: uses the document type set at upload, reads the fields (simulated extraction until Document Intelligence extraction is licensed; Claude only if x_695068_bcfa.ai.provider = claude), then creates the AP Invoice or Payment/Remittance and runs the deterministic pipeline.',
+    hint: 'Processes the attached document: uses the document type set at upload, reads the fields (simulated extraction until Document Intelligence extraction is licensed), then creates the AP Invoice or Payment/Remittance and runs the deterministic pipeline.',
     showUpdate: true,
     condition: "current.processing_status == 'new'",
     form: {
@@ -28,12 +28,12 @@ export const intakeProcessWithClaude = UiAction({
     `,
 })
 
-const intakeProcessWithClaudeFormAction = Record({
+const intakeProcessDocumentFormAction = Record({
     $id: Now.ID['ui-action-intake-process-with-claude-form-action'],
     table: 'sys_ux_form_action',
     data: {
         table: 'x_695068_bcfa_finance_intake',
-        ui_action: intakeProcessWithClaude,
+        ui_action: intakeProcessDocument,
         action_type: 'ui_action',
         active: true,
         name: 'Process Document',
@@ -52,7 +52,7 @@ Record({
         order: 100,
         active: true,
         item_type: 'action',
-        action: intakeProcessWithClaudeFormAction,
+        action: intakeProcessDocumentFormAction,
     },
 })
 

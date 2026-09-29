@@ -12,7 +12,7 @@ var ApLineResolutionService = Class.create();
 ApLineResolutionService.prototype = {
     initialize: function() {},
 
-    // Resolves one Claude-extracted invoice line to a PO Line under the
+    // Resolves one extracted invoice line to a PO Line under the
     // given purchase order, using a deterministic cascade:
     //   1. explicit line number (exact, unique)
     //   2. exact material/service description match (exact, unique)

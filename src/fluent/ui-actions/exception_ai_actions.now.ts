@@ -15,7 +15,7 @@ import { UiAction, Record } from '@servicenow/sdk/core'
 // FinanceAgentTools, as the signed-in user). Same record ids as the former
 // "Explain with Claude" action, so it is updated in place. The AR action
 // switched the same way in Phase 13.
-export const apExceptionExplainWithClaude = UiAction({
+export const apExceptionExplainWithNowAssist = UiAction({
     $id: Now.ID['ui-action-ap-exception-explain-claude'],
     table: 'x_695068_bcfa_ap_exception',
     name: 'Explain with Now Assist',
@@ -37,12 +37,12 @@ export const apExceptionExplainWithClaude = UiAction({
     `,
 })
 
-const apExceptionExplainWithClaudeFormAction = Record({
+const apExceptionExplainWithNowAssistFormAction = Record({
     $id: Now.ID['ui-action-ap-exception-explain-claude-form-action'],
     table: 'sys_ux_form_action',
     data: {
         table: 'x_695068_bcfa_ap_exception',
-        ui_action: apExceptionExplainWithClaude,
+        ui_action: apExceptionExplainWithNowAssist,
         action_type: 'ui_action',
         active: true,
         name: 'Explain with Now Assist',
@@ -61,11 +61,11 @@ Record({
         order: 100,
         active: true,
         item_type: 'action',
-        action: apExceptionExplainWithClaudeFormAction,
+        action: apExceptionExplainWithNowAssistFormAction,
     },
 })
 
-export const arExceptionExplainWithClaude = UiAction({
+export const arExceptionExplainWithNowAssist = UiAction({
     $id: Now.ID['ui-action-ar-exception-explain-claude'],
     table: 'x_695068_bcfa_ar_exception',
     name: 'Explain with Now Assist',
@@ -87,12 +87,12 @@ export const arExceptionExplainWithClaude = UiAction({
     `,
 })
 
-const arExceptionExplainWithClaudeFormAction = Record({
+const arExceptionExplainWithNowAssistFormAction = Record({
     $id: Now.ID['ui-action-ar-exception-explain-claude-form-action'],
     table: 'sys_ux_form_action',
     data: {
         table: 'x_695068_bcfa_ar_exception',
-        ui_action: arExceptionExplainWithClaude,
+        ui_action: arExceptionExplainWithNowAssist,
         action_type: 'ui_action',
         active: true,
         name: 'Explain with Now Assist',
@@ -111,6 +111,6 @@ Record({
         order: 100,
         active: true,
         item_type: 'action',
-        action: arExceptionExplainWithClaudeFormAction,
+        action: arExceptionExplainWithNowAssistFormAction,
     },
 })
