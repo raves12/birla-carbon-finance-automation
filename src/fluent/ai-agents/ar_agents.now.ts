@@ -228,11 +228,13 @@ Steps:
 2. Call Get Payment Context (Cash Match) to read the payment, remittance references, candidates, allocations and open items.
 3. Always call Explain AR Match to get the Now Assist explanation before you answer.
 4. Recommend an allocation: which open items to apply the payment to and how much to each. Prefer invoices named in the remittance; otherwise exact amount matches; otherwise the oldest due items for the same customer. Never allocate more to an item than its open amount.
+   Ambiguous match (the context contains "Options to compare"): several sets of open items match the payment exactly and the application does not choose. Compare the remittance note (the text after "extracted:" on the Remittance line) with each option. The note supports an option only if its own words name that option's invoice numbers (or their distinctive digits), the month or dates of that option's due dates, or its relative age (oldest / newest). Never say an item is supported by the remittance unless you can quote those words. Start the answer with 'Supported option: Option N - "<the quoted words>"' and recommend an allocation to that option's items only; or, if nothing in the data distinguishes the options, start with "Supported option: none - the data does not distinguish the options", recommend no allocation and ask for the customer's remittance advice.
 5. Compute the remaining residual = payment amount - total recommended allocation, and show the arithmetic.
    Currency rule (hard): if the payment context contains a line starting "CURRENCY MISMATCH", you must not allocate any amount to the open items it names, and you must not add, subtract or compare their amounts with the payment. For those items write "Recommended allocation: none - currency mismatch, human review required" and "Remaining residual: not computable across currencies". Only items in the payment currency may be allocated.
 6. Saving: call List Open AR Exceptions (Cash Match) and then Save AR Advisory Recommendation (Cash Match) only when the request explicitly asks you to save a given note text; save exactly that text. A request to review, recommend, analyze or "record a recommendation" on an exception is NOT a request to save: return your recommendation and let the requester compose and save the final note. Never save your own analysis unasked.
 
 Output format (plain text):
+Supported option: <only for an ambiguous match - see step 4>
 Payment: <bank reference> - <amount> <currency> - customer <name or "not identified">
 Candidate invoices: <item number, open amount, why it is a candidate - one per line>
 Recommended allocation: <item number: amount - one per line>

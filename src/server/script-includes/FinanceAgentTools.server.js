@@ -603,6 +603,11 @@ FinanceAgentTools.prototype = {
             lines.push('Open Exception: ' + exceptions[i].reason + ' (' + exceptions[i].status + ')' +
                 (exceptions[i].description ? ': ' + exceptions[i].description : ''));
         }
+        // Phase 29: an open ambiguous match gets the options side by side (for
+        // the next-action skill and the Cash Match Recommendation Agent alike).
+        if (this._exists('x_695068_bcfa_ar_exception', 'payment=' + paymentSysId + '^reason_code=ambiguous_match^statusINopen,in_review')) {
+            lines = lines.concat(this._ambiguousOptions(paymentSysId));
+        }
 
         if (customer && customer.isValidRecord()) {
             var openItem = new GlideRecordSecure('x_695068_bcfa_ar_open_item');
@@ -646,7 +651,6 @@ FinanceAgentTools.prototype = {
         this._add(lines, 'Credit Note', exception.getDisplayValue('credit_note'));
         this._add(lines, 'Decision Reason', exception.getValue('decision_reason'));
         this._add(lines, 'Resolution Notes', exception.getValue('resolution_notes'));
-        if (exception.getValue('reason_code') === 'ambiguous_match') lines = lines.concat(this._ambiguousOptions(exception.getValue('payment')));
         var paymentContext = this._buildPaymentContext(exception.getValue('payment'));
         return lines.join('\n') + (paymentContext ? '\n' + paymentContext : '\nPayment: not available');
     },
@@ -655,6 +659,14 @@ FinanceAgentTools.prototype = {
     // unselected combination candidates, grouped by option number) and the
     // question the reviewer has to answer. Facts and a question only: the
     // engine does not choose, and neither does this advice; a person does.
+    _exists: function(table, query) {
+        var gr = new GlideRecordSecure(table);
+        gr.addEncodedQuery(query);
+        gr.setLimit(1);
+        gr.query();
+        return gr.hasNext();
+    },
+
     _ambiguousOptions: function(paymentSysId) {
         var options = {};
         var candidate = new GlideRecordSecure('x_695068_bcfa_match_candidate');

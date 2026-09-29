@@ -458,3 +458,28 @@ Payment data:
    `sys_gen_ai_skill*`/`sys_ux_*` records are typically managed centrally,
    not per-scoped-app).
 4. Let me know when done and I'll pick up Phase 7 (AI agent tools).
+
+## Phase 29: AR Recommended Next Action, prompt v3
+
+Why: the AI ranking evaluation (`docs/TEST_PLAN.md`, Phase 29 results) showed that v2 hedges on ambiguous matches.
+It wrote "Supported option: none" even when its own explanation matched the remittance note to the right option.
+
+To publish v3:
+
+1. Open the Now Assist Skill Kit and select **bcfaArRecommendedNextAction**.
+2. Create a new prompt version. Copy v2, then add the rule below as the last bullet under "Your suggestion must:".
+3. Finalize the prompt.
+4. Publish the skill with v3 selected under *Now LLM Service (Now LLM Generic)*.
+5. Re-run `scripts/deploy/phase29_ai_eval_bg.js`.
+
+Rule to add:
+
+```
+- If the exception is an ambiguous match (the data contains "Options to compare"), first decide whether the remittance
+  note or other data points to one option: its own words name that option's invoice numbers or their distinctive
+  digits, the month or dates of its due dates, or its relative age (oldest / newest). If it does, begin with
+  "Supported option: Option N" and quote the words; this is a recommendation for the reviewer, not a decision. If it
+  does not, begin with "Supported option: none". Do not answer "none" when the note plainly names one option.
+```
+
+The rest of v2 is unchanged, including the advisory-only and no-bypass rules.

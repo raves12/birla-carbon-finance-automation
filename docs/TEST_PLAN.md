@@ -144,6 +144,19 @@ to rank them.
 The agent's evidence-tag format also needs its own scorer. The current scorer (item numbers on recommending lines)
 does not fit it; the table above was read by hand.
 
+**Tuning pass (2026-09-29).**
+
+- **Where the options block appears.** It now lives in the payment context, shown whenever the payment has an open
+  ambiguous-match exception. So the Cash Match Recommendation Agent sees it too; before, only the skill did.
+- **The agent's instructions.** For an ambiguous match, it may claim the remittance supports an option only when it
+  can quote the note's own words naming that option's invoice numbers, month or relative age. It starts with
+  `Supported option: Option N - "<quoted words>"` or `Supported option: none`, and recommends no allocation when nothing
+  distinguishes the options.
+- **The skill prompt.** Prompt v3 is written out in `docs/GENERATIVE_AI_SKILLS_BUILD_GUIDE.md`, to be published through
+  the Skill Kit.
+- **Deploy and re-measure.** Deploy with `scripts/deploy/phase29c_agent_tuning_bg.js`, then re-run both evaluation
+  stages.
+
 **Test execution.** The ATF REST API plugin is not active on this instance, so tests cannot be started over MCP. They
 are grouped in the **BCFA Regression** suite (13 tests; *Seed Demo Data* excluded) and run in-instance. The results
 can then be read over MCP (`sys_atf_test_result`).
