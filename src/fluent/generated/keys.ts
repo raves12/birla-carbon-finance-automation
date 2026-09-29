@@ -193,6 +193,10 @@ declare global {
                         table: 'sys_security_acl'
                         id: '48658a85a5bd428b916c59a1e8fe5999'
                     }
+                    'acl-read-x_695068_bcfa_poc_metric': {
+                        table: 'sys_security_acl'
+                        id: '0bd5e3e8a4ab4d8583dc12588e33ec47'
+                    }
                     'acl-read-x_695068_bcfa_purchase_order': {
                         table: 'sys_security_acl'
                         id: '3366e1b1b362415eb5ca04148fb4aab3'
@@ -1092,6 +1096,14 @@ declare global {
                     'bcfa-list-payment-pending-app': {
                         table: 'sys_ux_applicability_m2m_list'
                         id: 'aae3f9a0b08b49ccac66034e3e84faab'
+                    }
+                    'bcfa-list-poc-metric': {
+                        table: 'sys_ux_list'
+                        id: '219cfe7b45aa4cdbbd0b9a2f018c9103'
+                    }
+                    'bcfa-list-poc-metric-app': {
+                        table: 'sys_ux_applicability_m2m_list'
+                        id: 'da6045c9760248ebae850171e54570e8'
                     }
                     'bcfa-list-remittance': {
                         table: 'sys_ux_list'
@@ -2059,6 +2071,10 @@ declare global {
                         table: 'sys_script_include'
                         id: 'db56861d14944f8b8cd0700828157284'
                     }
+                    'si-finance-poc-scorecard': {
+                        table: 'sys_script_include'
+                        id: 'ed56d5b2d6aa49eb8f57db50a366c8f2'
+                    }
                     'si-finance-policy': {
                         table: 'sys_script_include'
                         id: 'aeab153d89134770a6c0ef4fddfad5f8'
@@ -2198,6 +2214,10 @@ declare global {
                     'src_server_script-includes_FinanceOrchestration_server_js': {
                         table: 'sys_module'
                         id: 'e662b6ff089f4e41915a7ed6c91e408f'
+                    }
+                    'src_server_script-includes_FinancePocScorecard_server_js': {
+                        table: 'sys_module'
+                        id: 'bac8adfae2564eedb93b94f5e2c066da'
                     }
                     'src_server_script-includes_FinancePolicy_server_js': {
                         table: 'sys_module'
@@ -2865,6 +2885,13 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_customer'
                             element: 'name'
+                        }
+                    },
+                    {
+                        table: 'ua_table_licensing_config'
+                        id: '0438fcf339aa48b0a58c6645085e2c37'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
                         }
                     },
                     {
@@ -3938,6 +3965,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '118becc5f2bb49b4ba6922800037b27c'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'unit'
+                            value: 'ratio'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '11a2ff3379d1490b95d62be917b24d9b'
                         key: {
@@ -4324,6 +4362,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '192cefcd8d6541c5b2faf5de33354e91'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_db_object'
                         id: '193616903e384b5190a32a2460c2604b'
                         key: {
@@ -4428,6 +4474,15 @@ declare global {
                             value: 'review_required'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '1b490cdbf5e34eb18b8992412998f061'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'status'
+                            language: 'en'
                         }
                     },
                     {
@@ -4976,6 +5031,14 @@ declare global {
                     },
                     {
                         table: 'sys_dictionary'
+                        id: '22ec5d8f4db8442bab1feb65ed6b17b8'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'status'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
                         id: '22ecee5ae74b492e9a4f6eed5db07430'
                         key: {
                             name: 'x_695068_bcfa_deduction'
@@ -5137,6 +5200,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '253c557a5ea44b42935a68c516698fdd'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'NULL'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '2579b172b6a84a63802bbe6b168bc448'
                         key: {
@@ -5147,6 +5219,17 @@ declare global {
                                     name: 'x_695068_bcfa.ap_processor'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '258d4356bbdb4ef08b4e7785a775e091'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'status'
+                            value: 'info'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -5238,6 +5321,14 @@ declare global {
                                     name: 'x_695068_bcfa.admin'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '26a76addffc241909f7d67b6efe41f75'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'comparator'
                         }
                     },
                     {
@@ -5603,6 +5694,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '2c87e485521b45d5b9e7d294dd6ee8e1'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'value'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '2cc7aff21e7742cd9fefcf99f20bc30e'
                         key: {
@@ -5944,6 +6043,17 @@ declare global {
                                     name: 'x_695068_bcfa.integration_operator'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '31536e1bf4ac49fb973df2a7d9d36865'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'status'
+                            value: 'no_data'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -6607,6 +6717,17 @@ declare global {
                     },
                     {
                         table: 'sys_choice'
+                        id: '3b0f0b594e8d450e93373ff051618bb3'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'pillar'
+                            value: 'control'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
                         id: '3b16e306b848413683192fd5d3ab081a'
                         key: {
                             name: 'x_695068_bcfa_integration_txn'
@@ -6681,6 +6802,15 @@ declare global {
                             value: 'approved'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '3cb2652b627d44df9b466dfd02bef625'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'unit'
+                            language: 'en'
                         }
                     },
                     {
@@ -6818,6 +6948,14 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ap_approval'
                             element: 'override_reason'
+                        }
+                    },
+                    {
+                        table: 'sys_choice_set'
+                        id: '3e02c5fa12ec405ba287fd41a60989bc'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'comparator'
                         }
                     },
                     {
@@ -7523,6 +7661,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '48aca39784fc468ea5e8083930939de4'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'comparator'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sn_aia_tool'
                         id: '48dcd30ccb7c400ca7438368657f9bed'
                         key: {
@@ -7642,6 +7789,15 @@ declare global {
                             value: 'extract_ar_payment_advice_document'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '4adb925ca6c742d0b95882cac2f8f3eb'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'label'
+                            language: 'en'
                         }
                     },
                     {
@@ -8520,6 +8676,14 @@ declare global {
                     },
                     {
                         table: 'sys_dictionary'
+                        id: '5819cff19d8c4cbe84fbe8b19841db76'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'code'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
                         id: '5831e359feba457a87e3d362394373d1'
                         key: {
                             name: 'x_695068_bcfa_ap_extraction'
@@ -8578,6 +8742,14 @@ declare global {
                         id: '588d615a5fea475bbe3422f50e91c218'
                         key: {
                             name: 'x_695068_bcfa.ar_processor'
+                        }
+                    },
+                    {
+                        table: 'sys_choice_set'
+                        id: '58ac418d90a4474abefc6726bbaf9308'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'unit'
                         }
                     },
                     {
@@ -8816,6 +8988,14 @@ declare global {
                                     name: 'x_695068_bcfa.finance_reviewer'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_choice_set'
+                        id: '5c67966ab1ba4209ab23f62103d26ac2'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'pillar'
                         }
                     },
                     {
@@ -9074,6 +9254,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice_set'
+                        id: '606440df27c04dd0b67dfe560062d296'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'status'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: '606f77296c7e4585a916f0f7f2950f91'
                         key: {
@@ -9265,6 +9453,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '6216d09d66a2494788fb4d5a25e06c13'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'computed_at'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_choice_set'
                         id: '6218fd70554349b285b5088283319af5'
                         key: {
@@ -9317,6 +9514,17 @@ declare global {
                             name: 'x_695068_bcfa_ai_interaction'
                             element: 'operation'
                             value: 'rank_candidates'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '62bc86f659aa4977bb633fc5a5754e63'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'pillar'
+                            value: 'ai_safety'
                             language: 'en'
                             dependent_value: 'NULL'
                         }
@@ -9454,6 +9662,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '64c0a019591e45b79722f16723738cf8'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'unit'
+                            value: 'hours'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_db_object'
                         id: '64e76eede378453388daae605c4e26c5'
                         key: {
@@ -9526,6 +9745,15 @@ declare global {
                                     name: 'x_695068_bcfa.integration_operator'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '66570a48faa8407383ed0b0bad35a914'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'value'
+                            language: 'en'
                         }
                     },
                     {
@@ -10145,6 +10373,17 @@ declare global {
                                     name: 'x_695068_bcfa.admin'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '6d6e811ec642464290a6d787bb97a218'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'pillar'
+                            value: 'automation'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -10888,6 +11127,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '77e99e5920cc460da29da365e86650e5'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'target_value'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: '780013163bb04113a9202c672906c9ec'
                         key: {
@@ -11224,6 +11471,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '7c6fd38ac6374d30ab0f025716c4c3cf'
+                        key: {
+                            sys_security_acl: '0bd5e3e8a4ab4d8583dc12588e33ec47'
+                            sys_user_role: {
+                                id: 'e1abbc605ba34cbfb77c584ea689c1b2'
+                                key: {
+                                    name: 'x_695068_bcfa.finance_approver'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: '7c79bb801e444e7d8380cf1c3a60f297'
                         key: {
@@ -11253,6 +11513,15 @@ declare global {
                         key: {
                             sys_security_acl: '2895fd078be441a3967cb2e4e920a98b'
                             sys_user_role: 'bf505b5092574a7fa59a01048550571a'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '7cece74aa03c4e1285f7cbdbda0420d3'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'sample_size'
+                            language: 'en'
                         }
                     },
                     {
@@ -11495,6 +11764,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '80b542455d2f4adcad72288ce89a8521'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'detail'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: '80cf05f355774dd8affff9b0fc05320a'
                         key: {
@@ -11527,6 +11804,30 @@ declare global {
                         id: '81726cc569d04c47bd45beac87a3c153'
                         key: {
                             name: 'x_695068_bcfa_ar_approval'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '82012682b65a450190bcf7f84ddc6bf0'
+                        key: {
+                            sys_security_acl: '0bd5e3e8a4ab4d8583dc12588e33ec47'
+                            sys_user_role: {
+                                id: '8409bca632a3430eb7a56387f244a74f'
+                                key: {
+                                    name: 'x_695068_bcfa.read_only'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '82040a45132749a3a855e9f3988cdffc'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'comparator'
+                            value: 'gte'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -11849,6 +12150,19 @@ declare global {
                     },
                     {
                         table: 'sys_security_acl_role'
+                        id: '87030cac51d641358955556cab4ec7ee'
+                        key: {
+                            sys_security_acl: '0bd5e3e8a4ab4d8583dc12588e33ec47'
+                            sys_user_role: {
+                                id: '03604bf4100246588f4250676240bc18'
+                                key: {
+                                    name: 'x_695068_bcfa.auditor'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
                         id: '872d46cd4d684662852c568cb59a891d'
                         key: {
                             sys_security_acl: '723e753574cb41b0a1342e95b84030ca'
@@ -11932,6 +12246,17 @@ declare global {
                             name: 'x_695068_bcfa_ap_invoice'
                             element: 'posting_date'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '881ec1ecfbde45d98d9a07b4b58d6634'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'pillar'
+                            value: 'speed'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -12093,6 +12418,14 @@ declare global {
                             value: 'timeout'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '8acf5452d49e48b48c41e8061d143d3c'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'pillar'
                         }
                     },
                     {
@@ -12541,6 +12874,19 @@ declare global {
                             name: 'x_695068_bcfa_integration_txn'
                             element: 'request_payload'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '94472a76648d46dd9c87f87c1174d74e'
+                        key: {
+                            sys_security_acl: '0bd5e3e8a4ab4d8583dc12588e33ec47'
+                            sys_user_role: {
+                                id: 'bf505b5092574a7fa59a01048550571a'
+                                key: {
+                                    name: 'x_695068_bcfa.ap_processor'
+                                }
+                            }
                         }
                     },
                     {
@@ -13996,6 +14342,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: 'a8a4dc43e3a14c6296d3be227ecfad0b'
+                        key: {
+                            sys_security_acl: '0bd5e3e8a4ab4d8583dc12588e33ec47'
+                            sys_user_role: {
+                                id: '588d615a5fea475bbe3422f50e91c218'
+                                key: {
+                                    name: 'x_695068_bcfa.ar_processor'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: 'a8b197ab4ec944c39d16379401338cd0'
                         key: {
@@ -14410,6 +14769,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: 'ae599d995ed046c6ba433a36fbd7f8d0'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'unit'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: 'ae9f6f2058754fa4bd4a9ac6d2aa38cf'
                         key: {
@@ -14587,6 +14954,17 @@ declare global {
                             name: 'x_695068_bcfa_integration_profile'
                             element: 'adapter'
                             value: 'real_sap'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'b235372bbb66409c9def23503a5ba5ca'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'unit'
+                            value: 'percent'
                             language: 'en'
                             dependent_value: 'NULL'
                         }
@@ -14788,6 +15166,14 @@ declare global {
                                     name: 'x_695068_bcfa.read_only'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: 'b497527bfa6c4a11b4927db5462816fc'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'sample_size'
                         }
                     },
                     {
@@ -15555,6 +15941,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: 'bff4b0d113084ae58d43c5f18cff80bc'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'comparator'
+                            value: 'lte'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: 'c010421ba31d42b5baa3a3f4f6b5f5e4'
                         key: {
@@ -15655,6 +16052,17 @@ declare global {
                             name: 'x_695068_bcfa_ai_interaction'
                             element: 'agentic_workflow'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'c20a79c1278b483eb255c4d51893b7e1'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'pillar'
+                            value: 'ai_value'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -15891,6 +16299,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: 'c54cbb005de64a6e94ce64c26d4b0c97'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'target_value'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: 'c55e4a677be94157ad4261faf55dd4bf'
                         key: {
@@ -15947,6 +16364,19 @@ declare global {
                             id: 'b20b391814604615ad9888184370fd15'
                             table: 'var__m_atf_input_variable_41de4a935332120028bc29cac2dc349a'
                             field: 'script'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'c68cfaec2aec4c0b977334447b07409b'
+                        key: {
+                            sys_security_acl: '0bd5e3e8a4ab4d8583dc12588e33ec47'
+                            sys_user_role: {
+                                id: '4411dd9103de4bdbb5468924b1e5459f'
+                                key: {
+                                    name: 'x_695068_bcfa.admin'
+                                }
+                            }
                         }
                     },
                     {
@@ -16201,6 +16631,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_db_object'
+                        id: 'c97786e011264324af510a7449f296d6'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: 'c9800c00e90346869a65171e9e747222'
                         key: {
@@ -16443,6 +16880,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: 'cd2e6f40e61a46e2b60bafc8162bce2e'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'label'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: 'cd3a1aa7715242f7bc2a22d2aac49df2'
                         key: {
@@ -16497,6 +16942,15 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ap_match'
                             element: 'quantity_variance'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'ce1fab415c4b4b5baba647e3fa3ef2be'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'detail'
+                            language: 'en'
                         }
                     },
                     {
@@ -16740,6 +17194,15 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_payment'
                             element: 'bank_account'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'd236a75c77aa4adfbf0ad44285b01037'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'pillar'
+                            language: 'en'
                         }
                     },
                     {
@@ -17055,6 +17518,17 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_remittance'
                             element: 'remittance_reference'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'd6af49d6238f4e549a1110275f03128b'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'unit'
+                            value: 'count'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -17593,6 +18067,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: 'dddc20456ba44c26941c4785e8b62710'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'status'
+                            value: 'met'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_variable_value'
                         id: 'de6fb26d94fc4c91bfd2566f0e4c8a8c'
                         key: {
@@ -18120,6 +18605,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: 'e49a55389b9a452292568a9835678946'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'computed_at'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: 'e4ab8ace5a354d80914a99ad1ba138ff'
                         key: {
@@ -18150,6 +18643,17 @@ declare global {
                             name: 'x_695068_bcfa_ai_interaction'
                             element: 'claude_request_id'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'e4f24e7205b44b5185e033c69b2177ea'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'status'
+                            value: 'not_met'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -19497,6 +20001,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: 'f7b60f3964d345df852c68123cb429dc'
+                        key: {
+                            sys_security_acl: '0bd5e3e8a4ab4d8583dc12588e33ec47'
+                            sys_user_role: {
+                                id: '484c56f4217841e298f5752ea6093a3f'
+                                key: {
+                                    name: 'x_695068_bcfa.finance_reviewer'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'ua_table_licensing_config'
                         id: 'f7e264a34a3541e880703da51ae508f9'
                         key: {
@@ -19606,6 +20123,17 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ai_interaction'
                             element: 'input_context_id'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'f91f11341de14139aed98d8a6b366cf5'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'unit'
+                            value: 'ms'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -19750,6 +20278,15 @@ declare global {
                             id: '560fe9fe5b0b47ac8743404db991e7ab'
                             table: 'var__m_atf_input_variable_41de4a935332120028bc29cac2dc349a'
                             field: 'script'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'fbae7d3b38ce4d1f8aac02e96f55fd0b'
+                        key: {
+                            name: 'x_695068_bcfa_poc_metric'
+                            element: 'code'
+                            language: 'en'
                         }
                     },
                     {

@@ -38,7 +38,9 @@ export const financeKpiRefreshJob = ScheduledScript({
     active: true,
     script: `
         var kpis = new FinanceKpiService().refresh();
-        gs.info('BCFA KPI refresh: ' + Object.keys(kpis).length + ' KPIs');
+        // Phase 30: the POC success scorecard is refreshed with the KPIs.
+        var poc = new FinancePocScorecard().refresh();
+        gs.info('BCFA KPI refresh: ' + Object.keys(kpis).length + ' KPIs, ' + poc.length + ' POC metrics');
     `,
 })
 
@@ -49,4 +51,23 @@ Acl({
     operation: 'read',
     roles: [bcfaAdmin, bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaAuditor, bcfaReadOnly],
     description: 'Finance KPIs: the whole workspace audience reads them; only FinanceKpiService writes them.',
+})
+
+// Phase 30: POC success scorecard. See docs/POC_SUCCESS_METRICS.md.
+export const financePocScorecard = ScriptInclude({
+    $id: Now.ID['si-finance-poc-scorecard'],
+    name: 'FinancePocScorecard',
+    active: true,
+    apiName: 'x_695068_bcfa.FinancePocScorecard',
+    description: 'Computes the POC success scorecard (automation, speed, control, AI safety, AI value) from the records, against proposed targets, into x_695068_bcfa_poc_metric.',
+    script: Now.include('../../server/script-includes/FinancePocScorecard.server.js'),
+})
+
+Acl({
+    $id: Now.ID['acl-read-x_695068_bcfa_poc_metric'],
+    type: 'record',
+    table: 'x_695068_bcfa_poc_metric',
+    operation: 'read',
+    roles: [bcfaAdmin, bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaAuditor, bcfaReadOnly],
+    description: 'POC success metrics: the whole workspace audience reads them; only FinancePocScorecard writes them.',
 })

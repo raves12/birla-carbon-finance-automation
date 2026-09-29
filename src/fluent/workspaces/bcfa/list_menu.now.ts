@@ -223,6 +223,15 @@ export const bcfaListConfig = UxListMenuConfig({
             order: 30,
             lists: [
                 {
+                    $id: Now.ID['bcfa-list-poc-metric'],
+                    title: 'POC Success Scorecard',
+                    order: 5,
+                    condition: '',
+                    table: 'x_695068_bcfa_poc_metric',
+                    columns: 'pillar,label,value,unit,comparator,target_value,status,sample_size,detail,computed_at',
+                    applicabilities: [{ $id: Now.ID['bcfa-list-poc-metric-app'], applicability: bcfaWorkspaceApplicability }],
+                },
+                {
                     $id: Now.ID['bcfa-list-ai-interaction'],
                     title: 'AI Interaction Log',
                     order: 10,
