@@ -5,7 +5,7 @@
         <api_name>x_695068_bcfa.FinanceDocumentIntakeService</api_name>
         <caller_access/>
         <client_callable>false</client_callable>
-        <description>Orchestrates true document-to-transaction processing: reads an uploaded attachment on Finance Document Intake, classifies and extracts it via BCClaudeClient, resolves master data deterministically, and hands the resulting AP Invoice / Payment / Remittance to the existing ApDomainService/ArDomainService pipelines. Never sets approval_state/posting_state/state/decision directly and never calls ApprovalEngine or IntegrationService.</description>
+        <description>Orchestrates true document-to-transaction processing: reads an uploaded attachment on Finance Document Intake, uses the document type set at upload, reads the fields with the simulated Document Intelligence extraction (fixture values until extraction is licensed), resolves master data deterministically, and hands the resulting AP Invoice / Payment / Remittance to the existing ApDomainService/ArDomainService pipelines. Never sets approval_state/posting_state/state/decision directly and never calls ApprovalEngine or IntegrationService.</description>
         <mobile_callable>false</mobile_callable>
         <name>FinanceDocumentIntakeService</name>
         <sandbox_callable>false</sandbox_callable>
@@ -752,13 +752,13 @@ FinanceDocumentIntakeService.prototype = {
         <sys_created_by>RaviMAdmin</sys_created_by>
         <sys_created_on>2026-09-25 11:44:36</sys_created_on>
         <sys_id>1c7b870db61a4e3388acbf09d0575157</sys_id>
-        <sys_mod_count>2</sys_mod_count>
+        <sys_mod_count>3</sys_mod_count>
         <sys_name>FinanceDocumentIntakeService</sys_name>
         <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
         <sys_policy/>
         <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
         <sys_update_name>sys_script_include_1c7b870db61a4e3388acbf09d0575157</sys_update_name>
         <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
-        <sys_updated_on>2026-09-29 08:02:29</sys_updated_on>
+        <sys_updated_on>2026-09-29 09:57:53</sys_updated_on>
     </sys_script_include>
 </record_update>

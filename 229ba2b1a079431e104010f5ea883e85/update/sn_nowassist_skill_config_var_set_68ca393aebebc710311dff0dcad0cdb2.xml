@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sn_nowassist_skill_config_var_set">
+    <sn_nowassist_skill_config_var_set action="INSERT_OR_UPDATE">
+        <config_type display_value="Skill config prompts">5a63045793dc1210aa5730f1648918a4</config_type>
+        <description/>
+        <hide_step>true</hide_step>
+        <name>Skill config prompts</name>
+        <order>100</order>
+        <parent/>
+        <screen_id/>
+        <screen_table>sys_ux_macroponent</screen_table>
+        <skill_config display_value="bcfaArRecommendedNextAction">b860f81aebab4310311dff0dcad0cd69</skill_config>
+        <step_completed>false</step_completed>
+        <sys_class_name>sn_nowassist_skill_config_var_set</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-29 10:51:41</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>68ca393aebebc710311dff0dcad0cdb2</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Skill config prompts</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sn_nowassist_skill_config_var_set_68ca393aebebc710311dff0dcad0cdb2</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-29 10:51:41</sys_updated_on>
+        <title/>
+        <vars/>
+    </sn_nowassist_skill_config_var_set>
+    <sys_translated_text action="delete_multiple" query="documentkey=68ca393aebebc710311dff0dcad0cdb2"/>
+    <sys_variable_value action="delete_multiple" query="document_key=68ca393aebebc710311dff0dcad0cdb2"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sn_nowassist_skill_config_var_set</document>
+        <document_key>68ca393aebebc710311dff0dcad0cdb2</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-29 10:51:42</sys_created_on>
+        <sys_id>e0ca393aebebc710311dff0dcad0cdb5</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-29 10:51:42</sys_updated_on>
+        <value>54ca393aebebc710311dff0dcad0cd63</value>
+        <variable display_value="Prompts">9a24c09793dc1210aa5730f1648918c0</variable>
+    </sys_variable_value>
+</record_update>
