@@ -93,6 +93,15 @@ ArExceptionDecisionService.prototype = {
             }
         }
 
+        // Phase 35: a bank charge is bounded by the bank charge limit. A larger
+        // residual is not a bank charge (found by the E2E run: a 7,300 residual
+        // across two open items was accepted as a "bank charge"); the reviewer
+        // must classify it otherwise (short pay, TCS, credit note) or clarify.
+        if (type === 'bank_charge' && amount > this.policy.arBankChargeMax() + this.arService.BALANCE_TOLERANCE) {
+            return this._error('A bank charge cannot exceed ' + this.policy.arBankChargeMax() + ' (x_695068_bcfa.ar.bank_charge.max_amount); the residual is ' + amount +
+                '. Classify it as another deduction type, or request clarification.');
+        }
+
         // Phase 15: the BCFA AR Deduction decision table (type, amount,
         // company) says whether this deduction is allowed and whether it
         // needs a finance approver (properties are the fallback).

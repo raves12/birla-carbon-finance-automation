@@ -7,6 +7,9 @@
 // Output: one line "BCFA_E2E {...}" with PASS/FAIL per scenario.
 (function() {
     var RUN = gs.generateGUID().substring(0, 5).toUpperCase();
+    // Per-run amount offset, so open items left by an earlier run (e.g. a
+    // payment left in SAP_DRAFT) never make this run's matches ambiguous.
+    var K = parseInt(RUN, 16) % 900 + 1;
     var seeder = new DemoDataSeeder();
     var users = seeder._twoUsers();
     var ap = new ApDomainService(), ar = new ArDomainService();
@@ -65,6 +68,15 @@
         var noReason = apDecide.decide(ex.getUniqueValue(), 'approve_override', '');
         check('override without reason refused', !noReason.ok, JSON.stringify(noReason));
         var d = apDecide.decide(ex.getUniqueValue(), 'approve_override', 'E2E ' + RUN + ': 5 extra units confirmed received by the warehouse.');
+        if (!d.ok && String(d.error).indexOf('Segregation of duties') === 0) {
+            // The override needs an authorised approver (ap_approver, in the
+            // routed group). Run by anyone else, SoD must refuse it and change
+            // nothing; the approval itself is manual test MT-AP-17.
+            check('override refused for a user who is not an authorised approver (SoD)', true, '');
+            check('nothing changed', rec('x_695068_bcfa_ap_invoice', r.apInvoiceSysId).getValue('state') === 'EXCEPTION', 'state');
+            cur.checks.push('MANUAL: approve the override of ' + ex.getValue('number') + ' as bcfa.finance.controller (MT-AP-17)');
+            return;
+        }
         check('human override accepted', d.ok === true, JSON.stringify(d));
         g = rec('x_695068_bcfa_ap_invoice', r.apInvoiceSysId);
         check('CLOSED after approval and posting', g.getValue('state') === 'CLOSED', g.getValue('state'));
@@ -145,19 +157,19 @@
     };
 
     scenario('AR-A exact match', function() {
-        var i = item('C006', 'INR', 51234);
-        var r = pay('A', customer('C006'), 'INR', 51234);
+        var i = item('C006', 'INR', 51234 + K);
+        var r = pay('A', customer('C006'), 'INR', 51234 + K);
         check('allocated, pending approval', r.stoppedAt === 'PENDING_APPROVAL', r.stoppedAt);
         var p = rec('x_695068_bcfa_payment', r.paymentSysId);
-        check('allocation = payment, residual 0', parseFloat(p.getValue('allocated_amount')) === 51234 && parseFloat(p.getValue('residual_amount')) === 0, p.getValue('allocated_amount') + '/' + p.getValue('residual_amount'));
+        check('allocation = payment, residual 0', parseFloat(p.getValue('allocated_amount')) === 51234 + K && parseFloat(p.getValue('residual_amount')) === 0, p.getValue('allocated_amount') + '/' + p.getValue('residual_amount'));
         setMode(r.paymentSysId, 'direct');
         approveAr(r.paymentSysId);
         cleared(r.paymentSysId, [i]);
     });
 
     scenario('AR-B multi-invoice', function() {
-        var i1 = item('C007', 'EUR', 12345), i2 = item('C007', 'EUR', 7655);
-        var r = pay('B', customer('C007'), 'EUR', 20000);
+        var i1 = item('C007', 'EUR', 12345 + K), i2 = item('C007', 'EUR', 7655);
+        var r = pay('B', customer('C007'), 'EUR', 20000 + K);
         check('pending approval', r.stoppedAt === 'PENDING_APPROVAL', r.stoppedAt);
         check('two allocations', count('x_695068_bcfa_payment_allocation', 'payment=' + r.paymentSysId) === 2, count('x_695068_bcfa_payment_allocation', 'payment=' + r.paymentSysId));
         var p = rec('x_695068_bcfa_payment', r.paymentSysId);
@@ -167,35 +179,76 @@
         cleared(r.paymentSysId, [i1, i2]);
     });
 
+    // A customer of this run only, so no other open item joins the allocation.
+    var e2eCustomer = function(suffix) {
+        var code = 'E2E' + RUN + suffix;
+        seeder._upsert('x_695068_bcfa_customer', { customer_code: code }, { customer_code: code, name: 'E2E Customer ' + RUN + ' ' + suffix, country: 'India', currency: 'INR', company_code: '1000', active: true });
+        return code;
+    };
+    // Open item with an explicit short number (item_number is 20 characters).
+    var itemNo = function(number, code, amount) { seeder._playbookOpenItem(number, code, 'INR', amount); return seeder._lookupSysId('x_695068_bcfa_ar_open_item', 'item_number', number); };
+
     scenario('AR-C short pay / bank charge', function() {
-        var i = item('C008', 'EUR', 80000);
-        var r = pay('C', customer('C008'), 'EUR', 79500);
+        var code = e2eCustomer('C');
+        var n1 = 'E' + RUN + '-C1', n2 = 'E' + RUN + '-C2';
+        var i1 = itemNo(n1, code, 50000), i2 = itemNo(n2, code, 30000);
+        // Bank line first (customer unknown), then the remittance naming both
+        // invoices: the live POC 2 cash path (AR_REMIT_103_BANK_CHARGE).
+        var r = pay('C', '', 'INR', 79500, '');
+        var rem = ar.intakeRemittance(r.paymentSysId, { remittanceReference: 'E2E-' + RUN + '-REM-C', source: 'email', confidence: 0.97,
+            extractedFields: { customer_name: 'E2E Customer ' + RUN + ' C', payment_amount: 79500, currency: 'INR',
+                invoice_references: [n1, n2],
+                invoice_lines: [{ invoice_reference: n1, amount_applied: 50000 }, { invoice_reference: n2, amount_applied: 29500 }],
+                deduction_amount: 500, deduction_reason: 'Amount remitted less INR 500.00 correspondent bank charges.' } });
+        ar.retryWithRemittance(r.paymentSysId, rem.remittanceSysId, users[0]);
         var ex = openEx('x_695068_bcfa_ar_exception', 'payment', r.paymentSysId);
         check('residual -> short pay exception', ex && ex.getValue('reason_code') === 'short_pay', ex ? ex.getValue('reason_code') : r.stoppedAt);
         var p = rec('x_695068_bcfa_payment', r.paymentSysId);
-        check('residual 500 recorded', parseFloat(p.getValue('residual_amount')) === 500, p.getValue('residual_amount'));
+        // residual = payment - (allocated - deductions): negative is a short payment.
+        check('allocated 80,000, residual -500', parseFloat(p.getValue('allocated_amount')) === 80000 && parseFloat(p.getValue('residual_amount')) === -500, p.getValue('allocated_amount') + '/' + p.getValue('residual_amount'));
+        check('rule suggests a bank charge', String(ex.getValue('rule_result')).indexOf('BANK_CHARGE') >= 0, 'no suggestion');
         journey(p, 6, 'blocked');
         ex.setValue('deduction_type', 'bank_charge'); ex.update();
         var d = arDecide.decide(ex.getUniqueValue(), 'approve_deduction', 'E2E ' + RUN + ': 500 bank charge confirmed on the bank statement.');
         check('human classification accepted', d.ok === true, JSON.stringify(d));
-        check('deduction recorded', count('x_695068_bcfa_deduction', 'payment_allocation.payment=' + r.paymentSysId) === 1, 'none');
+        check('deduction of 500 recorded', count('x_695068_bcfa_deduction', 'amount=500^payment_allocation.payment=' + r.paymentSysId) === 1, 'none');
         setMode(r.paymentSysId, 'direct');
         p = rec('x_695068_bcfa_payment', r.paymentSysId);
         if (p.getValue('state') === 'PENDING_APPROVAL') approveAr(r.paymentSysId);
         p = rec('x_695068_bcfa_payment', r.paymentSysId);
         check('cleared and closed', p.getValue('state') === 'CLOSED', p.getValue('state'));
+        [i1, i2].forEach(function(i) { check('open item settled', parseFloat(rec('x_695068_bcfa_ar_open_item', i).getValue('open_amount')) === 0, 'open'); });
+    });
+
+    scenario('AR-C2 bank charge above the limit refused', function() {
+        var code = e2eCustomer('C2');
+        var n3 = 'E' + RUN + '-C3';
+        itemNo(n3, code, 10000);
+        var r = pay('C2', '', 'INR', 8000, '');
+        var rem = ar.intakeRemittance(r.paymentSysId, { remittanceReference: 'E2E-' + RUN + '-REM-C2', source: 'email', confidence: 0.97,
+            extractedFields: { customer_name: 'E2E Customer ' + RUN + ' C2', payment_amount: 8000, currency: 'INR',
+                invoice_references: [n3], invoice_lines: [{ invoice_reference: n3, amount_applied: 8000 }],
+                deduction_amount: 2000, deduction_reason: 'Short paid by 2,000.' } });
+        ar.retryWithRemittance(r.paymentSysId, rem.remittanceSysId, users[0]);
+        var ex = openEx('x_695068_bcfa_ar_exception', 'payment', r.paymentSysId);
+        check('short pay exception', ex && ex.getValue('reason_code') === 'short_pay', ex ? ex.getValue('reason_code') : r.stoppedAt);
+        ex.setValue('deduction_type', 'bank_charge'); ex.update();
+        var d = arDecide.decide(ex.getUniqueValue(), 'approve_deduction', 'E2E ' + RUN + ': trying to book 2,000 as a bank charge.');
+        check('bank charge above the limit refused', d.ok === false && String(d.error).indexOf('bank charge cannot exceed') >= 0, JSON.stringify(d));
+        check('nothing recorded', count('x_695068_bcfa_deduction', 'payment_allocation.payment=' + r.paymentSysId) === 0, 'deduction');
+        check('still in exception', rec('x_695068_bcfa_payment', r.paymentSysId).getValue('state') === 'EXCEPTION', 'state');
     });
 
     scenario('AR-D customer alias', function() {
-        item('C005', 'USD', 4321);
-        var r = pay('D', '', 'USD', 4321, 'LONE STAR TYRE CO');
+        item('C005', 'USD', 4321 + K);
+        var r = pay('D', '', 'USD', 4321 + K, 'LONE STAR TYRE CO');
         var p = rec('x_695068_bcfa_payment', r.paymentSysId);
         check('alias resolved deterministically to C005', p.getValue('customer') === customer('C005'), p.getValue('customer'));
         check('matched', r.stoppedAt === 'PENDING_APPROVAL', r.stoppedAt);
     });
 
     scenario('AR-E ambiguous customer', function() {
-        var r = pay('E', '', 'INR', 7777, 'UNKNOWN E2E REMITTER ' + RUN);
+        var r = pay('E', '', 'INR', 7777 + K, 'UNKNOWN E2E REMITTER ' + RUN);
         var ex = openEx('x_695068_bcfa_ar_exception', 'payment', r.paymentSysId);
         check('system does not guess', ex && ex.getValue('reason_code') === 'customer_ambiguous', ex ? ex.getValue('reason_code') : r.stoppedAt);
         check('no allocation without governance', count('x_695068_bcfa_payment_allocation', 'payment=' + r.paymentSysId) === 0, 'allocated');
@@ -203,11 +256,11 @@
     });
 
     scenario('AR-F late remittance', function() {
-        item('C010', 'INR', 23456);
-        var r = pay('F', '', 'INR', 23456, '');
+        item('C010', 'INR', 23456 + K);
+        var r = pay('F', '', 'INR', 23456 + K, '');
         check('initially unresolved', r.stoppedAt === 'CUSTOMER_RESOLUTION_EXCEPTION', r.stoppedAt);
         var rem = ar.intakeRemittance(r.paymentSysId, { remittanceReference: 'E2E-' + RUN + '-REM-F', source: 'email', confidence: 0.97,
-            extractedFields: { customer_name: 'Karnataka Elastomers Pvt Ltd', payment_amount: 23456, currency: 'INR', invoice_references: ['E2E-' + RUN + '-C010-23456'] } });
+            extractedFields: { customer_name: 'Karnataka Elastomers Pvt Ltd', payment_amount: 23456 + K, currency: 'INR', invoice_references: ['E2E-' + RUN + '-C010-' + (23456 + K)] } });
         var x = ar.retryWithRemittance(r.paymentSysId, rem.remittanceSysId, users[0]);
         var p = rec('x_695068_bcfa_payment', r.paymentSysId);
         check('remittance resumed processing', x.retried === true, JSON.stringify(x));
@@ -215,14 +268,14 @@
     });
 
     scenario('AR-G DRAFT mode', function() {
-        var i = item('C002', 'INR', 24680);
-        var r = pay('G', customer('C002'), 'INR', 24680);
+        var i = item('C002', 'INR', 24680 + K);
+        var r = pay('G', customer('C002'), 'INR', 24680 + K);
         setMode(r.paymentSysId, 'draft');
         approveAr(r.paymentSysId);
         var p = rec('x_695068_bcfa_payment', r.paymentSysId);
         check('SAP_DRAFT, staged', p.getValue('state') === 'SAP_DRAFT' && p.getValue('sap_status') === 'staged_draft', p.getValue('state') + '/' + p.getValue('sap_status'));
         check('parked document (PARK)', String(p.getValue('sap_reference')).indexOf('PARK') === 0, p.getValue('sap_reference'));
-        check('no claim of final clearing (open item open)', parseFloat(rec('x_695068_bcfa_ar_open_item', i).getValue('open_amount')) === 24680, 'cleared');
+        check('no claim of final clearing (open item open)', parseFloat(rec('x_695068_bcfa_ar_open_item', i).getValue('open_amount')) === 24680 + K, 'cleared');
         journey(p, 8, 'waiting');
         var c = ar.checkSapDraftStatus(r.paymentSysId);
         check('pending draft: no change, nothing re-sent', c.pending === true && count('x_695068_bcfa_integration_txn', 'source_record=' + r.paymentSysId + '^operation=clearCustomerPayment') === 1, JSON.stringify(c));
@@ -230,16 +283,16 @@
     });
 
     scenario('AR-H DIRECT mode', function() {
-        var i = item('C003', 'EUR', 13579);
-        var r = pay('H', customer('C003'), 'EUR', 13579);
+        var i = item('C003', 'EUR', 13579 + K);
+        var r = pay('H', customer('C003'), 'EUR', 13579 + K);
         setMode(r.paymentSysId, 'direct');
         approveAr(r.paymentSysId);
         cleared(r.paymentSysId, [i]);
     });
 
     scenario('AR-I unknown outcome', function() {
-        item('C009', 'USD', 9753);
-        var r = pay('I', customer('C009'), 'USD', 9753);
+        item('C009', 'USD', 9753 + K);
+        var r = pay('I', customer('C009'), 'USD', 9753 + K);
         setMode(r.paymentSysId, 'direct');
         seeder._setAdapterFailureMode('mock_sap', 'timeout');
         try { approveAr(r.paymentSysId); } finally { seeder._setAdapterFailureMode('mock_sap', 'success'); }

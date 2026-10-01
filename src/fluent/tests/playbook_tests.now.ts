@@ -1233,7 +1233,8 @@ Test({ $id: Now.ID['test-pb-ui-006'], name: 'PB-UI-006 Journey stage choices mat
                     var svc = new FinanceJourneyService();
                     return table === 'x_695068_bcfa_ap_invoice' ? svc.invoiceJourney(g) : svc.paymentJourney(g);
                 }
-                var count = function(table) { var c = new GlideAggregate('sys_choice'); c.addQuery('name', table); c.addQuery('element', 'journey_stage'); c.addQuery('inactive', false); c.addAggregate('COUNT'); c.query(); return c.next() ? parseInt(c.getAggregate('COUNT'), 10) : 0; };
+                // The field's own choice list (sys_choice is not readable from the app scope).
+                var count = function(table) { var g = new GlideRecord(table); g.initialize(); return g.getElement('journey_stage').getChoices().filter(function(v) { return !!v; }).length; };
                 assertEqual({ name: 'AP: 8 stages', shouldbe: 8, value: count('x_695068_bcfa_ap_invoice') });
                 assertEqual({ name: 'AR: 9 stages', shouldbe: 9, value: count('x_695068_bcfa_payment') });
                 var g = new GlideRecord('x_695068_bcfa_payment');

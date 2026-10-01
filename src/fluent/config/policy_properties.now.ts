@@ -179,7 +179,7 @@ export const arBankChargeMax = Property({
     name: 'x_695068_bcfa.ar.bank_charge.max_amount',
     type: 'string',
     value: '1000',
-    description: 'POC ASSUMPTION. Short-pay residuals up to this amount (payment currency) are suggested as a bank charge by the matching engine. A suggestion only: the reviewer confirms the deduction.',
+    description: 'POC ASSUMPTION. Short-pay residuals up to this amount (payment currency) are suggested as a bank charge by the matching engine, and a bank-charge deduction above it is refused (Phase 35). The reviewer confirms every deduction.',
 })
 
 // ---- Segregation of duties (Phase 17) ----------------------------------------

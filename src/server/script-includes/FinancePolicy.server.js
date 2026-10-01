@@ -284,7 +284,8 @@ FinancePolicy.prototype = {
     },
 
     // Largest short-pay residual the matching engine suggests as a bank
-    // charge (a suggestion only; the reviewer confirms).
+    // charge, and (Phase 35) the largest bank-charge deduction a reviewer
+    // can approve.
     arBankChargeMax: function() {
         return this._number('ar.bank_charge.max_amount');
     },
