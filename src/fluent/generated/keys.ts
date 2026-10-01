@@ -1627,6 +1627,14 @@ declare global {
                         table: 'sys_module'
                         id: 'bec030c6665d49539f255c3748ff88d8'
                     }
+                    'br-ap-approval-journey-refresh': {
+                        table: 'sys_script'
+                        id: 'c42378ba9dca455ea449e5aaee42209d'
+                    }
+                    'br-ap-exception-journey-refresh': {
+                        table: 'sys_script'
+                        id: 'ba88701eeb814799a1d41e7dd563c04f'
+                    }
                     'br-ap-invoice-approval-cascade': {
                         table: 'sys_script'
                         id: '6986d6fb2d40494cb71bc8787aac8ad4'
@@ -1634,6 +1642,14 @@ declare global {
                     'br-ap-invoice-lifecycle-enforcement': {
                         table: 'sys_script'
                         id: 'c1cbc65042c8481589cd0ecb8fa1597c'
+                    }
+                    'br-ar-approval-journey-refresh': {
+                        table: 'sys_script'
+                        id: 'a8aa19cc28a14175869732decdd1cd2d'
+                    }
+                    'br-ar-exception-journey-refresh': {
+                        table: 'sys_script'
+                        id: '193bca89839141659d3639cfcd45da4c'
                     }
                     'br-ar-payment-approval-cascade': {
                         table: 'sys_script'
