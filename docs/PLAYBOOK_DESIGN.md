@@ -53,8 +53,8 @@ Rules the design enforces:
 | Run strategy | `run_if_not_running` (one run per invoice) |
 | Restartable | yes (admin only; a restart only re-reads the journey) |
 | Access | `package_private` |
-| Schema version | 3 (Fluent default; see section 25) |
-| Status after deploy | draft: activate in Workflow Studio (`docs/build/PLAYBOOK_BUILD_AND_ACTIVATION.md`) |
+| Schema version | 2 on the instance (Fluent writes 3; converted at deploy, section 25) |
+| Status | deployed as draft; **activated (published) 2026-10-01**. Any re-deploy reloads it as a draft: activate again |
 
 ## 3. AR process definition
 
@@ -491,7 +491,7 @@ Findings from Phase 6A on this instance:
 | Playbook page in workspaces | `sys_ux_macroponent` "Playbook" (SOW Core) present | AVAILABLE |
 | Fluent Playbook API | `@servicenow/sdk` 4.12.1 `PlaybookDefinition` | AVAILABLE |
 | Scoped-app playbooks | supported (playbook records carry the app scope) | AVAILABLE |
-| Schema version | Fluent writes schema 3; the instance's existing playbooks are schema 2 and `com.glide.pad.core.model.maxSupportedSchemaVersion` is not set (platform default) | CONFIGURATION REQUIRED: confirm at activation; if Workflow Studio refuses schema 3, re-save the playbook in the designer |
+| Schema version | Fluent (SDK 4.12) writes only schema 3 (`start_rule_name`, `starts_after_lanes`). The Yokohama designer reads schema 2: `start_rule` references to the start-rule definitions, with the predecessor lanes in the start-rule variable "Lanes". As deployed, the designer showed 55 errors (missing start rules) | RESOLVED 2026-10-01: the deploy converts the start rules (`scripts/deploy/gen_playbook_yokohama_fix.py`) and sets schema version 2. Both Playbooks then validated with no errors and were activated (published) |
 | PAD subscription for custom (non-ITSM) tables | the licensed trigger table list is empty; PAD on custom tables can need an App Engine / PAD entitlement | LICENSE REQUIRED to confirm with the ServiceNow account team before production use. Not a blocker for the POC on this demo instance |
 | Agentic playbooks / AI agent activities | not used (no `AutocompletingRecordForm` or AI-enabled activities) | n/a |
 | Performance Analytics | not used; time in stage comes from `journey_stage_entered` | n/a |

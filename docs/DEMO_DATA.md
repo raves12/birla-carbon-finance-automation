@@ -160,14 +160,16 @@ Run them **after** both Playbooks are activated, so that each transaction starts
 | AP-PLAY-01 | INV-PLAY-01 | PB-PO-01 / PB-GRN-01 (V001, 100 × 50 INR) | happy path, approved | CLOSED, posted (MOCK SAP MIRO…) | all 8 complete |
 | AP-PLAY-02 | INV-PLAY-02 | PB-PO-02 / PB-GRN-02 (V005, PO price 40, invoiced 50) | price variance above tolerance | EXCEPTION (price tolerance) | 4 blocked; exception lane open |
 | AP-PLAY-03 | INV-PLAY-03 | PB-PO-03 / PB-GRN-03 (V008, EUR) | matched, approval requested | PENDING_APPROVAL | 6 action required (Finance Approver) |
-| AP-PLAY-04 | INV-PLAY-04 | PB-PO-04 / PB-GRN-04 (V010, INR) | approved, MOCK SAP timeout, not reconciled | UNKNOWN_OUTCOME | 7 blocked (Integration Operator) |
+| AP-PLAY-04 | INV-PLAY-04 | PB-PO-04 / PB-GRN-04 (V010, INR) | approved, MOCK SAP timeout, then reconciled by the AP Reconciliation Flow | UNKNOWN_OUTCOME → CLOSED | 7 blocked, then all complete |
 | AR-PLAY-01 | BANK-PLAY-01 | PB-ARI-01 (C006, 41,000 INR) | exact match, DIRECT, approved | CLOSED (FB05…) | all 9 complete |
 | AR-PLAY-02 | BANK-PLAY-02 | PB-ARI-02 (C002, 42,000 INR) | exact match, DRAFT, approved | SAP_DRAFT (PARK…), open item still open | 8 waiting for SAP |
 | AR-PLAY-03 | BANK-PLAY-03 | PB-ARI-03 (C010, 43,000 INR) | DRAFT, approved, then SAP confirms (status query) | CLOSED | all 9 complete |
 | AR-PLAY-04 | BANK-PLAY-04 | PB-ARI-04 (C008, 10,400 EUR) | payment 9,900: short by 500 | EXCEPTION (short pay) | 6 blocked; deduction to classify |
 | AR-PLAY-05 | BANK-PLAY-05 | none | unknown remitter, no customer | EXCEPTION (customer ambiguous) | 3 blocked |
 | AR-PLAY-06 | BANK-PLAY-06 | PB-ARI-06 (C004, 7,600 EUR) | exact match, approval requested | PENDING_APPROVAL | 7 action required |
-| AR-PLAY-07 | BANK-PLAY-07 | PB-ARI-07 (C005, 8,700 USD) | DIRECT, approved, MOCK SAP timeout | UNKNOWN_OUTCOME | 8 blocked (Integration Operator) |
+| AR-PLAY-07 | BANK-PLAY-07 | PB-ARI-07 (C005, 8,700 USD) | DIRECT, approved, MOCK SAP timeout, then reconciled by the AR Reconciliation Flow | UNKNOWN_OUTCOME → CLOSED | 8 blocked, then all complete |
+
+AP-PLAY-04 and AR-PLAY-07 enter UNKNOWN_OUTCOME, and the AP / AR Reconciliation Flow then resolves them by status query within seconds. On 2026-10-01 both were CLOSED with their Playbooks complete. The audit trail and stage 7 / 8 transaction list show the unknown outcome and the reconciliation. To show the blocked state live, use the E2E script's scenario AP-F / AR-I (inline mode, where the flow is not triggered), or a timeout during the demo.
 
 The mock SAP setting `x_695068_bcfa.mock_sap.draft_outcome` stays `pending` after seeding, so AR-PLAY-02 keeps waiting in SAP_DRAFT; the seeder sets it to `posted` only while it confirms AR-PLAY-03. To demonstrate the confirmation on AR-PLAY-02:
 

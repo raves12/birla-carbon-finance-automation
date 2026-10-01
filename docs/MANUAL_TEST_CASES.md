@@ -40,7 +40,7 @@ Every implemented feature has at least one manual test, and every exception has 
 | MT-AP-17 | Override | Finance Controller | On a tolerance exception: **Approve Override** with a reason | Override recorded; only the authorised role can do it | |
 | MT-AP-18 | Posting | (system) | After MT-AP-14: integration transaction | `postVendorInvoice` success, adapter mock_sap, idempotency key, MIRO document; labelled MOCK SAP | |
 | MT-AP-19 | Posting failure | Admin | Integration Profile Mock SAP - Default → failure mode technical_error → approve an invoice → set back to success | FAILED; exception; journey stage 7 blocked (Integration Operator) | yes |
-| MT-AP-20 | UNKNOWN_OUTCOME | Integration Operator | Open INV-PLAY-04 | UNKNOWN_OUTCOME; journey stage 7 blocked: "never blindly re-sent"; reconciliation (AP Reconciliation Flow) resolves without a duplicate | yes |
+| MT-AP-20 | UNKNOWN_OUTCOME | Integration Operator | Admin sets Mock SAP - Default failure mode `timeout`, approve a fresh invoice, set it back to `success`; open the invoice at once (or INV-PLAY-04's audit trail) | UNKNOWN_OUTCOME; journey stage 7 blocked: "never blindly re-sent"; within seconds the AP Reconciliation Flow resolves it by status query, with one posting only | yes |
 | MT-AP-21 | Audit | Auditor | INV-AP-001 → Audit Events related list | Every state change, decision, AI note and integration call, with actor and before/after | |
 | MT-AP-22 | Playbook | AP Processor | INV-PLAY-02 → **Open Playbook** | Playbook: stages 1–3 complete, 4 in progress with Blocked Because; stage 5 lists the exception with SYSTEM / AI / HUMAN columns | |
 
@@ -65,8 +65,8 @@ Every implemented feature has at least one manual test, and every exception has 
 | MT-AR-15 | DIRECT mode | Finance Approver | Mode direct → approve | Cleared immediately (FB05) | |
 | MT-AR-16 | Draft rejected | Integration Operator | `draft_outcome` = rejected → **Check SAP Draft Status** on a SAP_DRAFT payment | FAILED; exception "SAP rejected the draft" | yes |
 | MT-AR-17 | Failure | Admin | Mock SAP failure mode technical_error → approve | FAILED; exception; stage 8 blocked | yes |
-| MT-AR-18 | UNKNOWN_OUTCOME | Integration Operator | BANK-PLAY-07 | UNKNOWN_OUTCOME; stage 8 blocked | yes |
-| MT-AR-19 | Reconciliation | Integration Operator | Reconcile BANK-PLAY-07 (AR Reconciliation Flow / reconcileClearing) | Resolved by status query; CLEARED or retry only if nothing committed | |
+| MT-AR-18 | UNKNOWN_OUTCOME | Integration Operator | As MT-AP-20 for a payment (or BANK-PLAY-07's audit trail) | UNKNOWN_OUTCOME; stage 8 blocked until the AR Reconciliation Flow resolves it | yes |
+| MT-AR-19 | Reconciliation | Integration Operator | BANK-PLAY-07: integration transactions and audit trail | Resolved by status query (AR Reconciliation Flow); one clearing; CLOSED | |
 | MT-AR-20 | Audit | Auditor | BANK-AR-001 → Audit Events | Complete trail | |
 | MT-AR-21 | Playbook | AR Processor | BANK-PLAY-02 → **Open Playbook** | Stages 1–7 complete; 8 "waiting": DRAFT staged, nothing cleared yet, next: Check SAP Draft Status | |
 

@@ -93,6 +93,11 @@ script = ("// Phase 35 (Playbook): journey fields, AR SAP Draft/Direct, FinanceJ
           "  var v = h(si.getValue('script').replace(/\\r\\n/g, '\\n')); if (v !== g.head && v !== g.work) drift.push(g.api); });\n"
           "if (drift.length) { gs.info('BCFA_DEPLOY ABORTED live script includes differ from the Phase 34 source: ' + drift.join(', ')); return; }\n"
           + loader + "\n})();\n")
+# Yokohama: convert the Playbook start rules to the schema the instance's
+# designer reads (gen_playbook_yokohama_fix.py), right after loading. A
+# re-deploy reloads the Playbooks as drafts: re-activate them afterwards.
+subprocess.run(['python', os.path.join(REPO, 'scripts', 'deploy', 'gen_playbook_yokohama_fix.py')], check=True)
+script += '\n' + io.open(os.path.join(REPO, 'scripts', 'deploy', 'phase35_playbook_yokohama_fix_bg.js'), encoding='utf8').read()
 dst = os.path.join(REPO, 'scripts', 'deploy', 'phase35_playbook_deploy_bg.js')
 io.open(dst, 'w', encoding='utf8', newline='\n').write(script)
 print('written', len(script), 'hash', h(script), 'len16', len(script.encode('utf-16-le')) // 2)

@@ -20,6 +20,10 @@ The design is in `docs/PLAYBOOK_DESIGN.md`.
 
 The script aborts with nothing changed if any modified script include on the instance differs from the Phase 34 source (`BCFA_DEPLOY ABORTED …`). Safe to re-run.
 
+The deploy ends with the Yokohama start-rule conversion (`BCFA_PBFIX {"lanes":17,"vars":15,"acts":42,"pd":2}`; generator `scripts/deploy/gen_playbook_yokohama_fix.py`). Fluent writes the Playbook schema 3, which this instance's designer cannot read; without the conversion Workflow Studio shows about 55 errors ("Starts after: missing required fields") and Activate stays disabled.
+
+A re-deploy reloads both Playbooks as **drafts**: activate them again (step 0.3).
+
 **Step 0.4: expected output**:
 
 `BCFA_P35 invoices N {…} | payments N {…} | playbook scenarios {"AP-PLAY-01":{…},…} | playbook runs x_695068_bcfa_ap_invoice=4, x_695068_bcfa_payment=7`
@@ -94,7 +98,7 @@ The builder opens in **Diagram view**; **Board view** is next to it. **Test**, *
 ### 1.4 Activation (manual: required after every deploy that changes a Playbook)
 
 1. Open the playbook (1.2).
-2. Click **Activate** (top right). Confirm.
+2. Check there is no error count next to **Activate** (if there is, the start-rule conversion did not run: run `phase35_playbook_yokohama_fix_bg.js` in scope global). Click **Activate** (top right). The badge shows *Activating*, then **Active**; the record's status becomes `published` with a snapshot.
 3. The badge next to the name changes to **Active**.
 4. If activation reports a schema or licence problem, see `PLAYBOOK_DESIGN.md` §25:
    - schema: open ⋯ → Properties, save, then Activate again;
