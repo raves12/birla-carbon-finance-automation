@@ -234,6 +234,39 @@ skill (Skill Kit → provider settings), then this evaluation again.
 are grouped in the **BCFA Regression** suite (13 tests; *Seed Demo Data* excluded) and run in-instance. The results
 can then be read over MCP (`sys_atf_test_result`).
 
+## Phase 35: Playbook, journey and SAP Draft/Direct tests (`playbook_tests.now.ts`)
+
+All 22 are in suite **BCFA Playbook Regression** and in **BCFA Regression** (now 35 tests). Run one at a time in Scripts - Background (scope global):
+
+`new sn_atf.ExecuteUserTest().setTestRecordSysId('<sys_id>').start();`
+
+| Test | sys_id | Checks |
+|---|---|---|
+| PB-AP-001 | `2fcb44792988419ca019cc4b71d710fc` | AP state to stage mapping |
+| PB-AP-002 | `fe032d01d9e640bab97b0c78b6e58fad` | blocked at 3-way match: WHAT / WHY / NEXT / WHO |
+| PB-AP-003 | `a75a8ad82a6e43c8a70e5ded37db33f3` | AI recommendation never advances the journey |
+| PB-AP-004 | `f8bacf78488341a6a620d529cba81a17` | SIMULATED extraction and MOCK SAP labels |
+| PB-AP-005 | `fb4d8cce2050473f94cdc811782c1b12` | UNKNOWN_OUTCOME blocks posting; approval owner |
+| PB-AP-006 | `b142362a96ab4327a7acca6add1fdf9e` | journey refresh is display only |
+| PB-AR-001 | `d67969d097654cc6abd692a30a5303cc` | AR state to stage mapping |
+| PB-AR-002 | `7fc813a100284952ae02d31a7dfa1292` | payment only vs with remittance |
+| PB-AR-003 | `382ef6c2c1a04ec58be4d3d021a1a1d3` | short payment blocks the deduction stage |
+| PB-AR-004 | `b5d6102029f84a2d8973c3349e83e1f3` | ambiguous customer blocks customer resolution |
+| PB-AR-005 | `f9c5f1962e3348f49dc2f00d0378607f` | SAP processing mode property |
+| PB-AR-006 | `490670f7ca5142778d430844beca635d` | MOCK SAP DRAFT (PARK) vs DIRECT (FB05) |
+| PB-AR-007 | `7ff9ebcd577f4d95a7ca5abb60172473` | draft status pending / rejected; SAP_DRAFT only |
+| PB-AR-008 | `9cdc91091fd042aa86ef7f30b4763190` | DRAFT end to end |
+| PB-AR-009 | `8fd1020bc43f4cdb95801daee0016b5b` | SAP_DRAFT journey: waiting, nothing re-sent |
+| PB-UI-001 | `1ac3c349c8f0404dbf132e44c986ae0d` | both Playbooks, 8 and 9 stages |
+| PB-UI-002 | `1c710f166578455ca5ec948215f1fe32` | a Wait For Condition gate per stage |
+| PB-UI-003 | `edc71543f2b742b8b8e32268ff38d9ee` | read-only activity types only |
+| PB-UI-004 | `7afae232f3a3489a92cccd71b7f6872c` | workspace Playbook route |
+| PB-UI-005 | `e37ab660219e4f0a8e9312e3a35e82d4` | Open Playbook / Check SAP Draft Status scoping |
+| PB-UI-006 | `c7572877490e461a8962956f9a17a722` | journey stage choices; payment SAP fields |
+| PB-UI-007 | `3f26577c57064596bf3efeb9afcd1e70` | Review Summary SAP PROCESSING line |
+
+Results: `FINAL_E2E_TEST_RESULTS.md`. Manual tests: `MANUAL_TEST_CASES.md`.
+
 ## Coverage against the brief's Section 18 checklist
 
 | Required coverage | Status |
