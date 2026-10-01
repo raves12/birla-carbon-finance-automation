@@ -29,7 +29,7 @@ const PLATFORM_PLAYBOOK_PAGE = '10fc1ca00771211045add9630ad30045' // Playbook Ex
 export const bcfaPlaybookScreenType = Record({
     $id: Now.ID['bcfa-playbook-screen-type'],
     table: 'sys_ux_screen_type',
-    data: { name: 'BCFA Playbook' },
+    data: { name: 'BCFA Playbook', description: 'BCFA Playbook page (platform Playbook macroponent)' },
 })
 
 export const bcfaPlaybookRoute = Record({
@@ -37,6 +37,7 @@ export const bcfaPlaybookRoute = Record({
     table: 'sys_ux_app_route',
     data: {
         name: 'BCFA Playbook',
+        description: 'BCFA Playbook page for an AP invoice or a payment: /x/695068/bcfa/playbook/<table>/<sys_id>',
         route_type: 'playbook',
         fields: 'table,sysId',
         app_config: BCFA_APP_CONFIG,
