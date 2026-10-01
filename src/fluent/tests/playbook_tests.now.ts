@@ -1124,7 +1124,7 @@ Test({ $id: Now.ID['test-pb-ui-004'], name: 'PB-UI-004 BCFA Workspace has the Pl
                 var screen = new GlideRecord('sys_ux_screen');
                 screen.addQuery('screen_type', route.getValue('screen_type'));
                 screen.query();
-                assertEqual({ name: 'screen renders the platform Playbook page', shouldbe: '32eb57e82c904510f877b925aa1a4d10', value: screen.next() ? screen.getValue('macroponent') : '' });
+                assertEqual({ name: 'screen renders the platform Playbook Experience page', shouldbe: '10fc1ca00771211045add9630ad30045', value: screen.next() ? screen.getValue('macroponent') : '' });
 
             })(outputs, steps, params, stepResult, assertEqual);
         `,

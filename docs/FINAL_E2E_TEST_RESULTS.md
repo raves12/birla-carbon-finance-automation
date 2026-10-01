@@ -24,37 +24,83 @@ Run from Scripts - Background (`sn_atf.ExecuteUserTest`), on the instance as dep
 
 **13 / 13 passed.**
 
+## 1b. ATF: full BCFA Regression after all Phase 35 changes (2026-10-01)
+
+All 35 tests (13 existing + 22 PB-*) were run serially after:
+
+- the Phase 35 deploy;
+- Playbook activation;
+- backfill and seeding;
+- the bank-charge fix (D1);
+- the PB-UI-006 test fix (D3).
+
+**35 / 35 passed.** PB-UI-004 and PB-UI-005 were rerun after the Open Playbook change (D4): both passed.
+
+## 1c. Playbook demo transactions (backfill and seed, 2026-10-01)
+
+| Scenario | Landed | Playbook run |
+|---|---|---|
+| AP-PLAY-01 | CLOSED, stage 9 complete | Complete |
+| AP-PLAY-02 | EXCEPTION, stage 4 blocked | In progress |
+| AP-PLAY-03 | PENDING_APPROVAL, stage 6 action required (Finance Approver) | In progress |
+| AP-PLAY-04 | UNKNOWN_OUTCOME at seeding → reconciled by the AP Reconciliation Flow → CLOSED | Complete |
+| AR-PLAY-01 | CLOSED (DIRECT) | Complete |
+| AR-PLAY-02 | SAP_DRAFT, stage 8 waiting (SAP user / Integration Operator) | In progress |
+| AR-PLAY-03 | CLOSED (DRAFT confirmed) | Complete |
+| AR-PLAY-04 | EXCEPTION short pay, stage 6 blocked | In progress |
+| AR-PLAY-05 | EXCEPTION customer ambiguous, stage 3 blocked | In progress |
+| AR-PLAY-06 | PENDING_APPROVAL, stage 7 action required | In progress |
+| AR-PLAY-07 | UNKNOWN_OUTCOME at seeding → reconciled by the AR Reconciliation Flow → CLOSED | Complete |
+
+**Live UI check.**
+
+- **Open Playbook** on BANK-PLAY-02 opens the native Playbook Experience: "SAP processing (DRAFT / DIRECT) — MOCK SAP", Waiting for SAP, PARK reference, Blocked Because, Next and Owner.
+- INV-PLAY-02 shows "PO / GRN-SRN / 3-way match", Blocked: price tolerance.
+
 ## 2. ATF: Playbook phase, 22 tests (PB-AP-001..006, PB-AR-001..009, PB-UI-001..007)
 
-**NOT YET RUN.** The tests are part of the Phase 35 deploy. Run them after the deploy, Playbook activation and backfill, one at a time (`TEST_PLAN.md` lists the sys_ids).
+Run 2026-10-01 after the deploy, activation and backfill, one at a time.
 
 | Group | Tests | Result |
 |---|---|---|
-| PB-AP | 6 | NOT YET RUN |
-| PB-AR | 9 | NOT YET RUN |
-| PB-UI | 7 | NOT YET RUN |
+| PB-AP | 6 | 6 passed |
+| PB-AR | 9 | 9 passed |
+| PB-UI | 7 | 7 passed. PB-UI-006 failed on its first run (test defect D3), fixed and passed |
 
-## 3. Fresh-transaction E2E (mandate Phases 7 and 8)
+**22 / 22 passed.**
 
-Script `scripts/deploy/phase35_e2e_bg.js`, scope `x_695068_bcfa`, after the Phase 35 deploy.
+## 3. Fresh-transaction E2E (mandate Phases 7 and 8): **16 / 16 PASS** (run 6ABE1, 2026-10-01)
 
-| Scenario | What it proves | Result |
+Script `scripts/deploy/phase35_e2e_bg.js`, scope `x_695068_bcfa`, inline pipeline, signed in as the admin. Every run creates its own POs, receipts, open items and (AR-C / C2) customers; amounts carry a per-run offset.
+
+| Scenario | Result | Evidence (checks that passed) |
 |---|---|---|
-| AP-A clean invoice | matched without exception, MIRO posting, one transaction, audit, journey complete | NOT YET RUN |
-| AP-B quantity variance | match failure → exception → journey blocked with WHY → override without reason refused → human override → approval → posting → CLOSED | NOT YET RUN |
-| AP-C duplicate | detected; override refused by policy; rejected; never posted | NOT YET RUN |
-| AP-D low confidence | human review required; stops at extraction; no match | NOT YET RUN |
-| AP-E posting failure | FAILED, not closed, failure recorded, stage 7 blocked | NOT YET RUN |
-| AP-F unknown outcome | UNKNOWN_OUTCOME, reconciliation, at most one successful posting | NOT YET RUN |
-| AR-A exact match | allocation = payment, residual 0, FB05, open item settled, closed | NOT YET RUN |
-| AR-B multi-invoice | two allocations, residual 0, cleared | NOT YET RUN |
-| AR-C short pay / bank charge | residual 500 → short-pay exception → human bank-charge deduction → approval → cleared | NOT YET RUN |
-| AR-D customer alias | deterministic alias resolution | NOT YET RUN |
-| AR-E ambiguous | no guess, no allocation, stage 3 blocked | NOT YET RUN |
-| AR-F late remittance | unresolved, then the remittance resumes processing | NOT YET RUN |
-| AR-G DRAFT | SAP_DRAFT, PARK document, open item untouched, pending check changes nothing | NOT YET RUN |
-| AR-H DIRECT | FB05 clearing, closed | NOT YET RUN |
-| AR-I unknown outcome | UNKNOWN_OUTCOME, reconciliation, no duplicate clearing | NOT YET RUN |
+| AP-A clean invoice | PASS | matched without exception; 3-way match within tolerance; approved; posted MIRO…; one posting; audit trail; journey 9 complete |
+| AP-B quantity variance | PASS* | match failure → quantity tolerance exception; journey stage 4 blocked with WHY; override without a reason refused; **override refused by SoD for a user who is not an authorised approver**, nothing changed. *The approval itself must be made by an `ap_approver` in the routed group (bcfa.finance.controller): manual test MT-AP-17. The assistant cannot impersonate users.* |
+| AP-C duplicate | PASS | duplicate detected; stage 3 blocked; override refused by policy; rejected; never posted |
+| AP-D low confidence | PASS | low-confidence exception; stage 2 blocked; no match created |
+| AP-E posting failure | PASS | FAILED, not closed; failed integration transaction; stage 7 blocked |
+| AP-F unknown outcome | PASS | UNKNOWN_OUTCOME; stage 7 blocked; reconciled by status query; one posting only; closed |
+| AR-A exact match | PASS | allocation = payment, residual 0; FB05 (MOCK SAP); open item settled; one clearing; journey 10 complete |
+| AR-B multi-invoice | PASS | two allocations, residual 0, cleared, both items settled |
+| AR-C short pay / bank charge | PASS | bank line then remittance (50,000 + 29,500 applied, 500 bank charge note); allocated 80,000, residual −500; rule suggests BANK_CHARGE; human approves the deduction (500); approved; cleared; both items settled |
+| AR-C2 bank charge above the limit | PASS | residual −2,000 classified as bank charge → **refused** (limit 1,000); nothing recorded; stays in exception |
+| AR-D customer alias | PASS | resolved to C005 by the confirmed alias; matched |
+| AR-E ambiguous customer | PASS | no guess; no allocation; stage 3 blocked |
+| AR-F late remittance | PASS | unresolved bank line; remittance resumes processing; customer resolved; matched |
+| AR-G DRAFT mode | PASS | SAP_DRAFT, staged, PARK document; open item untouched; journey 8 waiting; pending check changes nothing, one clearing transaction |
+| AR-H DIRECT mode | PASS | FB05 clearing; closed |
+| AR-I unknown outcome | PASS | UNKNOWN_OUTCOME; stage 8 blocked; reconciled; no duplicate clearing; closed |
+
+### Defects found by the E2E runs and fixed
+
+| # | Defect | Fix | Verified |
+|---|---|---|---|
+| D1 | A bank-charge deduction of any amount could be approved (a 7,300 residual across two open items was accepted as a "bank charge"); the bank charge limit was only used to suggest the type | `ArExceptionDecisionService` refuses a bank charge above `x_695068_bcfa.ar.bank_charge.max_amount` | AR-C2 PASS; AR-C (500) PASS |
+| D2 | Playbook records written by Fluent (schema 3) could not be read by the Yokohama designer (55 errors, Activate disabled) | start-rule conversion appended to the deploy (`gen_playbook_yokohama_fix.py`) | both Playbooks validated and activated |
+| D3 | Test PB-UI-006 read `sys_choice` from the app scope | uses the field's own choice list | PB-UI-006 PASS |
+
+Earlier runs of the E2E script (BB6BE, CA9C9, B3EC9, E65D9, F3ADD, 137E5) failed on test-data problems: amounts colliding with open items left by earlier runs, item numbers over 20 characters, and a wrong residual sign in a check. They also surfaced D1. Each fix is in the script history.
 
 ### Earlier verified E2E runs (for reference, not this phase)
 
@@ -66,4 +112,4 @@ Script `scripts/deploy/phase35_e2e_bg.js`, scope `x_695068_bcfa`, after the Phas
 
 ## 4. Manual tests
 
-`MANUAL_TEST_CASES.md` (MT-AP, MT-AR, MT-SEC, MT-UI). **NOT YET RUN** in this phase.
+`MANUAL_TEST_CASES.md` (MT-AP, MT-AR, MT-SEC, MT-UI). **Not run as a manual pass in this phase.** Their system behaviour is covered by the ATF and E2E runs above. MT-AP-17 (override approval by an authorised approver) is the one step that needs a person.

@@ -357,27 +357,17 @@ A client requirement.
 
 ## 18. Workspace embedding
 
-**Route**
+Verified 2026-10-01.
 
-- Route `playbook` in the BCFA Workspace (`sys_ux_app_route` "BCFA Playbook", fields `table,sysId`).
-- Its screen renders the platform **Playbook** page (`sys_ux_macroponent` `32eb57e82c904510f877b925aa1a4d10`, the page Service Operations Workspace uses), bound to the route's `table` and `sysId`.
-- URLs:
-  - `/now/bcfa/playbook/x_695068_bcfa_ap_invoice/<sys_id>`
-  - `/now/bcfa/playbook/x_695068_bcfa_payment/<sys_id>`
-- Covered by the existing `bcfa.*` route ACL.
+| Entry point | Status |
+|---|---|
+| **Open Playbook** (Related Link on the AP invoice and payment forms) | **Works.** Opens the platform's Playbook Experience page for the record, `/now/playbook-mobile/playbook/<table>/<sys_id>`, which renders the BCFA Playbook's current stage card. Checked live on BANK-PLAY-02 (stage 8, DRAFT, waiting for SAP) and INV-PLAY-02 (stage 4, blocked, price tolerance) |
+| Workflow Studio | The full stage diagram of each Playbook (designer view) |
+| BCFA Workspace route `playbook` (`/x/695068/bcfa/playbook/<table>/<sys_id>`; `sys_ux_app_route` "BCFA Playbook" + screen on the Playbook Experience page `10fc1ca0…`) | **Open item.** Deployed, but the workspace shell answers "Page not found" (`page/hydrate` returns 500). The route matches the pattern PSM uses (Workspace App Shell, `fields table,sysId`). Activating the screen and touching the route did not help. Next step: open the BCFA experience in UI Builder and add the Playbook page as a variant or a record-page tab (instance-side; capture in the app) |
 
-**Entry points**
-
-- **Open Playbook** link on the invoice and payment forms. It only navigates; it changes no data.
-- The URL above, from the workspace.
-
-**Why a route, not a record-page tab**
-
-The BCFA record page ("Record Default") is the platform's preset record page (SRP). Fluent cannot edit it, and editing it in UI Builder would create an instance-side variant outside source control.
-
-**Journey on the form**
-
-The journey fields are on the record. They can be added to the form and workspace record header without any page change (see section 19).
+- **Journey fields on the record.** The form shows them at the end, with the Review Summary at the top.
+- **Workspace URLs.** The workspace is at `/x/695068/bcfa/…` (scoped-app URL), not `/now/bcfa/…`.
+- **Why a route, not a record-page tab.** The record page ("Record Default") is the platform preset (SRP) and Fluent cannot edit it.
 
 ## 19. UI Builder configuration
 
