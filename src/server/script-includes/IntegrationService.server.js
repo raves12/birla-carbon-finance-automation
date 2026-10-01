@@ -149,7 +149,7 @@ IntegrationService.prototype = {
             case 'createReceipt': return adapter.createReceipt(payload);
             case 'postVendorInvoice': return adapter.postVendorInvoice(payload);
             case 'clearCustomerPayment': return adapter.clearCustomerPayment(payload);
-            case 'queryTransactionStatus': return adapter.queryTransactionStatus(payload.operation, payload.idempotencyKey, payload.externalReference);
+            case 'queryTransactionStatus': return adapter.queryTransactionStatus(payload.operation, payload.idempotencyKey, payload.externalReference, payload.documentId);
             case 'getBankStatement': return adapter.getBankStatement(payload.bankAccount, payload.fromDate, payload.toDate);
             case 'archive': return adapter.archive(payload.sourceTable, payload.sourceRecord, payload.correlationId);
             default: throw 'Unknown operation: ' + operation;
@@ -332,7 +332,8 @@ IntegrationService.prototype = {
             idempotencyKey: 'QTS-' + txn.getValue('idempotency_key') + '-' + gs.generateGUID().substring(0, 8),
             sourceTable: txn.getValue('source_table'),
             sourceRecord: txn.getValue('source_record'),
-            payload: { operation: txn.getValue('operation'), idempotencyKey: txn.getValue('idempotency_key'), externalReference: txn.getValue('external_reference') },
+            payload: { operation: txn.getValue('operation'), idempotencyKey: txn.getValue('idempotency_key'), externalReference: txn.getValue('external_reference'),
+                documentId: txn.getValue('external_document_id') },
             simulateOutcome: 'success'
         });
         return query.response || { outcome: 'UNAVAILABLE' };

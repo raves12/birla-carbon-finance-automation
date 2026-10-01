@@ -8,7 +8,8 @@
 //            customer, open items, recommended match, allocation, residual,
 //            deduction, AI explanation, exception, approval, clearing, audit
 // Refreshed on every state change (Ap/ArDomainService._setState) and when an
-// AI note is saved. Written with setWorkflow(false): it is a derived display
+// AI note is saved; each refresh also refreshes the journey (Playbook) fields
+// through FinanceJourneyService. Written with setWorkflow(false): it is a derived display
 // field and must not trigger business rules (e.g. the approval cascade).
 var FinanceReviewSummary = Class.create();
 
@@ -23,6 +24,8 @@ FinanceReviewSummary.prototype = {
             if (!inv.get(sysId)) return '';
             var text = this.buildInvoice(inv);
             this._write('x_695068_bcfa_ap_invoice', sysId, text);
+            // Playbook phase: the journey fields follow the same refresh.
+            new FinanceJourneyService().refreshInvoice(sysId);
             return text;
         } catch (e) {
             gs.warn('BCFA FinanceReviewSummary (invoice ' + sysId + '): ' + e);
@@ -36,6 +39,8 @@ FinanceReviewSummary.prototype = {
             if (!pay.get(sysId)) return '';
             var text = this.buildPayment(pay);
             this._write('x_695068_bcfa_payment', sysId, text);
+            // Playbook phase: the journey fields follow the same refresh.
+            new FinanceJourneyService().refreshPayment(sysId);
             return text;
         } catch (e) {
             gs.warn('BCFA FinanceReviewSummary (payment ' + sysId + '): ' + e);
@@ -167,6 +172,8 @@ FinanceReviewSummary.prototype = {
         var ap = this._one('x_695068_bcfa_ar_approval', 'payment=' + id, 'sys_created_on', true);
         L.push('APPROVAL ' + (ap ? ap.getDisplayValue('decision') + ' (' + ap.getDisplayValue('approval_type') + ', group ' + (ap.getDisplayValue('approval_group') || '-') +
             ', requested by ' + (ap.getDisplayValue('requested_by') || '-') + (ap.getValue('approver') ? ', approver ' + ap.getDisplayValue('approver') : '') + ')' : 'none'));
+        L.push('SAP PROCESSING ' + (pay.getValue('sap_processing_mode') ? pay.getValue('sap_processing_mode').toUpperCase() : 'not yet sent') + ' mode | SAP status ' +
+            (pay.getDisplayValue('sap_status') || 'not sent') + (pay.getValue('sap_reference') ? ' | reference ' + pay.getValue('sap_reference') : '') + ' | MOCK SAP');
         L.push('CLEARING ' + this._integration('x_695068_bcfa_payment', id));
         L.push('AUDIT ' + this._audit(pay.getValue('correlation_id'), id));
         return this._cap(L.join('\n'));

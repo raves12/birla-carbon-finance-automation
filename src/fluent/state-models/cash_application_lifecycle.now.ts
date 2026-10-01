@@ -30,6 +30,9 @@ export const cashApplicationLifecycle = StateModel({
         unknown_outcome: { $id: Now.ID['ca-state-unknown-outcome'], label: 'Unknown Outcome', value: 'UNKNOWN_OUTCOME', sequence: 16 },
         // Phase 13 human decisions on an exception (ArExceptionDecisionService).
         on_hold: { $id: Now.ID['ca-state-on-hold'], label: 'On Hold', value: 'ON_HOLD', sequence: 17 },
+        // Playbook phase: SAP processing mode DRAFT. The approved clearing is
+        // staged in SAP and awaits SAP confirmation; it is not cleared yet.
+        sap_draft: { $id: Now.ID['ca-state-sap-draft'], label: 'SAP Draft (awaiting SAP confirmation)', value: 'SAP_DRAFT', sequence: 18 },
     },
     transitions: [
         { $id: Now.ID['ca-trans-received-normalized'], from: 'received', to: 'normalized' },
@@ -70,5 +73,9 @@ export const cashApplicationLifecycle = StateModel({
         { $id: Now.ID['ca-trans-matching-exception'], from: 'matching', to: 'exception' },
         // Reconciliation confirmed nothing was committed: safe to clear again.
         { $id: Now.ID['ca-trans-unknown-outcome-approved'], from: 'unknown_outcome', to: 'approved' },
+        // Playbook phase: DRAFT mode. Staged, then confirmed or rejected by SAP.
+        { $id: Now.ID['ca-trans-clearing-sap-draft'], from: 'clearing', to: 'sap_draft' },
+        { $id: Now.ID['ca-trans-sap-draft-cleared'], from: 'sap_draft', to: 'cleared' },
+        { $id: Now.ID['ca-trans-sap-draft-failed'], from: 'sap_draft', to: 'failed' },
     ],
 })

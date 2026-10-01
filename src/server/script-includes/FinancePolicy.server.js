@@ -29,7 +29,8 @@ FinancePolicy.DEFAULTS = {
     'ar.exception.high_value_residual': 5000,
     'ar.exception.sla_hours': '{"critical":4,"high":8,"medium":24,"low":72}',
     'ar.exception.assignment_group': '',
-    'ar.exception.default_owner': ''
+    'ar.exception.default_owner': '',
+    'ar.sap_processing_mode': 'direct'
 };
 
 // Base severity per AR exception reason. Short and over payments are
@@ -336,6 +337,14 @@ FinancePolicy.prototype = {
 
     apExceptionAssignmentGroup: function() {
         return this._string('ap.exception.assignment_group');
+    },
+
+    // How an approved payment is handed to SAP (client requirement):
+    // 'direct' = the clearing instruction is processed by SAP immediately;
+    // 'draft' = it is staged (parked) in SAP and only counts as cleared once
+    // SAP confirms it. Anything else falls back to 'direct'.
+    arSapProcessingMode: function() {
+        return this._string('ar.sap_processing_mode') === 'draft' ? 'draft' : 'direct';
     },
 
     apExceptionDefaultOwner: function() {

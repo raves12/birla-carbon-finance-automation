@@ -68,6 +68,7 @@ AuditEngine.EVENT_BY_STATE = {
     UNMATCHED: 'match',
     POSTED: 'integration_result',
     CLEARED: 'integration_result',
+    SAP_DRAFT: 'integration_result',
     UNKNOWN_OUTCOME: 'integration_result',
     FAILED: 'integration_result',
     RECONCILED: 'reconciliation',
