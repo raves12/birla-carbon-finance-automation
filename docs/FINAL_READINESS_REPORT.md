@@ -78,13 +78,25 @@ Defects found and fixed in this phase:
       had no parent macroponent (the workspace shell), so the workspace
       left the route out of its route table. The page definition also
       had to move into the BCFA scope. Fixed 2026-10-05.
+  D6  (open, found by MT-AP-17 on 2026-10-05) a finance approver cannot
+      type the Decision Reason: AP exception write ACLs (record and every
+      field) allow only ap_processor and admin, and the decision buttons
+      read the reason from that field. Approve Override therefore refuses
+      for the controller unless the reason is already on the record.
+      Workaround (maker/checker): the AP processor saves the reason, then
+      the finance approver clicks Approve Override; the service records the
+      approver as decider. Fix (needs security_admin, deferred with item
+      6): a write ACL on decision_reason for finance_approver; or have the
+      action ask for the reason in a dialog.
 
 Open items:
   1. (closed 2026-10-05) BCFA Workspace Playbook page.
   2. AP-B / MT-AP-17 (open, manual): approve the tolerance override on
      APEX0001065 (invoice E2E-6ABE1-B, quantity variance 2,500 EUR) as an
-     authorised approver (bcfa.finance.controller), with a reason. The
-     assistant's tooling does not permit impersonating users.
+     authorised approver (bcfa.finance.controller). Because of D6:
+     (a) as admin or the AP processor, enter the Decision Reason and Update;
+     (b) impersonate bcfa.finance.controller and click Approve Override.
+     The assistant's tooling does not permit impersonating users.
   3. (closed 2026-10-05) Studio commit with "Include changes not tracked in
      update sets": commit 43edb7d on sn_instances/pwcmanagementservicesdemo01
      (367 files, including both Playbooks and the workspace Playbook page).
