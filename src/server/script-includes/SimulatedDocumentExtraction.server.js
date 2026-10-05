@@ -1,0 +1,128 @@
+// Simulated document extraction for the synthetic fixtures (Phase 12;
+// Phase 40: the "simulated" provider of DocumentExtractionService).
+//
+// Native extraction (ServiceNow Document Intelligence, generative, Now LLM)
+// is the default provider since Phase 40 (NativeDocumentIntelligenceProvider).
+// This provider stays for tests and demo fixtures only, selected by
+// x_695068_bcfa.document.extraction.provider = simulated. It returns the
+// values printed on each synthetic PDF in test/fixtures/, looked up by the
+// attachment's file name, labelled SIMULATED DOCUMENT EXTRACTION — POC. It
+// is not OCR: no document is read, no AI and no external call is involved.
+// A document that is not a known fixture goes to manual review.
+//
+// Only reading is simulated. Everything after it (vendor/PO/GRN resolution,
+// duplicate check, 3-way match, exceptions, approval, posting) is the real
+// deterministic pipeline.
+var SimulatedDocumentExtraction = Class.create();
+
+SimulatedDocumentExtraction.SOURCE = 'simulated_document_intelligence';
+
+// Values as printed on each fixture PDF. vendor_code is left empty: the
+// documents only show the vendor name, which the pipeline resolves against
+// vendor master data. confidence is a fixed value per fixture, set to
+// reflect its legibility; it is not measured.
+SimulatedDocumentExtraction.AP_FIXTURES = {
+    'AP_INV_001_CLEAN.pdf': {
+        invoice_number: 'INV-AP-001', invoice_date: '2026-09-20', vendor_code: '', vendor_name: 'Rajasthan Carbon Feedstock Pvt Ltd',
+        company_code: 'BC01', po_number: 'PO0001', currency: 'INR', net_amount: 5000, tax_amount: 900, gross_amount: 5900,
+        lines: [{ line_number: 1, description: 'Carbon Black Feedstock', quantity: 100, unit: 'MT', unit_price: 50, net_amount: 5000, tax_amount: 900 }],
+        confidence: 0.97, warnings: []
+    },
+    'AP_INV_002_QTY_VARIANCE.pdf': {
+        invoice_number: 'INV-AP-004', invoice_date: '2026-09-20', vendor_code: '', vendor_name: 'Rhine Logistics GmbH',
+        company_code: 'BC01', po_number: 'PO0004', currency: 'EUR', net_amount: 7500, tax_amount: 1425, gross_amount: 8925,
+        lines: [{ line_number: 1, description: 'Packaging Equipment - Unit B4', quantity: 15, unit: 'EA', unit_price: 500, net_amount: 7500, tax_amount: 1425 }],
+        confidence: 0.96, warnings: ['Document note: quantity delivered (15 EA) exceeds PO0004 / GRN RCPT0004 recorded quantity (10 EA).']
+    },
+    'AP_INV_003_PRICE_VARIANCE.pdf': {
+        invoice_number: 'INV-AP-005', invoice_date: '2026-09-20', vendor_code: '', vendor_name: 'Gulf Coast Feedstock LLC',
+        company_code: 'BC01', po_number: 'PO0005', currency: 'USD', net_amount: 15000, tax_amount: 0, gross_amount: 15000,
+        lines: [{ line_number: 1, description: 'Carbon Black Feedstock', quantity: 300, unit: 'MT', unit_price: 50, net_amount: 15000, tax_amount: 0 }],
+        confidence: 0.96, warnings: ['Document note: invoiced unit price (USD 50.00/MT) exceeds PO0005 contracted price (USD 40.00/MT).']
+    },
+    'AP_INV_004_DUPLICATE.pdf': {
+        invoice_number: 'INV-AP-001', invoice_date: '2026-09-20', vendor_code: '', vendor_name: 'Rajasthan Carbon Feedstock Pvt Ltd',
+        company_code: 'BC01', po_number: 'PO0001', currency: 'INR', net_amount: 5000, tax_amount: 900, gross_amount: 5900,
+        lines: [{ line_number: 1, description: 'Carbon Black Feedstock', quantity: 100, unit: 'MT', unit_price: 50, net_amount: 5000, tax_amount: 900 }],
+        confidence: 0.96, warnings: ['Document is marked TAX INVOICE (RESUBMISSION).']
+    },
+    'AP_INV_005_TAX_EXCEPTION.pdf': {
+        invoice_number: 'INV-AP-006', invoice_date: '2026-09-20', vendor_code: '', vendor_name: 'Chennai Packaging Solutions',
+        company_code: 'BC01', po_number: 'PO0006', currency: 'INR', net_amount: 2000, tax_amount: 50, gross_amount: 2050,
+        lines: [{ line_number: 1, description: 'Packaging Cartons - Type A', quantity: 1000, unit: 'EA', unit_price: 2, net_amount: 2000, tax_amount: 50 }],
+        confidence: 0.95, warnings: ['Document note: tax shown (INR 50.00) is inconsistent with the expected India GST rate of 18%.']
+    },
+    'AP_INV_006_LOW_CONFIDENCE.pdf': {
+        invoice_number: 'INV-AP-007', invoice_date: '2026-09-20', vendor_code: '', vendor_name: 'Miskolc Freight Svcs.',
+        company_code: 'BC01', po_number: '', currency: 'EUR', net_amount: 3000, tax_amount: 0, gross_amount: 3000,
+        lines: [{ line_number: 1, description: 'Freight chgs - see attch.', quantity: 0, unit: '', unit_price: 0, net_amount: 3000, tax_amount: 0 }],
+        confidence: 0.55, warnings: ['Scan quality poor: PO reference, tax breakdown and vendor registration number not clearly legible.', 'Line quantity and unit price unreadable; line amount marked as an estimate.']
+    }
+};
+
+// Phase 13 POC 2 remittances (scripts/fixtures/gen_poc2_remittances.py).
+// Shape matches the legacy remittance extractor, plus invoice_lines with
+// the amount applied per invoice.
+SimulatedDocumentExtraction.AR_FIXTURES = {
+    'AR_REMIT_101_EXACT.pdf': {
+        customer_code: '', customer_name: 'Sahyadri Tyre Works Pvt Ltd', payment_reference: 'BANK-POC2-001',
+        payment_amount: 50000, currency: 'INR', payment_date: '2026-09-26',
+        invoice_references: ['ARINV1001'],
+        invoice_lines: [{ invoice_reference: 'ARINV1001', amount_applied: 50000 }],
+        deduction_amount: 0, deduction_reason: '', confidence: 0.97, warnings: []
+    },
+    'AR_REMIT_102_MULTI_INVOICE.pdf': {
+        customer_code: '', customer_name: 'Nilgiri Rubber Compounds Ltd', payment_reference: 'BANK-POC2-002',
+        payment_amount: 80000, currency: 'INR', payment_date: '2026-09-26',
+        invoice_references: ['ARINV2001', 'ARINV2002'],
+        invoice_lines: [{ invoice_reference: 'ARINV2001', amount_applied: 50000 }, { invoice_reference: 'ARINV2002', amount_applied: 30000 }],
+        deduction_amount: 0, deduction_reason: '', confidence: 0.97, warnings: []
+    },
+    'AR_REMIT_103_BANK_CHARGE.pdf': {
+        customer_code: '', customer_name: 'Vindhya Elastomers Pvt Ltd', payment_reference: 'BANK-POC2-003',
+        payment_amount: 79500, currency: 'INR', payment_date: '2026-09-26',
+        invoice_references: ['ARINV3001', 'ARINV3002'],
+        invoice_lines: [{ invoice_reference: 'ARINV3001', amount_applied: 50000 }, { invoice_reference: 'ARINV3002', amount_applied: 29500 }],
+        deduction_amount: 500, deduction_reason: 'Amount remitted less INR 500.00 correspondent bank charges.', confidence: 0.96,
+        warnings: ['ARINV3002 applied 29,500.00 of 30,000.00 due.']
+    }
+};
+
+SimulatedDocumentExtraction.prototype = {
+    initialize: function() {},
+
+    extractArRemittanceDocument: function(intakeSysId) {
+        return this._extract(intakeSysId, SimulatedDocumentExtraction.AR_FIXTURES);
+    },
+
+    // Returns the same envelope shape the legacy extractor returned:
+    // { ok:true, data, source, fileName } or { ok:false, safeError }.
+    extractApInvoiceDocument: function(intakeSysId) {
+        return this._extract(intakeSysId, SimulatedDocumentExtraction.AP_FIXTURES);
+    },
+
+    _extract: function(intakeSysId, registry) {
+        var attachment = new GlideRecord('sys_attachment');
+        attachment.addQuery('table_name', 'x_695068_bcfa_finance_intake');
+        attachment.addQuery('table_sys_id', intakeSysId);
+        attachment.orderByDesc('sys_created_on');
+        attachment.setLimit(1);
+        attachment.query();
+        if (!attachment.next()) return { ok: false, safeError: 'No attachment on this intake record.' };
+
+        var fileName = attachment.getValue('file_name');
+        var fixture = registry[fileName];
+        if (!fixture) {
+            return {
+                ok: false,
+                safeError: 'Simulated extraction (test fixtures only) has no values for "' + fileName + '". Use the native provider (x_695068_bcfa.document.extraction.provider = native) for real documents, or enter the document manually.'
+            };
+        }
+        // Copy so callers can never change the registry.
+        var data = JSON.parse(JSON.stringify(fixture));
+        data.extraction_method = 'SIMULATED DOCUMENT EXTRACTION — POC (fixture values, no OCR)';
+        return { ok: true, data: data, source: SimulatedDocumentExtraction.SOURCE, fileName: fileName };
+    },
+
+    type: 'SimulatedDocumentExtraction'
+};

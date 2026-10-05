@@ -14,6 +14,6 @@ export const financeDocumentIntakeService = ScriptInclude({
     name: 'FinanceDocumentIntakeService',
     active: true,
     apiName: 'x_695068_bcfa.FinanceDocumentIntakeService',
-    description: 'Orchestrates true document-to-transaction processing: reads an uploaded attachment on Finance Document Intake, classifies and extracts it via BCClaudeClient, resolves master data deterministically, and hands the resulting AP Invoice / Payment / Remittance to the existing ApDomainService/ArDomainService pipelines. Never sets approval_state/posting_state/state/decision directly and never calls ApprovalEngine or IntegrationService.',
+    description: 'Orchestrates true document-to-transaction processing: reads an uploaded attachment on Finance Document Intake, uses the document type set at upload, reads the fields with the simulated Document Intelligence extraction (fixture values until extraction is licensed), resolves master data deterministically, and hands the resulting AP Invoice / Payment / Remittance to the existing ApDomainService/ArDomainService pipelines. Never sets approval_state/posting_state/state/decision directly and never calls ApprovalEngine or IntegrationService.',
     script: Now.include('../../server/script-includes/FinanceDocumentIntakeService.server.js'),
 })

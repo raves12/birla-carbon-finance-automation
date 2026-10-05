@@ -1,0 +1,313 @@
+// Review summary (Phase 24): the whole review evidence of an AP invoice or a
+// payment in one read-only block (review_summary), so a reviewer sees it at
+// the top of the form / workspace record without opening each related list.
+//   invoice: document, extraction, confidence, invoice, PO, GRN, match
+//            comparison, tolerance, exception, AI explanation,
+//            recommendation, approval, integration, audit
+//   payment: payment, remittance, extracted (Content Understanding) fields,
+//            customer, open items, recommended match, allocation, residual,
+//            deduction, AI explanation, exception, approval, clearing, audit
+// Refreshed on every state change (Ap/ArDomainService._setState) and when an
+// AI note is saved; each refresh also refreshes the journey (Playbook) fields
+// through FinanceJourneyService. Written with setWorkflow(false): it is a derived display
+// field and must not trigger business rules (e.g. the approval cascade).
+var FinanceReviewSummary = Class.create();
+
+FinanceReviewSummary.MAX = 8000;
+
+FinanceReviewSummary.prototype = {
+    initialize: function() {},
+
+    refreshInvoice: function(sysId) {
+        try {
+            var inv = new GlideRecord('x_695068_bcfa_ap_invoice');
+            if (!inv.get(sysId)) return '';
+            var text = this.buildInvoice(inv);
+            this._write('x_695068_bcfa_ap_invoice', sysId, text);
+            // Playbook phase: the journey fields follow the same refresh.
+            new FinanceJourneyService().refreshInvoice(sysId);
+            return text;
+        } catch (e) {
+            gs.warn('BCFA FinanceReviewSummary (invoice ' + sysId + '): ' + e);
+            return '';
+        }
+    },
+
+    refreshPayment: function(sysId) {
+        try {
+            var pay = new GlideRecord('x_695068_bcfa_payment');
+            if (!pay.get(sysId)) return '';
+            var text = this.buildPayment(pay);
+            this._write('x_695068_bcfa_payment', sysId, text);
+            // Playbook phase: the journey fields follow the same refresh.
+            new FinanceJourneyService().refreshPayment(sysId);
+            return text;
+        } catch (e) {
+            gs.warn('BCFA FinanceReviewSummary (payment ' + sysId + '): ' + e);
+            return '';
+        }
+    },
+
+    // Refreshes the invoice or payment behind an exception.
+    refreshForException: function(exceptionTable, exceptionSysId) {
+        var ex = new GlideRecord(exceptionTable);
+        if (!ex.get(exceptionSysId)) return;
+        if (exceptionTable === 'x_695068_bcfa_ap_exception') this.refreshInvoice(ex.getValue('ap_invoice'));
+        else this.refreshPayment(ex.getValue('payment'));
+    },
+
+    buildInvoice: function(inv) {
+        var id = inv.getUniqueValue();
+        var L = [];
+        L.push('INVOICE ' + inv.getValue('invoice_number') + ' | ' + (inv.getDisplayValue('vendor') || 'vendor not resolved') + ' | ' +
+            inv.getValue('currency') + ' ' + inv.getValue('gross_amount') + ' (net ' + inv.getValue('net_amount') + ', tax ' + inv.getValue('tax_amount') + ')' +
+            ' | state ' + inv.getValue('state') + ', approval ' + inv.getDisplayValue('approval_state') + ', posting ' + inv.getDisplayValue('posting_state'));
+
+        var intake = this._one('x_695068_bcfa_finance_intake', 'ap_invoice=' + id, 'sys_created_on', true);
+        L.push('DOCUMENT ' + (intake ? intake.getValue('number') + ' ' + this._file(intake) + ' (' + intake.getDisplayValue('source') + ', ' + intake.getDisplayValue('processing_status') + ')'
+            : 'no uploaded document; source ' + inv.getDisplayValue('source')));
+
+        var ex = this._one('x_695068_bcfa_ap_extraction', 'ap_invoice=' + id, 'sys_created_on', true);
+        L.push('EXTRACTION ' + (ex ? ex.getDisplayValue('source') + ', confidence ' + ex.getValue('confidence') + (ex.getValue('requires_review') === '1' ? ' (review required)' : '')
+            : 'none') + (inv.getValue('extraction_confidence') ? ' | invoice confidence ' + inv.getValue('extraction_confidence') : ''));
+
+        var po = inv.purchase_order.getRefRecord();
+        L.push('PO ' + (po && po.isValidRecord() ? po.getValue('po_number') + ' (' + po.getDisplayValue('status') + ', vendor ' + po.getDisplayValue('vendor') + ')' : 'none referenced'));
+        var lines = [];
+        var line = new GlideRecord('x_695068_bcfa_ap_invoice_line');
+        line.addQuery('ap_invoice', id);
+        line.orderBy('line_number');
+        line.setLimit(5);
+        line.query();
+        while (line.next()) {
+            var pol = line.po_line.getRefRecord();
+            lines.push('L' + line.getValue('line_number') + ' qty ' + line.getValue('quantity') + ' @ ' + line.getValue('unit_price') +
+                (pol && pol.isValidRecord() ? ' vs PO qty ' + pol.getValue('quantity') + ' @ ' + pol.getValue('unit_price') + ', received ' + pol.getValue('received_quantity') : ', no PO line') +
+                (line.getValue('receipt_reference') ? ', GRN ' + line.getDisplayValue('receipt_reference') : ', no GRN'));
+        }
+        L.push('LINES / GRN ' + (lines.length ? lines.join('; ') : 'no invoice lines'));
+
+        var match = this._one('x_695068_bcfa_ap_match', 'ap_invoice=' + id, 'evaluated_at', true);
+        L.push('MATCH ' + (match ? match.getDisplayValue('match_result') + ': quantity variance ' + (match.getValue('quantity_variance') || 0) + ', price variance ' +
+            (match.getValue('price_variance') || 0) + ', tax variance ' + (match.getValue('tax_variance') || 0) + ', within tolerance ' + (match.getValue('within_tolerance') === '1' ? 'yes' : 'no')
+            : 'not run'));
+        var tol = this._matchTolerances(inv);
+        L.push('TOLERANCE ' + (tol || 'not evaluated yet'));
+
+        this._exceptionLines(L, 'x_695068_bcfa_ap_exception', 'ap_invoice=' + id);
+
+        var ap = this._one('x_695068_bcfa_ap_approval', 'ap_invoice=' + id, 'sys_created_on', true);
+        L.push('APPROVAL ' + (ap ? ap.getDisplayValue('decision') + ' (' + ap.getDisplayValue('approval_type') + ', group ' + (ap.getDisplayValue('approval_group') || '-') +
+            ', requested by ' + (ap.getDisplayValue('requested_by') || '-') + (ap.getValue('approver') ? ', approver ' + ap.getDisplayValue('approver') : '') + ')' +
+            (ap.getValue('sod_check') ? ' | ' + ap.getValue('sod_check').substring(0, 160) : '') : 'none'));
+        L.push('INTEGRATION ' + this._integration('x_695068_bcfa_ap_invoice', id) + (inv.getValue('sap_document_id') ? ' | SAP document ' + inv.getValue('sap_document_id') : ''));
+        L.push('AUDIT ' + this._audit(inv.getValue('correlation_id'), id));
+        return this._cap(L.join('\n'));
+    },
+
+    buildPayment: function(pay) {
+        var id = pay.getUniqueValue();
+        var L = [];
+        L.push('PAYMENT ' + pay.getValue('bank_reference') + ' | ' + pay.getValue('currency') + ' ' + pay.getValue('amount') + ' | value date ' + (pay.getValue('value_date') || '-') +
+            ' | state ' + pay.getValue('state'));
+
+        var rem = this._one('x_695068_bcfa_remittance', 'payment=' + id, 'sys_created_on', true);
+        L.push('REMITTANCE ' + (rem ? (rem.getValue('remittance_reference') || 'no reference') + ' (' + rem.getDisplayValue('source') + ', received ' + (rem.getValue('received_date') || '-') +
+            ', confidence ' + (rem.getValue('confidence') || '-') + ')' : 'none'));
+        L.push('EXTRACTED FIELDS ' + (rem ? this._fields(rem.getValue('extracted_fields')) : '-'));
+
+        var customer = pay.customer.getRefRecord();
+        var how = this._lastAudit(pay.getValue('correlation_id'), id, 'rule_evaluated', 'Customer identified');
+        L.push('CUSTOMER ' + (customer && customer.isValidRecord() ? customer.getValue('name') + ' (' + customer.getValue('customer_code') + ')' + (how ? ' | ' + how : '') : 'not identified'));
+
+        if (customer && customer.isValidRecord()) {
+            var items = [], total = 0, n = 0;
+            var oi = new GlideRecord('x_695068_bcfa_ar_open_item');
+            oi.addQuery('customer', customer.getUniqueValue());
+            oi.addQuery('open_amount', '>', 0);
+            oi.orderBy('due_date');
+            oi.query();
+            while (oi.next()) {
+                n++;
+                total += parseFloat(oi.getValue('open_amount') || '0');
+                if (items.length < 5) items.push(oi.getValue('item_number') + ' ' + oi.getValue('open_amount') + ' ' + oi.getValue('currency'));
+            }
+            L.push('OPEN ITEMS ' + n + ' open, total ' + (Math.round(total * 100) / 100) + (items.length ? ': ' + items.join(', ') + (n > 5 ? ', ...' : '') : ''));
+        }
+
+        var cands = [];
+        var mc = new GlideRecord('x_695068_bcfa_match_candidate');
+        mc.addQuery('payment', id);
+        mc.orderBy('rank');
+        mc.setLimit(6);
+        mc.query();
+        while (mc.next()) cands.push(mc.getDisplayValue('match_type') + ' ' + mc.getDisplayValue('ar_open_item') + ' conf ' + (mc.getValue('confidence') || '-') + (mc.getValue('selected') === '1' ? ' [selected]' : ''));
+        L.push('RECOMMENDED MATCH ' + (cands.length ? cands.join('; ') : 'none'));
+
+        var allocs = [], allocated = 0, deductions = 0, deds = [];
+        var al = new GlideRecord('x_695068_bcfa_payment_allocation');
+        al.addQuery('payment', id);
+        al.addQuery('allocation_state', '!=', 'reversed');
+        al.query();
+        while (al.next()) {
+            allocated += parseFloat(al.getValue('allocated_amount') || '0');
+            allocs.push(al.getDisplayValue('ar_open_item') + ' ' + al.getValue('allocated_amount') + ' (' + al.getDisplayValue('allocation_state') + ')');
+            var d = new GlideRecord('x_695068_bcfa_deduction');
+            d.addQuery('payment_allocation', al.getUniqueValue());
+            d.query();
+            while (d.next()) {
+                if (d.getValue('status') === 'approved') deductions += parseFloat(d.getValue('amount') || '0');
+                deds.push(d.getDisplayValue('deduction_type') + ' ' + d.getValue('amount') + ' (' + d.getDisplayValue('status') + ')');
+            }
+        }
+        var amount = parseFloat(pay.getValue('amount') || '0');
+        L.push('ALLOCATION ' + (allocs.length ? allocs.join('; ') + ' | total ' + (Math.round(allocated * 100) / 100) : 'none'));
+        L.push('RESIDUAL ' + (allocs.length ? (Math.round((amount - (allocated - deductions)) * 100) / 100) + ' (payment ' + amount + ' - allocated ' + (Math.round(allocated * 100) / 100) +
+            ' + approved deductions ' + deductions + ')' : '-'));
+        L.push('DEDUCTION ' + (deds.length ? deds.join('; ') : 'none'));
+        if (pay.getValue('ai_recommendation')) L.push('AI MATCH EXPLANATION ' + this._oneLine(pay.getValue('ai_recommendation'), 400));
+
+        this._exceptionLines(L, 'x_695068_bcfa_ar_exception', 'payment=' + id);
+
+        var ap = this._one('x_695068_bcfa_ar_approval', 'payment=' + id, 'sys_created_on', true);
+        L.push('APPROVAL ' + (ap ? ap.getDisplayValue('decision') + ' (' + ap.getDisplayValue('approval_type') + ', group ' + (ap.getDisplayValue('approval_group') || '-') +
+            ', requested by ' + (ap.getDisplayValue('requested_by') || '-') + (ap.getValue('approver') ? ', approver ' + ap.getDisplayValue('approver') : '') + ')' : 'none'));
+        L.push('SAP PROCESSING ' + (pay.getValue('sap_processing_mode') ? pay.getValue('sap_processing_mode').toUpperCase() : 'not yet sent') + ' mode | SAP status ' +
+            (pay.getDisplayValue('sap_status') || 'not sent') + (pay.getValue('sap_reference') ? ' | reference ' + pay.getValue('sap_reference') : '') + ' | MOCK SAP');
+        L.push('CLEARING ' + this._integration('x_695068_bcfa_payment', id));
+        L.push('AUDIT ' + this._audit(pay.getValue('correlation_id'), id));
+        return this._cap(L.join('\n'));
+    },
+
+    // --- helpers --------------------------------------------------------------
+
+    _exceptionLines: function(L, table, query) {
+        var ex = new GlideRecord(table);
+        ex.addEncodedQuery(query);
+        ex.orderByDesc('sys_created_on');
+        ex.setLimit(3);
+        ex.query();
+        var any = false;
+        while (ex.next()) {
+            any = true;
+            L.push('EXCEPTION ' + (ex.getValue('number') || '') + ' ' + ex.getDisplayValue('reason_code') + ' | ' + ex.getDisplayValue('status') + ', severity ' + ex.getDisplayValue('severity') +
+                ', SLA ' + (ex.getDisplayValue('sla_status') || '-') + (ex.getValue('decision') ? ', decision ' + ex.getDisplayValue('decision') : '') +
+                (ex.getValue('rule_result') ? ' | rule: ' + this._oneLine(ex.getValue('rule_result'), 220) : ''));
+            if (ex.getValue('ai_recommendation')) {
+                L.push('  AI EXPLANATION ' + (ex.getValue('ai_explanation') ? this._oneLine(ex.getValue('ai_explanation'), 350) : '-') +
+                    (ex.getValue('ai_confidence') ? ' (confidence ' + ex.getDisplayValue('ai_confidence') + ')' : ''));
+                var rec = new AiInteractionLog().recommendationOf(ex.getValue('ai_recommendation'));
+                L.push('  AI RECOMMENDATION ' + (rec ? this._oneLine(rec, 350) : '-') + ' (advisory; a person decides)');
+            }
+        }
+        if (!any) L.push('EXCEPTION none');
+    },
+
+    _integration: function(table, id) {
+        var t = new GlideRecord('x_695068_bcfa_integration_txn');
+        t.addQuery('source_table', table);
+        t.addQuery('source_record', id);
+        t.addQuery('operation', 'NOT IN', 'archive,queryTransactionStatus');
+        t.orderByDesc('sys_created_on');
+        t.setLimit(1);
+        t.query();
+        if (!t.next()) return 'not sent';
+        return t.getValue('operation') + ' ' + t.getDisplayValue('status') + ' (attempt ' + t.getValue('attempt') + ', reconciliation ' + t.getDisplayValue('reconciliation_state') +
+            (t.getValue('external_document_id') ? ', document ' + t.getValue('external_document_id') : '') + (t.getValue('error_code') ? ', ' + t.getValue('error_code') : '') + ')';
+    },
+
+    _audit: function(correlationId, id) {
+        var e = new GlideRecord('x_695068_bcfa_audit_event');
+        var q = e.addQuery('source_record', id);
+        if (correlationId) q.addOrCondition('correlation_id', correlationId);
+        e.orderByDesc('event_sequence');
+        e.query();
+        var n = e.getRowCount();
+        if (!e.next()) return 'no events';
+        return n + ' events; last: ' + e.getDisplayValue('event_type') + ' - ' + this._oneLine(e.getValue('description'), 140) + ' (' + e.getDisplayValue('occurred_at') + ')';
+    },
+
+    _lastAudit: function(correlationId, id, type, startsWith) {
+        var e = new GlideRecord('x_695068_bcfa_audit_event');
+        e.addQuery('source_record', id);
+        e.addQuery('event_type', type);
+        e.addQuery('description', 'STARTSWITH', startsWith);
+        e.orderByDesc('event_sequence');
+        e.setLimit(1);
+        e.query();
+        return e.next() ? this._oneLine(e.getValue('description'), 200) : '';
+    },
+
+    // The tolerances applied by the last 3-way match (Phase 19 match audit).
+    _matchTolerances: function(inv) {
+        var e = new GlideRecord('x_695068_bcfa_audit_event');
+        e.addQuery('source_record', inv.getUniqueValue());
+        e.addQuery('event_type', 'match');
+        e.orderByDesc('event_sequence');
+        e.setLimit(1);
+        e.query();
+        if (!e.next()) return '';
+        try {
+            var t = JSON.parse(e.getValue('after_value') || '{}').tolerances;
+            if (!t) return '';
+            var pct = function(v) { return v === undefined || v === null ? '-' : (Math.round(v * 1000) / 10) + '%'; };
+            return 'quantity ' + pct(t.quantityPct) + ', price ' + pct(t.pricePct) + ', tax ' + (t.taxAbsolute !== undefined ? t.taxAbsolute : '-') + ' / ' + pct(t.taxRelativePct) +
+                (t.source ? ' (source: ' + t.source + ')' : '');
+        } catch (x) {
+            return '';
+        }
+    },
+
+    _file: function(intake) {
+        var a = new GlideRecord('sys_attachment');
+        a.addQuery('table_name', 'x_695068_bcfa_finance_intake');
+        a.addQuery('table_sys_id', intake.getUniqueValue());
+        a.orderByDesc('sys_created_on');
+        a.setLimit(1);
+        a.query();
+        return a.next() ? a.getValue('file_name') : '(no attachment)';
+    },
+
+    _fields: function(json) {
+        if (!json) return '-';
+        try {
+            var o = JSON.parse(json);
+            var parts = [];
+            for (var k in o) {
+                if (parts.length >= 10) break;
+                var v = o[k];
+                parts.push(k + '=' + (typeof v === 'object' ? JSON.stringify(v).substring(0, 120) : v));
+            }
+            return parts.join('; ') || '-';
+        } catch (e) {
+            return this._oneLine(json, 300);
+        }
+    },
+
+    _one: function(table, query, orderField, desc) {
+        var gr = new GlideRecord(table);
+        gr.addEncodedQuery(query);
+        if (desc) gr.orderByDesc(orderField); else gr.orderBy(orderField);
+        gr.setLimit(1);
+        gr.query();
+        return gr.next() ? gr : null;
+    },
+
+    _oneLine: function(text, max) {
+        return String(text || '').replace(/\s+/g, ' ').trim().substring(0, max);
+    },
+
+    _cap: function(text) {
+        return text.length > FinanceReviewSummary.MAX ? text.substring(0, FinanceReviewSummary.MAX - 3) + '...' : text;
+    },
+
+    _write: function(table, sysId, text) {
+        var gr = new GlideRecord(table);
+        if (!gr.get(sysId) || gr.getValue('review_summary') === text) return;
+        gr.setValue('review_summary', text);
+        gr.setWorkflow(false);
+        gr.update();
+    },
+
+    type: 'FinanceReviewSummary'
+};

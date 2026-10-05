@@ -1,0 +1,213 @@
+// Phase 12: the human decision on an AP exception. A finance user chooses
+// one of four outcomes and must give a reason:
+//   approve_override   finance approver accepts the variance; the invoice
+//                      goes through approval (maker/checker) and posts via
+//                      the approval cascade -> IntegrationService -> Mock SAP
+//   reject             the invoice is rejected and will not be paid
+//   request_correction the invoice waits (ON_HOLD) for a corrected invoice
+//                      or credit note; then "Resolve & Retry" re-runs it
+//   hold               the invoice is parked (ON_HOLD) pending investigation
+//
+// AI never calls this service: no AI agent tool reaches it, and every
+// decision is recorded against the signed-in user. The AI note on the
+// exception (ai_recommendation) is advisory input to the human only.
+var ApExceptionDecisionService = Class.create();
+
+ApExceptionDecisionService.DECISIONS = {
+    approve_override: { roles: ['x_695068_bcfa.finance_approver'], from: ['EXCEPTION', 'ON_HOLD'] },
+    reject: { roles: ['x_695068_bcfa.ap_processor', 'x_695068_bcfa.finance_approver'], from: ['EXCEPTION', 'ON_HOLD'] },
+    request_correction: { roles: ['x_695068_bcfa.ap_processor', 'x_695068_bcfa.finance_approver'], from: ['EXCEPTION', 'ON_HOLD'] },
+    hold: { roles: ['x_695068_bcfa.ap_processor', 'x_695068_bcfa.finance_approver'], from: ['EXCEPTION'] }
+};
+
+ApExceptionDecisionService.MIN_REASON_CHARS = 10;
+
+ApExceptionDecisionService.prototype = {
+    initialize: function() {
+        this.apService = new ApDomainService();
+        this.auditEngine = new AuditEngine();
+        this.policy = new FinancePolicy();
+    },
+
+    // Returns { ok:true, decision, invoiceState, ... } or { ok:false, error }.
+    // Every check runs before anything is written.
+    decide: function(exceptionSysId, decision, reason) {
+        var rule = ApExceptionDecisionService.DECISIONS[decision];
+        if (!rule) return this._error('Unknown decision "' + decision + '".');
+
+        var userId = gs.getUserID();
+        if (this._isAiIdentity(userId)) {
+            return this._error('AI identities cannot decide AP exceptions. A finance user must make this decision.');
+        }
+        if (!this._hasAnyRole(rule.roles)) {
+            return this._error('You need one of these roles to ' + decision.replace(/_/g, ' ') + ': ' + rule.roles.join(', ') + '.');
+        }
+
+        reason = reason ? String(reason).trim() : '';
+        if (reason.length < ApExceptionDecisionService.MIN_REASON_CHARS) {
+            return this._error('Enter a decision reason (at least ' + ApExceptionDecisionService.MIN_REASON_CHARS + ' characters) before choosing a decision.');
+        }
+
+        var exception = new GlideRecord('x_695068_bcfa_ap_exception');
+        if (!exception.get(exceptionSysId)) return this._error('AP exception not found.');
+        var status = exception.getValue('status');
+        if (status !== 'open' && status !== 'in_review') {
+            return this._error('This exception is already ' + status + '.');
+        }
+
+        var invoiceSysId = exception.getValue('ap_invoice');
+        var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
+        if (!invoice.get(invoiceSysId)) return this._error('The linked AP invoice was not found.');
+        var invoiceState = invoice.getValue('state');
+        if (rule.from.indexOf(invoiceState) < 0) {
+            return this._error('The invoice is in state ' + invoiceState + '; ' + decision.replace(/_/g, ' ') + ' is only allowed from ' + rule.from.join(' or ') + '.');
+        }
+
+        if (decision === 'approve_override') {
+            var blocked = this._overrideBlocker(exception, invoiceSysId, userId);
+            if (blocked) return this._error(blocked);
+        }
+
+        return this['_' + decision](exception, invoice, reason, userId);
+    },
+
+    _approve_override: function(exception, invoice, reason, userId) {
+        var invoiceSysId = invoice.getUniqueValue();
+        var requester = exception.getValue('assigned_to');
+        this._recordDecision(exception, 'approve_override', reason, userId, 'resolved',
+            'Override approved by ' + gs.getUserDisplayName() + ': ' + reason);
+        this.apService._setState(invoiceSysId, 'RESOLUTION', null, 'Finance approver accepted the ' + exception.getValue('reason_code') + ' variance by override');
+
+        // Maker/checker: the override is requested in the exception owner's
+        // name and approved by the current user. The route (approval group
+        // from the approval decision table) and the segregation-of-duties
+        // pre-check were done in _overrideBlocker, before anything changed;
+        // ApprovalEngine checks again when the decision is recorded.
+        var route = this._overrideRoute;
+        var approval = this.apService.requestApproval(invoiceSysId, requester, { group: route.group, type: 'override', overrideReason: reason });
+        var result = this.apService.decideApproval(invoiceSysId, approval.approvalSysId, 'approved', userId,
+            'Tolerance override (' + exception.getValue('reason_code') + '): ' + reason);
+        if (result.error) return this._error(result.error);
+
+        var after = new GlideRecord('x_695068_bcfa_ap_invoice');
+        after.get(invoiceSysId);
+        return {
+            ok: true,
+            decision: 'approve_override',
+            approvalSysId: approval.approvalSysId,
+            invoiceState: after.getValue('state'),
+            postingState: after.getValue('posting_state'),
+            sapDocumentId: after.getValue('sap_document_id')
+        };
+    },
+
+    _reject: function(exception, invoice, reason, userId) {
+        this._recordDecision(exception, 'reject', reason, userId, 'closed', 'Invoice rejected: ' + reason);
+        this.apService._setState(invoice.getUniqueValue(), 'REJECTED', null, 'Invoice rejected on exception review: ' + reason);
+        return { ok: true, decision: 'reject', invoiceState: 'REJECTED' };
+    },
+
+    _request_correction: function(exception, invoice, reason, userId) {
+        this._recordDecision(exception, 'request_correction', reason, userId, 'in_review', null);
+        if (invoice.getValue('state') !== 'ON_HOLD') {
+            this.apService._setState(invoice.getUniqueValue(), 'ON_HOLD', null, 'Correction requested (corrected invoice or credit note): ' + reason);
+        }
+        return { ok: true, decision: 'request_correction', invoiceState: 'ON_HOLD', next: 'When the correction arrives, update the invoice and use Resolve & Retry.' };
+    },
+
+    _hold: function(exception, invoice, reason, userId) {
+        this._recordDecision(exception, 'hold', reason, userId, 'in_review', null);
+        this.apService._setState(invoice.getUniqueValue(), 'ON_HOLD', null, 'Invoice put on hold: ' + reason);
+        return { ok: true, decision: 'hold', invoiceState: 'ON_HOLD' };
+    },
+
+    _overrideBlocker: function(exception, invoiceSysId, userId) {
+        var reasonCode = exception.getValue('reason_code');
+        if (!this.policy.overrideAllowed(reasonCode)) {
+            return 'A ' + exception.getDisplayValue('reason_code') + ' exception cannot be approved by override (x_695068_bcfa.ap.override.allowed_reasons). Request a correction or reject the invoice.';
+        }
+        var requester = exception.getValue('assigned_to');
+        if (!requester) {
+            return 'This exception has no owner. Assign it to the AP processor who reviewed it; the override is requested in their name.';
+        }
+        if (requester === userId) {
+            return 'Segregation of duties: you own this exception, so a different finance approver must approve the override.';
+        }
+        var other = new GlideRecord('x_695068_bcfa_ap_exception');
+        other.addQuery('ap_invoice', invoiceSysId);
+        other.addQuery('sys_id', '!=', exception.getUniqueValue());
+        other.addQuery('status', 'IN', 'open,in_review');
+        other.setLimit(1);
+        other.query();
+        if (other.next()) {
+            return 'The invoice has another open exception (' + other.getDisplayValue('reason_code') + '). Resolve it first.';
+        }
+
+        // Phase 17: route the override through the approval decision table
+        // and run the full segregation-of-duties gate for the decider now,
+        // so a refusal changes nothing.
+        var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
+        invoice.get(invoiceSysId);
+        this._overrideRoute = this.policy.apApprovalDecision({
+            amount: parseFloat(invoice.getValue('gross_amount') || '0'),
+            exceptionType: reasonCode,
+            variancePct: parseFloat(exception.getValue('variance_pct') || '0'),
+            company: invoice.getValue('company_code')
+        });
+        var sod = new ApprovalEngine().checkSegregation({
+            process: 'ap', parentSysId: invoiceSysId, requestedBy: requester, group: this._overrideRoute.group, type: 'override'
+        }, userId);
+        if (!sod.ok) return sod.reason;
+        return null;
+    },
+
+    _recordDecision: function(exception, decision, reason, userId, newStatus, resolutionNotes) {
+        var before = { status: exception.getValue('status'), decision: exception.getValue('decision') };
+        exception.setValue('decision', decision);
+        exception.setValue('decision_reason', reason);
+        exception.setValue('decided_by', userId);
+        exception.setValue('decided_at', new GlideDateTime().getValue());
+        exception.setValue('status', newStatus);
+        // Phase 16: resolution code, resolved by/at and final SLA status
+        // through the shared exception framework.
+        if (newStatus === 'resolved' || newStatus === 'closed') {
+            new ExceptionEngine().stampResolution(exception, { approve_override: 'override_approved', reject: 'rejected' }[decision] || 'other', userId);
+        }
+        if (resolutionNotes) exception.setValue('resolution_notes', resolutionNotes);
+        exception.update();
+        new AiInteractionLog().recordExceptionDecision('ap', exception, decision, reason, userId);
+
+        this.auditEngine.logEvent({
+            sourceTable: 'x_695068_bcfa_ap_exception',
+            correlationId: exception.getValue('correlation_id'),
+            sourceRecord: exception.getUniqueValue(),
+            eventType: decision === 'approve_override' ? 'override' : 'human_review',
+            actor: userId,
+            actorType: 'user',
+            reason: reason,
+            description: 'AP exception decision "' + decision + '" by ' + gs.getUserDisplayName() + ': ' + reason,
+            beforeValue: before,
+            afterValue: { status: newStatus, decision: decision, reason: reason }
+        });
+    },
+
+    // Defense in depth: the AI user holds ap_processor so it can read and
+    // record advisory notes, but must never make the human decision.
+    _isAiIdentity: function(userId) {
+        var user = new GlideRecord('sys_user');
+        return user.get(userId) && user.getValue('identity_type') === 'ai_agent';
+    },
+
+    _hasAnyRole: function(roles) {
+        for (var i = 0; i < roles.length; i++) {
+            if (gs.hasRole(roles[i])) return true;
+        }
+        return gs.hasRole('x_695068_bcfa.admin');
+    },
+
+    _error: function(message) {
+        return { ok: false, error: message };
+    },
+
+    type: 'ApExceptionDecisionService'
+};

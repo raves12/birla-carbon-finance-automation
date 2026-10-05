@@ -1,6 +1,8 @@
 import { StateModel } from '@servicenow/sdk/core'
 
-// AP Invoice lifecycle (Section 7 of the build brief). All transitions are
+// AP Invoice lifecycle (Section 7 of the build brief). Enforced since Phase
+// 26 (FinanceLifecycle + BCFA - Enforce AP Invoice Lifecycle; see
+// docs/STATE_MODELS.md): a state change not listed here is refused. All transitions are
 // manual (no `automatic: true`) — the AP subflows (Stage 15) decide when a
 // transition is legal by running the actual validation/matching/posting
 // logic first, then explicitly moving the state field forward. This keeps
@@ -32,6 +34,9 @@ export const apInvoiceLifecycle = StateModel({
         closed: { $id: Now.ID['ap-state-closed'], label: 'Closed', value: 'CLOSED', sequence: 14 },
         failed: { $id: Now.ID['ap-state-failed'], label: 'Failed', value: 'FAILED', sequence: 15 },
         unknown_outcome: { $id: Now.ID['ap-state-unknown-outcome'], label: 'Unknown Outcome', value: 'UNKNOWN_OUTCOME', sequence: 16 },
+        // Phase 12 human decisions on an exception (ApExceptionDecisionService).
+        on_hold: { $id: Now.ID['ap-state-on-hold'], label: 'On Hold', value: 'ON_HOLD', sequence: 17 },
+        rejected: { $id: Now.ID['ap-state-rejected'], label: 'Rejected', value: 'REJECTED', sequence: 18 },
     },
     transitions: [
         { $id: Now.ID['ap-trans-received-extracting'], from: 'received', to: 'extracting' },
@@ -57,5 +62,21 @@ export const apInvoiceLifecycle = StateModel({
         { $id: Now.ID['ap-trans-posted-reconciled'], from: 'posted', to: 'reconciled' },
         { $id: Now.ID['ap-trans-reconciled-closed'], from: 'reconciled', to: 'closed' },
         { $id: Now.ID['ap-trans-failed-resolution'], from: 'failed', to: 'resolution' },
+        // Hold / request correction, reject, and approve override (Phase 12).
+        { $id: Now.ID['ap-trans-exception-on-hold'], from: 'exception', to: 'on_hold' },
+        { $id: Now.ID['ap-trans-on-hold-resolution'], from: 'on_hold', to: 'resolution' },
+        { $id: Now.ID['ap-trans-exception-rejected'], from: 'exception', to: 'rejected' },
+        { $id: Now.ID['ap-trans-on-hold-rejected'], from: 'on_hold', to: 'rejected' },
+        { $id: Now.ID['ap-trans-resolution-pending-approval'], from: 'resolution', to: 'pending_approval' },
+        // Phase 26: transitions the pipeline makes that the model lacked
+        // (found by comparing the audit trail with the model).
+        // An uploaded document's extraction is recorded before the invoice
+        // exists, so the AP Invoice Intake Flow moves it straight to EXTRACTED.
+        { $id: Now.ID['ap-trans-received-extracted'], from: 'received', to: 'extracted' },
+        // Invoice data that arrives already structured (document intake in
+        // inline mode, keyed invoices) goes straight to validation.
+        { $id: Now.ID['ap-trans-received-validating'], from: 'received', to: 'validating' },
+        // A refused approval decision (service-layer check) is rolled back.
+        { $id: Now.ID['ap-trans-approved-pending-approval'], from: 'approved', to: 'pending_approval' },
     ],
 })

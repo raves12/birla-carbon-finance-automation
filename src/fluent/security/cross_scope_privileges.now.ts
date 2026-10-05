@@ -1,7 +1,8 @@
 import { CrossScopePrivilege } from '@servicenow/sdk/core'
 
-// GlideSysAttachment is a global-scope scriptable object. BCClaudeClient
-// (Finance Document Intake) calls it directly to read an uploaded
+// GlideSysAttachment is a global-scope scriptable object. The demo reset
+// (DemoDataSeeder, Phase 28) deletes intake attachments with it; it was
+// added for BCClaudeClient (removed in Phase 34), which called it directly to read an uploaded
 // attachment's content as base64 — without this privilege the call throws
 // at runtime (confirmed live: it silently aborted the whole
 // classify/extract pipeline with no error surfaced back through the UI

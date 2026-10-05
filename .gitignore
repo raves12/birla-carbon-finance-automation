@@ -5,3 +5,12 @@ node_modules/
 target/
 *.tsbuildinfo
 .jest_cache
+# Secrets must never be committed
+.env
+.env.*
+*.pem
+*.key
+*.pfx
+*.p12
+credentials*.json
+*secret*.json

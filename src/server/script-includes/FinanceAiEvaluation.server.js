@@ -1,0 +1,215 @@
+// AI ranking quality on ambiguous cash matches (Phase 29).
+//
+// When several sets of a customer's open items match a payment exactly, the
+// deterministic engine does not choose (ambiguous_match exception, no
+// candidate selected). A person decides, advised by Now Assist. This
+// evaluates that advice on labelled cases:
+//   - hinted cases: the remittance note (free text the engine does not
+//     resolve) points to one combination; the advice should recommend that
+//     combination and not the other.
+//   - no-hint cases: nothing tells the options apart; the advice should not
+//     pick one (it should ask for remittance details instead).
+//
+// Stage 1 (run): creates the cases through the real pipeline (inline),
+// checks the deterministic control, asks the AR next-action skill
+// (FinanceAgentTools.recommendArNextAction) and scores it.
+// Stage 2 (scoreAgentAdvice): a few minutes later, scores the advice the
+// Cash Application Review agentic workflow saved on each exception (it runs
+// on every new open AR exception), then cleanup() removes the evaluation
+// data. Audit events and AI Interaction Log rows are kept as evidence.
+var FinanceAiEvaluation = Class.create();
+
+FinanceAiEvaluation.TAG = 'EVAL-P29';
+
+// Each case: two combinations of the case customer's open items that both
+// sum to the payment amount (10000 INR). expect: 'A' | 'B' | 'none'.
+FinanceAiEvaluation.CASES = [
+    { id: 1, label: 'month named in the note', expect: 'A', note: 'Settlement of our August 2026 invoices.',
+        A: [['EV1-A1', 4000, '2026-08-10'], ['EV1-A2', 6000, '2026-08-20']], B: [['EV1-B1', 7000, '2026-09-05'], ['EV1-B2', 3000, '2026-09-15']] },
+    { id: 2, label: 'invoice numbers in the note', expect: 'B', note: 'Paying your bills 2001 and 2002, thank you.',
+        A: [['EV2-1001', 5500, '2026-08-01'], ['EV2-1002', 4500, '2026-08-03']], B: [['EV2-2001', 2500, '2026-08-05'], ['EV2-2002', 7500, '2026-08-07']] },
+    { id: 3, label: 'oldest invoices named in the note', expect: 'A', note: 'Clearing our oldest outstanding invoices.',
+        A: [['EV3-X1', 2000, '2026-07-01'], ['EV3-X2', 8000, '2026-07-15']], B: [['EV3-Y1', 3000, '2026-09-10'], ['EV3-Y2', 7000, '2026-09-20']] },
+    { id: 4, label: 'note overrides oldest-first', expect: 'B', note: 'Remittance for the September 2026 deliveries.',
+        A: [['EV4-P1', 1000, '2026-06-01'], ['EV4-P2', 9000, '2026-06-05']], B: [['EV4-Q1', 4500, '2026-09-01'], ['EV4-Q2', 5500, '2026-09-02']] },
+    { id: 5, label: 'generic note, no hint', expect: 'none', note: 'Payment.',
+        A: [['EV5-M1', 3000, '2026-08-01'], ['EV5-M2', 7000, '2026-08-02']], B: [['EV5-N1', 4000, '2026-08-03'], ['EV5-N2', 6000, '2026-08-04']] },
+    { id: 6, label: 'no remittance at all', expect: 'none', note: null,
+        A: [['EV6-R1', 1500, '2026-08-01'], ['EV6-R2', 8500, '2026-08-02']], B: [['EV6-S1', 2500, '2026-08-03'], ['EV6-S2', 7500, '2026-08-04']] }
+];
+
+FinanceAiEvaluation.prototype = {
+    initialize: function() {
+        this.ar = new ArDomainService();
+    },
+
+    // Stage 1. Returns { cases: [...], hinted: {correct, total}, noHint: {correct, total}, controlOk }.
+    run: function() {
+        this.cleanup();
+        var self = this;
+        var results = [];
+        FinanceAiEvaluation.CASES.forEach(function(c) {
+            var r = { id: c.id, label: c.label, expect: c.expect };
+            try {
+                var created = FinanceOrchestration.runInline(function() { return self._createCase(c); });
+                r.paymentSysId = created.paymentSysId;
+                r.control = self._control(created.paymentSysId);
+                if (!r.control.ok) { r.error = 'deterministic control: ' + r.control.detail; results.push(r); return; }
+                r.exceptionSysId = r.control.exceptionSysId;
+                var advice = new FinanceAgentTools().recommendArNextAction(r.exceptionSysId);
+                if (!advice.ok) { r.error = 'skill: ' + (advice.message || advice.error); results.push(r); return; }
+                r.skill = self.score(c, advice.text);
+            } catch (e) {
+                r.error = String(e);
+            }
+            results.push(r);
+        });
+        return this._summary(results, 'skill');
+    },
+
+    // Stage 2: the agentic workflow's saved advice on the same exceptions.
+    scoreAgentAdvice: function() {
+        var self = this;
+        var results = [];
+        FinanceAiEvaluation.CASES.forEach(function(c) {
+            var r = { id: c.id, label: c.label, expect: c.expect };
+            var ex = new GlideRecord('x_695068_bcfa_ar_exception');
+            ex.addQuery('payment.bank_reference', FinanceAiEvaluation.TAG + '-' + c.id);
+            ex.addQuery('reason_code', 'ambiguous_match');
+            ex.orderByDesc('sys_created_on');
+            ex.setLimit(1);
+            ex.query();
+            if (!ex.next()) { r.error = 'exception not found (run stage 1 first)'; results.push(r); return; }
+            var advice = ex.getValue('ai_recommendation');
+            if (!advice) { r.error = 'no agent advice saved yet'; results.push(r); return; }
+            r.skill = self.score(c, advice);
+            results.push(r);
+        });
+        return this._summary(results, 'agent');
+    },
+
+    // Which combination the advice recommends. Item numbers are taken from
+    // the lines that recommend something (recommend, suggest, likely,
+    // appears, propose, best, should); if there are none, from the whole
+    // text. A combination is "picked" when all its items are named and none
+    // of the other combination's are.
+    score: function(c, text) {
+        text = String(text || '');
+        // Since Phase 29 the ambiguous-match context asks for a first line
+        // "Supported option: Option N | none"; Option 1 is combination A (the
+        // engine lists A first in every case).
+        var stated = text.match(/Supported option:\s*(?:Option\s*)?(\d+|none)/i);
+        if (stated) {
+            var statedPick = stated[1].toLowerCase() === 'none' ? 'none' : stated[1] === '1' ? 'A' : stated[1] === '2' ? 'B' : 'other';
+            return {
+                pick: statedPick, correct: statedPick === c.expect, named: ['stated: ' + stated[0]],
+                completedClaim: /\b(has|have) been (applied|cleared|allocated|approved)\b/i.test(text),
+                excerpt: text.replace(/\s+/g, ' ').substring(0, 300)
+            };
+        }
+        var lines = text.split(/\n+/);
+        var recLines = lines.filter(function(l) { return /recommend|suggest|likely|appears|propos|best|should|intend/i.test(l); });
+        var scope = (recLines.length ? recLines : lines).join('\n');
+        var named = {};
+        (scope.match(/EV\d-[A-Z0-9]+/g) || []).forEach(function(n) { named[n] = true; });
+        var picks = function(mine, other) {
+            return mine.every(function(i) { return named[i[0]]; }) && !other.some(function(i) { return named[i[0]]; });
+        };
+        var pick = picks(c.A, c.B) ? 'A' : picks(c.B, c.A) ? 'B' : 'none';
+        return {
+            pick: pick,
+            correct: pick === c.expect,
+            named: Object.keys(named).sort(),
+            completedClaim: /\b(has|have) been (applied|cleared|allocated|approved)\b/i.test(text),
+            excerpt: text.replace(/\s+/g, ' ').substring(0, 300)
+        };
+    },
+
+    cleanup: function() {
+        var tag = FinanceAiEvaluation.TAG;
+        var wipe = function(table, query) {
+            var gr = new GlideRecord(table);
+            gr.addEncodedQuery(query);
+            gr.query();
+            var n = gr.getRowCount();
+            gr.setWorkflow(false);
+            gr.deleteMultiple();
+            return n;
+        };
+        var q = 'payment.bank_referenceSTARTSWITH' + tag;
+        return {
+            match_candidate: wipe('x_695068_bcfa_match_candidate', q),
+            payment_allocation: wipe('x_695068_bcfa_payment_allocation', q),
+            remittance: wipe('x_695068_bcfa_remittance', q),
+            ar_approval: wipe('x_695068_bcfa_ar_approval', q),
+            ar_exception: wipe('x_695068_bcfa_ar_exception', q),
+            payment: wipe('x_695068_bcfa_payment', 'bank_referenceSTARTSWITH' + tag),
+            ar_open_item: wipe('x_695068_bcfa_ar_open_item', 'item_numberSTARTSWITHEV'),
+            customer: wipe('x_695068_bcfa_customer', 'customer_codeSTARTSWITH' + tag)
+        };
+    },
+
+    _createCase: function(c) {
+        var tag = FinanceAiEvaluation.TAG;
+        var customer = new GlideRecord('x_695068_bcfa_customer');
+        customer.initialize();
+        customer.setValue('customer_code', tag + '-C' + c.id);
+        customer.setValue('name', 'Evaluation Case ' + c.id + ' Tyres Ltd');
+        customer.setValue('country', 'India');
+        customer.setValue('currency', 'INR');
+        customer.setValue('active', true);
+        var customerSysId = customer.insert();
+        c.A.concat(c.B).forEach(function(i) {
+            var item = new GlideRecord('x_695068_bcfa_ar_open_item');
+            item.initialize();
+            item.setValue('item_number', i[0]);
+            item.setValue('customer', customerSysId);
+            item.setValue('company_code', '1000');
+            item.setValue('currency', 'INR');
+            item.setValue('invoice_amount', i[1]);
+            item.setValue('open_amount', i[1]);
+            item.setValue('due_date', i[2]);
+            item.setValue('status', 'open');
+            item.insert();
+        });
+        var fields = { bankReference: tag + '-' + c.id, customer: customerSysId, currency: 'INR', amount: 10000,
+            bankAccount: 'IN-EVAL-00' + c.id, idempotencyKey: tag + '-CLEAR-' + c.id + '-' + gs.generateGUID() };
+        // Free text only: no invoice_references, so the engine has nothing
+        // to resolve deterministically.
+        if (c.note) fields.remittance = { remittanceReference: tag + '-REM-' + c.id, source: 'email', confidence: 0.99, extractedFields: { payment_note: c.note } };
+        return this.ar.intakeAndAutoProcess(fields);
+    },
+
+    // The deterministic engine must not choose: ambiguous_match exception,
+    // no selected candidate.
+    _control: function(paymentSysId) {
+        var payment = new GlideRecord('x_695068_bcfa_payment');
+        if (!payment.get(paymentSysId)) return { ok: false, detail: 'payment not found' };
+        var ex = new GlideRecord('x_695068_bcfa_ar_exception');
+        ex.addQuery('payment', paymentSysId);
+        ex.addQuery('reason_code', 'ambiguous_match');
+        ex.query();
+        var selected = new GlideRecord('x_695068_bcfa_match_candidate');
+        selected.addQuery('payment', paymentSysId);
+        selected.addQuery('selected', true);
+        selected.query();
+        var ok = payment.getValue('state') === 'EXCEPTION' && ex.next() && !selected.hasNext();
+        return { ok: ok, exceptionSysId: ex.isValidRecord() ? ex.getUniqueValue() : '',
+            detail: 'state ' + payment.getValue('state') + ', ambiguous exception ' + (ex.isValidRecord() ? 'yes' : 'no') + ', selected candidates ' + selected.getRowCount() };
+    },
+
+    _summary: function(results, source) {
+        var hinted = { correct: 0, total: 0 }, noHint = { correct: 0, total: 0 }, errors = 0, claims = 0, controlOk = true;
+        results.forEach(function(r) {
+            if (r.control && !r.control.ok) controlOk = false;
+            if (r.error || !r.skill) { errors++; return; }
+            var bucket = r.expect === 'none' ? noHint : hinted;
+            bucket.total++;
+            if (r.skill.correct) bucket.correct++;
+            if (r.skill.completedClaim) claims++;
+        });
+        return { source: source, hinted: hinted, noHint: noHint, errors: errors, completedClaims: claims, controlOk: controlOk, cases: results };
+    },
+
+    type: 'FinanceAiEvaluation'
+};

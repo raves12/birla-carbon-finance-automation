@@ -1,0 +1,162 @@
+"""Phase 40 deploy (client POC criteria): builds a Scripts - Background loader
+from the now-sdk build for the records of one Phase 40 step, wrapped in a
+drift guard: every modified script include must be live == its source at
+BASE (the last deployed commit) or already == this build, else nothing runs.
+
+Usage (after npx now-sdk build):
+  python scripts/deploy/gen_phase40_deploy.py <step>
+Steps are defined in STEPS below. Output: scripts/deploy/phase40_<step>_bg.js
+Run the output in Scripts - Background, scope global.
+"""
+import io, json, os, re, subprocess, sys, tempfile
+
+REPO = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
+SCR = tempfile.gettempdir()
+
+STEPS = {
+    # Provider abstraction: DocumentExtractionService, NativeDocumentIntelligenceProvider,
+    # intake service and simulated provider changes, provider property, intake
+    # columns, poller job, Process Document / Reprocess messages.
+    'extraction': {
+        'base': 'fd51f95',
+        'new_si': ['DocumentExtractionService', 'NativeDocumentIntelligenceProvider'],
+        'mod_si': ['FinanceDocumentIntakeService', 'SimulatedDocumentExtraction'],
+        'files': r'^(sys_properties_(8445263612c84299b10c8173e3f373a1|9e5446bddbed4292bbc08ec0aa315ce9)'
+                 r'|sysauto_script_629f380962754e42b25fe343f0140815'
+                 r'|sys_ui_action_(18d525d32dce47ce959ada18613b9a06|d6364c9589c84fea88ccac365a8fdbcc|f13745dac6a540a28a8ce31af80d2ad9))\.xml$',
+        'choices': r'^sys_choice_x_695068_bcfa_finance_intake_extraction_provider\.xml$',
+        'columns': ['x_695068_bcfa_finance_intake=extraction_provider,extraction_task'],
+    },
+    # Tax (GST / VAT / withholding), tolerance visibility, AR deduction
+    # taxonomy and payment advice fields. The decision tables are built
+    # afterwards by phase40_decision_tables_bg.js (scope x_695068_bcfa).
+    'tax': {
+        'base': '1cfb575',
+        'new_si': [],
+        'mod_si': ['FinancePolicy', 'MatchingEngine', 'ApDomainService', 'ArDomainService', 'ArExceptionDecisionService', 'FinanceDocumentIntakeService'],
+        'files': r'^sys_properties_(fac5180f3ddb4078b27a16e16a899c49|fce08088c996402b8b4a514f6c2e4a36|7de59dea50f7489d934a307f2dfcb123'
+                 r'|1a8a42c456cc4ac98310e6d9dd50b290|83f6319d3267417b9ad650e54218b5af|6ec72ccb825549a791ae3ec89844b050)\.xml$',
+        'choices': r'^sys_choice_x_695068_bcfa_(ap_invoice_(extraction_provider|tax_validation_result|wht_result)|ap_match_tax_result'
+                   r'|ar_exception_deduction_type|deduction_(category_source|deduction_type)|remittance_extraction_provider|vendor_tax_category)\.xml$',
+        'columns': [
+            'x_695068_bcfa_ap_invoice=extraction_provider,document_country,document_language,tax_type,tax_rate_pct,cgst_amount,sgst_amount,igst_amount,'
+            'vat_amount,wht_amount,wht_rate_pct,tax_regime,expected_tax_amount,tax_variance_amount,tax_validation_result,tax_validation_detail,'
+            'tax_rule_source,wht_applicable,wht_code,wht_expected_amount,wht_result',
+            'x_695068_bcfa_ap_match=tolerance_source,quantity_tolerance_pct,price_tolerance_pct,tax_tolerance_abs,tax_tolerance_pct,total_tolerance_abs,'
+            'expected_tax,tax_result,tolerance_detail',
+            'x_695068_bcfa_vendor=tax_category',
+            'x_695068_bcfa_deduction=currency,advice_reason,advice_amount,ai_recommendation,category_source',
+            'x_695068_bcfa_remittance=payer_name,bank_reference,payment_amount,currency,advice_deduction_amount,advice_deduction_reason,invoice_count,extraction_provider',
+        ],
+    },
+}
+
+
+# ATF tests of a step: the test records, their steps and the suite links
+# (BCFA Regression) of the given test sys_ids.
+def atf_files(test_ids):
+    upd = os.path.join(REPO, 'dist', 'app', 'update')
+    out = []
+    for f in os.listdir(upd):
+        if not f.startswith('sys_atf_'):
+            continue
+        x = io.open(os.path.join(upd, f), encoding='utf8').read()
+        if any(t in x for t in test_ids):
+            out.append(f[:-4])
+    return out
+
+
+CP_TESTS = ['0f9684be734741daa3b97ec040e91399', '158431353b0a457195253cd20ac8bac1', 'b389e812f61c4bb09ed7c730aa20b6ee', '3943fb95ed7341bc9d6a7554304c5035']
+STEPS['tests'] = {
+    'base': 'a2ed8cf',
+    'new_si': [],
+    'mod_si': ['FinanceJourneyService'],
+    'atf': CP_TESTS,
+}
+
+# Fixes found by the native extraction measurement (set 2): locale-aware
+# number parsing (German "2.058,80") and split GST (CGST + SGST invoices print
+# the component rate, 9% of GST 18%).
+STEPS['fixes'] = {
+    'base': 'ac4462c',
+    'new_si': [],
+    'mod_si': ['NativeDocumentIntelligenceProvider', 'MatchingEngine'],
+    'atf': ['0f9684be734741daa3b97ec040e91399', '3943fb95ed7341bc9d6a7554304c5035', 'a93e389547e243dda3c7550a2d2b5b01', 'c98429799fcf464b90d8c73cf10a9842'],  # CP-TAX split GST; CP-EXT number formats; Lifecycle + Orchestration race fix
+}
+
+# Playbooks (Phase 14 of the client POC criteria): provider-aware extraction
+# stages, tax / withholding results, tolerances applied, payment advice and
+# deduction taxonomy. Follow with phase35_playbook_yokohama_fix_bg.js and
+# activate both Playbooks again in Workflow Studio.
+STEPS['playbooks'] = {
+    'base': '3dadc4c',
+    'new_si': [],
+    'mod_si': [],
+    'files': r'^sys_pd_process_definition_(74ce2044163b43e7bbaa53a0cb012d42|e01d2325600b49c5a0165460897cd11d)\.xml$',
+}
+
+# Remaining fixes after the client POC criteria run: AR open items read
+# through IntegrationService before matching (AR-REC-004); SAP adapter by
+# configuration (x_695068_bcfa.sap.adapter); journey banner labels only the
+# extraction actually recorded; native extraction source choice and stale
+# "not licensed" labels.
+STEPS['remaining'] = {
+    'base': '62ead09',
+    'new_si': [],
+    'mod_si': ['FinancePolicy', 'ApDomainService', 'ArDomainService', 'FinanceJourneyService', 'AISimulationService'],
+    'files': r'^(sys_properties_50d388a192d3432398e073c3e549591b'
+             r'|sys_documentation_x_695068_bcfa_(ap_extraction_source|finance_intake_classification_reason)_en)\.xml$',
+    'choices': r'^sys_choice_x_695068_bcfa_ap_extraction_source\.xml$',
+    'atf': ['f8bacf78488341a6a620d529cba81a17', 'b389e812f61c4bb09ed7c730aa20b6ee'],  # PB-AP-004 banner; CP-DED AR-REC-004
+}
+
+
+def h(t):
+    a = 7
+    for ch in t:
+        a = (a * 31 + ord(ch)) % 2147483647
+    return a
+
+
+def main(step):
+    cfg = STEPS[step]
+    guard = []
+    for n in cfg['mod_si']:
+        rel = 'src/server/script-includes/' + n + '.server.js'
+        head = subprocess.run(['git', 'show', cfg['base'] + ':' + rel], cwd=REPO, capture_output=True, check=True).stdout.decode('utf8').replace('\r\n', '\n')
+        work = io.open(os.path.join(REPO, rel), encoding='utf8').read().replace('\r\n', '\n')
+        guard.append({'api': 'x_695068_bcfa.' + n, 'head': h(head), 'work': h(work)})
+    tmp = os.path.join(SCR, 'p40_loader_raw.js')
+    args = ['node', 'scripts/deploy/gen_record_loader.mjs', tmp, '--si', ','.join(cfg['new_si'] + cfg['mod_si'])]
+    files = cfg.get('files')
+    if cfg.get('atf'):
+        names = atf_files(cfg['atf'])
+        print('atf files', len(names))
+        atf_re = '^(' + '|'.join(names) + r')\.xml$'
+        files = atf_re if not files else '(' + files + ')|(' + atf_re + ')'
+    if files:
+        args += ['--files', files]
+    if cfg.get('choices'):
+        args += ['--choices', cfg['choices']]
+    for c in cfg.get('columns', []):
+        args += ['--columns', c]
+    subprocess.run(args, cwd=REPO, check=True)
+    loader = io.open(tmp, encoding='utf8').read()
+    script = ("// Phase 40 step '" + step + "'. Generated by scripts/deploy/gen_phase40_deploy.py from the now-sdk build.\n"
+              "// Run in scope global. Aborts unless each modified script include is live == its source at " + cfg['base'] + "\n"
+              "// (or already == this build). Safe to re-run.\n"
+              "(function() {\n"
+              "function h(t) { var a = 7; for (var i = 0; i < t.length; i++) a = (a * 31 + t.charCodeAt(i)) % 2147483647; return a; }\n"
+              "var G = " + json.dumps(guard) + ", drift = [];\n"
+              "G.forEach(function(g) { var si = new GlideRecord('sys_script_include'); si.addQuery('api_name', g.api); si.query();\n"
+              "  if (!si.next()) { drift.push(g.api + ' missing'); return; }\n"
+              "  var v = h(si.getValue('script').replace(/\\r\\n/g, '\\n')); if (v !== g.head && v !== g.work) drift.push(g.api); });\n"
+              "if (drift.length) { gs.info('BCFA_DEPLOY ABORTED live script includes differ from source: ' + drift.join(', ')); return; }\n"
+              + loader + "\n})();\n")
+    dst = os.path.join(REPO, 'scripts', 'deploy', 'phase40_' + step + '_bg.js')
+    io.open(dst, 'w', encoding='utf8', newline='\n').write(script)
+    print('written', dst, len(script), 'hash', h(script))
+
+
+if __name__ == '__main__':
+    main(sys.argv[1] if len(sys.argv) > 1 else 'extraction')

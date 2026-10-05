@@ -5,12 +5,12 @@ import { UiAction, Record } from '@servicenow/sdk/core'
 // Every script here calls straight into FinanceDocumentIntakeService or the
 // existing ApDomainService; none of it duplicates their logic.
 
-export const intakeProcessWithClaude = UiAction({
+export const intakeProcessDocument = UiAction({
     $id: Now.ID['ui-action-intake-process-with-claude'],
     table: 'x_695068_bcfa_finance_intake',
-    name: 'Process with Claude',
-    actionName: 'process_with_claude_intake',
-    hint: 'Classifies the attached document with Claude and, once a document type is known, extracts it and creates the corresponding AP Invoice or Payment/Remittance.',
+    name: 'Process Document',
+    actionName: 'process_document_intake',
+    hint: 'Processes the attached document: uses the document type set at upload, reads the fields (simulated extraction until Document Intelligence extraction is licensed), then creates the AP Invoice or Payment/Remittance and runs the deterministic pipeline.',
     showUpdate: true,
     condition: "current.processing_status == 'new'",
     form: {
@@ -23,20 +23,23 @@ export const intakeProcessWithClaude = UiAction({
     },
     script: `
         var service = new FinanceDocumentIntakeService();
-        service.processDocument(current.getUniqueValue());
+        var result = service.processDocument(current.getUniqueValue());
+        if (result && result.pending) {
+            gs.addInfoMessage('Native extraction is running (ServiceNow Document Intelligence). The document continues automatically when it finishes, usually within a minute; refresh to see the result.');
+        }
         action.setRedirectURL(current);
     `,
 })
 
-const intakeProcessWithClaudeFormAction = Record({
+const intakeProcessDocumentFormAction = Record({
     $id: Now.ID['ui-action-intake-process-with-claude-form-action'],
     table: 'sys_ux_form_action',
     data: {
         table: 'x_695068_bcfa_finance_intake',
-        ui_action: intakeProcessWithClaude,
+        ui_action: intakeProcessDocument,
         action_type: 'ui_action',
         active: true,
-        name: 'Process with Claude',
+        name: 'Process Document',
     },
 })
 
@@ -45,14 +48,14 @@ Record({
     table: 'sys_ux_form_action_layout_item',
     data: {
         table: 'x_695068_bcfa_finance_intake',
-        name: 'Process with Claude',
-        label: 'Process with Claude',
+        name: 'Process Document',
+        label: 'Process Document',
         color: 'primary-ai',
         overflow: false,
         order: 100,
         active: true,
         item_type: 'action',
-        action: intakeProcessWithClaudeFormAction,
+        action: intakeProcessDocumentFormAction,
     },
 })
 
@@ -74,7 +77,10 @@ export const intakeReprocess = UiAction({
     },
     script: `
         var service = new FinanceDocumentIntakeService();
-        service.processDocument(current.getUniqueValue());
+        var result = service.processDocument(current.getUniqueValue());
+        if (result && result.pending) {
+            gs.addInfoMessage('Native extraction is running (ServiceNow Document Intelligence). The document continues automatically when it finishes, usually within a minute; refresh to see the result.');
+        }
         action.setRedirectURL(current);
     `,
 })

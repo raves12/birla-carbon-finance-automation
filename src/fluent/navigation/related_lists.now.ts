@@ -37,9 +37,12 @@ export const apInvoiceToAuditEventRel = Record({
         basic_query_from: 'x_695068_bcfa_audit_event',
         advanced: false,
         simple_reference: false,
+        // Phase 19: the whole evidence chain of the transaction: its own
+        // events plus every event sharing its correlation ID (intake,
+        // exceptions, approvals, integration, reconciliation).
         query_with: `(function refineQuery(current, parent) {
-    current.addQuery('source_table', 'x_695068_bcfa_ap_invoice');
-    current.addQuery('source_record', parent.sys_id);
+    var q = current.addQuery('source_record', parent.sys_id);
+    if (parent.getValue('correlation_id')) q.addOrCondition('correlation_id', parent.getValue('correlation_id'));
 })(current, parent);`,
     },
 })
@@ -118,9 +121,12 @@ export const paymentToAuditEventRel = Record({
         basic_query_from: 'x_695068_bcfa_audit_event',
         advanced: false,
         simple_reference: false,
+        // Phase 19: the whole evidence chain of the transaction: its own
+        // events plus every event sharing its correlation ID (intake,
+        // exceptions, approvals, integration, reconciliation).
         query_with: `(function refineQuery(current, parent) {
-    current.addQuery('source_table', 'x_695068_bcfa_payment');
-    current.addQuery('source_record', parent.sys_id);
+    var q = current.addQuery('source_record', parent.sys_id);
+    if (parent.getValue('correlation_id')) q.addOrCondition('correlation_id', parent.getValue('correlation_id'));
 })(current, parent);`,
     },
 })
@@ -184,4 +190,50 @@ export const deductionEntry = Record({
     $id: Now.ID['deduction-entry'],
     table: 'sys_ui_related_list_entry',
     data: { list_id: paymentAllocationRelatedList, position: 0, related_list: 'x_695068_bcfa_deduction.payment_allocation' },
+})
+
+// --- Phase 24: AI evidence on the Invoice / Payment review -----------------
+// Every AI run in the transaction's correlation chain (skills, agentic
+// workflows, extraction), with its human outcome.
+
+export const apInvoiceToAiInteractionRel = Record({
+    $id: Now.ID['ap-invoice-to-ai-interaction-rel'],
+    table: 'sys_relationship',
+    data: {
+        name: 'AP Invoice to AI Interactions',
+        basic_apply_to: 'x_695068_bcfa_ap_invoice',
+        basic_query_from: 'x_695068_bcfa_ai_interaction',
+        advanced: false,
+        simple_reference: false,
+        query_with: `(function refineQuery(current, parent) {
+    var q = current.addQuery('source_record', parent.sys_id);
+    if (parent.getValue('correlation_id')) q.addOrCondition('correlation_id', parent.getValue('correlation_id'));
+})(current, parent);`,
+    },
+})
+export const apAiInteractionEntry = Record({
+    $id: Now.ID['ap-ai-interaction-entry'],
+    table: 'sys_ui_related_list_entry',
+    data: { list_id: apInvoiceRelatedList, position: 8, related_list: `REL:${apInvoiceToAiInteractionRel}` },
+})
+
+export const paymentToAiInteractionRel = Record({
+    $id: Now.ID['payment-to-ai-interaction-rel'],
+    table: 'sys_relationship',
+    data: {
+        name: 'Payment to AI Interactions',
+        basic_apply_to: 'x_695068_bcfa_payment',
+        basic_query_from: 'x_695068_bcfa_ai_interaction',
+        advanced: false,
+        simple_reference: false,
+        query_with: `(function refineQuery(current, parent) {
+    var q = current.addQuery('source_record', parent.sys_id);
+    if (parent.getValue('correlation_id')) q.addOrCondition('correlation_id', parent.getValue('correlation_id'));
+})(current, parent);`,
+    },
+})
+export const paymentAiInteractionEntry = Record({
+    $id: Now.ID['payment-ai-interaction-entry'],
+    table: 'sys_ui_related_list_entry',
+    data: { list_id: paymentRelatedList, position: 8, related_list: `REL:${paymentToAiInteractionRel}` },
 })

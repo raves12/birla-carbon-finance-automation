@@ -28,6 +28,13 @@ export const x_695068_bcfa_vendor = Table({
         currency: StringColumn({ label: 'Currency', maxLength: 3 }),
         payment_terms: StringColumn({ label: 'Payment Terms', maxLength: 40 }),
         bank_account: StringColumn({ label: 'Bank Account', maxLength: 40 }),
+        // Phase 40: POC reference data for the BCFA AP Tax Expectation
+        // decision table (with the country). Not read from SAP.
+        tax_category: ChoiceColumn({
+            label: 'Tax Category (POC reference)',
+            default: 'goods',
+            choices: { goods: 'Goods', services: 'Services' },
+        }),
         active: BooleanColumn({ label: 'Active', default: true }),
     },
 })

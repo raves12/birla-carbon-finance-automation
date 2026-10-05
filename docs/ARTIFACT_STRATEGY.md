@@ -55,6 +55,18 @@ scheduled exception-aging escalation sweeps (`trigger.scheduled.daily` + `action
 + `action.core.sendNotification`/`updateRecord`) for both AP and AR. This keeps every deployed
 artifact backed by a documented, verified mechanism rather than an assumption.
 
+## Phase 25: Flow Designer owns the hand-offs
+
+Phase 25 moves the AP/AR hand-offs into Flow Designer (15 flows, `docs/AUTOMATED_FLOWS.md`)
+without breaking the rule above. The script-step data convention is still undocumented, so no
+flow contains a custom script step. Each flow uses only documented core actions: a record or
+scheduled trigger, `action.core.fireEvent`, `action.core.log`, `lookUpRecords` and `forEach`.
+The event it fires (`x_695068_bcfa.flow.stage`, parm1 = stage) reaches the domain services
+through a Script Action, whose contract (`event.parm1`, `current`) is documented in the SDK. The
+steps themselves stay in `ApDomainService` / `ArDomainService`, now called stage by stage through
+`FinanceOrchestration`. The approval cascade business rules still exist, but only act in inline
+mode (demo seeding and tests).
+
 ## Correction log
 
 An earlier pass of this document concluded Flow Designer flows could not be Fluent-authored, based on a stray, unpublished `@servicenow/fluent-flow` reference found only as an internal `devDependency` listing. That conclusion was wrong and has been corrected above after actually reading the bundled SDK documentation (`node_modules/@servicenow/sdk/docs/api/flow/*.md` and `statemodel-api.md`), which describes a real, complete `Flow()`/`Subflow()`/`Action()`/`StateModel()` surface. Recorded here per the project's own principle of documenting uncertainty and corrections rather than silently overwriting them.

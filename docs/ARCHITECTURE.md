@@ -1,5 +1,7 @@
 # ARCHITECTURE.md — Birla Carbon Finance Automation
 
+> **Phase 40 update (2026-10-05).** Layer 3 (Document Intelligence) is native: `DocumentExtractionService` selects ServiceNow Document Intelligence on Now LLM by default; the simulated script include is for test fixtures only. SAP calls use the adapter named in `x_695068_bcfa.sap.adapter` (`SAP_POC_MODES.md`).
+
 Target logical architecture for the POC, derived from the workbook's own 11-layer Architecture
 Blueprint sheet and constrained by the verified capabilities/gaps in `DISCOVERY.md` and
 `ARTIFACT_STRATEGY.md`. Scope: AP PO/SO invoice processing (`AP-01..11`) and Cash Application

@@ -1,0 +1,61 @@
+{
+  "_comment": "Ground truth for the 14 SYNTHETIC fixtures in test/fixtures (not Birla Carbon documents). Values transcribed from the printed text of each PDF (pdftotext), 2026-10-05. Only fields that are printed are listed; a field absent here is 'not printed' and any value extracted for it counts as a false positive. Amounts are numbers; countries are English names.",
+  "ap": {
+    "AP_INV_001_CLEAN.pdf": {
+      "vendor_name": "Rajasthan Carbon Feedstock Pvt Ltd", "vendor_tax_id": "08AACCR1234F1Z5", "vendor_country": "India",
+      "invoice_number": "INV-AP-001", "invoice_date": "2026-09-20", "po_number": "PO0001", "company_code": "BC01", "currency": "INR",
+      "net_amount": 5000, "tax_amount": 900, "tax_type": "GST", "tax_rate_pct": 18, "gross_amount": 5900, "document_language": "English",
+      "lines": [{ "description": "Carbon Black Feedstock", "quantity": 100, "unit": "MT", "unit_price": 50, "net_amount": 5000 }]
+    },
+    "AP_INV_002_QTY_VARIANCE.pdf": {
+      "vendor_name": "Rhine Logistics GmbH", "vendor_tax_id": "DE123456789", "vendor_country": "Germany",
+      "invoice_number": "INV-AP-004", "invoice_date": "2026-09-20", "po_number": "PO0004", "company_code": "BC01", "currency": "EUR",
+      "net_amount": 7500, "tax_amount": 1425, "tax_type": "VAT", "tax_rate_pct": 19, "vat_amount": 1425, "gross_amount": 8925, "document_language": "English",
+      "lines": [{ "description": "Packaging Equipment - Unit B4", "quantity": 15, "unit": "EA", "unit_price": 500, "net_amount": 7500 }]
+    },
+    "AP_INV_003_PRICE_VARIANCE.pdf": {
+      "vendor_name": "Gulf Coast Feedstock LLC", "vendor_tax_id": "74-1234567", "vendor_country": "United States",
+      "invoice_number": "INV-AP-005", "invoice_date": "2026-09-20", "po_number": "PO0005", "company_code": "BC01", "currency": "USD",
+      "net_amount": 15000, "tax_amount": 0, "tax_type": "Sales Tax", "gross_amount": 15000, "document_language": "English",
+      "lines": [{ "description": "Carbon Black Feedstock", "quantity": 300, "unit": "MT", "unit_price": 50, "net_amount": 15000 }]
+    },
+    "AP_INV_004_DUPLICATE.pdf": {
+      "vendor_name": "Rajasthan Carbon Feedstock Pvt Ltd", "vendor_tax_id": "08AACCR1234F1Z5", "vendor_country": "India",
+      "invoice_number": "INV-AP-001", "invoice_date": "2026-09-20", "po_number": "PO0001", "company_code": "BC01", "currency": "INR",
+      "net_amount": 5000, "tax_amount": 900, "tax_type": "GST", "tax_rate_pct": 18, "gross_amount": 5900, "document_language": "English",
+      "lines": [{ "description": "Carbon Black Feedstock", "quantity": 100, "unit": "MT", "unit_price": 50, "net_amount": 5000 }]
+    },
+    "AP_INV_005_TAX_EXCEPTION.pdf": {
+      "vendor_name": "Chennai Packaging Solutions", "vendor_tax_id": "33AAAPL5678M1Z3", "vendor_country": "India",
+      "invoice_number": "INV-AP-006", "invoice_date": "2026-09-20", "po_number": "PO0006", "company_code": "BC01", "currency": "INR",
+      "net_amount": 2000, "tax_amount": 50, "tax_type": "GST", "gross_amount": 2050, "document_language": "English",
+      "lines": [{ "description": "Packaging Cartons - Type A", "quantity": 1000, "unit": "EA", "unit_price": 2, "net_amount": 2000 }]
+    },
+    "AP_INV_006_LOW_CONFIDENCE.pdf": {
+      "vendor_name": "Miskolc Freight Svcs.", "vendor_country": "Hungary",
+      "invoice_number": "INV-AP-007", "invoice_date": "2026-09-20", "company_code": "BC01", "currency": "EUR",
+      "net_amount": 3000, "tax_amount": 0, "gross_amount": 3000, "document_language": "English",
+      "lines": [{ "description": "Freight chgs - see attch.", "net_amount": 3000 }]
+    }
+  },
+  "ar": {
+    "AR_REMIT_001_EXACT.pdf": { "customer_name": "Continental Tyre Manufacturing", "bank_reference": "BANK-AR-001", "payment_date": "2026-09-22", "currency": "INR", "payment_amount": 15000,
+      "invoice_lines": [{ "invoice_reference": "ARI0001", "amount_applied": 15000 }] },
+    "AR_REMIT_002_MULTI_INVOICE.pdf": { "customer_name": "Deccan Rubber Industries", "bank_reference": "BANK-AR-003", "payment_date": "2026-09-22", "currency": "INR", "payment_amount": 25000,
+      "invoice_lines": [{ "invoice_reference": "ARI0002", "amount_applied": 8000 }, { "invoice_reference": "ARI0003", "amount_applied": 12000 }, { "invoice_reference": "ARI0004", "amount_applied": 5000 }] },
+    "AR_REMIT_003_SHORT_PAY.pdf": { "customer_name": "Danube Rubber Kft", "bank_reference": "BANK-AR-006", "payment_date": "2026-09-22", "currency": "EUR", "payment_amount": 15000,
+      "invoice_lines": [{ "invoice_reference": "ARI0009", "amount_applied": 15000, "invoice_amount": 17500 }] },
+    "AR_REMIT_004_BANK_CHARGE.pdf": { "customer_name": "Karnataka Elastomers Pvt Ltd", "bank_reference": "BANK-AR-007", "payment_date": "2026-09-22", "currency": "INR", "payment_amount": 10975,
+      "deduction_amount": 25, "deduction_reason": "correspondent bank charges",
+      "invoice_lines": [{ "invoice_reference": "ARI0012", "amount_applied": 10975, "invoice_amount": 11000 }] },
+    "AR_REMIT_005_ALIAS_CUSTOMER.pdf": { "customer_name": "LONE STAR TYRE CO", "bank_reference": "BANK-AR-004", "payment_date": "2026-09-22", "currency": "USD", "payment_amount": 30000,
+      "invoice_lines": [{ "invoice_reference": "ARI0007", "amount_applied": 30000 }] },
+    "AR_REMIT_101_EXACT.pdf": { "customer_name": "Sahyadri Tyre Works Pvt Ltd", "bank_reference": "BANK-POC2-001", "payment_date": "2026-09-26", "currency": "INR", "payment_amount": 50000,
+      "invoice_lines": [{ "invoice_reference": "ARINV1001", "amount_applied": 50000 }] },
+    "AR_REMIT_102_MULTI_INVOICE.pdf": { "customer_name": "Nilgiri Rubber Compounds Ltd", "bank_reference": "BANK-POC2-002", "payment_date": "2026-09-26", "currency": "INR", "payment_amount": 80000,
+      "invoice_lines": [{ "invoice_reference": "ARINV2001", "amount_applied": 50000 }, { "invoice_reference": "ARINV2002", "amount_applied": 30000 }] },
+    "AR_REMIT_103_BANK_CHARGE.pdf": { "customer_name": "Vindhya Elastomers Pvt Ltd", "bank_reference": "BANK-POC2-003", "payment_date": "2026-09-26", "currency": "INR", "payment_amount": 79500,
+      "deduction_amount": 500, "deduction_reason": "correspondent bank charges",
+      "invoice_lines": [{ "invoice_reference": "ARINV3001", "amount_applied": 50000 }, { "invoice_reference": "ARINV3002", "amount_applied": 29500, "invoice_amount": 30000 }] }
+  }
+}

@@ -188,9 +188,27 @@ MockSAPAdapter.prototype = {
         return { status: 'SUCCESS', sapDocumentId: sapDocId, message: 'Vendor invoice posted (simulated).' };
     },
 
+    // SAP processing mode (client requirement), simulated:
+    //   direct - the clearing is processed at once (FB05 document);
+    //   draft  - the instruction is staged as a parked document (PARK...) that
+    //            an SAP user must post; nothing is cleared yet.
     clearPayment: function(payload) {
+        if (payload && payload.processingMode === 'draft') {
+            return { status: 'SUCCESS', staged: true, processingMode: 'draft', sapDocumentId: this._sapDocId('PARK', payload.idempotencyKey),
+                message: 'Clearing instruction staged as an SAP draft (parked document), awaiting SAP-side confirmation (MOCK SAP, simulated).' };
+        }
         var sapDocId = this._sapDocId('FB05', payload.idempotencyKey);
-        return { status: 'SUCCESS', sapDocumentId: sapDocId, message: 'Payment cleared (simulated).' };
+        return { status: 'SUCCESS', processingMode: 'direct', sapDocumentId: sapDocId, message: 'Payment cleared directly (MOCK SAP, simulated).' };
+    },
+
+    // Status of a staged draft. The SAP-side decision is simulated by the
+    // Mock SAP setting x_695068_bcfa.mock_sap.draft_outcome: 'pending'
+    // (default: the SAP user has not posted it yet), 'posted' or 'rejected'.
+    getDraftStatus: function(draftDocumentId, idempotencyKey) {
+        var outcome = String(gs.getProperty('x_695068_bcfa.mock_sap.draft_outcome', 'pending'));
+        if (outcome === 'pending') return { outcome: 'DRAFT_PENDING', draftDocumentId: draftDocumentId, message: 'Draft not yet posted in SAP (MOCK SAP).' };
+        if (outcome === 'rejected') return { outcome: 'DRAFT_REJECTED', draftDocumentId: draftDocumentId, message: 'Draft rejected in SAP (MOCK SAP).' };
+        return { outcome: 'POSTED', draftDocumentId: draftDocumentId, sapDocumentId: this._sapDocId('FB05', idempotencyKey), message: 'Draft posted in SAP (MOCK SAP).' };
     },
 
     // Reveals the ground truth for a previously-timed-out write operation.
@@ -198,10 +216,22 @@ MockSAPAdapter.prototype = {
     getPostingStatus: function(operation, idempotencyKey) {
         var committed = this._deterministicallyCommitted(idempotencyKey);
         if (committed) {
-            var prefix = operation === 'clearPayment' ? 'FB05' : 'MIRO';
+            var prefix = (operation === 'clearPayment' || operation === 'clearCustomerPayment') ? 'FB05' : 'MIRO';
             return { outcome: 'COMMITTED', sapDocumentId: this._sapDocId(prefix, idempotencyKey) };
         }
         return { outcome: 'NOT_FOUND' };
+    },
+
+    // ---- Canonical operation names (Phase 18) --------------------------------
+    // The integration contract (RealSAPAdapter.CANONICAL_OPERATIONS); the
+    // older names above stay as aliases for existing callers and records.
+
+    getPurchaseOrder: function(poNumber) { return this.getPO(poNumber); },
+    getOpenItems: function(customerSysId) { return this.getOpenARItems(customerSysId); },
+    clearCustomerPayment: function(payload) { return this.clearPayment(payload); },
+    queryTransactionStatus: function(operation, idempotencyKey, externalReference, documentId) {
+        if (documentId && String(documentId).indexOf('PARK') === 0) return this.getDraftStatus(documentId, idempotencyKey);
+        return this.getPostingStatus(operation, idempotencyKey);
     },
 
     type: 'MockSAPAdapter'

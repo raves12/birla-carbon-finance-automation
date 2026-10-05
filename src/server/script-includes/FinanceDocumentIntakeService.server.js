@@ -17,11 +17,12 @@ FinanceDocumentIntakeService.prototype = {
         this.arService = new ArDomainService();
         this.matchingEngine = new MatchingEngine();
         this.lineResolver = new ApLineResolutionService();
-        this.claudeClient = new BCClaudeClient();
         this.auditEngine = new AuditEngine();
+        this.policy = new FinancePolicy();
+        this.extraction = new DocumentExtractionService();
     },
 
-    // ==== Entry point (backs "Process with Claude" / "Reprocess") =========
+    // ==== Entry point (backs "Process Document" / "Reprocess") ============
 
     // Idempotent re-entry: resumes from wherever this intake record already
     // is, rather than assuming a fresh start. Safe to click more than once.
@@ -46,10 +47,13 @@ FinanceDocumentIntakeService.prototype = {
 
         // Phase 10 — duplicate-intake guard, before anything else runs.
         var hash = this.computeAttachmentHash(intakeSysId);
+        // A new (or replaced) document: first processing, or a new hash.
+        var newDocument = hash ? intake.getValue('attachment_hash') !== hash : intake.getValue('processing_status') === 'new';
         if (hash && intake.getValue('attachment_hash') !== hash) {
             intake.setValue('attachment_hash', hash);
             intake.update();
         }
+        if (newDocument) this._auditUpload(intake, hash);
         if (hash) {
             var duplicate = this._findDuplicateIntake(intakeSysId, hash, intake.getValue('source_reference'));
             if (duplicate) {
@@ -62,8 +66,9 @@ FinanceDocumentIntakeService.prototype = {
                 this.auditEngine.logEvent({
                     sourceTable: 'x_695068_bcfa_finance_intake',
                     sourceRecord: intakeSysId,
-                    eventType: 'exception_created',
+                    eventType: 'rule_evaluated',
                     actorType: 'system',
+                    reason: 'Duplicate intake: same attachment hash as ' + duplicate.getValue('number'),
                     description: 'Duplicate intake detected (attachment_hash match) — reused ' + duplicate.getValue('number') + ' instead of creating a new transaction.',
                 });
                 return { duplicate: true, originalIntakeSysId: duplicate.getUniqueValue() };
@@ -75,9 +80,20 @@ FinanceDocumentIntakeService.prototype = {
 
         if (status === 'review_required') {
             if (documentType && documentType !== 'unknown') {
+                this.auditEngine.logEvent({
+                    correlationId: intake.getValue('correlation_id'),
+                    sourceTable: 'x_695068_bcfa_finance_intake',
+                    sourceRecord: intakeSysId,
+                    eventType: 'human_review',
+                    actorType: 'user',
+                    reason: intake.getValue('processing_error') || 'Manual review',
+                    description: 'Reviewed intake ' + intake.getValue('number') + ' released for processing as ' + intake.getDisplayValue('document_type') + '.',
+                    beforeValue: { processing_status: 'review_required' },
+                    afterValue: { document_type: documentType }
+                });
                 return this._dispatchByDocumentType(intakeSysId, documentType);
             }
-            return { requiresReview: true, reason: 'document_type is still unknown — set it manually, then run Process with Claude again.' };
+            return { requiresReview: true, reason: 'document_type is still unknown — set it manually, then run Process Document again.' };
         }
 
         // new / failed / classifying (an interrupted prior attempt) — safe
@@ -102,46 +118,22 @@ FinanceDocumentIntakeService.prototype = {
 
     // ==== Phase 3 — Classification ==========================================
 
+    // The document type chosen at upload is used as is (automatic document
+    // classification is not configured; the native use cases extract, they
+    // do not classify). Without one, the document goes to manual review;
+    // nothing guesses.
+    // (Model classification with Claude was removed in Phase 34.)
     classifyFinanceDocument: function(intakeSysId) {
-        this._setStatus(intakeSysId, 'classifying', 'Classifying uploaded document with Claude.');
-
-        var envelope = this.claudeClient.classifyFinanceDocument(intakeSysId);
-        if (!envelope.ok) {
-            this._fail(intakeSysId, 'Classification failed: ' + envelope.safeError);
-            return { classified: false };
-        }
-
-        var data = envelope.data;
-        var mappedType = this._mapClaudeDocumentType(data.document_type);
-
         var intake = new GlideRecord('x_695068_bcfa_finance_intake');
         intake.get(intakeSysId);
-        intake.setValue('document_type', mappedType);
-        intake.setValue('classification_confidence', data.confidence);
-        intake.setValue('classification_reason', data.reason || '');
-        intake.setValue('claude_request_id', envelope.requestId || intake.getValue('claude_request_id'));
-        intake.update();
-
-        var threshold = this.claudeClient.confidenceThreshold();
-        if (mappedType === 'unknown' || data.confidence < threshold) {
-            this.sendToManualReview(intakeSysId,
-                mappedType === 'unknown'
-                    ? 'Claude could not confidently classify this document.'
-                    : 'Classification confidence ' + data.confidence + ' is below the ' + threshold + ' review threshold.');
-            return { classified: true, documentType: mappedType, requiresReview: true };
+        var preset = intake.getValue('document_type');
+        if (preset && preset !== 'unknown') {
+            intake.setValue('classification_reason', 'Document type set at upload. Automatic document classification is not configured.');
+            intake.update();
+            return { classified: true, documentType: preset };
         }
-
-        return { classified: true, documentType: mappedType };
-    },
-
-    _mapClaudeDocumentType: function(claudeType) {
-        var map = {
-            AP_INVOICE: 'ap_invoice',
-            AR_PAYMENT_ADVICE: 'ar_payment_advice',
-            AR_REMITTANCE: 'ar_remittance',
-            UNKNOWN: 'unknown',
-        };
-        return map[claudeType] || 'unknown';
+        this.sendToManualReview(intakeSysId, 'Set the document type (AP invoice, payment advice or remittance), then process the document again. Automatic document classification is not configured.');
+        return { classified: true, documentType: 'unknown', requiresReview: true };
     },
 
     // ==== Phase 4/5 — AP invoice document extraction + transaction creation
@@ -157,21 +149,20 @@ FinanceDocumentIntakeService.prototype = {
             return this._resumeApInvoicePipeline(intakeSysId, apInvoiceSysId);
         }
 
-        this._setStatus(intakeSysId, 'extracting', 'Extracting AP invoice fields from the attached document.');
-        var envelope = this.claudeClient.extractApInvoiceDocument(intakeSysId);
-        if (!envelope.ok) {
-            return this._fail(intakeSysId, 'AP invoice extraction failed: ' + envelope.safeError);
-        }
+        var envelope = this._extract(intakeSysId, 'ap', 'AP invoice');
+        if (!envelope.ok) return envelope.pending ? { pending: true, taskId: envelope.taskId } : { requiresReview: true };
+        var extractionSource = envelope.source;
 
         var data = envelope.data;
         intake.setValue('extraction_json', JSON.stringify(data));
+        this._auditExtraction(intake, data, envelope);
         intake.setValue('extraction_confidence', data.confidence);
-        intake.setValue('claude_request_id', envelope.requestId || intake.getValue('claude_request_id'));
         intake.update();
 
-        var threshold = this.claudeClient.confidenceThreshold();
+        var threshold = this.policy.extractionConfidenceThreshold();
         if (data.confidence < threshold) {
-            this.sendToManualReview(intakeSysId, 'Extraction confidence ' + data.confidence + ' is below the ' + threshold + ' review threshold.');
+            this.sendToManualReview(intakeSysId, 'Extraction confidence ' + data.confidence + ' is below the ' + threshold + ' review threshold.' +
+                (data.warnings && data.warnings.length ? ' ' + data.warnings.join(' ') : ''));
             return { requiresReview: true };
         }
 
@@ -203,11 +194,17 @@ FinanceDocumentIntakeService.prototype = {
             netAmount: data.net_amount,
             source: 'workspace_upload',
             externalReference: intake.getValue('source_reference') || undefined,
+            taxBreakdown: { taxType: data.tax_type, ratePct: data.tax_rate_pct, cgst: data.cgst_amount, sgst: data.sgst_amount,
+                igst: data.igst_amount, vat: data.vat_amount, wht: data.wht_amount, whtRatePct: data.wht_rate_pct },
+            documentCountry: data.vendor_country || '',
+            documentLanguage: data.document_language || '',
+            extractionProvider: envelope.provider,
         });
         apInvoiceSysId = intakeResult.apInvoiceSysId;
 
         intake.setValue('ap_invoice', apInvoiceSysId);
         intake.setValue('correlation_id', intakeResult.correlationId);
+        new AiInteractionLog().linkCorrelation(intakeSysId, intakeResult.correlationId);
         intake.setValue('company_code', data.company_code || '');
         intake.setValue('currency', data.currency || '');
         intake.setValue('processing_status', 'processing');
@@ -217,7 +214,7 @@ FinanceDocumentIntakeService.prototype = {
             correlationId: intakeResult.correlationId,
             sourceTable: 'x_695068_bcfa_finance_intake',
             sourceRecord: intakeSysId,
-            eventType: 'state_transition',
+            eventType: 'record_created',
             actorType: 'system',
             description: 'Finance Document Intake created AP Invoice ' + data.invoice_number + ' from the uploaded document (vendor resolved by ' + vendorResolution.method + ').',
             afterValue: { ap_invoice: apInvoiceSysId },
@@ -231,7 +228,7 @@ FinanceDocumentIntakeService.prototype = {
         extraction.setValue('ap_invoice', apInvoiceSysId);
         extraction.setValue('extracted_fields', JSON.stringify(data));
         extraction.setValue('confidence', data.confidence);
-        extraction.setValue('source', 'claude_document_intelligence');
+        extraction.setValue('source', extractionSource);
         extraction.setValue('requires_review', false);
         extraction.insert();
 
@@ -277,6 +274,11 @@ FinanceDocumentIntakeService.prototype = {
     // touches approval_state/posting_state/state directly, and never calls
     // ApprovalEngine or IntegrationService.
     _resumeApInvoicePipeline: function(intakeSysId, apInvoiceSysId) {
+        // Phase 25: in flow mode the AP flows continue from the new invoice.
+        if (!FinanceOrchestration.isInline()) {
+            this._setStatus(intakeSysId, 'completed', 'AP Invoice created from the document; the AP flows continue (validation, matching, approval).');
+            return { stoppedAt: 'RECEIVED', apInvoiceSysId: apInvoiceSysId, handedTo: 'AP Invoice Intake Flow' };
+        }
         var validation = this.apService.validateInvoice(apInvoiceSysId);
         if (!validation.validated) {
             this._setStatus(intakeSysId, 'completed', 'AP Invoice created; deterministic validation raised a ' + validation.reasonCode + ' exception — see the AP Invoice for analyst review.');
@@ -289,9 +291,14 @@ FinanceDocumentIntakeService.prototype = {
             return { stoppedAt: 'MATCH_EXCEPTION', apInvoiceSysId: apInvoiceSysId, detail: match };
         }
 
-        var approval = this.apService.requestApproval(apInvoiceSysId, gs.getUserID());
-        this._setStatus(intakeSysId, 'completed', 'AP Invoice matched and pending approval.');
-        return { stoppedAt: 'PENDING_APPROVAL', apInvoiceSysId: apInvoiceSysId, detail: approval };
+        // Approval is determined by the configured rule (FinancePolicy); the
+        // person processing the document is the requester, so a different
+        // user must approve (segregation of duties).
+        var approval = this.apService.routeForApproval(apInvoiceSysId, gs.getUserID());
+        this._setStatus(intakeSysId, 'completed', approval.approvalRequired
+            ? 'AP Invoice matched and pending approval. ' + approval.rule
+            : 'AP Invoice matched and approved by configured rule. ' + approval.rule);
+        return { stoppedAt: approval.approvalRequired ? 'PENDING_APPROVAL' : 'APPROVED_BY_RULE', apInvoiceSysId: apInvoiceSysId, detail: approval };
     },
 
     // ==== Deterministic master-data resolvers (never guess ambiguity) ======
@@ -365,65 +372,12 @@ FinanceDocumentIntakeService.prototype = {
             return this._resumePaymentPipeline(intakeSysId, paymentSysId);
         }
 
-        this._setStatus(intakeSysId, 'extracting', 'Extracting AR payment advice fields from the attached document.');
-        var envelope = this.claudeClient.extractArPaymentAdviceDocument(intakeSysId);
-        if (!envelope.ok) {
-            return this._fail(intakeSysId, 'AR payment advice extraction failed: ' + envelope.safeError);
-        }
-
-        var data = envelope.data;
-        intake.setValue('extraction_json', JSON.stringify(data));
-        intake.setValue('extraction_confidence', data.confidence);
-        intake.setValue('claude_request_id', envelope.requestId || intake.getValue('claude_request_id'));
-        intake.update();
-
-        var threshold = this.claudeClient.confidenceThreshold();
-        if (data.confidence < threshold) {
-            this.sendToManualReview(intakeSysId, 'Extraction confidence ' + data.confidence + ' is below the ' + threshold + ' review threshold.');
-            return { requiresReview: true };
-        }
-
-        // Deterministic resolution attempt up front; if it fails, the raw
-        // customer name is still passed through to ArDomainService.resolveCustomer
-        // below (Phase 8 step 3), which has its own alias/exact-name logic
-        // and customer_ambiguous exception path — not duplicated here.
-        var customerResolution = this.resolveCustomer(data.customer_code, data.customer_name);
-
-        var paymentIntake = this.arService.intakePayment({
-            correlationId: intake.getValue('correlation_id') || undefined,
-            bankReference: data.bank_reference,
-            valueDate: data.value_date || undefined,
-            customer: customerResolution.resolved ? customerResolution.customerSysId : undefined,
-            currency: data.currency,
-            amount: data.amount,
-            source: 'workspace_upload',
-        });
-        paymentSysId = paymentIntake.paymentSysId;
-
-        intake.setValue('payment', paymentSysId);
-        intake.setValue('correlation_id', paymentIntake.correlationId);
-        intake.setValue('currency', data.currency || '');
-        intake.setValue('processing_status', 'processing');
-        intake.update();
-
-        this.auditEngine.logEvent({
-            correlationId: paymentIntake.correlationId,
-            sourceTable: 'x_695068_bcfa_finance_intake',
-            sourceRecord: intakeSysId,
-            eventType: 'state_transition',
-            actorType: 'system',
-            description: 'Finance Document Intake created Payment ' + data.bank_reference + ' from the uploaded document.',
-            afterValue: { payment: paymentSysId },
-        });
-
-        if (data.remittance_reference) {
-            this.arService.intakeRemittance(paymentSysId, {
-                remittanceReference: data.remittance_reference,
-                source: 'workspace_upload',
-            });
-        }
-
-        return this._resumePaymentPipeline(intakeSysId, paymentSysId, data.customer_name);
+        // Phase 40: a customer payment advice is read like a remittance. The
+        // cash itself comes from the bank statement (the Payment); the advice
+        // is linked to that payment and supplies the invoice references,
+        // amounts applied and any deduction statement. An advice never
+        // creates a payment on its own.
+        return this.processArRemittanceDocument(intakeSysId);
     },
 
     // Runs (or re-runs) the EXISTING deterministic AR pipeline against an
@@ -431,6 +385,12 @@ FinanceDocumentIntakeService.prototype = {
     // methods — never touches state directly, never calls ApprovalEngine or
     // IntegrationService.
     _resumePaymentPipeline: function(intakeSysId, paymentSysId, candidateCustomerName) {
+        // Phase 25: in flow mode the AR flows continue (payment intake, or
+        // remittance processing for an existing payment).
+        if (!FinanceOrchestration.isInline()) {
+            this._setStatus(intakeSysId, 'completed', 'Document processed; the AR flows continue (matching, allocation, approval).');
+            return { stoppedAt: 'HANDED_TO_FLOWS', paymentSysId: paymentSysId, handedTo: 'AR flows' };
+        }
         var normalization = this.arService.normalizePayment(paymentSysId);
         if (!normalization.normalized) {
             this._setStatus(intakeSysId, 'completed', 'Payment created; normalization raised an exception — see the Payment for analyst review.');
@@ -455,9 +415,13 @@ FinanceDocumentIntakeService.prototype = {
             return { stoppedAt: 'ALLOCATION_EXCEPTION', paymentSysId: paymentSysId, detail: allocation };
         }
 
-        var approval = this.arService.requestApproval(paymentSysId, gs.getUserID());
-        this._setStatus(intakeSysId, 'completed', 'Payment matched, allocated, and pending approval.');
-        return { stoppedAt: 'PENDING_APPROVAL', paymentSysId: paymentSysId, detail: approval };
+        // Approval per the configured rule; the person processing the
+        // document is the requester, so a different user must approve.
+        var approval = this.arService.routeForApproval(paymentSysId, gs.getUserID());
+        this._setStatus(intakeSysId, 'completed', approval.approvalRequired
+            ? 'Payment matched, allocated (' + (allocation.candidateType || 'deterministic') + ' match) and pending approval. ' + approval.rule
+            : 'Payment matched, allocated and approved by configured rule. ' + approval.rule);
+        return { stoppedAt: approval.approvalRequired ? 'PENDING_APPROVAL' : 'APPROVED_BY_RULE', paymentSysId: paymentSysId, detail: approval, allocation: allocation };
     },
 
     // ==== Phase 7/8 — AR remittance extraction + payment correlation =======
@@ -471,21 +435,19 @@ FinanceDocumentIntakeService.prototype = {
             return linkedPayment ? this._resumePaymentPipeline(intakeSysId, linkedPayment) : { stoppedAt: 'ALREADY_LINKED' };
         }
 
-        this._setStatus(intakeSysId, 'extracting', 'Extracting AR remittance fields from the attached document.');
-        var envelope = this.claudeClient.extractArRemittanceDocument(intakeSysId);
-        if (!envelope.ok) {
-            return this._fail(intakeSysId, 'AR remittance extraction failed: ' + envelope.safeError);
-        }
+        var envelope = this._extract(intakeSysId, 'ar', 'payment advice / remittance');
+        if (!envelope.ok) return envelope.pending ? { pending: true, taskId: envelope.taskId } : { requiresReview: true };
 
         var data = envelope.data;
         intake.setValue('extraction_json', JSON.stringify(data));
+        this._auditExtraction(intake, data, envelope);
         intake.setValue('extraction_confidence', data.confidence);
-        intake.setValue('claude_request_id', envelope.requestId || intake.getValue('claude_request_id'));
         intake.update();
 
-        var threshold = this.claudeClient.confidenceThreshold();
+        var threshold = this.policy.extractionConfidenceThreshold();
         if (data.confidence < threshold) {
-            this.sendToManualReview(intakeSysId, 'Extraction confidence ' + data.confidence + ' is below the ' + threshold + ' review threshold.');
+            this.sendToManualReview(intakeSysId, 'Extraction confidence ' + data.confidence + ' is below the ' + threshold + ' review threshold.' +
+                (data.warnings && data.warnings.length ? ' ' + data.warnings.join(' ') : ''));
             return { requiresReview: true };
         }
 
@@ -501,9 +463,9 @@ FinanceDocumentIntakeService.prototype = {
             });
             if (candidates.length !== 1) {
                 // Zero or multiple candidates — never auto-link an ambiguous
-                // match. Persist the candidate list alongside Claude's own
+                // match. Persist the candidate list alongside the extracted
                 // result so a reviewer can pick, then stop.
-                intake.setValue('extraction_json', JSON.stringify({ claude: data, candidatePaymentSysIds: candidates }));
+                intake.setValue('extraction_json', JSON.stringify({ extracted: data, candidatePaymentSysIds: candidates }));
                 intake.update();
                 this.sendToManualReview(intakeSysId,
                     candidates.length === 0
@@ -514,10 +476,30 @@ FinanceDocumentIntakeService.prototype = {
             found = candidates[0];
         }
 
+        // A remittance only drives a payment that has not been processed
+        // yet, or one waiting in EXCEPTION for exactly this information
+        // (unmatched / customer_ambiguous / ambiguous_match, Phase 33); it
+        // never reopens a matched, cleared or closed payment.
+        var target = new GlideRecord('x_695068_bcfa_payment');
+        target.get(found);
+        var targetState = target.getValue('state');
+        var retryable = targetState === 'EXCEPTION' && !!this.arService.findRetryableException(found);
+        if (targetState !== 'RECEIVED' && targetState !== 'NORMALIZED' && !retryable) {
+            this.sendToManualReview(intakeSysId, 'Payment ' + target.getValue('bank_reference') + ' is already ' + targetState +
+                '; the remittance was not applied automatically. Review it against that payment.');
+            return { requiresReview: true, paymentSysId: found, paymentState: targetState };
+        }
+
+        // The fields read from the document are stored on the remittance,
+        // where MatchingEngine.resolveRemittanceReferences reads the
+        // invoice references.
         var remittanceIntake = this.arService.intakeRemittance(found, {
             remittanceReference: data.payment_reference || '',
-            source: 'workspace_upload',
+            source: 'document',
             receivedDate: data.payment_date || undefined,
+            extractedFields: data,
+            confidence: data.confidence,
+            extractionProvider: envelope.provider,
         });
 
         intake.setValue('remittance', remittanceIntake.remittanceSysId);
@@ -528,15 +510,38 @@ FinanceDocumentIntakeService.prototype = {
         this.auditEngine.logEvent({
             sourceTable: 'x_695068_bcfa_finance_intake',
             sourceRecord: intakeSysId,
-            eventType: 'state_transition',
+            eventType: 'record_created',
             actorType: 'system',
             description: 'Finance Document Intake linked Remittance to Payment ' + found + ' from the uploaded document.',
             afterValue: { remittance: remittanceIntake.remittanceSysId, payment: found },
         });
 
+        if (retryable) return this._retryPaymentWithRemittance(intakeSysId, found, remittanceIntake.remittanceSysId);
+
         // Re-run the matching/allocation portion of the EXISTING pipeline
         // now that a remittance is attached.
         return this._resumePaymentPipeline(intakeSysId, found, data.customer_name);
+    },
+
+    // Phase 33: the payment is in EXCEPTION waiting for its remittance. In
+    // flow mode the AR Remittance Processing Flow (triggered by the new
+    // remittance) retries; inline, it is retried here.
+    _retryPaymentWithRemittance: function(intakeSysId, paymentSysId, remittanceSysId) {
+        var payment = new GlideRecord('x_695068_bcfa_payment');
+        payment.get(paymentSysId);
+        var bankRef = payment.getValue('bank_reference');
+        if (!FinanceOrchestration.isInline()) {
+            this._setStatus(intakeSysId, 'completed', 'Remittance linked to Payment ' + bankRef + ', which was waiting in exception; the AR Remittance Processing Flow identifies the customer and retries matching.');
+            return { stoppedAt: 'HANDED_TO_FLOWS', paymentSysId: paymentSysId, handedTo: 'AR Remittance Processing Flow' };
+        }
+        var r = this.arService.retryWithRemittance(paymentSysId, remittanceSysId, gs.getUserID());
+        if (!r.retried) {
+            this._setStatus(intakeSysId, 'completed', 'Remittance linked to Payment ' + bankRef + '; ' + r.reason + '. The exception stays with the AR processor.');
+            return { stoppedAt: 'EXCEPTION', paymentSysId: paymentSysId, detail: r };
+        }
+        payment.get(paymentSysId);
+        this._setStatus(intakeSysId, 'completed', 'Remittance linked to Payment ' + bankRef + '; exception ' + r.exceptionNumber + ' resolved and matching retried. Payment is now ' + payment.getValue('state') + '.');
+        return { stoppedAt: payment.getValue('state'), paymentSysId: paymentSysId, detail: r };
     },
 
     _findPaymentByReference: function(reference) {
@@ -593,6 +598,7 @@ FinanceDocumentIntakeService.prototype = {
             sourceRecord: intakeSysId,
             eventType: 'exception_created',
             actorType: 'system',
+            reason: reason || '',
             description: 'Routed to manual review: ' + (reason || ''),
         });
         return { requiresReview: true, reason: reason };
@@ -640,6 +646,85 @@ FinanceDocumentIntakeService.prototype = {
 
     // ==== Internal status/audit helpers =====================================
 
+    // document_uploaded: the first time processing sees an attachment (or a
+    // replaced one), with its name, type, size and content hash.
+    _auditUpload: function(intake, hash) {
+        var attachment = new GlideRecord('sys_attachment');
+        attachment.addQuery('table_name', 'x_695068_bcfa_finance_intake');
+        attachment.addQuery('table_sys_id', intake.getUniqueValue());
+        attachment.orderByDesc('sys_created_on');
+        attachment.setLimit(1);
+        attachment.query();
+        var file = attachment.next()
+            ? { file_name: attachment.getValue('file_name'), content_type: attachment.getValue('content_type'), size_bytes: attachment.getValue('size_bytes'),
+                uploaded_by: attachment.getValue('sys_created_by'), uploaded_on: attachment.getValue('sys_created_on') }
+            : {};
+        this.auditEngine.logEvent({
+            correlationId: intake.getValue('correlation_id'),
+            sourceTable: 'x_695068_bcfa_finance_intake',
+            sourceRecord: intake.getUniqueValue(),
+            eventType: 'document_uploaded',
+            actorType: 'user',
+            description: 'Document ' + (file.file_name || '') + ' uploaded to intake ' + intake.getValue('number') + ' (' + intake.getDisplayValue('source') +
+                (intake.getValue('document_type') !== 'unknown' ? ', type ' + intake.getDisplayValue('document_type') : '') + ').',
+            afterValue: { attachment_hash: hash, source: intake.getValue('source'), source_reference: intake.getValue('source_reference'),
+                file_name: file.file_name, content_type: file.content_type, size_bytes: file.size_bytes, uploaded_by: file.uploaded_by, uploaded_on: file.uploaded_on }
+        });
+    },
+
+    // document_extracted: the structured fields read from the document and
+    // the confidence (the full result stays in extraction_json).
+    // document_extracted: the structured fields read from the document, the
+    // provider and the confidence (the full result stays in extraction_json).
+    _auditExtraction: function(intake, data, envelope) {
+        var fields = [];
+        var skip = { confidence: 1, warnings: 1, field_evidence: 1, extraction_method: 1, extraction_task: 1, confidence_basis: 1 };
+        for (var k in data) if (!skip[k] && data[k] !== null && data[k] !== '' && typeof data[k] !== 'object') fields.push(k);
+        var type = intake.getValue('document_type');
+        var isNative = !!envelope && envelope.provider === 'native';
+        new AiInteractionLog().log({
+            sourceTable: 'x_695068_bcfa_finance_intake', sourceRecord: intake.getUniqueValue(), process: 'intake', provider: isNative ? 'now_assist' : 'simulated',
+            operation: type === 'ap_invoice' ? 'extract_ap_invoice_document' : type === 'ar_payment_advice' ? 'extract_ar_payment_advice_document' : 'extract_ar_remittance_document',
+            capability: 'document_extraction', skill: isNative ? 'Document Intelligence (generative, Now LLM)' : 'SimulatedDocumentExtraction', status: 'success', durationMs: 0,
+            result: 'Extracted fields: ' + fields.join(', '), confidence: data.confidence,
+            model: isNative ? 'Document Key Value Extraction (NowLLM); task ' + envelope.taskId : 'fixture'
+        });
+        this.auditEngine.logEvent({
+            correlationId: intake.getValue('correlation_id'),
+            sourceTable: 'x_695068_bcfa_finance_intake',
+            sourceRecord: intake.getUniqueValue(),
+            eventType: 'document_extracted',
+            actorType: isNative ? 'now_assist_ai' : 'simulated_ai',
+            description: (envelope ? envelope.label : 'Extraction') + ' of ' + intake.getDisplayValue('document_type') + ' ' +
+                intake.getValue('number') + ', confidence ' + data.confidence + '; fields: ' + fields.join(', '),
+            afterValue: { provider: envelope ? envelope.provider : '', confidence: data.confidence, confidence_basis: data.confidence_basis || '',
+                fields: fields, warnings: data.warnings || [], extraction_task: data.extraction_task || '' }
+        });
+    },
+
+    // Phase 40: runs the configured extraction provider. While a native task
+    // is still running the intake waits in 'extracting' (the BCFA Native
+    // Extraction Poller job or a second "Process Document" picks it up).
+    // A failure goes to manual review: there is no fallback to fixtures.
+    _extract: function(intakeSysId, kind, what) {
+        this._setStatus(intakeSysId, 'extracting', 'Reading ' + what + ' fields: ' + this.extraction.label() + '.');
+        var envelope = this.extraction.extract(intakeSysId, kind);
+        var intake = new GlideRecord('x_695068_bcfa_finance_intake');
+        if (intake.get(intakeSysId)) {
+            intake.setValue('extraction_provider', envelope.provider);
+            intake.update();
+        }
+        if (envelope.pending) {
+            this.auditEngine.logEvent({
+                sourceTable: 'x_695068_bcfa_finance_intake', sourceRecord: intakeSysId, eventType: 'rule_evaluated', actorType: 'system',
+                description: envelope.safeError
+            });
+            return envelope;
+        }
+        if (!envelope.ok) this.sendToManualReview(intakeSysId, envelope.safeError);
+        return envelope;
+    },
+
     _setStatus: function(intakeSysId, status, description) {
         var intake = new GlideRecord('x_695068_bcfa_finance_intake');
         if (!intake.get(intakeSysId)) return false;
@@ -671,7 +756,8 @@ FinanceDocumentIntakeService.prototype = {
             sourceRecord: intakeSysId,
             eventType: 'exception_created',
             actorType: 'system',
-            description: message,
+            reason: message,
+            description: 'Processing failed: ' + message,
         });
         return { ok: false, failed: true, safeError: message };
     },
