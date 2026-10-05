@@ -2087,6 +2087,10 @@ declare global {
                         table: 'sysauto_script'
                         id: 'e06fcfa703f046698cf31d3a7aeb209e'
                     }
+                    'job-native-extraction-poller': {
+                        table: 'sysauto_script'
+                        id: '629f380962754e42b25fe343f0140815'
+                    }
                     'job-sap-draft-status-check': {
                         table: 'sysauto_script'
                         id: '48946e075fd34e8a898238cbb26f6600'
@@ -2294,6 +2298,10 @@ declare global {
                         table: 'sys_properties'
                         id: 'c9394f9a4c514aee9e58369e9b3d7546'
                     }
+                    'prop-document-extraction-provider': {
+                        table: 'sys_properties'
+                        id: '8445263612c84299b10c8173e3f373a1'
+                    }
                     'prop-lifecycle-enforcement': {
                         table: 'sys_properties'
                         id: '6400c19da8e44c8d802556c089e712b2'
@@ -2371,6 +2379,10 @@ declare global {
                         table: 'sys_script_include'
                         id: '5557c39b046b40dbb32c511181f09e80'
                     }
+                    'si-document-extraction-service': {
+                        table: 'sys_script_include'
+                        id: '7fc6af565dfe4776927963609ba41953'
+                    }
                     'si-exception-engine': {
                         table: 'sys_script_include'
                         id: '7bbff4295d974545a9726e9e6dc65ed2'
@@ -2438,6 +2450,10 @@ declare global {
                     'si-mock-sap-adapter': {
                         table: 'sys_script_include'
                         id: '8cf56e81999b42d5b95b6163c0e6e265'
+                    }
+                    'si-native-document-intelligence-provider': {
+                        table: 'sys_script_include'
+                        id: '5a5becdab8ae432cad5ba86f3b6f86eb'
                     }
                     'si-now-assist-skill-client': {
                         table: 'sys_script_include'
@@ -2520,6 +2536,10 @@ declare global {
                         table: 'sys_module'
                         id: '27d2fb84df4d47d487c59705a63fe43b'
                     }
+                    'src_server_script-includes_DocumentExtractionService_server_js': {
+                        table: 'sys_module'
+                        id: 'c7c10fa8ca0d4f13900b24cc8b2ff1ff'
+                    }
                     'src_server_script-includes_ExceptionEngine_server_js': {
                         table: 'sys_module'
                         id: '002a997e82d441c8a4a8c3efe8da4b6c'
@@ -2587,6 +2607,10 @@ declare global {
                     'src_server_script-includes_MockSAPAdapter_server_js': {
                         table: 'sys_module'
                         id: '00c8fcb17124498f8f07569c9bcce76d'
+                    }
+                    'src_server_script-includes_NativeDocumentIntelligenceProvider_server_js': {
+                        table: 'sys_module'
+                        id: 'f433237d69e842c89d9d1eb33b7d35c5'
                     }
                     'src_server_script-includes_NowAssistSkillClient_server_js': {
                         table: 'sys_module'
@@ -8148,6 +8172,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '28122b0edc4a415ba73ab6a97f910db8'
+                        key: {
+                            name: 'x_695068_bcfa_finance_intake'
+                            element: 'extraction_task'
+                        }
+                    },
+                    {
                         table: 'sys_choice_set'
                         id: '2814c4351b06413f976b7b9adcc4d594'
                         key: {
@@ -10262,6 +10294,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '39e003c137034d9a869e3f8f5f1aa419'
+                        key: {
+                            name: 'x_695068_bcfa_finance_intake'
+                            element: 'extraction_provider'
+                            value: 'simulated'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_atf_test_suite_test'
                         id: '3a04810517aa4b74a62c7808bb148c52'
                         key: {
@@ -11400,6 +11443,15 @@ declare global {
                         key: {
                             document_key: '015f1e10efcd444c8bbf86775ce8550c'
                             variable: 'e9ae23190700101070e493d0fad300c1'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '4325c4fb6f1e47f09f378e18a50cac2b'
+                        key: {
+                            name: 'x_695068_bcfa_finance_intake'
+                            element: 'extraction_provider'
+                            language: 'en'
                         }
                     },
                     {
@@ -13457,6 +13509,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '54f45a7220ca4960a7acf37b5cb3ea0a'
+                        key: {
+                            name: 'x_695068_bcfa_finance_intake'
+                            element: 'extraction_task'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_element_mapping'
                         id: '54f67b158102468aa601f9483b8290d0'
                         key: {
@@ -15343,6 +15404,17 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_finance_exception'
                             element: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '63874dbb82014132b7433d43e6590fb0'
+                        key: {
+                            name: 'x_695068_bcfa_finance_intake'
+                            element: 'extraction_provider'
+                            value: 'native'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -21140,6 +21212,14 @@ declare global {
                     },
                     {
                         table: 'sys_dictionary'
+                        id: '93755494790841f9aca9dcb13f253b6a'
+                        key: {
+                            name: 'x_695068_bcfa_finance_intake'
+                            element: 'extraction_provider'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
                         id: '9379ddc48c5c4f4a8de1016d432316f9'
                         key: {
                             name: 'x_695068_bcfa_ar_exception'
@@ -26054,6 +26134,14 @@ declare global {
                             value: 'manual'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice_set'
+                        id: 'bdfa376161494edab742c841c1f77445'
+                        key: {
+                            name: 'x_695068_bcfa_finance_intake'
+                            element: 'extraction_provider'
                         }
                     },
                     {

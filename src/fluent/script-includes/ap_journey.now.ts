@@ -17,8 +17,27 @@ export const simulatedDocumentExtraction = ScriptInclude({
     name: 'SimulatedDocumentExtraction',
     active: true,
     apiName: 'x_695068_bcfa.SimulatedDocumentExtraction',
-    description: 'Returns the printed values of the synthetic fixture PDFs, by attachment file name, labelled SIMULATED. Stands in for Document Intelligence extraction, which is not licensed on this instance. No AI, no external call.',
+    description: 'Simulated provider of DocumentExtractionService, for tests and demo fixtures only: returns the printed values of the synthetic fixture PDFs by attachment file name, labelled SIMULATED DOCUMENT EXTRACTION - POC. Not OCR; no AI, no external call.',
     script: Now.include('../../server/script-includes/SimulatedDocumentExtraction.server.js'),
+})
+
+// Phase 40: document extraction provider abstraction.
+export const documentExtractionService = ScriptInclude({
+    $id: Now.ID['si-document-extraction-service'],
+    name: 'DocumentExtractionService',
+    active: true,
+    apiName: 'x_695068_bcfa.DocumentExtractionService',
+    description: 'Single entry point for reading uploaded documents. Selects the provider by x_695068_bcfa.document.extraction.provider: native (ServiceNow Document Intelligence on Now LLM) or simulated (test fixtures). Same contract for both; no fallback between them.',
+    script: Now.include('../../server/script-includes/DocumentExtractionService.server.js'),
+})
+
+export const nativeDocumentIntelligenceProvider = ScriptInclude({
+    $id: Now.ID['si-native-document-intelligence-provider'],
+    name: 'NativeDocumentIntelligenceProvider',
+    active: true,
+    apiName: 'x_695068_bcfa.NativeDocumentIntelligenceProvider',
+    description: 'Native extraction with ServiceNow Document Intelligence (generative, Now LLM): starts or reuses the task for the intake attachment, reads the structured result and maps it to the BCFA extraction contract with a derived (completeness and arithmetic) confidence. Facts only; no rules.',
+    script: Now.include('../../server/script-includes/NativeDocumentIntelligenceProvider.server.js'),
 })
 
 export const apExceptionDecisionService = ScriptInclude({

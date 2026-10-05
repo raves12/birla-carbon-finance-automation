@@ -19,7 +19,7 @@ FinanceDocumentIntakeService.prototype = {
         this.lineResolver = new ApLineResolutionService();
         this.auditEngine = new AuditEngine();
         this.policy = new FinancePolicy();
-        this.simulatedExtraction = new SimulatedDocumentExtraction();
+        this.extraction = new DocumentExtractionService();
     },
 
     // ==== Entry point (backs "Process Document" / "Reprocess") ============
@@ -118,20 +118,21 @@ FinanceDocumentIntakeService.prototype = {
 
     // ==== Phase 3 — Classification ==========================================
 
-    // Document Intelligence classification is not licensed on this
-    // instance, so the document type chosen at upload is used as is.
-    // Without one, the document goes to manual review; nothing guesses.
+    // The document type chosen at upload is used as is (automatic document
+    // classification is not configured; the native use cases extract, they
+    // do not classify). Without one, the document goes to manual review;
+    // nothing guesses.
     // (Model classification with Claude was removed in Phase 34.)
     classifyFinanceDocument: function(intakeSysId) {
         var intake = new GlideRecord('x_695068_bcfa_finance_intake');
         intake.get(intakeSysId);
         var preset = intake.getValue('document_type');
         if (preset && preset !== 'unknown') {
-            intake.setValue('classification_reason', 'Document type set at upload. Automatic classification is not used: Document Intelligence classification is not licensed on this instance.');
+            intake.setValue('classification_reason', 'Document type set at upload. Automatic document classification is not configured.');
             intake.update();
             return { classified: true, documentType: preset };
         }
-        this.sendToManualReview(intakeSysId, 'Set the document type (AP invoice, payment advice or remittance), then process the document again. Automatic classification is not available on this instance.');
+        this.sendToManualReview(intakeSysId, 'Set the document type (AP invoice, payment advice or remittance), then process the document again. Automatic document classification is not configured.');
         return { classified: true, documentType: 'unknown', requiresReview: true };
     },
 
@@ -148,23 +149,20 @@ FinanceDocumentIntakeService.prototype = {
             return this._resumeApInvoicePipeline(intakeSysId, apInvoiceSysId);
         }
 
-        this._setStatus(intakeSysId, 'extracting', 'Reading AP invoice fields (SIMULATED extraction: fixture values, Document Intelligence extraction not licensed).');
-        var envelope = this.simulatedExtraction.extractApInvoiceDocument(intakeSysId);
-        if (!envelope.ok) {
-            this.sendToManualReview(intakeSysId, envelope.safeError);
-            return { requiresReview: true };
-        }
-        var extractionSource = SimulatedDocumentExtraction.SOURCE;
+        var envelope = this._extract(intakeSysId, 'ap', 'AP invoice');
+        if (!envelope.ok) return envelope.pending ? { pending: true, taskId: envelope.taskId } : { requiresReview: true };
+        var extractionSource = envelope.source;
 
         var data = envelope.data;
         intake.setValue('extraction_json', JSON.stringify(data));
-        this._auditExtraction(intake, data);
+        this._auditExtraction(intake, data, envelope);
         intake.setValue('extraction_confidence', data.confidence);
         intake.update();
 
         var threshold = this.policy.extractionConfidenceThreshold();
         if (data.confidence < threshold) {
-            this.sendToManualReview(intakeSysId, 'Extraction confidence ' + data.confidence + ' is below the ' + threshold + ' review threshold.');
+            this.sendToManualReview(intakeSysId, 'Extraction confidence ' + data.confidence + ' is below the ' + threshold + ' review threshold.' +
+                (data.warnings && data.warnings.length ? ' ' + data.warnings.join(' ') : ''));
             return { requiresReview: true };
         }
 
@@ -369,14 +367,12 @@ FinanceDocumentIntakeService.prototype = {
             return this._resumePaymentPipeline(intakeSysId, paymentSysId);
         }
 
-        // Bank payments arrive from the bank statement; payment advice
-        // documents have no simulated extraction, and Document Intelligence
-        // extraction is not licensed on this instance. The document-to-payment
-        // creation path read payment advices with Claude only and was removed
-        // with it in Phase 34 (see git history before Phase 34 for when
-        // Document Intelligence extraction is licensed).
-        this.sendToManualReview(intakeSysId, 'Payment advice documents are not read automatically on this instance (Document Intelligence extraction not licensed). Enter the payment from the bank statement, then upload the remittance.');
-        return { requiresReview: true };
+        // Phase 40: a customer payment advice is read like a remittance. The
+        // cash itself comes from the bank statement (the Payment); the advice
+        // is linked to that payment and supplies the invoice references,
+        // amounts applied and any deduction statement. An advice never
+        // creates a payment on its own.
+        return this.processArRemittanceDocument(intakeSysId);
     },
 
     // Runs (or re-runs) the EXISTING deterministic AR pipeline against an
@@ -434,22 +430,19 @@ FinanceDocumentIntakeService.prototype = {
             return linkedPayment ? this._resumePaymentPipeline(intakeSysId, linkedPayment) : { stoppedAt: 'ALREADY_LINKED' };
         }
 
-        this._setStatus(intakeSysId, 'extracting', 'Reading AR remittance fields (SIMULATED extraction: fixture values, Document Intelligence extraction not licensed).');
-        var envelope = this.simulatedExtraction.extractArRemittanceDocument(intakeSysId);
-        if (!envelope.ok) {
-            this.sendToManualReview(intakeSysId, envelope.safeError);
-            return { requiresReview: true };
-        }
+        var envelope = this._extract(intakeSysId, 'ar', 'payment advice / remittance');
+        if (!envelope.ok) return envelope.pending ? { pending: true, taskId: envelope.taskId } : { requiresReview: true };
 
         var data = envelope.data;
         intake.setValue('extraction_json', JSON.stringify(data));
-        this._auditExtraction(intake, data);
+        this._auditExtraction(intake, data, envelope);
         intake.setValue('extraction_confidence', data.confidence);
         intake.update();
 
         var threshold = this.policy.extractionConfidenceThreshold();
         if (data.confidence < threshold) {
-            this.sendToManualReview(intakeSysId, 'Extraction confidence ' + data.confidence + ' is below the ' + threshold + ' review threshold.');
+            this.sendToManualReview(intakeSysId, 'Extraction confidence ' + data.confidence + ' is below the ' + threshold + ' review threshold.' +
+                (data.warnings && data.warnings.length ? ' ' + data.warnings.join(' ') : ''));
             return { requiresReview: true };
         }
 
@@ -501,6 +494,7 @@ FinanceDocumentIntakeService.prototype = {
             receivedDate: data.payment_date || undefined,
             extractedFields: data,
             confidence: data.confidence,
+            extractionProvider: envelope.provider,
         });
 
         intake.setValue('remittance', remittanceIntake.remittanceSysId);
@@ -675,26 +669,55 @@ FinanceDocumentIntakeService.prototype = {
 
     // document_extracted: the structured fields read from the document and
     // the confidence (the full result stays in extraction_json).
-    _auditExtraction: function(intake, data) {
+    // document_extracted: the structured fields read from the document, the
+    // provider and the confidence (the full result stays in extraction_json).
+    _auditExtraction: function(intake, data, envelope) {
         var fields = [];
-        for (var k in data) if (k !== 'confidence' && k !== 'warnings' && data[k] !== null && data[k] !== '' && typeof data[k] !== 'object') fields.push(k);
+        var skip = { confidence: 1, warnings: 1, field_evidence: 1, extraction_method: 1, extraction_task: 1, confidence_basis: 1 };
+        for (var k in data) if (!skip[k] && data[k] !== null && data[k] !== '' && typeof data[k] !== 'object') fields.push(k);
         var type = intake.getValue('document_type');
+        var isNative = !!envelope && envelope.provider === 'native';
         new AiInteractionLog().log({
-            sourceTable: 'x_695068_bcfa_finance_intake', sourceRecord: intake.getUniqueValue(), process: 'intake', provider: 'simulated',
+            sourceTable: 'x_695068_bcfa_finance_intake', sourceRecord: intake.getUniqueValue(), process: 'intake', provider: isNative ? 'now_assist' : 'simulated',
             operation: type === 'ap_invoice' ? 'extract_ap_invoice_document' : type === 'ar_payment_advice' ? 'extract_ar_payment_advice_document' : 'extract_ar_remittance_document',
-            capability: 'document_extraction', skill: 'SimulatedDocumentExtraction', status: 'success', durationMs: 0,
-            result: 'Extracted fields: ' + fields.join(', '), confidence: data.confidence, model: 'fixture'
+            capability: 'document_extraction', skill: isNative ? 'Document Intelligence (generative, Now LLM)' : 'SimulatedDocumentExtraction', status: 'success', durationMs: 0,
+            result: 'Extracted fields: ' + fields.join(', '), confidence: data.confidence,
+            model: isNative ? 'Document Key Value Extraction (NowLLM); task ' + envelope.taskId : 'fixture'
         });
         this.auditEngine.logEvent({
             correlationId: intake.getValue('correlation_id'),
             sourceTable: 'x_695068_bcfa_finance_intake',
             sourceRecord: intake.getUniqueValue(),
             eventType: 'document_extracted',
-            actorType: 'simulated_ai',
-            description: 'Simulated Document Intelligence extraction of ' + intake.getDisplayValue('document_type') + ' ' +
+            actorType: isNative ? 'now_assist_ai' : 'simulated_ai',
+            description: (envelope ? envelope.label : 'Extraction') + ' of ' + intake.getDisplayValue('document_type') + ' ' +
                 intake.getValue('number') + ', confidence ' + data.confidence + '; fields: ' + fields.join(', '),
-            afterValue: { confidence: data.confidence, fields: fields, warnings: data.warnings || [] }
+            afterValue: { provider: envelope ? envelope.provider : '', confidence: data.confidence, confidence_basis: data.confidence_basis || '',
+                fields: fields, warnings: data.warnings || [], extraction_task: data.extraction_task || '' }
         });
+    },
+
+    // Phase 40: runs the configured extraction provider. While a native task
+    // is still running the intake waits in 'extracting' (the BCFA Native
+    // Extraction Poller job or a second "Process Document" picks it up).
+    // A failure goes to manual review: there is no fallback to fixtures.
+    _extract: function(intakeSysId, kind, what) {
+        this._setStatus(intakeSysId, 'extracting', 'Reading ' + what + ' fields: ' + this.extraction.label() + '.');
+        var envelope = this.extraction.extract(intakeSysId, kind);
+        var intake = new GlideRecord('x_695068_bcfa_finance_intake');
+        if (intake.get(intakeSysId)) {
+            intake.setValue('extraction_provider', envelope.provider);
+            intake.update();
+        }
+        if (envelope.pending) {
+            this.auditEngine.logEvent({
+                sourceTable: 'x_695068_bcfa_finance_intake', sourceRecord: intakeSysId, eventType: 'rule_evaluated', actorType: 'system',
+                description: envelope.safeError
+            });
+            return envelope;
+        }
+        if (!envelope.ok) this.sendToManualReview(intakeSysId, envelope.safeError);
+        return envelope;
     },
 
     _setStatus: function(intakeSysId, status, description) {

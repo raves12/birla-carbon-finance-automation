@@ -23,7 +23,10 @@ export const intakeProcessDocument = UiAction({
     },
     script: `
         var service = new FinanceDocumentIntakeService();
-        service.processDocument(current.getUniqueValue());
+        var result = service.processDocument(current.getUniqueValue());
+        if (result && result.pending) {
+            gs.addInfoMessage('Native extraction is running (ServiceNow Document Intelligence). The document continues automatically when it finishes, usually within a minute; refresh to see the result.');
+        }
         action.setRedirectURL(current);
     `,
 })
@@ -74,7 +77,10 @@ export const intakeReprocess = UiAction({
     },
     script: `
         var service = new FinanceDocumentIntakeService();
-        service.processDocument(current.getUniqueValue());
+        var result = service.processDocument(current.getUniqueValue());
+        if (result && result.pending) {
+            gs.addInfoMessage('Native extraction is running (ServiceNow Document Intelligence). The document continues automatically when it finishes, usually within a minute; refresh to see the result.');
+        }
         action.setRedirectURL(current);
     `,
 })

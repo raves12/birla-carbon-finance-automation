@@ -17,7 +17,17 @@ export const aiProvider = Property({
     type: 'string',
     value: 'native',
     description:
-        'AI provider for the AP/AR pipelines. native = ServiceNow AI (Now Assist skills and AI agents; document reading uses simulated extraction until Document Intelligence extraction is licensed on this instance). simulated = deterministic templates only (the process runs with AI switched off). No external AI provider exists (Claude was removed in Phase 34). AI output is advisory in every mode.',
+        'AI provider for the AP/AR pipelines. native = ServiceNow AI (Now Assist skills and AI agents). simulated = deterministic templates only (the process runs with AI switched off). Document reading has its own setting, x_695068_bcfa.document.extraction.provider. No external AI provider exists (Claude was removed in Phase 34). AI output is advisory in every mode.',
+})
+
+// Phase 40: which provider reads uploaded documents (DocumentExtractionService).
+export const documentExtractionProvider = Property({
+    $id: Now.ID['prop-document-extraction-provider'],
+    name: 'x_695068_bcfa.document.extraction.provider',
+    type: 'string',
+    value: 'native',
+    description:
+        'Document extraction provider. native = ServiceNow Document Intelligence, generative extraction on Now LLM (use cases BCFA AP Invoice Extraction (Now LLM) and BCFA AR Payment Advice Extraction (Now LLM)). simulated = printed values of the synthetic test fixtures by file name, for tests and demo fixtures only, labelled SIMULATED DOCUMENT EXTRACTION - POC. A failed native extraction goes to manual review; there is no fallback to simulated values.',
 })
 
 export const apQuantityTolerance = Property({

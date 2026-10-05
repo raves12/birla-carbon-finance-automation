@@ -108,6 +108,20 @@ export const x_695068_bcfa_finance_intake = Table({
             label: 'Extraction JSON',
             hint: 'Full, unedited structured extraction result. Retained verbatim for audit even after a reviewer corrects a value — see Phase 9/11.',
         }),
+        // Phase 40: which provider read the document, and the Document
+        // Intelligence task of a native extraction (one task per attachment).
+        extraction_provider: ChoiceColumn({
+            label: 'Extraction Provider',
+            choices: {
+                native: 'Native: ServiceNow Document Intelligence (Now LLM)',
+                simulated: 'SIMULATED DOCUMENT EXTRACTION — POC',
+            },
+        }),
+        extraction_task: StringColumn({
+            label: 'Extraction Task',
+            maxLength: 32,
+            hint: 'Document Intelligence task (sys_di_task) of the native extraction of the current attachment.',
+        }),
         requires_review: BooleanColumn({ label: 'Requires Review', default: false }),
         reviewed_by: ReferenceColumn({ label: 'Reviewed By', referenceTable: 'sys_user' }),
         reviewed_at: DateTimeColumn({ label: 'Reviewed At' }),
