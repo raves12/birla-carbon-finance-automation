@@ -1,4 +1,4 @@
-# POC Demo Script (Phase 33)
+# POC Demo Script (Phase 33; document reading updated for Phase 40)
 
 A 45-minute live demonstration of the Birla Carbon Finance Automation POC on `pwcmanagementservicesdemo01`. Every step below uses records and buttons that exist on the instance. The expected results come from the verified runs in `POC1_AP_JOURNEY.md`, `POC2_CASH_JOURNEY.md`, `DEMO_DATA.md` and `AUTOMATED_FLOWS.md`.
 
@@ -10,7 +10,7 @@ Say this at the start, and again whenever one of these comes up.
 
 | Area | In the POC | Production |
 |---|---|---|
-| Reading documents | **Simulated.** The fixture PDFs' printed values are looked up by **file name** and labelled SIMULATED. Document Intelligence extraction is not licensed on this instance. | ServiceNow Document Intelligence, same result shape |
+| Reading documents | **Native** since Phase 40: ServiceNow Document Intelligence on Now LLM reads the uploaded PDF (asynchronous, about a minute). The documents are **synthetic** fixtures; accuracy on Birla Carbon documents is not measured yet (`OCR_ACCURACY_REPORT.md`) | Same service, measured and tuned on client samples |
 | SAP posting and clearing | Mock SAP integration profile (`MIRO…` / `FB05…` documents) | SAP connector |
 | Bank statement lines | Created by the seeder | Bank statement integration |
 | Thresholds, tolerances, approval limits | `x_695068_bcfa.*` properties labelled POC ASSUMPTION | Agreed with Birla Carbon finance |
@@ -35,7 +35,7 @@ Switch persona with **Impersonate User** from the admin account. Never type or s
    - About a minute later, BANK-POC2-001/002/003 are in **EXCEPTION** (`customer_ambiguous`). That is expected: the bank lines arrived without a remittance.
 2. **Check the landing page.** The KPI job refreshes every 15 minutes, so check the landing page at least 15 minutes after the reset. If Phase 30 is deployed, also check that **AI & Audit › POC Success Scorecard** shows 18 rows.
 3. **Check Now Assist.** Open any AP exception and click **Explain with Now Assist**. A note should appear within about 5 to 60 seconds. If it doesn't, see *If something goes wrong*.
-4. **Put the fixtures on the presenting laptop, with their names unchanged.** Simulated reading is keyed by file name.
+4. **Put the fixtures on the presenting laptop.** They are read natively; the file name does not matter, but upload each one only once per reset (a second upload of the same file is caught as a duplicate intake).
    - `test/fixtures/AP_INV_004_DUPLICATE.pdf`
    - `test/fixtures/AR_REMIT_101_EXACT.pdf`, `AR_REMIT_102_MULTI_INVOICE.pdf`, `AR_REMIT_103_BANK_CHARGE.pdf`
 5. **Rehearse Act 5.** Upload `AR_REMIT_101_EXACT.pdf` once, then reset again. The late-remittance path was fixed and verified on test data in Phase 33, but not yet with these three fixtures.
@@ -108,11 +108,11 @@ The two POC journeys are AP invoice to posting, and cash receipt to clearing. Bo
 
 1. Impersonate `bcfa.ap.processor` and open **Document Intake › New / Open**.
 2. Create a new intake with Document Type **AP Invoice**, attach `AP_INV_004_DUPLICATE.pdf`, and click **Process Document**.
-3. The intake completes and an invoice INV-AP-001 is created. It goes to EXCEPTION with a **duplicate** (high) exception: same vendor and same normalized invoice number as an existing INV-AP-001, whatever the amount.
+3. The intake shows **Extracting**: Document Intelligence reads the PDF and the native extraction poller continues it within about a minute (refresh). The intake then completes and an invoice INV-AP-001 is created, with Extraction Provider *Native: ServiceNow Document Intelligence (Now LLM)*. It goes to EXCEPTION with a **duplicate** (high) exception: same vendor and same normalized invoice number as an existing INV-AP-001, whatever the amount.
 4. Open the exception.
    - Optional, as `bcfa.finance.approver`: click **Approve Override**. It is **refused by policy**: duplicates are not an allowed override reason; only quantity, price and tax are.
    - Click **Reject Invoice** with a reason. The invoice moves to REJECTED.
-5. **Say:** the extraction here is simulated; the duplicate control is real. After a rejection, a corrected resubmission is allowed.
+5. **Say:** ServiceNow read the invoice (a synthetic one); the duplicate control is deterministic. After a rejection, a corrected resubmission is allowed.
 
 ### Act 5: Cash application, live remittances (POC 2)
 
@@ -123,7 +123,7 @@ The two POC journeys are AP invoice to posting, and cash receipt to clearing. Bo
    - Open BANK-POC2-001 and its `customer_ambiguous` exception. There is no remitter name and no references.
 2. **Exact match (AR_REMIT_101_EXACT.pdf).**
    - Create a Document Intake with type **AR Remittance**, attach the file, and click **Process Document**.
-   - The intake completes with the message "Remittance linked to Payment BANK-POC2-001, which was waiting in exception; the AR Remittance Processing Flow identifies the customer and retries matching."
+   - The intake shows **Extracting** for about a minute while Document Intelligence reads the advice, then completes with the message "Remittance linked to Payment BANK-POC2-001, which was waiting in exception; the AR Remittance Processing Flow identifies the customer and retries matching." (The same path ran natively on 2026-10-05, demo run N1, `CLIENT_POC_DEMO_JOURNEYS.md` AR-1.)
    - Refresh the payment after a few seconds:
      - the customer is *Sahyadri Tyre Works Pvt Ltd*, identified from the remitter name;
      - the exception is resolved;
@@ -163,7 +163,7 @@ The two POC journeys are AP invoice to posting, and cash receipt to clearing. Bo
 **Recap:** two journeys end to end, controls in code, and AI that explains but never acts.
 
 **Next steps:**
-- Document Intelligence licensing, then training on real invoices and remittances.
+- Measure native extraction on Birla Carbon sample invoices and advices, per country; confirm Document Intelligence entitlement and Now LLM data terms.
 - The SAP and bank connectors.
 - Agree thresholds and targets with AP and AR owners.
 - A two-week pilot on one entity's intake, measured by the scorecard.
@@ -172,7 +172,8 @@ The two POC journeys are AP invoice to posting, and cash receipt to clearing. Bo
 
 | Symptom | Likely cause | What to do |
 |---|---|---|
-| Upload goes to **Review Required**: "Simulated extraction has no values" | The file was renamed | Re-attach the fixture with its original name |
+| Intake stays **Extracting** for more than 2 minutes | The native extraction poller has not run yet, or the extraction task is slow | Check the job *BCFA - Native Extraction Poller* (every minute). After 10 minutes the intake goes to manual review; nothing falls back to simulated values |
+| Upload goes to **Review Required** with a low-confidence message | A critical field was not read | Show it as the control working: a person reviews; nothing is guessed |
 | Remittance goes to Review Required: "Payment … is already MATCHED/CLOSED…" | That journey was already used | Use another POC 2 file, or reset after the demo |
 | Payment stays in EXCEPTION after the remittance | Flow still running (usually seconds) | Refresh after 10–20 s. If it is still there, open the exception: the resolution notes say why, for example "customer still not identified" |
 | No AI note, or *Explain with Now Assist* spins | Now Assist is slow or unavailable | Show the note already on the record from the seeding run, and the AI Interaction Log. The pipeline does not depend on AI. |

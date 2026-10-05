@@ -165,9 +165,12 @@ FinanceJourneyService.prototype = {
         ex.orderByDesc('sys_created_on');
         ex.setLimit(1);
         ex.query();
-        if (ex.next() && String(ex.getValue('source')).indexOf('simulated') === 0) parts.push(FinanceJourneyService.SIMULATED_EXTRACTION);
-        else if (ex.isValidRecord() && ex.getValue('source') === 'servicenow_document_intelligence') parts.push(FinanceJourneyService.NATIVE_EXTRACTION);
-        else if (!ex.isValidRecord()) parts.push(FinanceJourneyService.SIMULATED_EXTRACTION);
+        // Phase 40: label only what was recorded. No extraction record (not
+        // extracted yet, or entered by hand) means no extraction label.
+        if (ex.next()) {
+            if (String(ex.getValue('source')).indexOf('simulated') === 0) parts.push(FinanceJourneyService.SIMULATED_EXTRACTION);
+            else if (ex.getValue('source') === 'servicenow_document_intelligence') parts.push(FinanceJourneyService.NATIVE_EXTRACTION);
+        }
         parts.push(FinanceJourneyService.MOCK_SAP);
         return parts.join(' · ');
     },
@@ -180,8 +183,10 @@ FinanceJourneyService.prototype = {
         var open = this._openExceptions('x_695068_bcfa_ar_exception', 'payment', id);
         var hasRemittance = this._exists('x_695068_bcfa_remittance', 'payment=' + id);
         var mode = pay.getValue('sap_processing_mode') || new FinancePolicy().arSapProcessingMode();
-        var reading = this._exists('x_695068_bcfa_remittance', 'payment=' + id + '^extraction_provider=native') ? FinanceJourneyService.NATIVE_EXTRACTION : FinanceJourneyService.SIMULATED_EXTRACTION;
-        var j = { openExceptions: open.length, banner: reading + ' · ' + FinanceJourneyService.MOCK_SAP + ' · SAP mode ' + mode.toUpperCase() };
+        // Phase 40: a payment without a remittance has no document reading to label.
+        var reading = this._exists('x_695068_bcfa_remittance', 'payment=' + id + '^extraction_provider=native') ? FinanceJourneyService.NATIVE_EXTRACTION
+            : hasRemittance ? FinanceJourneyService.SIMULATED_EXTRACTION : '';
+        var j = { openExceptions: open.length, banner: (reading ? reading + ' · ' : '') + FinanceJourneyService.MOCK_SAP + ' · SAP mode ' + mode.toUpperCase() };
         var order = FinanceJourneyService.AR_STATE_ORDER[state];
         if (state === 'RECEIVED' || state === 'NORMALIZED') order = hasRemittance ? 2 : 1;
 

@@ -58,6 +58,15 @@ docs/                      This documentation set
 | `TEST_PLAN.md` | ATF/security/idempotency test coverage |
 | `OPEN_SAP_GAPS.md` | FB05/ML81N/PGI and other unresolved SAP interface questions |
 | `BUILD_REPORT.md` | Final acceptance report (written at project completion) |
+| `CLIENT_POC_SUCCESS_REPORT.md` | Phase 40: status of each client POC criterion (start here) |
+| `CLIENT_POC_GAP_ANALYSIS.md` | Phase 40: audit of the criteria against the build, and what closed each gap |
+| `OCR_ACCURACY_REPORT.md` | Phase 40: native extraction measured on synthetic documents |
+| `CLIENT_POC_TEST_MATRIX.md` | Phase 40: country coverage, test data and AP/AR test IDs with results |
+| `CLIENT_POC_DEMO_JOURNEYS.md` | Phase 40: demo journeys AP-1..3 and AR-1..3 |
+| `CLIENT_POC_CONFIGURATION_AND_SECURITY.md` | Phase 40: extraction, tax, tolerance, deduction and SAP settings; security |
+| `STANDARD_VS_CUSTOM_ASSESSMENT.md` | Phase 40: platform features used vs custom code |
+| `SAP_POC_MODES.md` | Phase 40: MOCK SAP (Mode 1) and test-integrated SAP (Mode 2) |
+| `PRODUCTION_IMPLEMENTATION_ESTIMATE.md` | Phase 40: indicative effort from POC to production |
 
 ## Non-negotiable principles
 

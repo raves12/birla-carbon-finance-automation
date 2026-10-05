@@ -126,5 +126,5 @@ The role is only for this person. Do not add it to a group other people are in.
 | 3c | Finance and tax | Confirm or replace the POC reference data: tax expectations (GST, VAT incl. reduced rates, WHT sections), tolerances, deduction limits (`CLIENT_POC_CONFIGURATION_AND_SECURITY.md`) |
 | 3d | Presenter | Demo run N1 (`CLIENT_POC_DEMO_JOURNEYS.md`): approve INV-AP-N1 as a Finance Approver; confirm the 1,600 withholding deduction on AREX0001150 as the AR processor; then approve and clear |
 | 3e | Admin | After any Playbook deploy: run `phase35_playbook_yokohama_fix_bg.js` (scope global) and activate both Playbooks in Workflow Studio |
-| 3f | Build team | Gap AR-REC-004 (open items through IntegrationService) and SAP Mode 2 (`SAP_POC_MODES.md`) |
+| 3f | Build team | SAP Mode 2: RealSAPAdapter, connectivity, SAP test system (`SAP_POC_MODES.md`). AR-REC-004 and adapter selection were done on 2026-10-05 |
 | 3g | Build team | The DocIntel field keys and skill configs are global-scope records created by `gen_native_extraction.py`: include them when the app moves to another instance |

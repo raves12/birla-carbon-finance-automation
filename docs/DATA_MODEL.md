@@ -1,5 +1,7 @@
 # DATA_MODEL.md — Birla Carbon Finance Automation
 
+> **Phase 40 update (2026-10-05).** `x_695068_bcfa_ap_extraction.source` is `servicenow_document_intelligence` for uploaded documents (native extraction) and `simulated_document_intelligence` for fixtures and seeded data. New Phase 40 columns (tax breakdown, tax and withholding validation, tolerance detail, payment advice fields, extraction provider) are listed in `CLIENT_POC_CONFIGURATION_AND_SECURITY.md` and the Fluent source.
+
 Stage 3 output. 27 tables, normalized by domain, all verified deployed in the PDI (scope
 `x_695068_bcfa`) via `now-sdk build`/`now-sdk install` + MCP `table_list` confirmation. Full field
 definitions live in the Fluent source — this document is the index and the cross-domain rationale.

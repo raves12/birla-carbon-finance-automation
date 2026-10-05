@@ -95,6 +95,21 @@ STEPS['playbooks'] = {
     'files': r'^sys_pd_process_definition_(74ce2044163b43e7bbaa53a0cb012d42|e01d2325600b49c5a0165460897cd11d)\.xml$',
 }
 
+# Remaining fixes after the client POC criteria run: AR open items read
+# through IntegrationService before matching (AR-REC-004); SAP adapter by
+# configuration (x_695068_bcfa.sap.adapter); journey banner labels only the
+# extraction actually recorded; native extraction source choice and stale
+# "not licensed" labels.
+STEPS['remaining'] = {
+    'base': '62ead09',
+    'new_si': [],
+    'mod_si': ['FinancePolicy', 'ApDomainService', 'ArDomainService', 'FinanceJourneyService', 'AISimulationService'],
+    'files': r'^(sys_properties_50d388a192d3432398e073c3e549591b'
+             r'|sys_documentation_x_695068_bcfa_(ap_extraction_source|finance_intake_classification_reason)_en)\.xml$',
+    'choices': r'^sys_choice_x_695068_bcfa_ap_extraction_source\.xml$',
+    'atf': ['f8bacf78488341a6a620d529cba81a17', 'b389e812f61c4bb09ed7c730aa20b6ee'],  # PB-AP-004 banner; CP-DED AR-REC-004
+}
+
 
 def h(t):
     a = 7

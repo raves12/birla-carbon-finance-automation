@@ -80,4 +80,4 @@ No credential value is, or ever was, stored in this repository.
 - the stable `$id` keys.
 
 It finds no call, class, property or job. The Studio source-control export folder (`229ba2b1…/`) still shows the
-removed records until Studio's *Commit Changes* runs (Phase 35).
+removed records until Studio's *Commit Changes* runs (Phase 35). The stale copy of that folder was removed from the feature branch on 2026-10-05.

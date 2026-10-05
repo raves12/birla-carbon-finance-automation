@@ -327,6 +327,7 @@ ArDomainService.prototype = {
 
     matchPayment: function(paymentSysId) {
         this._setState(paymentSysId, 'MATCHING', null, 'Running remittance, exact and multi-invoice matching');
+        this.refreshOpenItems(paymentSysId);
 
         // Phase 13: the invoices the customer named on the remittance come
         // first. Allocation and the balance check still decide the outcome.
@@ -421,6 +422,61 @@ ArDomainService.prototype = {
         payment.setValue('residual_amount', residual);
         payment.setWorkflow(false);
         payment.update();
+    },
+
+    // Phase 40 (AR-REC-004): the customer's open items are read from SAP
+    // through IntegrationService (adapter by configuration) before matching,
+    // and the local open-item table, the cache the matching engine works on,
+    // is updated from the answer. MOCK SAP answers from that same table, so in
+    // the POC the read changes nothing. A failed read does not stop matching:
+    // the cached items are used, and the failure is on the integration
+    // transaction, the audit trail and the payment journey.
+    refreshOpenItems: function(paymentSysId) {
+        var payment = new GlideRecord('x_695068_bcfa_payment');
+        if (!payment.get(paymentSysId) || !payment.getValue('customer')) return { refreshed: false, reason: 'no customer resolved' };
+        var customer = payment.getValue('customer');
+        var r = this.integrationService.execute({
+            operation: 'getOpenItems',
+            adapter: this.policy.sapAdapter(),
+            correlationId: payment.getValue('correlation_id'),
+            idempotencyKey: 'AR-OPENITEMS-' + paymentSysId + '-' + gs.generateGUID(),
+            sourceTable: 'x_695068_bcfa_payment',
+            sourceRecord: paymentSysId,
+            payload: { customerSysId: customer }
+        });
+        if (r.status !== 'success' || !r.response || !r.response.items) {
+            return { refreshed: false, status: r.status, transactionSysId: r.transactionSysId };
+        }
+        var changed = 0, added = 0, items = r.response.items;
+        for (var i = 0; i < items.length; i++) {
+            var it = items[i];
+            var gr = new GlideRecord('x_695068_bcfa_ar_open_item');
+            var found = !!(it.sysId && gr.get(it.sysId) && gr.getValue('customer') === customer);
+            if (!found && it.itemNumber) {
+                gr = new GlideRecord('x_695068_bcfa_ar_open_item');
+                gr.addQuery('item_number', it.itemNumber);
+                gr.addQuery('customer', customer);
+                gr.query();
+                found = gr.next();
+            }
+            if (!found && !it.itemNumber) continue;
+            var values = { currency: it.currency, invoice_amount: it.invoiceAmount, open_amount: it.openAmount, due_date: it.dueDate, status: it.status };
+            var diff = false;
+            if (!found) {
+                gr = new GlideRecord('x_695068_bcfa_ar_open_item');
+                gr.initialize();
+                gr.setValue('item_number', it.itemNumber);
+                gr.setValue('customer', customer);
+            }
+            for (var k in values) {
+                if (values[k] === undefined || values[k] === null || values[k] === '') continue;
+                var current = gr.getValue(k);
+                var same = typeof values[k] === 'number' ? Math.abs(parseFloat(current || '0') - values[k]) < 0.005 : String(current) === String(values[k]);
+                if (!found || !same) { gr.setValue(k, values[k]); diff = true; }
+            }
+            if (!found) { gr.insert(); added++; } else if (diff) { gr.update(); changed++; }
+        }
+        return { refreshed: true, items: items.length, changed: changed, added: added, transactionSysId: r.transactionSysId };
     },
 
     _paymentCurrency: function(paymentSysId) {
@@ -845,7 +901,7 @@ ArDomainService.prototype = {
         var idempotencyKey = payment.getValue('idempotency_key') || ('AR-CLEAR-' + paymentSysId);
         var result = this.integrationService.execute({
             operation: 'clearCustomerPayment',
-            adapter: 'mock_sap',
+            adapter: this.policy.sapAdapter(),
             correlationId: payment.getValue('correlation_id'),
             idempotencyKey: idempotencyKey,
             // Business reference: the same bank payment is never cleared twice.

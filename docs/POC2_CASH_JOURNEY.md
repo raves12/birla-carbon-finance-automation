@@ -1,5 +1,7 @@
 # POC 2 — Cash Application Journey (Phase 13)
 
+> **Phase 40 update (2026-10-05).** Payment advices and remittances are now read natively by ServiceNow Document Intelligence on Now LLM, and open items are read through IntegrationService before matching. The simulated extraction described below remains for test fixtures and seeded data only. See `CLIENT_POC_DEMO_JOURNEYS.md`.
+
 Date: 2026-09-28
 Instance: `pwcmanagementservicesdemo01.service-now.com`
 Status: **verified live end to end** (exact, multi-invoice and deduction paths; AI review retested after a fix)

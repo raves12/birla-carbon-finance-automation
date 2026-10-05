@@ -2338,6 +2338,10 @@ declare global {
                         table: 'sys_properties'
                         id: '3cf89aae405c43de85f9b9fa67c0307f'
                     }
+                    'prop-sap-adapter': {
+                        table: 'sys_properties'
+                        id: '50d388a192d3432398e073c3e549591b'
+                    }
                     'prop-sod-approver-in-group': {
                         table: 'sys_properties'
                         id: '5eb6cd88e34c46718385fe5b85f47e40'
@@ -35435,6 +35439,17 @@ declare global {
                                     name: 'x_695068_bcfa.ai_agent'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'fa9d1dcb32904c398feb3d43bc525b80'
+                        key: {
+                            name: 'x_695068_bcfa_ap_extraction'
+                            element: 'source'
+                            value: 'servicenow_document_intelligence'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {

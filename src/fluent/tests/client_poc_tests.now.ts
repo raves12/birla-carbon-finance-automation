@@ -163,7 +163,31 @@ Test(
                     var commercial = pol.arDeductionDecision({ deductionType: 'commercial_deduction', amount: 100, company: 'BC01' });
                     assertEqual({ name: 'a commercial deduction needs a finance approver', shouldbe: true, value: commercial.allowed && commercial.approvalRequired });
                     assertEqual({ name: 'withholding limit is a governed fraction', shouldbe: 0.1, value: pol.arWithholdingMaxPct() });
-                    stepResult.setOutputMessage('AR-DED-001..005 checked with tag ' + tag);
+
+                    // AR-REC-004: open items are read from SAP through IntegrationService before matching.
+                    var item = ins('x_695068_bcfa_ar_open_item', { item_number: tag + 'OI', customer: cust, currency: 'INR', invoice_amount: 5000, open_amount: 5000, status: 'open' });
+                    var p4 = pay(5000);
+                    var ar = new ArDomainService();
+                    var read = ar.refreshOpenItems(p4);
+                    var txn = new GlideRecord('x_695068_bcfa_integration_txn');
+                    txn.get(read.transactionSysId);
+                    assertEqual({ name: 'AR-REC-004 open items read through IntegrationService', shouldbe: 'getOpenItems/mock_sap/success',
+                        value: txn.getValue('operation') + '/' + txn.getValue('adapter') + '/' + txn.getValue('status') });
+                    assertEqual({ name: 'AR-REC-004 MOCK SAP answer leaves the cache unchanged', shouldbe: '1/0/0', value: read.items + '/' + read.changed + '/' + read.added });
+                    var prop = new GlideRecord('sys_properties');
+                    prop.get('name', 'x_695068_bcfa.sap.adapter');
+                    prop.setValue('value', 'real_sap'); prop.update();
+                    var notConfigured = ar.refreshOpenItems(p4);
+                    prop.setValue('value', 'anything-else'); prop.update();
+                    var fallback = new FinancePolicy().sapAdapter();
+                    prop.setValue('value', 'mock_sap'); prop.update();
+                    assertEqual({ name: 'SAP adapter by configuration: real SAP not configured, nothing changed', shouldbe: 'false/failed',
+                        value: notConfigured.refreshed + '/' + notConfigured.status });
+                    assertEqual({ name: 'unknown adapter values mean MOCK SAP', shouldbe: 'mock_sap', value: fallback });
+                    var still = new GlideRecord('x_695068_bcfa_ar_open_item');
+                    still.get(item);
+                    assertEqual({ name: 'cached open item kept after the failed read', shouldbe: 'open/5000', value: still.getValue('status') + '/' + parseFloat(still.getValue('open_amount')) });
+                    stepResult.setOutputMessage('AR-DED-001..005 and AR-REC-004 checked with tag ' + tag);
                 })(outputs, steps, params, stepResult, assertEqual);
             `,
         })

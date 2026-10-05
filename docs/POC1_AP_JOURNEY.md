@@ -1,5 +1,7 @@
 # POC 1 — AP Automation Journey (Phase 12)
 
+> **Phase 40 update (2026-10-05).** Uploaded documents are now read natively by ServiceNow Document Intelligence on Now LLM (`x_695068_bcfa.document.extraction.provider = native`). The simulated extraction described below remains for test fixtures and seeded data only. See `CLIENT_POC_DEMO_JOURNEYS.md` and `OCR_ACCURACY_REPORT.md`.
+
 Date: 2026-09-28
 Instance: `pwcmanagementservicesdemo01.service-now.com`
 Status: **verified live end to end** (happy path and all four exception decisions)

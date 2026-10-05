@@ -22,11 +22,11 @@ Readiness below means ready to demonstrate the criterion in the POC with those l
 | Withholding Tax | **READY WITH DEPENDENCY** | Applicability, code and rate from configuration (never from OCR); printed correct → PASS, mismatch → FAIL, printed but not configured → MANUAL REVIEW, expected but not printed → WARNING (CP-TAX, E2E T5 / T6); AR TDS deductions classified from the advice | Client WHT sections and vendor master; the printed WHT amount was not extracted on the synthetic services invoice (rate was, in run 2) |
 | Tolerance Framework | **READY** | One engine (MatchingEngine + FinancePolicy); decision table with property fallback; quantity, price, tax (abs / %), total, rounding; rule source, expected, actual, variance and result stored on the match and shown in the Playbook (CP-TOL, E2E Q1 / Q2) | Client-agreed values |
 | AR Payment Advice OCR | **READY WITH DEPENDENCY** | 12 synthetic advices: references, UTR, amounts, per-invoice deductions and reasons; live run resolved the customer and both invoices from the advice | 0 client samples; payer alias read as legal name (AR_REMIT_005); header deduction reason varies between runs |
-| Open Item Reconciliation | **READY WITH DEPENDENCY** | Precedence: remittance references → exact amount (payment currency) → exact combinations (ambiguous never chosen) → suggestion; customer alias; residual classification (ATF Matching Engine — AR, ambiguous combinations; E2E AR-REC-003) | Open items are POC data standing in for MOCK SAP and are read directly, **not through IntegrationService** (gap AR-REC-004); real SAP open items not connected |
+| Open Item Reconciliation | **READY** | Open items read from SAP through IntegrationService before matching (AR-REC-004, closed 2026-10-05). Precedence: remittance references → exact amount (payment currency) → exact combinations (ambiguous never chosen) → suggestion; customer alias; residual classification (ATF Matching Engine — AR, ambiguous combinations, CP-DED; E2E AR-REC-003, Phase 35 AR-A..I) | Open items come from MOCK SAP; real SAP is Mode 2 |
 | Deduction Handling | **READY** | Taxonomy: bank charge, TDS / TCS, withholding, credit / debit note, commercial, rounding, FX, short pay; dispute / unapplied / other never deductions; limits per type; AI suggestion never decides (CP-DED, E2E AR-DED-003/006/007, live run) | Mapping to SAP reason codes |
 | Playbook | **READY** | Both Playbooks updated, deployed, converted for Yokohama and active (published 2026-10-05); PB-UI-001/002/003, PB-AP-004 pass | Reactivate after every Playbook deploy |
 | Standard-vs-Custom Assessment | **READY** | `STANDARD_VS_CUSTOM_ASSESSMENT.md` | — |
-| SAP POC Mode | **READY (Mode 1, MOCK SAP)**; Mode 2 **NOT READY** | Idempotent posting / clearing, DRAFT / DIRECT, unknown-outcome reconciliation (ATF, Playbook tests) | Mode 2 needs adapter selection by configuration, RealSAPAdapter, connectivity and an SAP test system (`SAP_POC_MODES.md`) |
+| SAP POC Mode | **READY (Mode 1, MOCK SAP)**; Mode 2 **NOT READY** | Idempotent posting / clearing, DRAFT / DIRECT, unknown-outcome reconciliation (ATF, Playbook tests); adapter selected by `x_695068_bcfa.sap.adapter` | Mode 2 needs the RealSAPAdapter implementation, connectivity and an SAP test system (`SAP_POC_MODES.md`) |
 
 ## 2. Overall
 
@@ -60,7 +60,7 @@ The POC can demonstrate every criterion on synthetic documents with MOCK SAP. Th
 | 1 | Client sample documents (AP and AR, per country) and approval for how they are handled | Birla Carbon |
 | 2 | Confirm Now LLM data processing and residency terms for client documents | ServiceNow / client IT |
 | 3 | Client tax expectations (GST, VAT reduced rates, WHT sections) and tolerances | Birla Carbon finance and tax |
-| 4 | AR open items through IntegrationService (gap AR-REC-004) and SAP Mode 2 | Build team / SAP team |
+| 4 | SAP Mode 2: RealSAPAdapter, connectivity, SAP test system (adapter selection and the open-item read are done) | Build team / SAP team |
 | 5 | D6 decision-reason ACL and the workspace route ACL (security_admin) | Instance owner |
 | 6 | DocIntel keys and skill configs live in global scope: include them in the migration | Build team |
 | 7 | Demo data: E2E records and the live demo run N1 remain; N1's approval and deduction confirmation are left for the presenter | Instance owner |

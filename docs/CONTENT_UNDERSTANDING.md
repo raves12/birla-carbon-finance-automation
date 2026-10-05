@@ -1,5 +1,7 @@
 # Content Understanding / Now Assist DocIntel Configuration (Phase 5)
 
+> **Superseded in Phase 40 (2026-10-05).** The Classic use cases described here never returned values. BCFA now uses two generative use cases pinned to Now LLM, which do: see `OCR_ACCURACY_REPORT.md` and `scripts/deploy/native_extraction_config.json`.
+
 Date: 2026-09-25 to 2026-09-27 (corrected 2026-09-28, Phase 12)
 Instance: `pwcmanagementservicesdemo01.service-now.com`
 

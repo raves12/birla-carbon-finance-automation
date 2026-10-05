@@ -30,6 +30,16 @@ export const documentExtractionProvider = Property({
         'Document extraction provider. native = ServiceNow Document Intelligence, generative extraction on Now LLM (use cases BCFA AP Invoice Extraction (Now LLM) and BCFA AR Payment Advice Extraction (Now LLM)). simulated = printed values of the synthetic test fixtures by file name, for tests and demo fixtures only, labelled SIMULATED DOCUMENT EXTRACTION - POC. A failed native extraction goes to manual review; there is no fallback to simulated values.',
 })
 
+// Phase 40: which SAP adapter IntegrationService calls (SAP_POC_MODES.md).
+export const sapAdapter = Property({
+    $id: Now.ID['prop-sap-adapter'],
+    name: 'x_695068_bcfa.sap.adapter',
+    type: 'string',
+    value: 'mock_sap',
+    description:
+        'SAP adapter used for vendor invoice posting, payment clearing and the AR open-item read. mock_sap = MOCK SAP (POC Mode 1). real_sap = RealSAPAdapter (Mode 2): not configured in the POC, every call fails safely with NOT_CONFIGURED and nothing is sent. Any other value means mock_sap.',
+})
+
 export const apQuantityTolerance = Property({
     $id: Now.ID['prop-ap-tolerance-quantity'],
     name: 'x_695068_bcfa.ap.tolerance.quantity_pct',

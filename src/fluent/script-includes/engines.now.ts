@@ -32,6 +32,6 @@ export const aiSimulationService = ScriptInclude({
     name: 'AISimulationService',
     active: true,
     apiName: 'x_695068_bcfa.AISimulationService',
-    description: 'Simulates Now Assist Document Intelligence extraction and AI Agent advisory recommendations — not licensed in this PDI (see docs/DISCOVERY.md). Every output is advisory only.',
+    description: 'Deterministic simulated extraction for invoices created without a document (tests, seeded demo data) and simulated advisory recommendations when the AI provider is set to simulated. Uploaded documents are read by DocumentExtractionService (native Document Intelligence on Now LLM, Phase 40). Every output is advisory only.',
     script: Now.include('../../server/script-includes/AISimulationService.server.js'),
 })

@@ -37,14 +37,14 @@ Not production-ready:
 | 2 | Extraction hardening | Per-country field sets, scanned / image handling, multi-page limits (25 pages, 4 MB per attachment), duplicate handling, review UI for low confidence, page / position evidence if the platform supplies it | 3-5 | 1 |
 | 3 | Tax configuration | Replace POC rows with client-approved expectations: GST place-of-supply (CGST/SGST vs IGST), reduced VAT rates, reverse charge, TDS / withholding sections and thresholds per vendor; ideally from SAP tax codes and vendor withholding master | 2-4 | Client tax team, SAP master data |
 | 4 | Tolerances and deductions | Client-agreed values per company / country / vendor type; deduction reason-code mapping to SAP reason codes | 1-2 | Finance controllers |
-| 5 | SAP integration (Mode 2) | Adapter by configuration; RealSAPAdapter for 8 canonical operations; open items through IntegrationService; posting, parking, clearing, status query; error and unknown-outcome mapping | 8-14 | SAP team, middleware, test system (`SAP_POC_MODES.md`) |
+| 5 | SAP integration (Mode 2) | RealSAPAdapter for 8 canonical operations (adapter selection and the open-item read through IntegrationService exist since 2026-10-05); posting, parking, clearing, status query; error and unknown-outcome mapping; open-item cache refresh rules (block or continue on a failed read) | 8-13 | SAP team, middleware, test system (`SAP_POC_MODES.md`) |
 | 6 | Bank statement intake | Replace MockBankAdapter: MT940 / CAMT.053 / bank API | 3-5 | Banks, treasury |
 | 7 | Security and identity | Role model with HR / AD groups; fix D6 and the route ACL; SoD review; data classification of documents; AI governance sign-off | 2-3 | Security admin, audit |
 | 8 | Testing | System and integration testing, UAT support, volume test, regression automation on the client instance | 4-6 | 1-7 |
 | 9 | Operations | Monitoring (extraction failures, unknown outcomes, SLA), runbooks, hypercare | 2-3 | 8 |
 | 10 | Project management and change | Plan, governance, training, cut-over | 15-20 % of the above | — |
 
-**Total delivery effort: about 28-48 pw plus 15-20 % management**, about 32-58 pw. At a team of 4-5, that is roughly 3-5 months, for AP and AR in the first countries.
+**Total delivery effort: about 28-47 pw plus 15-20 % management**, about 32-56 pw. At a team of 4-5, that is roughly 3-5 months, for AP and AR in the first countries.
 
 ## 3. Biggest uncertainties
 

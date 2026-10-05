@@ -232,8 +232,18 @@ Test({ $id: Now.ID['test-pb-ap-004'], name: 'PB-AP-004 AP Playbook — simulated
                     var svc = new FinanceJourneyService();
                     return table === 'x_695068_bcfa_ap_invoice' ? svc.invoiceJourney(g) : svc.paymentJourney(g);
                 }
-                var j = journey('x_695068_bcfa_ap_invoice', inv('EXTRACTED'));
+                var simulatedInv = inv('EXTRACTED');
+                var ext = new GlideRecord('x_695068_bcfa_ap_extraction');
+                ext.initialize();
+                ext.setValue('ap_invoice', simulatedInv);
+                ext.setValue('source', 'simulated_document_intelligence');
+                ext.setWorkflow(false);
+                ext.insert();
+                var j = journey('x_695068_bcfa_ap_invoice', simulatedInv);
                 assertEqual({ name: 'banner names the simulated extraction', shouldbe: true, value: String(j.banner).indexOf('SIMULATED DOCUMENT EXTRACTION — POC') >= 0 });
+                // Phase 40: an invoice with no extraction record gets no extraction label.
+                assertEqual({ name: 'no extraction record: no extraction label', shouldbe: -1,
+                    value: String(journey('x_695068_bcfa_ap_invoice', inv('RECEIVED')).banner).indexOf('EXTRACTION') });
                 assertEqual({ name: 'banner names MOCK SAP', shouldbe: true, value: String(j.banner).indexOf('MOCK SAP') >= 0 });
                 stepResult.setOutputMessage(j.banner);
 

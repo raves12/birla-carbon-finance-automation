@@ -9,7 +9,7 @@ and recorded. Instance: `pwcmanagementservicesdemo01.service-now.com`. Repositor
 | | Where | Written by | Contains |
 |---|---|---|---|
 | **Fluent source**: the source of truth | Branch `feature/bcfa-native-ai-completion`: `src/`, `scripts/`, `docs/` | This program, one commit per phase | TypeScript metadata (`src/fluent`), server scripts (`src/server`), deploy scripts, documentation |
-| **Studio export**: a snapshot | Branch `sn_instances/pwcmanagementservicesdemo01`; the folder `229ba2b1a079431e104010f5ea883e85/` on this branch is an old copy | ServiceNow Studio *Commit Changes* | The application as update-set XML, as it was on the instance at the time of the commit |
+| **Studio export**: a snapshot | Branch `sn_instances/pwcmanagementservicesdemo01` (folder `229ba2b1a079431e104010f5ea883e85/`). The stale copy on the feature branch was removed on 2026-10-05 | ServiceNow Studio *Commit Changes* | The application as update-set XML, as it was on the instance at the time of the commit |
 
 ### Studio sync, 2026-09-29
 
@@ -57,8 +57,8 @@ and recorded. Instance: `pwcmanagementservicesdemo01.service-now.com`. Repositor
    `Instance state after Phases 8–35 (Claude removed)`. This brings the Studio branch up to date with the instance.
 3. Only then, if needed at all, use *Apply Remote Changes*.
 
-The folder `229ba2b1…/` on the feature branch is a stale copy of the export. Don't edit it by hand. After step 2, it can
-be refreshed from the Studio branch or removed from the feature branch.
+The stale copy of the export folder `229ba2b1…/` was removed from the feature branch on 2026-10-05 (it is still in git
+history). The export lives only on the Studio branch; never edit it by hand.
 
 ## How changes are deployed
 

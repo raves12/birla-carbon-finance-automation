@@ -84,7 +84,7 @@ export const x_695068_bcfa_finance_intake = Table({
         classification_reason: StringColumn({
             label: 'Classification Reason',
             maxLength: 1000,
-            hint: 'How the document type was decided (set at upload; model classification is not licensed). Older rows hold the reason the Claude classifier returned (removed in Phase 34).',
+            hint: 'How the document type was decided (set at upload; automatic document classification is not configured). Older rows hold the reason the Claude classifier returned (removed in Phase 34).',
         }),
         extraction_confidence: DecimalColumn({ label: 'Extraction Confidence', scale: 2 }),
         company_code: StringColumn({ label: 'Company Code', maxLength: 10 }),

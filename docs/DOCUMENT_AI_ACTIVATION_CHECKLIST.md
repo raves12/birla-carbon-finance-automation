@@ -1,5 +1,7 @@
 # DOCUMENT_AI_ACTIVATION_CHECKLIST.md: from simulated extraction to native Document Intelligence
 
+> **Done in Phase 40 (2026-10-05).** Native Document Intelligence extraction is active and is the default provider. The status line below is historical. Remaining items: client samples, production entitlement and Now LLM data terms (`CLIENT_POC_SUCCESS_REPORT.md` §5).
+
 **Status: SIMULATED.** Document extraction in the POC is **SIMULATED DOCUMENT EXTRACTION — POC**.
 
 `SimulatedDocumentExtraction` returns the printed values of each synthetic fixture. It uses no AI and makes no external call, and its output is labelled on:

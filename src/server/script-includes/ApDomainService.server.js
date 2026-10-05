@@ -167,11 +167,11 @@ ApDomainService.prototype = {
 
     // seedFields stands in for whatever partial, as-if-OCR'd fields a real
     // extraction step would have produced. This is the deterministic
-    // simulated extraction (AISimulationService): Document Intelligence
-    // extraction is not licensed on this instance (see
-    // docs/CONTENT_UNDERSTANDING.md). No external AI is called (the Claude
-    // path was removed in Phase 34). Extraction never blocks the pipeline
-    // on an AI outage.
+    // simulated extraction (AISimulationService), used for invoices created
+    // without a document (tests, seeded demo data). Uploaded documents are
+    // read natively by DocumentExtractionService in FinanceDocumentIntakeService
+    // (Phase 40) and never come through here. No external AI is called (the
+    // Claude path was removed in Phase 34).
     runExtraction: function(apInvoiceSysId, seedFields, options) {
         this._setState(apInvoiceSysId, 'EXTRACTING', null, 'Beginning extraction');
         var result = this.aiSimulation.simulateApExtraction(apInvoiceSysId, seedFields, options);
@@ -514,7 +514,7 @@ ApDomainService.prototype = {
         var idempotencyKey = 'AP-POST-' + apInvoiceSysId;
         var result = this.integrationService.execute({
             operation: 'postVendorInvoice',
-            adapter: 'mock_sap',
+            adapter: this.policy.sapAdapter(),
             correlationId: invoice.getValue('correlation_id'),
             idempotencyKey: idempotencyKey,
             // Business reference: the same vendor invoice number is never

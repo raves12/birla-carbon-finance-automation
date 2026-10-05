@@ -13,6 +13,12 @@ All values are **POC ASSUMPTIONS or POC REFERENCE DATA** until Birla Carbon fina
 | Skill configs | provider `use_now_llm: true`, response type `document_extraction` | `di_skill_config` (global scope) | Per use case; the instance-wide default provider is unchanged |
 | Poller | BCFA - Native Extraction Poller, every 1 minute | Scheduled job | Resumes intakes waiting for an asynchronous DocIntel result; times out after 10 minutes to manual review |
 
+### SAP adapter
+
+| Setting | Value | Meaning |
+|---|---|---|
+| `x_695068_bcfa.sap.adapter` | `mock_sap` | Adapter for posting, clearing and the AR open-item read. `real_sap` is not configured in the POC: every call fails safely (NOT_CONFIGURED) and nothing is sent |
+
 ## 2. Tax and withholding (AP)
 
 | Setting | Value | Where |

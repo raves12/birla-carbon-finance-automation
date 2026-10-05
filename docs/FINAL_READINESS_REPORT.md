@@ -18,12 +18,13 @@ Withholding Tax:                 READY WITH DEPENDENCY  (client WHT rules; print
                                  amount not extracted on the synthetic invoice)
 Tolerance Framework:             READY
 AR Payment Advice OCR:           READY WITH DEPENDENCY  (synthetic only)
-Open Item Reconciliation:        READY WITH DEPENDENCY  (MOCK SAP data read directly,
-                                 not through IntegrationService: gap AR-REC-004)
+Open Item Reconciliation:        READY                  (open items read through
+                                 IntegrationService from MOCK SAP; AR-REC-004 closed)
 Deduction Handling:              READY
 Playbook:                        READY                  (updated, active, published)
 Standard-vs-Custom Assessment:   READY
 SAP POC Mode:                    READY for Mode 1 (MOCK SAP); Mode 2 NOT READY
+                                 (adapter now chosen by x_695068_bcfa.sap.adapter)
 
 Dependencies:  client sample documents; Now LLM data-processing terms;
                client tax / tolerance values; SAP Mode 2; production
@@ -36,11 +37,18 @@ line values 346/346, critical 124/125 and 123/125 (OCR_ACCURACY_REPORT.md).
 Live native runs N1: AP invoice INV-AP-N1 MATCHED with tax PASS, pending
 approval; AR advice resolved customer and references, short pay 1,600
 suggested as withholding tax, pending the person's confirmation.
-E2E (phase40_e2e_bg.js) run FAAD2: 11/11.
-ATF BCFA Regression (39 tests): 39/39 latest result per test.
-  Serial run 10:35-11:01: 37/39. Lifecycle and Orchestration raced the
-  record-triggered AP intake flow; the tests were fixed (invoice inserted
-  without engines) and both pass (10:46).
+E2E (phase40_e2e_bg.js) run FAAD2: 11/11 (before the remaining fixes).
+ATF BCFA Regression (39 tests): 39/39 in one serial run (11:13-11:41) after
+  the remaining fixes. An earlier run (10:35) had 37/39: Lifecycle and
+  Orchestration raced the record-triggered AP intake flow; both tests
+  were fixed (invoice inserted without engines).
+E2E after the remaining fixes: phase40_e2e_bg.js run 63D87 11/11;
+  phase35_e2e_bg.js run C119F 16/16 (AP-A..F, AR-A..I, AR-C2).
+Remaining fixes (2026-10-05): AR open items read through IntegrationService
+  (AR-REC-004); SAP adapter chosen by x_695068_bcfa.sap.adapter; journey
+  banner labels only the extraction recorded; native extraction source
+  choice and stale 'not licensed' labels; stale Studio export folder
+  removed from the feature branch.
 ```
 
 

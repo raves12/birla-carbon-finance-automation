@@ -105,7 +105,7 @@ Sources:
 | AR-REC-001 | Exact invoice reference match | ATF Matching Engine — AR | PASS |
 | AR-REC-002 | Multi-invoice exact combination; ambiguous never chosen | ATF Matching Engine — AR, ambiguous combinations | PASS |
 | AR-REC-003 | No invoice reference: exact amount | E2E | PASS |
-| AR-REC-004 | Open items read through IntegrationService | Source review | **GAP**: matching reads the local POC table `x_695068_bcfa_ar_open_item` (MOCK SAP reference data) directly. `IntegrationService.getOpenItems` (MockSAPAdapter / RealSAPAdapter) exists but the AR matching path does not call it. Clearing does go through IntegrationService |
+| AR-REC-004 | Open items read through IntegrationService before matching; adapter by configuration; a failed read keeps the cached items | CP-DED; E2E (Phase 35 run C119F, Phase 40 run 63D87) | PASS (MOCK SAP). Closed 2026-10-05: `ArDomainService.refreshOpenItems` calls `getOpenItems` and updates the local open-item cache the matching engine reads |
 | AR-DED-001 | Bank charge suggested from the advice | CP-DED | PASS |
 | AR-DED-002 | Short pay without a reason: manual review | CP-DED | PASS |
 | AR-DED-003 | TDS stated on the advice → withholding tax | CP-DED, E2E | PASS |
