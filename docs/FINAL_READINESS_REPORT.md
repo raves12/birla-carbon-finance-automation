@@ -81,16 +81,27 @@ Defects found and fixed in this phase:
 
 Open items:
   1. (closed 2026-10-05) BCFA Workspace Playbook page.
-  2. AP-B / MT-AP-17: approve the tolerance override as an authorised
-     approver (bcfa.finance.controller). The assistant may not impersonate.
-  3. Studio commit of the deployed changes, with "Include changes not
-     tracked in update sets".
-  4. Stale inactive draft flow "AR Exception - Use case: BCFA Cash
-     Application Review - 6ad14356…" (housekeeping).
+  2. AP-B / MT-AP-17 (open, manual): approve the tolerance override on
+     APEX0001065 (invoice E2E-6ABE1-B, quantity variance 2,500 EUR) as an
+     authorised approver (bcfa.finance.controller), with a reason. The
+     assistant's tooling does not permit impersonating users.
+  3. (closed 2026-10-05) Studio commit with "Include changes not tracked in
+     update sets": commit 43edb7d on sn_instances/pwcmanagementservicesdemo01
+     (367 files, including both Playbooks and the workspace Playbook page).
+  4. (accepted 2026-10-05) Stale draft flow "AR Exception - Use case: BCFA
+     Cash Application Review - 6ad14356…" (2ad14356…cde8) is left in place:
+     inactive, never run, nothing references it; the published flow
+     (…66d10356…) is the live one. Delete it at the next housekeeping.
   5. (closed) Skill Kit prompt V3: "AR Recommended Next Action v3" is
      Published and the default prompt of the skill (checked 2026-10-05).
-  6. Route ACL bcfa.* omits ap_approver, ar_approver and
-     integration_operator (admin decision).
+  6. (deferred, POC: action later) Route ACL bcfa.* and the workspace list
+     audience omit ap_approver, ar_approver and integration_operator.
+     Users with only those roles cannot open the BCFA Workspace (admin and
+     the other BCFA roles can). Needs security_admin: add the three roles
+     to ACL bcfa.* (ux_route, read) and to the Applicability "BCFA
+     Workspace Audience", then in source (workspace.now.ts,
+     list_menu.now.ts). Deferred by the instance owner for the POC
+     (2026-10-05): check that each demo user holds a role on the ACL.
   7. E2E test data: E2E-* customers, open items and payments remain until
      the next demo reset.
 
