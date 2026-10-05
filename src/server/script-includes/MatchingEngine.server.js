@@ -682,7 +682,10 @@ MatchingEngine.prototype = {
             else if (out.taxVariance <= out.band) add('within_tolerance', amountText);
             else add('fail', amountText);
 
-            if (has(b.ratePct) && Math.abs(Number(b.ratePct) - rate) > 0.001) {
+            // A CGST + SGST invoice prints each component's rate (9% + 9% for
+            // GST 18%): half the expected rate is the same rate.
+            var splitGst = e.regime === 'GST' && (has(b.cgst) || has(b.sgst));
+            if (has(b.ratePct) && Math.abs(Number(b.ratePct) - rate) > 0.001 && !(splitGst && Math.abs(Number(b.ratePct) * 2 - rate) <= 0.001)) {
                 add('fail', 'printed tax rate ' + Number(b.ratePct) + '% differs from the expected ' + e.regime + ' rate ' + rate + '%');
             }
             var type = String(b.taxType || '').toUpperCase();

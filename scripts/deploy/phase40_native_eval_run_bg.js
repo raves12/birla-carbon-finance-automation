@@ -5,6 +5,7 @@
 (function() {
     var AP = '4f1b9b4aca304a7182f72f68a3c168c9', AR = '394844f2a38542d9bb14f79668777523';
     var ONLY = ''; // optional: a source_reference to run just one document
+    var ONLY_NEW = false; // true: skip documents that already have an evaluation task
     var api = new sn_docintel.DocIntelAPI(), out = [];
     var intake = new GlideRecord('x_695068_bcfa_finance_intake');
     intake.addQuery('source_reference', 'STARTSWITH', 'PH40-EVAL-');
@@ -15,8 +16,14 @@
         var att = new GlideRecord('sys_attachment');
         att.addQuery('table_name', 'x_695068_bcfa_finance_intake');
         att.addQuery('table_sys_id', intake.getUniqueValue());
+        att.addQuery('file_name', intake.getValue('source_reference').substring('PH40-EVAL-'.length) + '.pdf'); // the fixture itself, not other uploads
         att.query();
         if (!att.next()) { out.push(intake.getValue('source_reference') + ' no attachment'); continue; }
+        var existing = new GlideRecord('sys_di_task');
+        existing.addQuery('display_name', 'BCFA PH40 eval ' + att.getValue('file_name'));
+        existing.setLimit(1);
+        existing.query();
+        if (ONLY_NEW && existing.hasNext()) continue;
         var useCase = intake.getValue('document_type') === 'ap_invoice' ? AP : AR;
         try {
             var taskId = api.createTask('BCFA PH40 eval ' + att.getValue('file_name'), useCase,

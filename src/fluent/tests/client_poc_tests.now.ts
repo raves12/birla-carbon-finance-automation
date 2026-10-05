@@ -31,6 +31,8 @@ Test(
                     assertEqual({ name: 'AP-TAX-001 GST 18% with equal CGST/SGST passes', shouldbe: 'pass', value: g1.result });
                     assertEqual({ name: 'AP-TAX-001 expected tax 900', shouldbe: 900, value: g1.expectedTax });
                     assertEqual({ name: 'AP-TAX-001 IGST equal to the tax passes', shouldbe: 'pass', value: ev(5000, 900, { taxType: 'IGST', igst: 900 }, inGoods).result });
+                    assertEqual({ name: 'AP-TAX-001 CGST/SGST invoice printing the component rate 9% passes', shouldbe: 'pass', value: ev(5000, 900, { taxType: 'CGST+SGST', ratePct: 9, cgst: 450, sgst: 450 }, inGoods).result });
+                    assertEqual({ name: 'AP-TAX-001 IGST invoice printing 9% fails', shouldbe: 'fail', value: ev(5000, 900, { taxType: 'IGST', ratePct: 9, igst: 900 }, inGoods).result });
                     // AP-TAX-002 GST mismatch
                     var g2 = ev(2000, 50, { taxType: 'GST' }, inGoods);
                     assertEqual({ name: 'AP-TAX-002 GST 50 vs expected 360 fails', shouldbe: 'fail', value: g2.result });

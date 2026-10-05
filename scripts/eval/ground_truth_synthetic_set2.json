@@ -1,0 +1,567 @@
+{
+ "_comment": "Ground truth for the Phase 40 SYNTHETIC fixtures (set 2), written by scripts/fixtures/gen_phase40_fixtures.py from the same specs that draw the PDFs. Not Birla Carbon documents. Only printed fields are listed. Corrected 2026-10-05 after the first scoring: tax_type is the printed name (MwSt. on the German invoice), the printed CGST/SGST component rate is 9, and the advice-level deduction reasons of AR_REMIT_201/202 (in the specs, omitted from the first ground truth) are included.",
+ "ap": {
+  "AP_INV_101_GST_CGST_SGST.pdf": {
+   "vendor_name": "Konkan Process Chemicals Pvt Ltd",
+   "vendor_tax_id": "27AAKCK4821Q1Z9",
+   "vendor_country": "India",
+   "invoice_number": "KPC/2026-27/0458",
+   "invoice_date": "2026-09-24",
+   "po_number": "PO-BC-77102",
+   "company_code": "BC01",
+   "currency": "INR",
+   "payment_terms": "Net 45",
+   "net_amount": 1232500.0,
+   "tax_amount": 221850.0,
+   "gross_amount": 1454350.0,
+   "document_language": "English",
+   "tax_type": "CGST+SGST",
+   "tax_rate_pct": 9,
+   "cgst_amount": 110925.0,
+   "sgst_amount": 110925.0,
+   "lines": [
+    {
+     "description": "Carbon Black N330",
+     "quantity": 20,
+     "unit": "MT",
+     "unit_price": 41500.0,
+     "net_amount": 830000.0
+    },
+    {
+     "description": "Carbon Black N550",
+     "quantity": 10,
+     "unit": "MT",
+     "unit_price": 39800.0,
+     "net_amount": 398000.0
+    },
+    {
+     "description": "Pallet handling",
+     "quantity": 30,
+     "unit": "EA",
+     "unit_price": 150.0,
+     "net_amount": 4500.0
+    }
+   ]
+  },
+  "AP_INV_102_IGST.pdf": {
+   "vendor_name": "Narmada Petro Additives Ltd",
+   "vendor_tax_id": "24AADCN7314H1ZK",
+   "vendor_country": "India",
+   "invoice_number": "NPA-INV-55217",
+   "invoice_date": "2026-09-18",
+   "po_number": "PO-BC-77215",
+   "company_code": "BC01",
+   "currency": "INR",
+   "payment_terms": "Net 30",
+   "net_amount": 1155000.0,
+   "tax_amount": 207900.0,
+   "gross_amount": 1362900.0,
+   "document_language": "English",
+   "tax_type": "IGST",
+   "tax_rate_pct": 18,
+   "igst_amount": 207900.0,
+   "lines": [
+    {
+     "description": "Rubber process oil RPO-2",
+     "quantity": 12000,
+     "unit": "L",
+     "unit_price": 92.5,
+     "net_amount": 1110000.0
+    },
+    {
+     "description": "Drum deposit",
+     "quantity": 60,
+     "unit": "EA",
+     "unit_price": 750.0,
+     "net_amount": 45000.0
+    }
+   ]
+  },
+  "AP_INV_103_VAT7_DE.pdf": {
+   "vendor_name": "Elbtal Fachverlag GmbH",
+   "vendor_tax_id": "DE298173645",
+   "vendor_country": "Germany",
+   "invoice_number": "R-2026-3391",
+   "invoice_date": "2026-09-22",
+   "po_number": "PO-BC-80044",
+   "company_code": "BC01",
+   "currency": "EUR",
+   "payment_terms": "Zahlbar innerhalb 14 Tagen",
+   "net_amount": 2058.8,
+   "tax_amount": 144.12,
+   "gross_amount": 2202.92,
+   "document_language": "German",
+   "tax_type": "MwSt.",
+   "tax_rate_pct": 7,
+   "vat_amount": 144.12,
+   "lines": [
+    {
+     "description": "Fachbuch Rußherstellung",
+     "quantity": 12,
+     "unit": "Stk",
+     "unit_price": 89.9,
+     "net_amount": 1078.8
+    },
+    {
+     "description": "Schulungsunterlagen",
+     "quantity": 40,
+     "unit": "Stk",
+     "unit_price": 24.5,
+     "net_amount": 980.0
+    }
+   ]
+  },
+  "AP_INV_104_WHT_SERVICES.pdf": {
+   "vendor_name": "Sahyadri Engineering Advisors LLP",
+   "vendor_tax_id": "27AASFS9921L1ZD",
+   "vendor_country": "India",
+   "invoice_number": "SEA/26/1189",
+   "invoice_date": "2026-09-30",
+   "po_number": "PO-BC-81003",
+   "company_code": "BC01",
+   "currency": "INR",
+   "payment_terms": "Net 15",
+   "net_amount": 133500.0,
+   "tax_amount": 24030.0,
+   "gross_amount": 157530.0,
+   "document_language": "English",
+   "tax_type": "CGST+SGST",
+   "tax_rate_pct": 9,
+   "cgst_amount": 12015.0,
+   "sgst_amount": 12015.0,
+   "wht_amount": 2670.0,
+   "wht_rate_pct": 2,
+   "lines": [
+    {
+     "description": "Process audit services, September 2026",
+     "quantity": 1,
+     "unit": "LS",
+     "unit_price": 125000.0,
+     "net_amount": 125000.0
+    },
+    {
+     "description": "Travel reimbursement",
+     "quantity": 1,
+     "unit": "LS",
+     "unit_price": 8500.0,
+     "net_amount": 8500.0
+    }
+   ]
+  },
+  "AP_INV_105_MULTIPAGE_HU.pdf": {
+   "vendor_name": "Tisza Industrial Supplies Kft",
+   "vendor_tax_id": "HU24817362",
+   "vendor_country": "Hungary",
+   "invoice_number": "TIS-2026-004812",
+   "invoice_date": "2026-09-26",
+   "po_number": "PO-BC-81120",
+   "company_code": "BC01",
+   "currency": "EUR",
+   "payment_terms": "Net 60",
+   "net_amount": 15975.0,
+   "tax_amount": 4313.25,
+   "gross_amount": 20288.25,
+   "document_language": "English",
+   "tax_type": "VAT",
+   "tax_rate_pct": 27,
+   "vat_amount": 4313.25,
+   "lines": [
+    {
+     "description": "Spare part kit SPK-001",
+     "quantity": 2,
+     "unit": "EA",
+     "unit_price": 48.25,
+     "net_amount": 96.5
+    },
+    {
+     "description": "Spare part kit SPK-002",
+     "quantity": 3,
+     "unit": "EA",
+     "unit_price": 51.5,
+     "net_amount": 154.5
+    },
+    {
+     "description": "Spare part kit SPK-003",
+     "quantity": 4,
+     "unit": "EA",
+     "unit_price": 54.75,
+     "net_amount": 219.0
+    },
+    {
+     "description": "Spare part kit SPK-004",
+     "quantity": 5,
+     "unit": "EA",
+     "unit_price": 58.0,
+     "net_amount": 290.0
+    },
+    {
+     "description": "Spare part kit SPK-005",
+     "quantity": 1,
+     "unit": "EA",
+     "unit_price": 61.25,
+     "net_amount": 61.25
+    },
+    {
+     "description": "Spare part kit SPK-006",
+     "quantity": 2,
+     "unit": "EA",
+     "unit_price": 64.5,
+     "net_amount": 129.0
+    },
+    {
+     "description": "Spare part kit SPK-007",
+     "quantity": 3,
+     "unit": "EA",
+     "unit_price": 67.75,
+     "net_amount": 203.25
+    },
+    {
+     "description": "Spare part kit SPK-008",
+     "quantity": 4,
+     "unit": "EA",
+     "unit_price": 71.0,
+     "net_amount": 284.0
+    },
+    {
+     "description": "Spare part kit SPK-009",
+     "quantity": 5,
+     "unit": "EA",
+     "unit_price": 74.25,
+     "net_amount": 371.25
+    },
+    {
+     "description": "Spare part kit SPK-010",
+     "quantity": 1,
+     "unit": "EA",
+     "unit_price": 77.5,
+     "net_amount": 77.5
+    },
+    {
+     "description": "Spare part kit SPK-011",
+     "quantity": 2,
+     "unit": "EA",
+     "unit_price": 80.75,
+     "net_amount": 161.5
+    },
+    {
+     "description": "Spare part kit SPK-012",
+     "quantity": 3,
+     "unit": "EA",
+     "unit_price": 84.0,
+     "net_amount": 252.0
+    },
+    {
+     "description": "Spare part kit SPK-013",
+     "quantity": 4,
+     "unit": "EA",
+     "unit_price": 87.25,
+     "net_amount": 349.0
+    },
+    {
+     "description": "Spare part kit SPK-014",
+     "quantity": 5,
+     "unit": "EA",
+     "unit_price": 90.5,
+     "net_amount": 452.5
+    },
+    {
+     "description": "Spare part kit SPK-015",
+     "quantity": 1,
+     "unit": "EA",
+     "unit_price": 93.75,
+     "net_amount": 93.75
+    },
+    {
+     "description": "Spare part kit SPK-016",
+     "quantity": 2,
+     "unit": "EA",
+     "unit_price": 97.0,
+     "net_amount": 194.0
+    },
+    {
+     "description": "Spare part kit SPK-017",
+     "quantity": 3,
+     "unit": "EA",
+     "unit_price": 100.25,
+     "net_amount": 300.75
+    },
+    {
+     "description": "Spare part kit SPK-018",
+     "quantity": 4,
+     "unit": "EA",
+     "unit_price": 103.5,
+     "net_amount": 414.0
+    },
+    {
+     "description": "Spare part kit SPK-019",
+     "quantity": 5,
+     "unit": "EA",
+     "unit_price": 106.75,
+     "net_amount": 533.75
+    },
+    {
+     "description": "Spare part kit SPK-020",
+     "quantity": 1,
+     "unit": "EA",
+     "unit_price": 110.0,
+     "net_amount": 110.0
+    },
+    {
+     "description": "Spare part kit SPK-021",
+     "quantity": 2,
+     "unit": "EA",
+     "unit_price": 113.25,
+     "net_amount": 226.5
+    },
+    {
+     "description": "Spare part kit SPK-022",
+     "quantity": 3,
+     "unit": "EA",
+     "unit_price": 116.5,
+     "net_amount": 349.5
+    },
+    {
+     "description": "Spare part kit SPK-023",
+     "quantity": 4,
+     "unit": "EA",
+     "unit_price": 119.75,
+     "net_amount": 479.0
+    },
+    {
+     "description": "Spare part kit SPK-024",
+     "quantity": 5,
+     "unit": "EA",
+     "unit_price": 123.0,
+     "net_amount": 615.0
+    },
+    {
+     "description": "Spare part kit SPK-025",
+     "quantity": 1,
+     "unit": "EA",
+     "unit_price": 126.25,
+     "net_amount": 126.25
+    },
+    {
+     "description": "Spare part kit SPK-026",
+     "quantity": 2,
+     "unit": "EA",
+     "unit_price": 129.5,
+     "net_amount": 259.0
+    },
+    {
+     "description": "Spare part kit SPK-027",
+     "quantity": 3,
+     "unit": "EA",
+     "unit_price": 132.75,
+     "net_amount": 398.25
+    },
+    {
+     "description": "Spare part kit SPK-028",
+     "quantity": 4,
+     "unit": "EA",
+     "unit_price": 136.0,
+     "net_amount": 544.0
+    },
+    {
+     "description": "Spare part kit SPK-029",
+     "quantity": 5,
+     "unit": "EA",
+     "unit_price": 139.25,
+     "net_amount": 696.25
+    },
+    {
+     "description": "Spare part kit SPK-030",
+     "quantity": 1,
+     "unit": "EA",
+     "unit_price": 142.5,
+     "net_amount": 142.5
+    },
+    {
+     "description": "Spare part kit SPK-031",
+     "quantity": 2,
+     "unit": "EA",
+     "unit_price": 145.75,
+     "net_amount": 291.5
+    },
+    {
+     "description": "Spare part kit SPK-032",
+     "quantity": 3,
+     "unit": "EA",
+     "unit_price": 149.0,
+     "net_amount": 447.0
+    },
+    {
+     "description": "Spare part kit SPK-033",
+     "quantity": 4,
+     "unit": "EA",
+     "unit_price": 152.25,
+     "net_amount": 609.0
+    },
+    {
+     "description": "Spare part kit SPK-034",
+     "quantity": 5,
+     "unit": "EA",
+     "unit_price": 155.5,
+     "net_amount": 777.5
+    },
+    {
+     "description": "Spare part kit SPK-035",
+     "quantity": 1,
+     "unit": "EA",
+     "unit_price": 158.75,
+     "net_amount": 158.75
+    },
+    {
+     "description": "Spare part kit SPK-036",
+     "quantity": 2,
+     "unit": "EA",
+     "unit_price": 162.0,
+     "net_amount": 324.0
+    },
+    {
+     "description": "Spare part kit SPK-037",
+     "quantity": 3,
+     "unit": "EA",
+     "unit_price": 165.25,
+     "net_amount": 495.75
+    },
+    {
+     "description": "Spare part kit SPK-038",
+     "quantity": 4,
+     "unit": "EA",
+     "unit_price": 168.5,
+     "net_amount": 674.0
+    },
+    {
+     "description": "Spare part kit SPK-039",
+     "quantity": 5,
+     "unit": "EA",
+     "unit_price": 171.75,
+     "net_amount": 858.75
+    },
+    {
+     "description": "Spare part kit SPK-040",
+     "quantity": 1,
+     "unit": "EA",
+     "unit_price": 175.0,
+     "net_amount": 175.0
+    },
+    {
+     "description": "Spare part kit SPK-041",
+     "quantity": 2,
+     "unit": "EA",
+     "unit_price": 178.25,
+     "net_amount": 356.5
+    },
+    {
+     "description": "Spare part kit SPK-042",
+     "quantity": 3,
+     "unit": "EA",
+     "unit_price": 181.5,
+     "net_amount": 544.5
+    },
+    {
+     "description": "Spare part kit SPK-043",
+     "quantity": 4,
+     "unit": "EA",
+     "unit_price": 184.75,
+     "net_amount": 739.0
+    },
+    {
+     "description": "Spare part kit SPK-044",
+     "quantity": 5,
+     "unit": "EA",
+     "unit_price": 188.0,
+     "net_amount": 940.0
+    }
+   ]
+  }
+ },
+ "ar": {
+  "AR_REMIT_201_TDS.pdf": {
+   "customer_name": "Malabar Tyre Works Pvt Ltd",
+   "payment_reference": "MTW-PAY-26-0912",
+   "payment_date": "2026-09-26",
+   "currency": "INR",
+   "payment_amount": 196000.0,
+   "bank_reference": "UTIBR52026092612345",
+   "deduction_amount": 4000.0,
+   "invoice_lines": [
+    {
+     "invoice_reference": "ARINV4101",
+     "invoice_amount": 120000.0,
+     "amount_applied": 117600.0,
+     "deduction_amount": 2400.0
+    },
+    {
+     "invoice_reference": "ARINV4102",
+     "invoice_amount": 80000.0,
+     "amount_applied": 78400.0,
+     "deduction_amount": 1600.0
+    }
+   ],
+   "deduction_reason": "TDS @2%"
+  },
+  "AR_REMIT_202_CREDIT_NOTE.pdf": {
+   "customer_name": "Godavari Polymers Ltd",
+   "payment_reference": "GPL-REM-7781",
+   "payment_date": "2026-09-27",
+   "currency": "INR",
+   "payment_amount": 77500.0,
+   "deduction_amount": 7500.0,
+   "note_references": "CN-4201",
+   "invoice_lines": [
+    {
+     "invoice_reference": "ARINV4201",
+     "invoice_amount": 60000.0,
+     "amount_applied": 60000.0
+    },
+    {
+     "invoice_reference": "ARINV4202",
+     "invoice_amount": 25000.0,
+     "amount_applied": 17500.0,
+     "deduction_amount": 7500.0
+    }
+   ],
+   "deduction_reason": "Credit note CN-4201 netted"
+  },
+  "AR_REMIT_203_NO_REFERENCE.pdf": {
+   "customer_name": "Kaveri Rubber Mills",
+   "payment_reference": "KRM-ON-ACC-0099",
+   "payment_date": "2026-09-28",
+   "currency": "INR",
+   "payment_amount": 45000.0,
+   "bank_reference": "HDFCR52026092800451",
+   "invoice_lines": []
+  },
+  "AR_REMIT_204_MULTI_DEDUCTION.pdf": {
+   "customer_name": "Coromandel Elastomers Pvt Ltd",
+   "payment_reference": "CEL-PA-55102",
+   "payment_date": "2026-09-29",
+   "currency": "INR",
+   "payment_amount": 115375.0,
+   "bank_reference": "ICICR52026092900777",
+   "deduction_amount": 4625.0,
+   "invoice_lines": [
+    {
+     "invoice_reference": "ARINV4401",
+     "invoice_amount": 50000.0,
+     "amount_applied": 49975.0,
+     "deduction_amount": 25.0
+    },
+    {
+     "invoice_reference": "ARINV4402",
+     "invoice_amount": 40000.0,
+     "amount_applied": 36000.0,
+     "deduction_amount": 4000.0
+    },
+    {
+     "invoice_reference": "ARINV4403",
+     "invoice_amount": 30000.0,
+     "amount_applied": 29400.0,
+     "deduction_amount": 600.0
+    }
+   ]
+  }
+ }
+}

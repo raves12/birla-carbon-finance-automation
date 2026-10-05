@@ -129,7 +129,7 @@ NativeDocumentIntelligenceProvider.prototype = {
             try { meta = JSON.parse(ev.getValue('metadata') || '{}'); } catch (e) {}
             if (!outputId && meta.output_table_id) outputId = meta.output_table_id;
             var name = keys[ev.getValue('key')];
-            if (name && ev.getValue('data')) {
+            if (name && ev.getValue('data') && String(ev.getValue('data')).indexOf('[object Object]') < 0) {
                 evidence[name] = { value: ev.getValue('data'), candidate: ev.getValue('candidate_id') || '', image: ev.getValue('image') || '' };
             }
         }
@@ -254,11 +254,22 @@ NativeDocumentIntelligenceProvider.prototype = {
         return Object.prototype.toString.call(v) === '[object Array]' ? v : [];
     },
 
+    // Numbers as printed: 1,234.56 (English), 1.234,56 (German and most of
+    // Europe), 1 234,56, 1,23,456.00 (Indian grouping). The last separator
+    // followed by one or two digits is the decimal mark (Phase 40: found on
+    // the German VAT fixture, where the model returned "2.058,80").
     _num: function(v) {
         if (v === null || v === undefined) return null;
-        var s = String(v).replace(/[^0-9.\-]/g, '');
-        if (s === '' || s === '-' || s === '.') return null;
-        var n = parseFloat(s);
+        if (typeof v === 'number') return isNaN(v) ? null : v;
+        var s = String(v).replace(/[^0-9.,\-]/g, '');
+        if (s === '' || s === '-') return null;
+        var lastDot = s.lastIndexOf('.'), lastComma = s.lastIndexOf(',');
+        var decimal = lastDot > lastComma ? '.' : ',';
+        var at = Math.max(lastDot, lastComma);
+        if (at >= 0 && s.length - at - 1 > 2) decimal = null; // 1,234 or 1.234: grouping only
+        if (decimal === ',' && lastDot < 0 && s.split(',').length > 2) decimal = null; // 1,23,456: grouping
+        var normalized = decimal === ',' ? s.replace(/\./g, '').replace(',', '.') : decimal === '.' ? s.replace(/,/g, '') : s.replace(/[.,]/g, '');
+        var n = parseFloat(normalized);
         return isNaN(n) ? null : n;
     },
 

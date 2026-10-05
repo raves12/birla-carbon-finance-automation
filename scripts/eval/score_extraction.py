@@ -44,9 +44,31 @@ def empty(v):
 
 
 def num(v):
+    """Same rule as NativeDocumentIntelligenceProvider._num: the last separator
+    followed by one or two digits is the decimal mark."""
+    if v is None:
+        return None
+    if isinstance(v, (int, float)):
+        return round(float(v), 2)
+    s = re.sub(r'[^0-9.,\-]', '', str(v))
+    if s in ('', '-'):
+        return None
+    last_dot, last_comma = s.rfind('.'), s.rfind(',')
+    decimal = '.' if last_dot > last_comma else ','
+    at = max(last_dot, last_comma)
+    if at >= 0 and len(s) - at - 1 > 2:
+        decimal = None
+    if decimal == ',' and last_dot < 0 and s.count(',') > 1:
+        decimal = None
+    if decimal == ',':
+        s = s.replace('.', '').replace(',', '.')
+    elif decimal == '.':
+        s = s.replace(',', '')
+    else:
+        s = s.replace('.', '').replace(',', '')
     try:
-        return round(float(str(v).replace(',', '').strip()), 2)
-    except (TypeError, ValueError):
+        return round(float(s), 2)
+    except ValueError:
         return None
 
 
@@ -98,8 +120,9 @@ def score(results, truth):
             got = map_doc(kind, raw)
             detail, critical_ok = [], True
             # header fields
+            ref_field = 'payment_reference' if 'payment_reference' in gt else 'bank_reference'
             for field, expected in gt.items():
-                if field in ('lines', 'invoice_lines', 'bank_reference'):
+                if field in ('lines', 'invoice_lines') or (kind == 'ar' and field == ref_field):
                     continue
                 outcome = compare(field, expected, got.get(field))
                 add('header', 'expected')
@@ -117,8 +140,8 @@ def score(results, truth):
                         critical_ok = False
             if kind == 'ar':
                 # payment reference: the bank reference may be returned as payment or bank reference
-                ref = gt.get('bank_reference')
-                cands = [got.get('bank_reference'), got.get('payment_reference')]
+                ref = gt.get(ref_field)
+                cands = [got.get('payment_reference'), got.get('bank_reference')]
                 ok = any(not empty(c) and str(c).strip() == ref for c in cands)
                 for g in ('header', 'critical'):
                     add(g, 'expected')
@@ -134,7 +157,7 @@ def score(results, truth):
             for field, v in got.items():
                 if field in IGNORE_FP or field in gt or empty(v):
                     continue
-                if kind == 'ar' and field in ('bank_reference', 'payment_reference'):
+                if kind == 'ar' and field in ('bank_reference', 'payment_reference') and not ('payment_reference' in gt and 'bank_reference' in gt):
                     continue
                 add('header', 'false_pos')
                 detail.append('%s: not printed, got %r' % (field, v))

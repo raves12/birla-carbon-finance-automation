@@ -74,6 +74,16 @@ STEPS['tests'] = {
     'atf': CP_TESTS,
 }
 
+# Fixes found by the native extraction measurement (set 2): locale-aware
+# number parsing (German "2.058,80") and split GST (CGST + SGST invoices print
+# the component rate, 9% of GST 18%).
+STEPS['fixes'] = {
+    'base': 'ac4462c',
+    'new_si': [],
+    'mod_si': ['NativeDocumentIntelligenceProvider', 'MatchingEngine'],
+    'atf': ['0f9684be734741daa3b97ec040e91399'],  # CP-TAX: split GST component rate
+}
+
 
 def h(t):
     a = 7
@@ -96,7 +106,7 @@ def main(step):
     if cfg.get('atf'):
         names = atf_files(cfg['atf'])
         print('atf files', len(names))
-        atf_re = '^(' + '|'.join(names) + ')\.xml$'
+        atf_re = '^(' + '|'.join(names) + r')\.xml$'
         files = atf_re if not files else '(' + files + ')|(' + atf_re + ')'
     if files:
         args += ['--files', files]
