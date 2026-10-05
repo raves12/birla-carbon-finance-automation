@@ -1447,6 +1447,10 @@ declare global {
                         table: 'sys_app_module'
                         id: 'be5effcc5cdd4866b2646b82e2a9ba6f'
                     }
+                    'bcfa-playbook-page-macroponent': {
+                        table: 'sys_ux_macroponent'
+                        id: '28059a2495194a01a93dca906dd8c456'
+                    }
                     'bcfa-playbook-route': {
                         table: 'sys_ux_app_route'
                         id: '31661743d90841229eb787e61bab30e9'

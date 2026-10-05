@@ -30,7 +30,7 @@ for n in MOD:
 files_re = ('^(sttrm_state_ed8955e899e5434088c36103137c5d82|sttrm_state_transition_(14fdee5dfd67473d91f4a45c59405e32|4bfe48a0b32d41b698adc37789151e36|ec905e1cc8334a448b3d57217de0b08c)'
             '|sys_properties_(9dfe1bbcc99e4820a9242058bd4c4f8d|ddb81580bbb94fa8987dd23a299753ed)|sys_ui_action_0b5ff23440a64633a87e2848365ddb9f'
             '|sysauto_script_48946e075fd34e8a898238cbb26f6600|sys_pd_process_definition_|sys_properties_1b35758867b349e28dfa90b5240f9406'
-            '|sys_ux_screen_type_04f8f25684ed46e1a9510a818402c894|sys_ux_app_route_31661743d90841229eb787e61bab30e9|sys_ux_screen_7a02070068ea46cdbc0c130fafcdd314'
+            '|sys_ux_screen_type_04f8f25684ed46e1a9510a818402c894|sys_ux_app_route_31661743d90841229eb787e61bab30e9|sys_ux_screen_7a02070068ea46cdbc0c130fafcdd314|sys_ux_macroponent_28059a2495194a01a93dca906dd8c456'
             '|sys_ui_action_(23289d58a0c149ed9747d43281b92741|c373c45104914ca199850c25154acf90)'
             '|sys_script_(193bca89839141659d3639cfcd45da4c|a8aa19cc28a14175869732decdd1cd2d|ba88701eeb814799a1d41e7dd563c04f|c42378ba9dca455ea449e5aaee42209d)')
 UPD = os.path.join(REPO, 'dist', 'app', 'update')
@@ -70,6 +70,8 @@ io.open(post, 'w', encoding='utf8').write("""
     chk.push(pd.getValue('label') + ' status=' + pd.getValue('status') + ' lanes=' + ln.getAggregate('COUNT') + ' activities=' + ac.getAggregate('COUNT'));
   }
   var rt = new GlideRecord('sys_ux_app_route'); chk.push('playbook route=' + rt.get('31661743d90841229eb787e61bab30e9'));
+  var sc = new GlideRecord('sys_ux_screen'); chk.push('playbook screen parent=' + (sc.get('7a02070068ea46cdbc0c130fafcdd314') ? sc.getValue('parent_macroponent') : 'missing'));
+  var pg = new GlideRecord('sys_ux_macroponent'); chk.push('playbook page=' + pg.get('28059a2495194a01a93dca906dd8c456'));
   out.push('verify: ' + chk.join(', '));
 """)
 tmp = os.path.join(SCR, 'p35_loader_raw.js')

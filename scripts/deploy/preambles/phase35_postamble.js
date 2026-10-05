@@ -11,4 +11,6 @@
     chk.push(pd.getValue('label') + ' status=' + pd.getValue('status') + ' lanes=' + ln.getAggregate('COUNT') + ' activities=' + ac.getAggregate('COUNT'));
   }
   var rt = new GlideRecord('sys_ux_app_route'); chk.push('playbook route=' + rt.get('31661743d90841229eb787e61bab30e9'));
+  var sc = new GlideRecord('sys_ux_screen'); chk.push('playbook screen parent=' + (sc.get('7a02070068ea46cdbc0c130fafcdd314') ? sc.getValue('parent_macroponent') : 'missing'));
+  var pg = new GlideRecord('sys_ux_macroponent'); chk.push('playbook page=' + pg.get('28059a2495194a01a93dca906dd8c456'));
   out.push('verify: ' + chk.join(', '));

@@ -1072,7 +1072,7 @@ Test({ $id: Now.ID['test-pb-ui-003'], name: 'PB-UI-003 Playbook is not a workflo
     })
 })
 
-Test({ $id: Now.ID['test-pb-ui-004'], name: 'PB-UI-004 BCFA Workspace has the Playbook route on the platform Playbook page', active: true }, (atf) => {
+Test({ $id: Now.ID['test-pb-ui-004'], name: 'PB-UI-004 BCFA Workspace has the Playbook route on the BCFA Playbook page', active: true }, (atf) => {
     atf.server.runServerSideScript({
         $id: Now.ID['test-pb-ui-004-step'],
         script: `
@@ -1124,7 +1124,13 @@ Test({ $id: Now.ID['test-pb-ui-004'], name: 'PB-UI-004 BCFA Workspace has the Pl
                 var screen = new GlideRecord('sys_ux_screen');
                 screen.addQuery('screen_type', route.getValue('screen_type'));
                 screen.query();
-                assertEqual({ name: 'screen renders the platform Playbook Experience page', shouldbe: '10fc1ca00771211045add9630ad30045', value: screen.next() ? screen.getValue('macroponent') : '' });
+                var found = screen.next();
+                assertEqual({ name: 'screen renders the BCFA Playbook page', shouldbe: '28059a2495194a01a93dca906dd8c456', value: found ? screen.getValue('macroponent') : '' });
+                assertEqual({ name: 'screen is active', shouldbe: true, value: found && screen.getValue('active') === '1' });
+                assertEqual({ name: 'screen belongs to the workspace shell (else the route is not listed)', shouldbe: 'c276387cc331101080d6d3658940ddd2', value: found ? screen.getValue('parent_macroponent') : '' });
+                var page = new GlideRecord('sys_ux_macroponent');
+                assertEqual({ name: 'BCFA Playbook page exists', shouldbe: true, value: page.get('28059a2495194a01a93dca906dd8c456') });
+                assertEqual({ name: 'page holds the platform Playbook component', shouldbe: true, value: page.getValue('composition').indexOf('ed99051389038d7a6d57069eecc5a122') >= 0 });
 
             })(outputs, steps, params, stepResult, assertEqual);
         `,

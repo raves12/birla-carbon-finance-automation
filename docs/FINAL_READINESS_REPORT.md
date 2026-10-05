@@ -1,29 +1,23 @@
-# FINAL_READINESS_REPORT.md (Phase 35, 2026-10-01)
+# FINAL_READINESS_REPORT.md (Phase 35, 2026-10-01; workspace embedding 2026-10-05)
 
-Evidence: `FINAL_E2E_TEST_RESULTS.md`, `FINAL_POC_READINESS_AUDIT.md`, `PLAYBOOK_DESIGN.md`. Everything below was run on `pwcmanagementservicesdemo01` on 2026-10-01 after the Phase 35 deploy.
+Evidence: `FINAL_E2E_TEST_RESULTS.md`, `FINAL_POC_READINESS_AUDIT.md`, `PLAYBOOK_DESIGN.md`. Everything below was run on `pwcmanagementservicesdemo01` on 2026-10-01 after the Phase 35 deploy. The workspace embedding was fixed and verified on 2026-10-05.
 
 ```
 ============================================================
 OVERALL
 ============================================================
 READY FOR CLIENT DEMO:
-NO: one mandated item is open.
-  The Playbook is not yet embedded inside the BCFA Workspace page.
+YES: "BCFA is ready for the agreed POC demonstration scope."
 
 What works today:
   - both native Playbooks are live;
-  - each one opens from the invoice or payment form ("Open Playbook")
-    in the platform's Playbook Experience;
+  - the Playbook is embedded in the BCFA Workspace
+    (/x/695068/bcfa/playbook/<table>/<sys_id>);
+  - "Open Playbook" on the invoice and payment forms opens that page;
   - every core, AI, SAP Draft/Direct and Playbook test passes.
 
-Once the Playbook is reachable inside the BCFA Workspace, the answer
-becomes YES:
-  "BCFA is ready for the agreed POC demonstration scope."
-This can be a UI Builder page variant or record-page tab
-(PLAYBOOK_DESIGN.md §18).
-
-If the client accepts opening the Playbook from the record for the demo,
-that is already working.
+Manual steps remain for people (Open items below). None of them
+blocks the demo.
 
 Production readiness is not claimed.
 
@@ -49,8 +43,9 @@ PLAYBOOK
 ============================================================
 AP Playbook:            PASS  (active, published; 8 stages; Workflow Studio, no errors)
 AR Playbook:            PASS  (active, published; 9 stages)
-Workspace Embedding:    FAIL  (Open Playbook from the record form works; the BCFA Workspace
-                               route answers "Page not found": open item)
+Workspace Embedding:    PASS  (BCFA Workspace Playbook page; Open Playbook opens it;
+                               verified 2026-10-05 on BANK-PLAY-02 and INV-PLAY-02;
+                               PB-UI-004 / PB-UI-005)
 Stage Synchronization:  PASS  (11 demo transactions land on their designed stage; runs
                                complete only when the record is CLOSED; PB-AP-001/006,
                                PB-AR-001, PB-UI-002)
@@ -78,11 +73,14 @@ Defects found and fixed in this phase:
   D2  Fluent schema-3 Playbooks unreadable by the Yokohama designer; the
       start rules are converted at deploy;
   D3  test PB-UI-006 read sys_choice from the app scope;
-  D4  the workspace Playbook screen was inactive; Open Playbook now opens
-      the native Playbook Experience page.
+  D4  the workspace Playbook screen was inactive;
+  D5  the workspace Playbook page answered "Page not found": the screen
+      had no parent macroponent (the workspace shell), so the workspace
+      left the route out of its route table. The page definition also
+      had to move into the BCFA scope. Fixed 2026-10-05.
 
 Open items:
-  1. BCFA Workspace Playbook route does not render (see above).
+  1. (closed 2026-10-05) BCFA Workspace Playbook page.
   2. AP-B / MT-AP-17: approve the tolerance override as an authorised
      approver (bcfa.finance.controller). The assistant may not impersonate.
   3. Studio commit of the deployed changes, with "Include changes not
@@ -96,8 +94,10 @@ Open items:
      the next demo reset.
 
 Non-Blocking Defects:
-  - The Playbook Experience page shows the current stage card. The full
-    stage diagram is in Workflow Studio.
+  - The Playbook page shows the stage list and the selected stage's
+    cards. The full stage diagram is in Workflow Studio.
+  - No Playbook tab on the record page itself: the Playbook is a separate
+    workspace page, opened from the record (PLAYBOOK_DESIGN.md §18).
 
 License Dependencies:
   - Now Assist Document Intelligence (generative extraction);
@@ -129,7 +129,9 @@ Production Gaps:
 TEST RESULTS
 ============================================================
 ATF test count:           35
-ATF passed:               35 (serial, 2026-10-01, after the Phase 35 deploy and fixes)
+ATF passed:               35 (serial, 2026-10-01, after the Phase 35 deploy and fixes;
+                          PB-UI-004 / PB-UI-005 rerun and passed 2026-10-05
+                          after the workspace page change)
 ATF failed:               0
 AP E2E result:            PASS (6/6; AP-B approval step manual)
 AR E2E result:            PASS (10/10 incl. AR-C2)
@@ -175,6 +177,7 @@ Deploy and tests:
   scripts/deploy/phase35_playbook_yokohama_fix_bg.js
   scripts/deploy/phase35_backfill_and_seed_bg.js
   scripts/deploy/phase35_e2e_bg.js
+  scripts/deploy/phase35_workspace_playbook_bg.js (2026-10-05 targeted load)
   scripts/deploy/preambles/phase35_postamble.js
 
 ServiceNow records created:
@@ -188,7 +191,8 @@ ServiceNow records created:
   - 3 UI actions + 20 roles;
   - 1 scheduled job;
   - 4 business rules;
-  - UX screen type, route and screen "BCFA Playbook";
+  - UX screen type, route, screen and page "BCFA Playbook" (the page is a
+    BCFA-scoped UI Builder page holding the Playbook component);
   - 2 Playbooks (17 lanes, 42 activities, triggers, inputs, start-rule
     variables; activated, with platform snapshots);
   - 22 ATF tests + steps;
@@ -203,7 +207,8 @@ Exact flows changed:          none
 Exact AI artifacts changed:   none
 Exact Playbook artifacts:     BCFA AP Invoice Processing Playbook,
                               BCFA Cash Application Playbook (both active)
-Exact UI Builder changes:     none to pages (route, screen and screen type records)
+Exact UI Builder changes:     new BCFA page "BCFA Playbook" (28059a24…) with route,
+                              screen and screen type; existing pages unchanged
 Exact tests added:            PB-AP-001..006, PB-AR-001..009, PB-UI-001..007;
                               E2E script (16 scenarios)
 Demo data:                    AP-PLAY-01..04, AR-PLAY-01..07 seeded with Playbook runs

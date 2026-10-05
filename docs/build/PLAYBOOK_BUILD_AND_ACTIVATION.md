@@ -220,12 +220,13 @@ All → System Definition → Scheduled Jobs. Every 30 minutes, active.
 | Record | Settings |
 |---|---|
 | Route | Name BCFA Playbook; Route type `playbook`; Fields `table,sysId`; Parent macroponent = BCFA workspace shell (`c276387cc331101080d6d3658940ddd2`); Screen type BCFA Playbook |
-| Screen | BCFA Playbook; Macroponent **Playbook** (`32eb57e82c904510f877b925aa1a4d10`); config binds `sysId` and `table` from the route props |
+| Screen | BCFA Playbook; **Active**; Parent macroponent = BCFA workspace shell (`c276387c…`; without it the workspace does not list the route and shows "Page not found"); Macroponent **BCFA Playbook** page (`28059a2495194a01a93dca906dd8c456`); config binds `sysId` and `table` from the route props |
+| Page | `sys_ux_macroponent` BCFA Playbook (BCFA scope, editable in UI Builder): the platform Playbook component bound to the page's `table` / `sysId` and the session user |
 
 **UI actions: Open Playbook**
 
 - On `x_695068_bcfa_ap_invoice` and `x_695068_bcfa_payment`: form link.
-- Script: redirect to `/now/bcfa/playbook/<table>/<sys_id>`.
+- Script: redirect to `/x/695068/bcfa/playbook/<table>/<sys_id>` (the BCFA Workspace Playbook page).
 - Roles: all BCFA business roles.
 
 **SECURITY.** The route ACL `bcfa.*` (existing) applies.
@@ -235,7 +236,9 @@ All → System Definition → Scheduled Jobs. Every 30 minutes, active.
 1. Open an AP invoice form.
 2. Related Links → **Open Playbook**.
 
-**EXPECTED RESULT.** The BCFA Workspace opens on the Playbook of that invoice. ATF: PB-UI-004, PB-UI-005.
+**EXPECTED RESULT.** The BCFA Workspace opens on the Playbook of that invoice: the stage list on the left, the current stage's cards on the right. ATF: PB-UI-004, PB-UI-005.
+
+If it shows "Page not found": check that the screen is active and its parent macroponent is the shell, then close the stale "Not found" workspace tab (the workspace keeps tabs across reloads).
 
 ## 6. ATF
 

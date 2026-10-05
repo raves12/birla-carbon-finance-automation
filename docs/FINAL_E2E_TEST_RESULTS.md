@@ -57,6 +57,13 @@ All 35 tests (13 existing + 22 PB-*) were run serially after:
 - **Open Playbook** on BANK-PLAY-02 opens the native Playbook Experience: "SAP processing (DRAFT / DIRECT) — MOCK SAP", Waiting for SAP, PARK reference, Blocked Because, Next and Owner.
 - INV-PLAY-02 shows "PO / GRN-SRN / 3-way match", Blocked: price tolerance.
 
+**BCFA Workspace Playbook page (2026-10-05).**
+
+- `/x/695068/bcfa/playbook/x_695068_bcfa_payment/<BANK-PLAY-02>`: all 9 AR stages, with 1–7 complete and 9 pending. Stage 8 "SAP Draft / Direct Processing" is in progress (1/2). Its card shows Draft staged in SAP (PARK1014846), WHAT HAPPENED / WHY, the next action and the owner (SAP user / Integration Operator).
+- INV-PLAY-02: all 8 AP stages, with 1–3 complete and stage 4 (3-way match) and the stage 5 exception lane in progress.
+- **Open Playbook** on the BANK-PLAY-02 form opens the same workspace page.
+- PB-UI-004 (route → active screen under the shell → BCFA page with the Playbook component) and PB-UI-005 were rerun: both passed.
+
 ## 2. ATF: Playbook phase, 22 tests (PB-AP-001..006, PB-AR-001..009, PB-UI-001..007)
 
 Run 2026-10-01 after the deploy, activation and backfill, one at a time.
@@ -99,6 +106,7 @@ Script `scripts/deploy/phase35_e2e_bg.js`, scope `x_695068_bcfa`, inline pipelin
 | D1 | A bank-charge deduction of any amount could be approved (a 7,300 residual across two open items was accepted as a "bank charge"); the bank charge limit was only used to suggest the type | `ArExceptionDecisionService` refuses a bank charge above `x_695068_bcfa.ar.bank_charge.max_amount` | AR-C2 PASS; AR-C (500) PASS |
 | D2 | Playbook records written by Fluent (schema 3) could not be read by the Yokohama designer (55 errors, Activate disabled) | start-rule conversion appended to the deploy (`gen_playbook_yokohama_fix.py`) | both Playbooks validated and activated |
 | D3 | Test PB-UI-006 read `sys_choice` from the app scope | uses the field's own choice list | PB-UI-006 PASS |
+| D5 | The BCFA Workspace Playbook page answered "Page not found": the screen had no parent macroponent, so the workspace left the route out of its route table | screen parent = workspace shell; page definition in the BCFA scope | live check 2026-10-05; PB-UI-004 PASS |
 
 Earlier runs of the E2E script (BB6BE, CA9C9, B3EC9, E65D9, F3ADD, 137E5) failed on test-data problems: amounts colliding with open items left by earlier runs, item numbers over 20 characters, and a wrong residual sign in a check. They also surfaced D1. Each fix is in the script history.
 
