@@ -36,6 +36,14 @@ All 35 tests (13 existing + 22 PB-*) were run serially after:
 
 **35 / 35 passed.** PB-UI-004 and PB-UI-005 were rerun after the Open Playbook change (D4): both passed.
 
+## 1b-2. ATF: full BCFA Regression rerun (Phase 36, 2026-10-05)
+
+All 35 tests were run serially after the workspace Playbook page, the Open Playbook change and MT-AP-17. Results were read from `sys_atf_test_result`: one result per test, between 06:14 and about 06:40 UTC.
+
+**35 / 35 passed.**
+
+The workspace Playbook page was checked again afterwards on INV-PLAY-02.
+
 ## 1c. Playbook demo transactions (backfill and seed, 2026-10-01)
 
 | Scenario | Landed | Playbook run |

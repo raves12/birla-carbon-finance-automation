@@ -86,9 +86,12 @@ Defects found and fixed in this phase:
       for the controller unless the reason is already on the record.
       Workaround (maker/checker): the AP processor saves the reason, then
       the finance approver clicks Approve Override; the service records the
-      approver as decider. Fix (needs security_admin, deferred with item
-      6): a write ACL on decision_reason for finance_approver; or have the
-      action ask for the reason in a dialog.
+      approver as decider. Fix: a decision for the instance owner and
+      security_admin (deferred with item 6). Either add a write ACL on
+      decision_reason for finance_approver, or have the decision buttons ask
+      for the reason in a dialog. The dialog route also sends the reason
+      past the field ACL, so it needs the same security sign-off; it was
+      not built.
 
 Open items:
   1. (closed 2026-10-05) BCFA Workspace Playbook page.
@@ -160,9 +163,9 @@ Production Gaps:
 TEST RESULTS
 ============================================================
 ATF test count:           35
-ATF passed:               35 (serial, 2026-10-01, after the Phase 35 deploy and fixes;
-                          PB-UI-004 / PB-UI-005 rerun and passed 2026-10-05
-                          after the workspace page change)
+ATF passed:               35 (serial, 2026-10-01 after the Phase 35 deploy; full
+                          serial rerun 2026-10-05 after the workspace Playbook
+                          page and MT-AP-17: 35 / 35)
 ATF failed:               0
 AP E2E result:            PASS (6/6; AP-B approval done as the controller, MT-AP-17)
 AR E2E result:            PASS (10/10 incl. AR-C2)
