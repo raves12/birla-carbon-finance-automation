@@ -1,4 +1,48 @@
-# FINAL_READINESS_REPORT.md (Phase 35, 2026-10-01; workspace embedding 2026-10-05)
+# FINAL_READINESS_REPORT.md (Phase 35, 2026-10-01; workspace embedding 2026-10-05; Phase 40 client POC criteria 2026-10-05)
+
+## Phase 40: client POC criteria (2026-10-05)
+
+Detail: `CLIENT_POC_SUCCESS_REPORT.md`. The Phase 35 report below stays as it was, except where this section supersedes it. In particular, **document extraction is now native**, not simulated.
+
+```
+============================================================
+CLIENT POC READINESS: READY WITH DEPENDENCY
+============================================================
+Native Document Extraction:      READY WITH DEPENDENCY  (Document Intelligence on
+                                 Now LLM; synthetic documents only; no client samples)
+AP Multi-country OCR:            READY WITH DEPENDENCY  (synthetic India / Germany /
+                                 Hungary / US; client samples 0)
+GST:                             READY                  (POC reference data)
+VAT:                             READY                  (reduced rates need rule rows)
+Withholding Tax:                 READY WITH DEPENDENCY  (client WHT rules; printed WHT
+                                 amount not extracted on the synthetic invoice)
+Tolerance Framework:             READY
+AR Payment Advice OCR:           READY WITH DEPENDENCY  (synthetic only)
+Open Item Reconciliation:        READY WITH DEPENDENCY  (MOCK SAP data read directly,
+                                 not through IntegrationService: gap AR-REC-004)
+Deduction Handling:              READY
+Playbook:                        READY                  (updated, active, published)
+Standard-vs-Custom Assessment:   READY
+SAP POC Mode:                    READY for Mode 1 (MOCK SAP); Mode 2 NOT READY
+
+Dependencies:  client sample documents; Now LLM data-processing terms;
+               client tax / tolerance values; SAP Mode 2; production
+               entitlement for Document Intelligence.
+Not claimed:   universal OCR support; accuracy on client documents;
+               page / position evidence (the platform returned none).
+============================================================
+Extraction measured (synthetic, 23 documents, 2 runs): header 231/236,
+line values 346/346, critical 124/125 and 123/125 (OCR_ACCURACY_REPORT.md).
+Live native runs N1: AP invoice INV-AP-N1 MATCHED with tax PASS, pending
+approval; AR advice resolved customer and references, short pay 1,600
+suggested as withholding tax, pending the person's confirmation.
+E2E (phase40_e2e_bg.js) run FAAD2: 11/11.
+ATF BCFA Regression (39 tests): 39/39 latest result per test.
+  Serial run 10:35-11:01: 37/39. Lifecycle and Orchestration raced the
+  record-triggered AP intake flow; the tests were fixed (invoice inserted
+  without engines) and both pass (10:46).
+```
+
 
 Evidence: `FINAL_E2E_TEST_RESULTS.md`, `FINAL_POC_READINESS_AUDIT.md`, `PLAYBOOK_DESIGN.md`. Everything below was run on `pwcmanagementservicesdemo01` on 2026-10-01 after the Phase 35 deploy. The workspace embedding was fixed and verified on 2026-10-05.
 

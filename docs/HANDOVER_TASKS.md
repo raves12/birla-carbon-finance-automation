@@ -116,3 +116,15 @@ The role is only for this person. Do not add it to a group other people are in.
 4. **Approve** or **Reject**, with comments. If approved, move the asset lifecycle from *New* to *Deploy*.
 
 **When done.** Tell Claude who the steward and owner are. It will update `AI_GOVERNANCE.md` and the backlog.
+
+## Task 3: Client POC criteria (Phase 40), open since 2026-10-05
+
+| # | Who | What |
+|---|---|---|
+| 3a | Birla Carbon | Supply sample AP invoices and AR payment advices per country, and say how they may be handled (instance only, not git). Then the measurement in `OCR_ACCURACY_REPORT.md` §6 is repeated on them |
+| 3b | Client IT with ServiceNow | Confirm the Now LLM data-processing and residency terms before real documents are loaded |
+| 3c | Finance and tax | Confirm or replace the POC reference data: tax expectations (GST, VAT incl. reduced rates, WHT sections), tolerances, deduction limits (`CLIENT_POC_CONFIGURATION_AND_SECURITY.md`) |
+| 3d | Presenter | Demo run N1 (`CLIENT_POC_DEMO_JOURNEYS.md`): approve INV-AP-N1 as a Finance Approver; confirm the 1,600 withholding deduction on AREX0001150 as the AR processor; then approve and clear |
+| 3e | Admin | After any Playbook deploy: run `phase35_playbook_yokohama_fix_bg.js` (scope global) and activate both Playbooks in Workflow Studio |
+| 3f | Build team | Gap AR-REC-004 (open items through IntegrationService) and SAP Mode 2 (`SAP_POC_MODES.md`) |
+| 3g | Build team | The DocIntel field keys and skill configs are global-scope records created by `gen_native_extraction.py`: include them when the app moves to another instance |
