@@ -5,31 +5,33 @@
         <api_name>x_695068_bcfa.SimulatedDocumentExtraction</api_name>
         <caller_access/>
         <client_callable>false</client_callable>
-        <description>Returns the printed values of the synthetic fixture PDFs, by attachment file name, labelled SIMULATED. Stands in for Document Intelligence extraction, which is not licensed on this instance. No AI, no external call.</description>
+        <description>Simulated provider of DocumentExtractionService, for tests and demo fixtures only: returns the printed values of the synthetic fixture PDFs by attachment file name, labelled SIMULATED DOCUMENT EXTRACTION - POC. Not OCR; no AI, no external call.</description>
         <mobile_callable>false</mobile_callable>
         <name>SimulatedDocumentExtraction</name>
         <sandbox_callable>false</sandbox_callable>
-        <script><![CDATA[// Simulated document extraction for the synthetic fixtures (Phase 12).
+        <script><![CDATA[// Simulated document extraction for the synthetic fixtures (Phase 12;
+// Phase 40: the "simulated" provider of DocumentExtractionService).
 //
-// ServiceNow Document Intelligence is configured on this instance (Phase 5)
-// but its extraction returns no values: prediction uses the untrained
-// "Classic" method and generative extraction is not entitled (see
-// docs/CONTENT_UNDERSTANDING.md). Until it is licensed and trained, the
-// reading step uses the values printed on each synthetic PDF in
-// test/fixtures/, looked up by the attachment's file name. No AI and no
-// external call is involved, and every result is labelled simulated.
+// Native extraction (ServiceNow Document Intelligence, generative, Now LLM)
+// is the default provider since Phase 40 (NativeDocumentIntelligenceProvider).
+// This provider stays for tests and demo fixtures only, selected by
+// x_695068_bcfa.document.extraction.provider = simulated. It returns the
+// values printed on each synthetic PDF in test/fixtures/, looked up by the
+// attachment's file name, labelled SIMULATED DOCUMENT EXTRACTION — POC. It
+// is not OCR: no document is read, no AI and no external call is involved.
+// A document that is not a known fixture goes to manual review.
 //
 // Only reading is simulated. Everything after it (vendor/PO/GRN resolution,
 // duplicate check, 3-way match, exceptions, approval, posting) is the real
-// deterministic pipeline. A document that is not a known fixture is sent
-// to manual review rather than guessed.
+// deterministic pipeline.
 var SimulatedDocumentExtraction = Class.create();
 
 SimulatedDocumentExtraction.SOURCE = 'simulated_document_intelligence';
 
 // Values as printed on each fixture PDF. vendor_code is left empty: the
 // documents only show the vendor name, which the pipeline resolves against
-// vendor master data. confidence reflects legibility of the fixture.
+// vendor master data. confidence is a fixed value per fixture, set to
+// reflect its legibility; it is not measured.
 SimulatedDocumentExtraction.AP_FIXTURES = {
     'AP_INV_001_CLEAN.pdf': {
         invoice_number: 'INV-AP-001', invoice_date: '2026-09-20', vendor_code: '', vendor_name: 'Rajasthan Carbon Feedstock Pvt Ltd',
@@ -124,12 +126,12 @@ SimulatedDocumentExtraction.prototype = {
         if (!fixture) {
             return {
                 ok: false,
-                safeError: 'Simulated extraction has no values for "' + fileName + '". Document Intelligence extraction is not licensed on this instance, so this document needs manual entry.'
+                safeError: 'Simulated extraction (test fixtures only) has no values for "' + fileName + '". Use the native provider (x_695068_bcfa.document.extraction.provider = native) for real documents, or enter the document manually.'
             };
         }
         // Copy so callers can never change the registry.
         var data = JSON.parse(JSON.stringify(fixture));
-        data.extraction_method = 'SIMULATED (fixture values; Document Intelligence extraction not licensed)';
+        data.extraction_method = 'SIMULATED DOCUMENT EXTRACTION — POC (fixture values, no OCR)';
         return { ok: true, data: data, source: SimulatedDocumentExtraction.SOURCE, fileName: fileName };
     },
 

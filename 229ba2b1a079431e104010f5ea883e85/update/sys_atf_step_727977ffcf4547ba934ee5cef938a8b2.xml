@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_atf_step">
+    <sys_atf_step action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <callable_outputs/>
+        <copied_from/>
+        <description/>
+        <display_name>Run Server Side Script</display_name>
+        <inputs/>
+        <mugshots_cache_json/>
+        <notes/>
+        <order>1</order>
+        <step_config display_value="Run Server Side Script">41de4a935332120028bc29cac2dc349a</step_config>
+        <sys_class_name>sys_atf_step</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-05 07:43:36</sys_created_on>
+        <sys_id>727977ffcf4547ba934ee5cef938a8b2</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>Run Server Side Script</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_atf_step_727977ffcf4547ba934ee5cef938a8b2</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-05 07:43:36</sys_updated_on>
+        <table/>
+        <test display_value="CP-TOL Tolerances configured, applied by the matching engine and visible on the match (AP-TOL-001..0">158431353b0a457195253cd20ac8bac1</test>
+        <timeout/>
+        <warning_message/>
+    </sys_atf_step>
+    <sys_variable_value action="delete_multiple" query="document_key=727977ffcf4547ba934ee5cef938a8b2"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>727977ffcf4547ba934ee5cef938a8b2</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-05 07:43:36</sys_created_on>
+        <sys_id>082fa7883c084b8e9735115da05f3d7a</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-05 07:43:36</sys_updated_on>
+        <value>3.1</value>
+        <variable display_value="Jasmine version">42f2564b73031300440211d8faf6a777</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>727977ffcf4547ba934ee5cef938a8b2</document_key>
+        <order>200</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-05 07:43:36</sys_created_on>
+        <sys_id>7cf2de364fbd44ea8e2651f3d7b6e547</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-05 07:43:36</sys_updated_on>
+        <value>
+                (function(outputs, steps, params, stepResult, assertEqual) {
+                    var me = new MatchingEngine();
+                    var tag = 'TCP' + gs.generateGUID().substring(0, 6).toUpperCase();
+                    var ins = function(table, fields) { var g = new GlideRecord(table); g.initialize(); for (var k in fields) g.setValue(k, fields[k]); return g.insert(); };
+                    var vendor = ins('x_695068_bcfa_vendor', { vendor_code: tag + 'V', name: tag + ' Vendor', country: 'India', currency: 'INR', tax_category: 'goods', active: true });
+                    var po = ins('x_695068_bcfa_purchase_order', { po_number: tag + 'PO', vendor: vendor, currency: 'INR', status: 'open', company_code: 'BC01' });
+                    var poLine = ins('x_695068_bcfa_po_line', { purchase_order: po, line_number: 1, quantity: 100, unit_price: 50, received_quantity: 100 });
+                    var receipt = ins('x_695068_bcfa_receipt', { receipt_number: tag + 'R', po_line: poLine, receipt_type: 'grn', quantity: 100 });
+                    var n = 0;
+                    var run = function(qty, price, tax) {
+                        var net = qty * price;
+                        var inv = ins('x_695068_bcfa_ap_invoice', { invoice_number: tag + '-' + (++n), vendor: vendor, currency: 'INR', company_code: 'BC01',
+                            gross_amount: net + tax, net_amount: net, tax_amount: tax, purchase_order: po, state: 'MATCHING' });
+                        ins('x_695068_bcfa_ap_invoice_line', { ap_invoice: inv, line_number: 1, quantity: qty, unit_price: price, amount: net, po_line: poLine, receipt_reference: receipt });
+                        var r = me.threeWayMatch(inv);
+                        var m = new GlideRecord('x_695068_bcfa_ap_match');
+                        m.get(r.matchSysId);
+                        r.record = m;
+                        return r;
+                    };
+
+                    var t1 = run(101, 50, 909);
+                    assertEqual({ name: 'AP-TOL-001 quantity 101 vs GRN 100 (1%, tolerance 2%) is within tolerance', shouldbe: true, value: t1.withinTolerance });
+                    assertEqual({ name: 'AP-TOL-001 rule used is the decision table', shouldbe: true, value: t1.record.getValue('tolerance_source').indexOf('BCFA AP Tolerance') &gt;= 0 });
+                    assertEqual({ name: 'AP-TOL-001 quantity tolerance stored', shouldbe: 0.02, value: parseFloat(t1.record.getValue('quantity_tolerance_pct')) });
+                    assertEqual({ name: 'AP-TOL-001 detail shows expected, actual and result', shouldbe: true,
+                        value: t1.record.getValue('tolerance_detail').indexOf('quantity: expected 100') &gt;= 0 &amp;&amp; t1.record.getValue('tolerance_detail').indexOf('actual 101') &gt;= 0 });
+                    var t2 = run(110, 50, 990);
+                    assertEqual({ name: 'AP-TOL-002 quantity 110 (10%) is an exception', shouldbe: true, value: !t2.withinTolerance &amp;&amp; t2.quantityVariancePct &gt; 0.02 });
+                    assertEqual({ name: 'AP-TOL-002 detail says EXCEPTION', shouldbe: true, value: t2.record.getValue('tolerance_detail').indexOf('tolerance 2.0% -&gt; EXCEPTION') &gt;= 0 });
+                    var t3 = run(100, 51, 918);
+                    assertEqual({ name: 'AP-TOL-003 unit price 51 vs PO 50 (2%) is within tolerance', shouldbe: true, value: t3.withinTolerance });
+                    var t4 = run(100, 52, 936);
+                    assertEqual({ name: 'AP-TOL-004 unit price 52 (4%) is an exception', shouldbe: true, value: !t4.withinTolerance &amp;&amp; t4.priceVariancePct &gt; 0.02 });
+                    var t5 = run(100, 50, 900.5);
+                    assertEqual({ name: 'AP-TOL-005 tax 900.50 vs expected 900 is within tolerance', shouldbe: 'within_tolerance', value: t5.taxEvaluation.result });
+                    assertEqual({ name: 'AP-TOL-005 invoice still matches', shouldbe: true, value: t5.withinTolerance });
+                    assertEqual({ name: 'AP-TOL-005 tax result stored on the match', shouldbe: 'within_tolerance', value: t5.record.getValue('tax_result') });
+                    var t6 = run(100, 50, 950);
+                    assertEqual({ name: 'AP-TOL-006 tax 950 vs expected 900 is outside tolerance', shouldbe: true, value: t6.taxEvaluation.result === 'fail' &amp;&amp; !t6.taxWithinTolerance });
+                    assertEqual({ name: 'AP-TOL-006 expected tax stored on the match', shouldbe: 900, value: parseFloat(t6.record.getValue('expected_tax')) });
+                    stepResult.setOutputMessage('AP-TOL-001..006 checked with tag ' + tag);
+                })(outputs, steps, params, stepResult, assertEqual);
+            </value>
+        <variable display_value="Test script">989d9e235324220002c6435723dc3484</variable>
+    </sys_variable_value>
+</record_update>

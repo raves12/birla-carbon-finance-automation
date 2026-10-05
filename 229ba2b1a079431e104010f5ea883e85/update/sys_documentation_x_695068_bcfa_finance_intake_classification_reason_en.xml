@@ -3,7 +3,7 @@
         <sys_documentation action="INSERT_OR_UPDATE">
             <element>classification_reason</element>
             <help/>
-            <hint>How the document type was decided (set at upload; model classification is not licensed). Older rows hold the reason the Claude classifier returned (removed in Phase 34).</hint>
+            <hint>How the document type was decided (set at upload; automatic document classification is not configured). Older rows hold the reason the Claude classifier returned (removed in Phase 34).</hint>
             <label>Classification Reason</label>
             <language>en</language>
             <name>x_695068_bcfa_finance_intake</name>

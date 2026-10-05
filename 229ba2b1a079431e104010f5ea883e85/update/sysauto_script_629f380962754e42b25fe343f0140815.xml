@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sysauto_script">
+    <sysauto_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <business_calendar/>
+        <condition/>
+        <conditional>false</conditional>
+        <entered_time/>
+        <max_drift/>
+        <name>BCFA - Native Extraction Poller</name>
+        <offset/>
+        <offset_type>0</offset_type>
+        <run_as/>
+        <run_as_tz/>
+        <run_dayofmonth>1</run_dayofmonth>
+        <run_dayofweek>1</run_dayofweek>
+        <run_period>1970-01-01 00:01:00</run_period>
+        <run_start>2026-10-05 00:00:00</run_start>
+        <run_time>1970-01-01 00:00:00</run_time>
+        <run_type>periodically</run_type>
+        <script><![CDATA[
+        var intake = new GlideRecord('x_695068_bcfa_finance_intake');
+        intake.addQuery('processing_status', 'extracting');
+        intake.addQuery('extraction_provider', 'native');
+        intake.addNotNullQuery('extraction_task');
+        intake.setLimit(20);
+        intake.query();
+        var svc = new FinanceDocumentIntakeService(), resumed = 0, waiting = 0;
+        while (intake.next()) {
+            var task = new GlideRecord('sys_di_task');
+            var done = task.get(intake.getValue('extraction_task')) && (task.getValue('is_processed') === '1' || task.getValue('is_processed') === 'true');
+            var age = (new GlideDateTime().getNumericValue() - new GlideDateTime(intake.getValue('sys_updated_on')).getNumericValue()) / 60000;
+            if (done || age > NativeDocumentIntelligenceProvider.TIMEOUT_MINUTES) {
+                svc.processDocument(intake.getUniqueValue());
+                resumed++;
+            } else {
+                waiting++;
+            }
+        }
+        if (resumed || waiting) gs.info('BCFA native extraction poller: resumed ' + resumed + ', still running ' + waiting);
+    ]]></script>
+        <sys_class_name>sysauto_script</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-05 07:25:53</sys_created_on>
+        <sys_id>629f380962754e42b25fe343f0140815</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>BCFA - Native Extraction Poller</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sysauto_script_629f380962754e42b25fe343f0140815</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-05 07:25:54</sys_updated_on>
+        <time_zone/>
+        <upgrade_safe>false</upgrade_safe>
+    </sysauto_script>
+</record_update>

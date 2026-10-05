@@ -25,6 +25,11 @@ FinancePolicy.DEFAULTS = {
     'ap.tolerance.price_pct': 0.02,
     'ap.tolerance.tax_absolute': 1,
     'ap.tolerance.tax_relative_pct': 0.02,
+    'ap.tolerance.total_absolute': 1,
+    'ap.tolerance.rounding_absolute': 0.05,
+    'ap.tax.reference': '{"India":{"regime":"GST","rate_pct":18},"Germany":{"regime":"VAT","rate_pct":19},"Hungary":{"regime":"VAT","rate_pct":27},"United States":{"regime":"SALES_TAX","rate_pct":0}}',
+    'ar.rounding.max_amount': 1,
+    'ar.withholding.max_pct': 0.1,
     'ap.extraction.confidence_threshold': 0.85,
     'ap.approval.auto_approve_limit': 0,
     'ap.exception.high_value_variance': 1000,
@@ -35,13 +40,14 @@ FinancePolicy.DEFAULTS = {
     'ar.approval.auto_approve_limit': 0,
     'ar.match.auto_confidence': 0.95,
     'ar.deduction.approval_threshold': 5000,
-    'ar.deduction.allowed_types': 'bank_charge,tcs,short_pay,credit_note_netting',
+    'ar.deduction.allowed_types': 'bank_charge,tcs,withholding_tax,short_pay,credit_note_netting,debit_note,commercial_deduction,fx_difference,rounding',
     'ar.bank_charge.max_amount': 1000,
     'ar.exception.high_value_residual': 5000,
     'ar.exception.sla_hours': '{"critical":4,"high":8,"medium":24,"low":72}',
     'ar.exception.assignment_group': '',
     'ar.exception.default_owner': '',
-    'ar.sap_processing_mode': 'direct'
+    'ar.sap_processing_mode': 'direct',
+    'sap.adapter': 'mock_sap'
 };
 
 // Base severity per AR exception reason. Short and over payments are
@@ -80,7 +86,8 @@ FinancePolicy.APP_SCOPE = '229ba2b1a079431e104010f5ea883e85';
 FinancePolicy.DECISION_TABLES = {
     apTolerance: 'BCFA AP Tolerance',
     apApproval: 'BCFA AP Approval',
-    arDeduction: 'BCFA AR Deduction'
+    arDeduction: 'BCFA AR Deduction',
+    apTax: 'BCFA AP Tax Expectation'
 };
 // Fallback approval group when no decision table row applies.
 FinancePolicy.DEFAULT_APPROVAL_GROUP = 'e34ee8a159fd504893d4fc248a6632a7'; // BCFA Finance Approvers
@@ -95,10 +102,13 @@ FinancePolicy.prototype = {
     // Evaluates a BCFA decision table. Returns { source:'decision_table',
     // table, values:{output: value} } for the first matching row, or null
     // (no table, no row, or an error) so the caller uses its property
-    // fallback.
-    decide: function(tableKey, inputs, outputs) {
+    // fallback. Outputs listed in optionalOutputs may be empty on a row (for
+    // example a tax row without withholding); every other output must have a
+    // value or the decision is not used.
+    decide: function(tableKey, inputs, outputs, optionalOutputs) {
         var tableId = this._decisionTableId(tableKey);
         if (!tableId) return null;
+        optionalOutputs = optionalOutputs || [];
         try {
             var answer = new sn_dt.DecisionTableAPI().getDecision(tableId, inputs);
             if (!answer || (answer.isValidRecord && !answer.isValidRecord())) return null;
@@ -107,6 +117,10 @@ FinancePolicy.prototype = {
                 var value = this._answerValue(answer, outputs[i]);
                 if (value === null || value === undefined || value === '') return null;
                 values[outputs[i]] = value;
+            }
+            for (var j = 0; j < optionalOutputs.length; j++) {
+                var optional = this._answerValue(answer, optionalOutputs[j]);
+                values[optionalOutputs[j]] = optional === null || optional === undefined ? '' : optional;
             }
             return { source: 'decision_table', table: FinancePolicy.DECISION_TABLES[tableKey], answer: answer.getDisplayValue(), values: values };
         } catch (e) {
@@ -162,31 +176,84 @@ FinancePolicy.prototype = {
     // context (optional): { company, country, vendorType, invoiceType }.
     // With a context the BCFA AP Tolerance decision table decides; the
     // x_695068_bcfa.ap.tolerance.* properties are the fallback.
+    // Phase 40: also the total-amount tolerance (header net vs sum of lines)
+    // and the rounding tolerance (a variance up to this is a PASS rather than
+    // WITHIN TOLERANCE). Both come from the table when it has them, else from
+    // their properties.
     apTolerances: function(context) {
         var fallback = {
             quantityPct: this._number('ap.tolerance.quantity_pct'),
             pricePct: this._number('ap.tolerance.price_pct'),
             taxAbsolute: this._number('ap.tolerance.tax_absolute'),
             taxRelativePct: this._number('ap.tolerance.tax_relative_pct'),
+            totalAbsolute: this._number('ap.tolerance.total_absolute'),
+            roundingAbsolute: this._number('ap.tolerance.rounding_absolute'),
             source: 'properties'
         };
         if (!context) return fallback;
         var decision = this.decide('apTolerance', {
             company: context.company || '', country: context.country || '',
             vendor_type: context.vendorType || 'standard', invoice_type: context.invoiceType || 'po'
-        }, ['quantity_tolerance_pct', 'price_tolerance_pct', 'tax_tolerance_abs', 'tax_tolerance_pct']);
+        }, ['quantity_tolerance_pct', 'price_tolerance_pct', 'tax_tolerance_abs', 'tax_tolerance_pct'], ['total_tolerance_abs', 'rounding_tolerance_abs']);
         if (!decision) return fallback;
         var values = {
             quantityPct: parseFloat(decision.values.quantity_tolerance_pct),
             pricePct: parseFloat(decision.values.price_tolerance_pct),
             taxAbsolute: parseFloat(decision.values.tax_tolerance_abs),
             taxRelativePct: parseFloat(decision.values.tax_tolerance_pct),
+            totalAbsolute: decision.values.total_tolerance_abs === '' ? fallback.totalAbsolute : parseFloat(decision.values.total_tolerance_abs),
+            roundingAbsolute: decision.values.rounding_tolerance_abs === '' ? fallback.roundingAbsolute : parseFloat(decision.values.rounding_tolerance_abs),
             source: 'decision table ' + decision.table + ' (' + decision.answer + ')'
         };
         for (var k in values) {
             if (k !== 'source' && (isNaN(values[k]) || values[k] < 0)) return fallback;
         }
         return values;
+    },
+
+    // Phase 40: the expected tax treatment of an AP invoice, from the BCFA AP
+    // Tax Expectation decision table (country, company, vendor tax category)
+    // or, without a row, the x_695068_bcfa.ap.tax.reference property. POC
+    // REFERENCE DATA: configured expectations to compare the printed tax
+    // against, not a tax engine and not data read from SAP.
+    // Returns { regime, ratePct, whtApplicable, whtCode, whtRatePct, source }.
+    // regime UNKNOWN means nothing is configured: the invoice cannot be
+    // validated and goes to manual review.
+    apTaxExpectation: function(context) {
+        context = context || {};
+        var decision = this.decide('apTax', {
+            country: context.country || '', company: context.company || '', vendor_tax_category: context.vendorTaxCategory || 'goods'
+        }, ['tax_regime', 'expected_rate_pct', 'wht_applicable'], ['wht_code', 'wht_rate_pct']);
+        if (decision && decision.values.tax_regime !== 'UNKNOWN') {
+            return {
+                regime: decision.values.tax_regime,
+                ratePct: parseFloat(decision.values.expected_rate_pct),
+                whtApplicable: this._bool(decision.values.wht_applicable),
+                whtCode: decision.values.wht_code || '',
+                whtRatePct: decision.values.wht_rate_pct === '' ? null : parseFloat(decision.values.wht_rate_pct),
+                source: 'decision table ' + decision.table + ' (' + decision.answer + ') - POC REFERENCE DATA'
+            };
+        }
+        var reference = {};
+        try { reference = JSON.parse(this._string('ap.tax.reference')); } catch (e) { reference = {}; }
+        var row = reference[context.country || ''];
+        if (row && row.regime) {
+            return { regime: row.regime, ratePct: parseFloat(row.rate_pct), whtApplicable: false, whtCode: '', whtRatePct: null,
+                source: 'property x_695068_bcfa.ap.tax.reference - POC REFERENCE DATA' };
+        }
+        return { regime: 'UNKNOWN', ratePct: null, whtApplicable: false, whtCode: '', whtRatePct: null,
+            source: 'no tax expectation configured for country "' + (context.country || '') + '"' };
+    },
+
+    // Phase 40: AR rounding difference that may be written off without an
+    // approver, and the largest withholding-tax deduction accepted as a
+    // fraction of the invoice amounts it covers.
+    arRoundingMax: function() {
+        return this._number('ar.rounding.max_amount');
+    },
+
+    arWithholdingMaxPct: function() {
+        return this._number('ar.withholding.max_pct');
     },
 
     // BCFA AP Approval decision table: context { amount, exceptionType
@@ -357,6 +424,12 @@ FinancePolicy.prototype = {
     // SAP confirms it. Anything else falls back to 'direct'.
     arSapProcessingMode: function() {
         return this._string('ar.sap_processing_mode') === 'draft' ? 'draft' : 'direct';
+    },
+
+    // Phase 40: the SAP adapter IntegrationService calls. Only the two SAP
+    // adapters are accepted; anything else is MOCK SAP.
+    sapAdapter: function() {
+        return this._string('sap.adapter') === 'real_sap' ? 'real_sap' : 'mock_sap';
     },
 
     apExceptionDefaultOwner: function() {

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_atf_step">
+    <sys_atf_step action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <callable_outputs/>
+        <copied_from/>
+        <description/>
+        <display_name>Run Server Side Script</display_name>
+        <inputs/>
+        <mugshots_cache_json/>
+        <notes/>
+        <order>1</order>
+        <step_config display_value="Run Server Side Script">41de4a935332120028bc29cac2dc349a</step_config>
+        <sys_class_name>sys_atf_step</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-05 07:43:36</sys_created_on>
+        <sys_id>542f323334b44da5b93e977c39f632ef</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>Run Server Side Script</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_atf_step_542f323334b44da5b93e977c39f632ef</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-05 07:43:36</sys_updated_on>
+        <table/>
+        <test display_value="CP-TAX GST, VAT and withholding validated against the governed expectation (AP-TAX-001..006)">0f9684be734741daa3b97ec040e91399</test>
+        <timeout/>
+        <warning_message/>
+    </sys_atf_step>
+    <sys_variable_value action="delete_multiple" query="document_key=542f323334b44da5b93e977c39f632ef"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>542f323334b44da5b93e977c39f632ef</document_key>
+        <order>200</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-05 10:45:57</sys_created_on>
+        <sys_id>abf20d595a2e4a3c96afb53c4bd890c1</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-05 10:45:57</sys_updated_on>
+        <value>
+                (function(outputs, steps, params, stepResult, assertEqual) {
+                    var me = new MatchingEngine();
+                    var pol = new FinancePolicy();
+                    var tol = pol.apTolerances({ company: 'BC01', country: 'India', vendorType: 'standard', invoiceType: 'po' });
+                    var inGoods = pol.apTaxExpectation({ country: 'India', company: 'BC01', vendorTaxCategory: 'goods' });
+                    var inServices = pol.apTaxExpectation({ country: 'India', company: 'BC01', vendorTaxCategory: 'services' });
+                    var de = pol.apTaxExpectation({ country: 'Germany', company: 'BC01', vendorTaxCategory: 'goods' });
+                    var ev = function(net, tax, breakdown, expectation) {
+                        return me.evaluateTax({ netAmount: net, taxAmount: tax, breakdown: breakdown || {}, expectation: expectation, tolerances: tol });
+                    };
+                    var has = function(r, text) { return r.checks.join(' | ').indexOf(text) &gt;= 0; };
+
+                    assertEqual({ name: 'expectation comes from the decision table', shouldbe: true, value: inGoods.source.indexOf('decision table') === 0 });
+                    // AP-TAX-001 valid GST
+                    var g1 = ev(5000, 900, { taxType: 'CGST+SGST', ratePct: 18, cgst: 450, sgst: 450 }, inGoods);
+                    assertEqual({ name: 'AP-TAX-001 GST 18% with equal CGST/SGST passes', shouldbe: 'pass', value: g1.result });
+                    assertEqual({ name: 'AP-TAX-001 expected tax 900', shouldbe: 900, value: g1.expectedTax });
+                    assertEqual({ name: 'AP-TAX-001 IGST equal to the tax passes', shouldbe: 'pass', value: ev(5000, 900, { taxType: 'IGST', igst: 900 }, inGoods).result });
+                    assertEqual({ name: 'AP-TAX-001 CGST/SGST invoice printing the component rate 9% passes', shouldbe: 'pass', value: ev(5000, 900, { taxType: 'CGST+SGST', ratePct: 9, cgst: 450, sgst: 450 }, inGoods).result });
+                    assertEqual({ name: 'AP-TAX-001 IGST invoice printing 9% fails', shouldbe: 'fail', value: ev(5000, 900, { taxType: 'IGST', ratePct: 9, igst: 900 }, inGoods).result });
+                    // AP-TAX-002 GST mismatch
+                    var g2 = ev(2000, 50, { taxType: 'GST' }, inGoods);
+                    assertEqual({ name: 'AP-TAX-002 GST 50 vs expected 360 fails', shouldbe: 'fail', value: g2.result });
+                    assertEqual({ name: 'AP-TAX-002 variance 310', shouldbe: 310, value: g2.taxVariance });
+                    var split = ev(5000, 900, { cgst: 400, sgst: 500 }, inGoods);
+                    assertEqual({ name: 'AP-TAX-002 unequal CGST/SGST fails', shouldbe: true, value: split.result === 'fail' &amp;&amp; has(split, 'not equal halves') });
+                    var both = ev(5000, 900, { cgst: 450, sgst: 450, igst: 900 }, inGoods);
+                    assertEqual({ name: 'AP-TAX-002 IGST together with CGST/SGST fails', shouldbe: true, value: both.result === 'fail' &amp;&amp; has(both, 'both IGST and CGST/SGST') });
+                    // AP-TAX-003 valid VAT
+                    assertEqual({ name: 'AP-TAX-003 VAT 19% passes', shouldbe: 'pass', value: ev(7500, 1425, { taxType: 'VAT', ratePct: 19, vat: 1425 }, de).result });
+                    assertEqual({ name: 'AP-TAX-003 VAT 0.40 off is within tolerance', shouldbe: 'within_tolerance', value: ev(7500, 1425.4, {}, de).result });
+                    // AP-TAX-004 VAT mismatch (7% printed, 19% expected)
+                    var v4 = ev(7500, 525, { taxType: 'VAT', ratePct: 7, vat: 525 }, de);
+                    assertEqual({ name: 'AP-TAX-004 VAT 7% vs expected 19% fails', shouldbe: true, value: v4.result === 'fail' &amp;&amp; has(v4, 'printed tax rate 7%') });
+                    assertEqual({ name: 'AP-TAX-004 a GST label on a German invoice is a warning', shouldbe: true, value: has(ev(7500, 1425, { taxType: 'GST' }, de), 'does not match the expected regime') });
+                    // AP-TAX-005 withholding applicable
+                    assertEqual({ name: 'AP-TAX-005 withholding applies to Indian services (configured)', shouldbe: true, value: inServices.whtApplicable &amp;&amp; inServices.whtRatePct === 2 });
+                    var w5 = ev(10000, 1800, { wht: 200, whtRatePct: 2 }, inServices);
+                    assertEqual({ name: 'AP-TAX-005 printed withholding 200 = 2% of 10,000 passes', shouldbe: 'pass', value: w5.wht.result });
+                    assertEqual({ name: 'AP-TAX-005 overall result pass', shouldbe: 'pass', value: w5.result });
+                    var w5n = ev(10000, 1800, {}, inServices);
+                    assertEqual({ name: 'AP-TAX-005 withholding not printed is a warning (withheld at payment)', shouldbe: true, value: w5n.result === 'warning' &amp;&amp; w5n.wht.expected === 200 });
+                    // AP-TAX-006 withholding mismatch
+                    var w6 = ev(10000, 1800, { wht: 500 }, inServices);
+                    assertEqual({ name: 'AP-TAX-006 printed withholding 500 vs expected 200 fails', shouldbe: true, value: w6.result === 'fail' &amp;&amp; w6.wht.result === 'fail' });
+                    var w6u = ev(5000, 900, { wht: 100 }, inGoods);
+                    assertEqual({ name: 'AP-TAX-006 withholding printed but not configured needs manual review', shouldbe: 'manual_review', value: w6u.result });
+                    // not configured
+                    var br = ev(1000, 100, {}, pol.apTaxExpectation({ country: 'Brazil', company: 'BC01', vendorTaxCategory: 'goods' }));
+                    assertEqual({ name: 'unconfigured country is never validated automatically', shouldbe: 'manual_review', value: br.result });
+                    stepResult.setOutputMessage('AP-TAX-001..006 checked against ' + inGoods.source);
+                })(outputs, steps, params, stepResult, assertEqual);
+            </value>
+        <variable display_value="Test script">989d9e235324220002c6435723dc3484</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>542f323334b44da5b93e977c39f632ef</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-05 10:45:57</sys_created_on>
+        <sys_id>bf0b1a913167482e8924723fd5a633e6</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-05 10:45:57</sys_updated_on>
+        <value>3.1</value>
+        <variable display_value="Jasmine version">42f2564b73031300440211d8faf6a777</variable>
+    </sys_variable_value>
+</record_update>

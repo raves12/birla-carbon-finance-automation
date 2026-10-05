@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><record_update table="sys_properties">
     <sys_properties action="INSERT_OR_UPDATE">
         <choices/>
-        <description>AI provider for the AP/AR pipelines. native = ServiceNow AI (Now Assist skills and AI agents; document reading uses simulated extraction until Document Intelligence extraction is licensed on this instance). simulated = deterministic templates only (the process runs with AI switched off). No external AI provider exists (Claude was removed in Phase 34). AI output is advisory in every mode.</description>
+        <description>AI provider for the AP/AR pipelines. native = ServiceNow AI (Now Assist skills and AI agents). simulated = deterministic templates only (the process runs with AI switched off). Document reading has its own setting, x_695068_bcfa.document.extraction.provider. No external AI provider exists (Claude was removed in Phase 34). AI output is advisory in every mode.</description>
         <ignore_cache>false</ignore_cache>
         <is_private>false</is_private>
         <name>x_695068_bcfa.ai.provider</name>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_choice action="INSERT_OR_UPDATE" field="wht_result" table="x_695068_bcfa_ap_invoice" version="3">
+        <sys_choice_set action="INSERT_OR_UPDATE">
+            <element>wht_result</element>
+            <name>x_695068_bcfa_ap_invoice</name>
+            <sys_class_name>sys_choice_set</sys_class_name>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-05 07:38:12</sys_created_on>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>wht_result</sys_name>
+            <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+            <sys_update_name>sys_choice_x_695068_bcfa_ap_invoice_wht_result</sys_update_name>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-05 07:38:12</sys_updated_on>
+        </sys_choice_set>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>wht_result</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Pass</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ap_invoice</name>
+            <sequence>1</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-05 07:38:12</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-05 07:38:12</sys_updated_on>
+            <value>pass</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>wht_result</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Within Tolerance</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ap_invoice</name>
+            <sequence>2</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-05 07:38:12</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-05 07:38:12</sys_updated_on>
+            <value>within_tolerance</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>wht_result</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Warning</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ap_invoice</name>
+            <sequence>3</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-05 07:38:12</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-05 07:38:12</sys_updated_on>
+            <value>warning</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>wht_result</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Manual Review</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ap_invoice</name>
+            <sequence>4</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-05 07:38:12</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-05 07:38:12</sys_updated_on>
+            <value>manual_review</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>wht_result</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Fail</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ap_invoice</name>
+            <sequence>5</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-05 07:38:12</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-05 07:38:12</sys_updated_on>
+            <value>fail</value>
+        </sys_choice>
+    </sys_choice>
+</record_update>

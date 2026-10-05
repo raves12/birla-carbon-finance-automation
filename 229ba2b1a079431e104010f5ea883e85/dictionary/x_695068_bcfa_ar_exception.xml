@@ -50,11 +50,18 @@
         <element label="Resolved By" max_length="32" name="resolved_by" read_only="true" reference="sys_user" type="reference"/>
         <element choice="1" label="Deduction Type" max_length="40" name="deduction_type" type="choice">
             <choice>
-                <element inactive_on_update="false" label="Short Pay" sequence="3" value="short_pay"/>
-                <element inactive_on_update="false" label="Bank Charge" sequence="1" value="bank_charge"/>
-                <element inactive_on_update="false" label="Unapplied Cash" sequence="5" value="unapplied"/>
-                <element inactive_on_update="false" label="TCS" sequence="2" value="tcs"/>
-                <element inactive_on_update="false" label="Credit Note Netting" sequence="4" value="credit_note_netting"/>
+                <element inactive_on_update="false" label="Dispute (not a deduction)" sequence="8" value="dispute"/>
+                <element inactive_on_update="false" label="Commercial Deduction" sequence="7" value="commercial_deduction"/>
+                <element inactive_on_update="false" label="Withholding Tax" sequence="4" value="withholding_tax"/>
+                <element inactive_on_update="false" label="FX Difference" sequence="9" value="fx_difference"/>
+                <element inactive_on_update="false" label="Short Pay" sequence="1" value="short_pay"/>
+                <element inactive_on_update="false" label="Rounding" sequence="10" value="rounding"/>
+                <element inactive_on_update="false" label="Bank Charge" sequence="2" value="bank_charge"/>
+                <element inactive_on_update="false" label="Unapplied Cash" sequence="11" value="unapplied"/>
+                <element inactive_on_update="false" label="TDS / TCS" sequence="3" value="tcs"/>
+                <element inactive_on_update="false" label="Other (manual review)" sequence="12" value="other"/>
+                <element inactive_on_update="false" label="Credit Note Netting" sequence="5" value="credit_note_netting"/>
+                <element inactive_on_update="false" label="Debit Note" sequence="6" value="debit_note"/>
             </choice>
         </element>
         <element label="Decided By" max_length="32" name="decided_by" read_only="true" reference="sys_user" type="reference"/>

@@ -17,7 +17,7 @@
             </choice>
         </element>
         <element hint="SHA-256 of the primary attachment content, computed at classification time. Phase 10 duplicate-intake detection key, independent of the existing AP Invoice duplicate_key check (vendor+invoice_number+amount), which only runs after a transaction already exists." label="Attachment Hash" max_length="64" name="attachment_hash" type="string"/>
-        <element hint="How the document type was decided (set at upload; model classification is not licensed). Older rows hold the reason the Claude classifier returned (removed in Phase 34)." label="Classification Reason" max_length="1000" name="classification_reason" type="string"/>
+        <element hint="How the document type was decided (set at upload; automatic document classification is not configured). Older rows hold the reason the Claude classifier returned (removed in Phase 34)." label="Classification Reason" max_length="1000" name="classification_reason" type="string"/>
         <element label="Company Code" max_length="10" name="company_code" type="string"/>
         <element label="Correlation ID" max_length="64" name="correlation_id" type="string"/>
         <element hint="Human-readable failure description only — never exception internals or credential material (same discipline as ai_interaction.safe_error)." label="Processing Error" max_length="4000" name="processing_error" type="string"/>

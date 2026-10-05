@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_properties">
+    <sys_properties action="INSERT_OR_UPDATE">
+        <choices/>
+        <description>POC ASSUMPTION. The largest withholding-tax (TDS) deduction accepted, as a fraction of the invoice amounts it covers (0.1 = 10%). Above it the deduction is refused and the residual stays an exception.</description>
+        <ignore_cache>false</ignore_cache>
+        <is_private>false</is_private>
+        <name>x_695068_bcfa.ar.withholding.max_pct</name>
+        <read_roles/>
+        <suffix>ar.withholding.max_pct</suffix>
+        <sys_class_name>sys_properties</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-05 07:38:11</sys_created_on>
+        <sys_id>83f6319d3267417b9ad650e54218b5af</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>x_695068_bcfa.ar.withholding.max_pct</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_properties_83f6319d3267417b9ad650e54218b5af</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-05 07:38:13</sys_updated_on>
+        <type>string</type>
+        <value>0.1</value>
+        <write_roles/>
+    </sys_properties>
+    <sys_translated_text action="delete_multiple" query="documentkey=83f6319d3267417b9ad650e54218b5af"/>
+</record_update>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_message">
+    <sys_ui_message action="INSERT_OR_UPDATE">
+        <application/>
+        <code>playbook_e01d2325600b49c5a0165460897cd11d</code>
+        <commented_message/>
+        <key>Advice fields (payer, payment and bank reference, invoice references, deductions with their printed reasons) were read by the provider shown on the remittance and correlated to the payment by the system. Reconciliation precedence: the bank statement and t</key>
+        <language>en</language>
+        <message>Advice fields (payer, payment and bank reference, invoice references, deductions with their printed reasons) were read by the provider shown on the remittance and correlated to the payment by the system. Reconciliation precedence: the bank statement and the SAP open items (through IntegrationService) are authoritative; the advice explains the payment, it never overrides them.</message>
+        <sys_class_name>sys_ui_message</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-05 10:31:35</sys_created_on>
+        <sys_id>28bf287ceb3bcb50311dff0dcad0cdda</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Advice fields (payer, payment and bank reference, invoice references, deductions with their printed reasons) were read by the provider shown on the remittance and correlated to the payment by the system. Reconciliation precedence: the bank statement and t</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_ui_message_28bf287ceb3bcb50311dff0dcad0cdda</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-05 10:31:35</sys_updated_on>
+    </sys_ui_message>
+</record_update>

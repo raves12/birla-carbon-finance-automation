@@ -26,12 +26,12 @@
             <sequence>1</sequence>
             <synonyms/>
             <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
-            <sys_created_on>2026-09-29 08:36:08</sys_created_on>
+            <sys_created_on>2026-10-05 11:11:32</sys_created_on>
             <sys_domain>global</sys_domain>
             <sys_domain_path>/</sys_domain_path>
             <sys_mod_count>0</sys_mod_count>
             <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
-            <sys_updated_on>2026-09-29 08:36:08</sys_updated_on>
+            <sys_updated_on>2026-10-05 11:11:32</sys_updated_on>
             <value>claude_document_intelligence</value>
         </sys_choice>
         <sys_choice action="INSERT_OR_UPDATE">
@@ -39,18 +39,18 @@
             <element>source</element>
             <hint/>
             <inactive>false</inactive>
-            <label>Simulated extraction (fixture values; DocIntel extraction not licensed)</label>
+            <label>Simulated extraction (fixture values, tests and demo seed only)</label>
             <language>en</language>
             <name>x_695068_bcfa_ap_extraction</name>
             <sequence>2</sequence>
             <synonyms/>
             <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
-            <sys_created_on>2026-09-29 08:36:08</sys_created_on>
+            <sys_created_on>2026-10-05 11:11:32</sys_created_on>
             <sys_domain>global</sys_domain>
             <sys_domain_path>/</sys_domain_path>
             <sys_mod_count>0</sys_mod_count>
             <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
-            <sys_updated_on>2026-09-29 08:36:08</sys_updated_on>
+            <sys_updated_on>2026-10-05 11:11:32</sys_updated_on>
             <value>simulated_document_intelligence</value>
         </sys_choice>
         <sys_choice action="INSERT_OR_UPDATE">
@@ -58,19 +58,38 @@
             <element>source</element>
             <hint/>
             <inactive>false</inactive>
-            <label>Now Assist in Document Intelligence (not licensed in this PDI)</label>
+            <label>Now Assist in Document Intelligence (legacy value, not used)</label>
             <language>en</language>
             <name>x_695068_bcfa_ap_extraction</name>
             <sequence>3</sequence>
             <synonyms/>
             <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
-            <sys_created_on>2026-09-29 08:36:08</sys_created_on>
+            <sys_created_on>2026-10-05 11:11:32</sys_created_on>
             <sys_domain>global</sys_domain>
             <sys_domain_path>/</sys_domain_path>
             <sys_mod_count>0</sys_mod_count>
             <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
-            <sys_updated_on>2026-09-29 08:36:08</sys_updated_on>
+            <sys_updated_on>2026-10-05 11:11:32</sys_updated_on>
             <value>now_assist_document_intelligence</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>source</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>ServiceNow Document Intelligence (Now LLM)</label>
+            <language>en</language>
+            <name>x_695068_bcfa_ap_extraction</name>
+            <sequence>4</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-05 11:11:32</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-05 11:11:32</sys_updated_on>
+            <value>servicenow_document_intelligence</value>
         </sys_choice>
     </sys_choice>
 </record_update>

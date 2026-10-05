@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_properties">
+    <sys_properties action="INSERT_OR_UPDATE">
+        <choices/>
+        <description>POC REFERENCE DATA (not tax advice, not read from SAP). Fallback when the BCFA AP Tax Expectation decision table has no row: expected tax regime and rate per vendor country. A country with no entry cannot be validated and goes to manual review.</description>
+        <ignore_cache>false</ignore_cache>
+        <is_private>false</is_private>
+        <name>x_695068_bcfa.ap.tax.reference</name>
+        <read_roles/>
+        <suffix>ap.tax.reference</suffix>
+        <sys_class_name>sys_properties</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-05 07:38:11</sys_created_on>
+        <sys_id>7de59dea50f7489d934a307f2dfcb123</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>x_695068_bcfa.ap.tax.reference</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_properties_7de59dea50f7489d934a307f2dfcb123</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-05 07:38:13</sys_updated_on>
+        <type>string</type>
+        <value>{"India":{"regime":"GST","rate_pct":18},"Germany":{"regime":"VAT","rate_pct":19},"Hungary":{"regime":"VAT","rate_pct":27},"United States":{"regime":"SALES_TAX","rate_pct":0}}</value>
+        <write_roles/>
+    </sys_properties>
+    <sys_translated_text action="delete_multiple" query="documentkey=7de59dea50f7489d934a307f2dfcb123"/>
+</record_update>

@@ -25,13 +25,13 @@
             <name>x_695068_bcfa_deduction</name>
             <sequence>1</sequence>
             <synonyms/>
-            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
-            <sys_created_on>2026-09-17 14:59:07</sys_created_on>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-05 07:38:12</sys_created_on>
             <sys_domain>global</sys_domain>
             <sys_domain_path>/</sys_domain_path>
             <sys_mod_count>0</sys_mod_count>
-            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
-            <sys_updated_on>2026-09-17 14:59:07</sys_updated_on>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-05 07:38:12</sys_updated_on>
             <value>short_pay</value>
         </sys_choice>
         <sys_choice action="INSERT_OR_UPDATE">
@@ -44,13 +44,13 @@
             <name>x_695068_bcfa_deduction</name>
             <sequence>2</sequence>
             <synonyms/>
-            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
-            <sys_created_on>2026-09-17 14:59:07</sys_created_on>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-05 07:38:12</sys_created_on>
             <sys_domain>global</sys_domain>
             <sys_domain_path>/</sys_domain_path>
             <sys_mod_count>0</sys_mod_count>
-            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
-            <sys_updated_on>2026-09-17 14:59:07</sys_updated_on>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-05 07:38:12</sys_updated_on>
             <value>bank_charge</value>
         </sys_choice>
         <sys_choice action="INSERT_OR_UPDATE">
@@ -58,19 +58,38 @@
             <element>deduction_type</element>
             <hint/>
             <inactive>false</inactive>
-            <label>TCS</label>
+            <label>TDS / TCS</label>
             <language>en</language>
             <name>x_695068_bcfa_deduction</name>
             <sequence>3</sequence>
             <synonyms/>
-            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
-            <sys_created_on>2026-09-17 14:59:07</sys_created_on>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-05 07:38:12</sys_created_on>
             <sys_domain>global</sys_domain>
             <sys_domain_path>/</sys_domain_path>
             <sys_mod_count>0</sys_mod_count>
-            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
-            <sys_updated_on>2026-09-17 14:59:07</sys_updated_on>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-05 07:38:12</sys_updated_on>
             <value>tcs</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>deduction_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Withholding Tax</label>
+            <language>en</language>
+            <name>x_695068_bcfa_deduction</name>
+            <sequence>4</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-05 07:38:12</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-05 07:38:12</sys_updated_on>
+            <value>withholding_tax</value>
         </sys_choice>
         <sys_choice action="INSERT_OR_UPDATE">
             <dependent_value/>
@@ -80,16 +99,111 @@
             <label>Credit Note Netting</label>
             <language>en</language>
             <name>x_695068_bcfa_deduction</name>
-            <sequence>4</sequence>
+            <sequence>5</sequence>
             <synonyms/>
-            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
-            <sys_created_on>2026-09-17 14:59:07</sys_created_on>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-05 07:38:12</sys_created_on>
             <sys_domain>global</sys_domain>
             <sys_domain_path>/</sys_domain_path>
             <sys_mod_count>0</sys_mod_count>
-            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
-            <sys_updated_on>2026-09-17 14:59:07</sys_updated_on>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-05 07:38:12</sys_updated_on>
             <value>credit_note_netting</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>deduction_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Debit Note</label>
+            <language>en</language>
+            <name>x_695068_bcfa_deduction</name>
+            <sequence>6</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-05 07:38:12</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-05 07:38:12</sys_updated_on>
+            <value>debit_note</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>deduction_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Commercial Deduction</label>
+            <language>en</language>
+            <name>x_695068_bcfa_deduction</name>
+            <sequence>7</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-05 07:38:12</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-05 07:38:12</sys_updated_on>
+            <value>commercial_deduction</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>deduction_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Dispute (not a deduction)</label>
+            <language>en</language>
+            <name>x_695068_bcfa_deduction</name>
+            <sequence>8</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-05 07:38:12</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-05 07:38:12</sys_updated_on>
+            <value>dispute</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>deduction_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>FX Difference</label>
+            <language>en</language>
+            <name>x_695068_bcfa_deduction</name>
+            <sequence>9</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-05 07:38:12</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-05 07:38:12</sys_updated_on>
+            <value>fx_difference</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>deduction_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Rounding</label>
+            <language>en</language>
+            <name>x_695068_bcfa_deduction</name>
+            <sequence>10</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-05 07:38:12</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-05 07:38:12</sys_updated_on>
+            <value>rounding</value>
         </sys_choice>
         <sys_choice action="INSERT_OR_UPDATE">
             <dependent_value/>
@@ -99,16 +213,35 @@
             <label>Unapplied Cash</label>
             <language>en</language>
             <name>x_695068_bcfa_deduction</name>
-            <sequence>5</sequence>
+            <sequence>11</sequence>
             <synonyms/>
-            <sys_created_by>Ravi_MCP_Admin</sys_created_by>
-            <sys_created_on>2026-09-17 14:59:07</sys_created_on>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-05 07:38:12</sys_created_on>
             <sys_domain>global</sys_domain>
             <sys_domain_path>/</sys_domain_path>
             <sys_mod_count>0</sys_mod_count>
-            <sys_updated_by>Ravi_MCP_Admin</sys_updated_by>
-            <sys_updated_on>2026-09-17 14:59:07</sys_updated_on>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-05 07:38:12</sys_updated_on>
             <value>unapplied</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>deduction_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Other (manual review)</label>
+            <language>en</language>
+            <name>x_695068_bcfa_deduction</name>
+            <sequence>12</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-05 07:38:12</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-05 07:38:12</sys_updated_on>
+            <value>other</value>
         </sys_choice>
     </sys_choice>
 </record_update>

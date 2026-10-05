@@ -3,7 +3,7 @@
         <sys_documentation action="INSERT_OR_UPDATE">
             <element>source</element>
             <help/>
-            <hint>Records which engine produced this extraction row. Currently the simulated extraction; Claude rows are historical (removed in Phase 34).</hint>
+            <hint>Records which engine produced this extraction row: ServiceNow Document Intelligence on Now LLM for uploaded documents (Phase 40), or the simulated extraction for test fixtures and seeded demo data. Claude rows are historical (removed in Phase 34).</hint>
             <label>Source</label>
             <language>en</language>
             <name>x_695068_bcfa_ap_extraction</name>

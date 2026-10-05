@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_atf_step">
+    <sys_atf_step action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <callable_outputs/>
+        <copied_from/>
+        <description/>
+        <display_name>Run Server Side Script</display_name>
+        <inputs/>
+        <mugshots_cache_json/>
+        <notes/>
+        <order>1</order>
+        <step_config display_value="Run Server Side Script">41de4a935332120028bc29cac2dc349a</step_config>
+        <sys_class_name>sys_atf_step</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-05 07:43:36</sys_created_on>
+        <sys_id>89c569c115554bc3bdcdef042fce263a</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>Run Server Side Script</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_atf_step_89c569c115554bc3bdcdef042fce263a</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-05 07:43:36</sys_updated_on>
+        <table/>
+        <test display_value="CP-EXT Extraction provider: native by default, simulated labelled, no fallback, derived confidence (">3943fb95ed7341bc9d6a7554304c5035</test>
+        <timeout/>
+        <warning_message/>
+    </sys_atf_step>
+    <sys_variable_value action="delete_multiple" query="document_key=89c569c115554bc3bdcdef042fce263a"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>89c569c115554bc3bdcdef042fce263a</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-05 10:45:57</sys_created_on>
+        <sys_id>e243459ab3d647309b11c8815d78dcc5</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-05 10:45:57</sys_updated_on>
+        <value>3.1</value>
+        <variable display_value="Jasmine version">42f2564b73031300440211d8faf6a777</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>89c569c115554bc3bdcdef042fce263a</document_key>
+        <order>200</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-05 10:45:57</sys_created_on>
+        <sys_id>f31775dd51ba49539e46141357bc4e3e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-05 10:45:57</sys_updated_on>
+        <value>
+                (function(outputs, steps, params, stepResult, assertEqual) {
+                    var svc = new DocumentExtractionService();
+                    var native = new NativeDocumentIntelligenceProvider();
+                    assertEqual({ name: 'provider is native by default', shouldbe: 'native', value: svc.provider() });
+                    assertEqual({ name: 'simulated provider is labelled SIMULATED DOCUMENT EXTRACTION - POC', shouldbe: true,
+                        value: svc.label('simulated').indexOf('SIMULATED DOCUMENT EXTRACTION') === 0 });
+                    assertEqual({ name: 'native provider is labelled as ServiceNow Document Intelligence on Now LLM', shouldbe: true,
+                        value: svc.label('native').indexOf('Document Intelligence') &gt; 0 &amp;&amp; svc.label('native').indexOf('Now LLM') &gt; 0 });
+
+                    // No fallback: a native extraction that cannot run is an error, never fixture values.
+                    var intake = new GlideRecord('x_695068_bcfa_finance_intake');
+                    intake.initialize();
+                    intake.setValue('document_type', 'ap_invoice');
+                    intake.setValue('source_reference', 'ATF-CP-EXT-' + gs.generateGUID().substring(0, 6));
+                    var id = intake.insert();
+                    var r = svc.extract(id, 'ap');
+                    assertEqual({ name: 'no attachment: native extraction fails', shouldbe: false, value: r.ok });
+                    assertEqual({ name: 'no attachment: no data, no simulated values', shouldbe: true, value: !r.data &amp;&amp; r.provider === 'native' });
+
+                    // Mapping of a structured Document Intelligence result (as returned for AP_INV_001_CLEAN.pdf).
+                    var clean = native._mapInvoice({ suppliername: 'Rajasthan Carbon Feedstock Pvt Ltd', invoicenumber: 'INV-AP-001', currency: 'INR',
+                        subtotalbeforetax: '5000.00', totaltaxamount: '900.00', taxtype: 'GST', taxratepercent: '18', invoicetotal: '5900.00',
+                        invoicelineitems: [{ line_number: 1, description: 'Carbon Black Feedstock', quantity: 100, unit: 'MT', unit_price: 50, net_amount: 5000, tax_amount: 900 }] });
+                    assertEqual({ name: 'clean invoice: numbers parsed', shouldbe: '5000/900/5900', value: clean.net_amount + '/' + clean.tax_amount + '/' + clean.gross_amount });
+                    assertEqual({ name: 'clean invoice: derived confidence 1', shouldbe: 1, value: clean.confidence });
+                    assertEqual({ name: 'confidence basis is stated as derived', shouldbe: true, value: clean.confidence_basis.indexOf('Derived') === 0 });
+                    // AP-OCR-004 low confidence (as returned for AP_INV_006_LOW_CONFIDENCE.pdf).
+                    var poor = native._mapInvoice({ suppliername: 'Miskolc Freight Svcs.', invoicenumber: 'INV-AP-007', currency: 'EUR',
+                        subtotalbeforetax: '3000.00', totaltaxamount: '0.00', invoicetotal: '3000.00',
+                        invoicelineitems: [{ line_number: 1, description: 'Freight chgs - see attch.', quantity: null, unit: null, unit_price: null, net_amount: 3000, tax_amount: 0 }] });
+                    assertEqual({ name: 'AP-OCR-004 unreadable line quantity lowers the confidence below the review threshold', shouldbe: true,
+                        value: poor.confidence &lt; new FinancePolicy().extractionConfidenceThreshold() });
+                    var broken = native._mapInvoice({ suppliername: 'X', invoicenumber: 'Y', currency: 'INR', subtotalbeforetax: '1000', totaltaxamount: '180', invoicetotal: '2000',
+                        invoicelineitems: [{ quantity: 1, unit_price: 1000, net_amount: 1000 }] });
+                    assertEqual({ name: 'net + tax not equal to total is flagged', shouldbe: true, value: broken.warnings.join(' ').indexOf('does not equal the total') &gt;= 0 });
+                    // AR-OCR-003 low confidence advice: missing amount and references.
+                    var advice = native._mapAdvice({ payername: 'Some Customer', bankreference: 'UTR1', currency: 'INR', invoicespaid: [] });
+                    assertEqual({ name: 'AR-OCR-003 advice without amount or invoices goes below the threshold', shouldbe: true,
+                        value: advice.confidence &lt; new FinancePolicy().extractionConfidenceThreshold() });
+                    var multi = native._mapAdvice({ payername: 'Deccan Rubber Industries', bankreference: 'BANK-AR-003', paymentamount: '25000.00', currency: 'INR',
+                        invoicespaid: [{ invoice_reference: 'ARI0002', amount_applied: 8000 }, { invoice_reference: 'ARI0003', amount_applied: 12000 }, { invoice_reference: 'ARI0004', amount_applied: 5000 }] });
+                    assertEqual({ name: 'AR-OCR-002 multi-invoice advice: three references, applied amounts add up', shouldbe: '3/1', value: multi.invoice_references.length + '/' + multi.confidence });
+                    assertEqual({ name: 'payment reference falls back to the bank reference', shouldbe: 'BANK-AR-003', value: multi.payment_reference });
+                    // AP-OCR-002 number formats as printed (German VAT fixture returned "2.058,80").
+                    assertEqual({ name: 'AP-OCR-002 German number 2.058,80', shouldbe: 2058.8, value: native._num('2.058,80') });
+                    assertEqual({ name: 'AP-OCR-002 English number 115,375.00', shouldbe: 115375, value: native._num('115,375.00') });
+                    assertEqual({ name: 'AP-OCR-002 Indian grouping 1,23,456.00', shouldbe: 123456, value: native._num('1,23,456.00') });
+                    assertEqual({ name: 'AP-OCR-002 space grouping 1 234,56', shouldbe: 1234.56, value: native._num('1 234,56') });
+                })(outputs, steps, params, stepResult, assertEqual);
+            </value>
+        <variable display_value="Test script">989d9e235324220002c6435723dc3484</variable>
+    </sys_variable_value>
+</record_update>

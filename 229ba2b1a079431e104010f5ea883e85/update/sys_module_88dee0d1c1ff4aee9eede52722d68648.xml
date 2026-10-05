@@ -104,6 +104,23 @@ ArExceptionDecisionService.prototype = {
                 '. Classify it as another deduction type, or request clarification.');
         }
 
+        // Phase 40: limits of the other machine-checkable types, and types
+        // that are never a deduction.
+        if (type === 'dispute' || type === 'unapplied' || type === 'other') {
+            return this._error('A ' + exception.getDisplayValue('deduction_type') + ' residual is not a deduction: it stays open for investigation. ' +
+                'Request clarification from the customer or put the payment on hold.');
+        }
+        if (type === 'rounding' && amount > this.policy.arRoundingMax() + this.arService.BALANCE_TOLERANCE) {
+            return this._error('A rounding difference cannot exceed ' + this.policy.arRoundingMax() + ' (x_695068_bcfa.ar.rounding.max_amount); the residual is ' + amount + '.');
+        }
+        if (type === 'withholding_tax' || type === 'tcs') {
+            var maxWithholding = Math.round(balance.allocated * this.policy.arWithholdingMaxPct() * 100) / 100;
+            if (amount > maxWithholding + this.arService.BALANCE_TOLERANCE) {
+                return this._error('A withholding-tax deduction cannot exceed ' + (this.policy.arWithholdingMaxPct() * 100) + '% of the invoices it covers (' +
+                    maxWithholding + ' of ' + balance.allocated + '; x_695068_bcfa.ar.withholding.max_pct); the residual is ' + amount + '.');
+            }
+        }
+
         // Phase 15: the BCFA AR Deduction decision table (type, amount,
         // company) says whether this deduction is allowed and whether it
         // needs a finance approver (properties are the fallback).
@@ -141,6 +158,14 @@ ArExceptionDecisionService.prototype = {
         deduction.setValue('approved_at', new GlideDateTime().getValue());
         deduction.setValue('notes', reason);
         if (creditNoteSysId) deduction.setValue('credit_note', creditNoteSysId);
+        // Phase 40: currency, what the customer's advice stated, the AI's
+        // advisory note and where the category came from (the human decides).
+        var advice = new MatchingEngine()._adviceDeductionStatement(payment.getUniqueValue());
+        deduction.setValue('currency', payment.getValue('currency'));
+        deduction.setValue('advice_reason', String(advice.reason || '').substring(0, 255));
+        if (advice.amount !== null && advice.amount !== '' && !isNaN(parseFloat(advice.amount))) deduction.setValue('advice_amount', parseFloat(advice.amount));
+        deduction.setValue('ai_recommendation', String(exception.getValue('ai_recommendation') || '').substring(0, 1000));
+        deduction.setValue('category_source', 'human_confirmed');
         var deductionSysId = deduction.insert();
 
         var allocation = new GlideRecord('x_695068_bcfa_payment_allocation');
