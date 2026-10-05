@@ -213,20 +213,23 @@ ap('intake', 1, '1. Invoice Intake', 'Invoice received by email, upload or manua
    [('intake_records', 'x_695068_bcfa_finance_intake', by('ap_invoice'),
      ['number', 'source', 'source_reference', 'document_type', 'processing_status', 'correlation_id', 'sys_created_on'],
      'Intake record', 'Intake: source document, channel and status (open a row for the attachment)', 'SYSTEM DETERMINATION')])
-ap('extraction', 2, '2. Document Extraction', 'SIMULATED DOCUMENT EXTRACTION — POC. Header and line fields extracted from the invoice document; low confidence or missing fields go to a person.', After % 'intake',
-   ['vendor', 'invoice_number', 'invoice_date', 'purchase_order', 'company_code', 'currency', 'net_amount', 'tax_amount', 'gross_amount', 'extraction_confidence'],
-   ('Extraction complete', 'SIMULATED DOCUMENT EXTRACTION — POC',
-    'Fields were read by the POC extraction simulation (native Document Intelligence is not active on this instance). Low confidence or a missing mandatory field raises an exception: the stage does not complete until a person resolves it.',
+ap('extraction', 2, '2. Document Extraction', 'Header, tax and line fields read from the invoice document by the configured provider (Extraction provider field): native ServiceNow Document Intelligence on Now LLM by default; SIMULATED DOCUMENT EXTRACTION — POC only for test fixtures. Low confidence or missing fields go to a person.', After % 'intake',
+   ['extraction_provider', 'extraction_confidence', 'document_country', 'document_language', 'vendor', 'invoice_number', 'invoice_date', 'purchase_order', 'company_code', 'currency',
+    'net_amount', 'tax_type', 'tax_rate_pct', 'cgst_amount', 'sgst_amount', 'igst_amount', 'vat_amount', 'wht_amount', 'wht_rate_pct', 'tax_amount', 'gross_amount'],
+   ('Extraction complete', 'Document extraction (provider shown)',
+    'Fields were read by the provider shown in Extraction provider. Native extraction failure never falls back to simulated values: it goes to manual review. The printed tax breakdown is recorded as read; it is validated in the next stage, not here. Low confidence or a missing mandatory field raises an exception: the stage does not complete until a person resolves it.',
     'Waiting for extraction, or for a person to review a low-confidence / missing-field exception.'),
    [('extraction_records', 'x_695068_bcfa_ap_extraction', by('ap_invoice'),
      ['source', 'confidence', 'requires_review', 'reviewed_by', 'reviewed_at', 'sys_created_on'],
-     'Extraction result (SIMULATED)', 'SIMULATED DOCUMENT EXTRACTION — POC: extraction result and review', 'SIMULATED DOCUMENT EXTRACTION — POC'),
+     'Extraction result', 'Extraction result and review (source = provider)', 'EXTRACTION (provider shown)'),
     ('lines', 'x_695068_bcfa_ap_invoice_line', 'ap_invoice={P}^ORDERBYline_number',
      ['line_number', 'material_or_service', 'quantity', 'unit', 'unit_price', 'tax', 'amount'],
-     'Extracted lines', 'Invoice lines as extracted', 'SIMULATED DOCUMENT EXTRACTION — POC')])
+     'Extracted lines', 'Invoice lines as extracted', 'EXTRACTION (provider shown)')])
 ap('validation', 3, '3. Validation & Enrichment', 'Mandatory fields, vendor, company, PO, currency, duplicate and tax controls by the rules engine.', After % 'extraction',
-   ['vendor', 'company_code', 'purchase_order', 'currency', 'gross_amount', 'tax_amount', 'duplicate_key'],
-   ('Validation passed', 'Validation & enrichment', 'Vendor master, company, PO reference, currency, duplicate and tax controls evaluated by the system. A failed control raises an exception and the stage stays open.',
+   ['vendor', 'company_code', 'purchase_order', 'currency', 'gross_amount', 'duplicate_key',
+    'tax_regime', 'tax_amount', 'expected_tax_amount', 'tax_variance_amount', 'tax_validation_result', 'tax_validation_detail', 'tax_rule_source',
+    'wht_applicable', 'wht_code', 'wht_expected_amount', 'wht_result'],
+   ('Validation passed', 'Validation & enrichment', 'Vendor master, company, PO reference, currency, duplicate and tax controls evaluated by the system. TAX VALIDATION: the expected regime, rate and withholding come from configuration (decision table BCFA AP Tax Expectation, rule source shown; POC reference data, not SAP), never from the document; the result is PASS / WITHIN TOLERANCE / WARNING / FAIL / MANUAL REVIEW with the checks in the detail. A failed control raises an exception and the stage stays open.',
     'Waiting for validation, or for a person to resolve a failed control (duplicate, vendor, PO, tax).'),
    [('failed_controls', 'x_695068_bcfa_ap_exception', 'ap_invoice={P}^reason_codeINduplicate,vendor_invalid,po_mismatch,tax_validation,missing_field^ORDERBYDESCsys_created_on',
      ['number', 'reason_code', 'severity', 'status', 'rule_result', 'evidence'],
@@ -238,6 +241,9 @@ ap('matching', 4, '4. PO / GRN-SRN / 3-Way Match', 'Deterministic 3-way match of
    [('match_results', 'x_695068_bcfa_ap_match', by('ap_invoice'),
      ['po_line', 'receipt', 'quantity_variance', 'price_variance', 'tax_variance', 'within_tolerance', 'match_result', 'evaluated_at'],
      'Match results', 'MATCH RESULT (MatchingEngine): PO line vs GRN/SRN vs invoice, variances and tolerance verdict', 'SYSTEM DETERMINATION'),
+    ('tolerances', 'x_695068_bcfa_ap_match', by('ap_invoice'),
+     ['tolerance_source', 'quantity_tolerance_pct', 'price_tolerance_pct', 'tax_tolerance_abs', 'tax_tolerance_pct', 'total_tolerance_abs', 'expected_tax', 'tax_result', 'tolerance_detail'],
+     'Tolerances applied', 'TOLERANCE RULE APPLIED: rule source, configured tolerances, expected vs actual and result per check (AI never overrides a tolerance)', 'SYSTEM DETERMINATION'),
     ('lines', 'x_695068_bcfa_ap_invoice_line', 'ap_invoice={P}^ORDERBYline_number',
      ['line_number', 'po_line', 'receipt_reference', 'quantity', 'unit_price', 'amount'],
      'Invoice lines', 'SUPPLIER INVOICE lines with their PO line and receipt', 'SYSTEM DETERMINATION')])
@@ -276,7 +282,7 @@ ap('closure', 8, '8. Closure & Audit', 'Reconciled and closed; full evidence and
 
 playbook('ap_invoice_playbook.now.ts', HEADER % 'BCFA AP Invoice Processing Playbook (8 stages).', 'apInvoicePlaybook', P,
          'BCFA AP Invoice Processing Playbook', 'bcfa_ap_invoice_processing',
-         'BCFA AP invoice journey: intake, simulated extraction (POC), validation, PO/GRN-SRN 3-way match, exceptions, approval, MOCK SAP posting, closure. A view of the authoritative state only.',
+         'BCFA AP invoice journey: intake, document extraction (native Document Intelligence; simulated provider for fixtures only), validation with tax and withholding checks, PO/GRN-SRN 3-way match, exceptions, approval, MOCK SAP posting, closure. A view of the authoritative state only.',
          AP, ['admin', 'ap_processor', 'ap_approver', 'finance_reviewer', 'finance_approver', 'integration_operator', 'auditor', 'read_only'],
          ap_lanes)
 
@@ -307,13 +313,14 @@ ar('intake', 1, '1. Payment & Remittance Intake', 'Bank payment received; the re
      'Intake records', 'Intake: bank line and remittance documents', 'SYSTEM DETERMINATION'),
     ('remittances', 'x_695068_bcfa_remittance', by('payment'), REMIT_COLS,
      'Remittance', 'REMITTANCE received for this payment', 'SYSTEM DETERMINATION')])
-ar('correlation', 2, '2. Extraction & Correlation', 'SIMULATED DOCUMENT EXTRACTION — POC for the remittance; correlated to the payment by the system.', After % 'intake',
+ar('correlation', 2, '2. Extraction & Correlation', 'Payment advice read by the configured provider (native ServiceNow Document Intelligence on Now LLM by default; SIMULATED DOCUMENT EXTRACTION — POC only for test fixtures) and correlated to the payment by the system.', After % 'intake',
    ['bank_reference', 'amount', 'currency'],
-   ('Remittance correlated', 'Remittance extraction & correlation — SIMULATED DOCUMENT EXTRACTION — POC',
-    'Remittance fields (remitter, payment reference, invoice references, deductions) were read by the POC extraction simulation and correlated to the payment by the system.',
+   ('Remittance correlated', 'Payment advice extraction & correlation (provider shown)',
+    'Advice fields (payer, payment and bank reference, invoice references, deductions with their printed reasons) were read by the provider shown on the remittance and correlated to the payment by the system. Reconciliation precedence: the bank statement and the SAP open items (through IntegrationService) are authoritative; the advice explains the payment, it never overrides them.',
     'Waiting for remittance correlation.'),
-   [('remittances', 'x_695068_bcfa_remittance', by('payment'), REMIT_COLS,
-     'Remittances (SIMULATED)', 'SIMULATED DOCUMENT EXTRACTION — POC: remittance and correlation', 'SIMULATED DOCUMENT EXTRACTION — POC')])
+   [('remittances', 'x_695068_bcfa_remittance', by('payment'),
+     ['remittance_reference', 'extraction_provider', 'payer_name', 'bank_reference', 'payment_amount', 'currency', 'advice_deduction_amount', 'advice_deduction_reason', 'invoice_count', 'confidence'],
+     'Payment advice', 'PAYMENT ADVICE as extracted (provider shown) and correlated to this payment', 'EXTRACTION (provider shown)')])
 ar('customer', 3, '3. Customer Resolution', 'Customer resolved deterministically (exact or confirmed alias). An ambiguous customer needs a person: AI may rank candidates, never commit one.', After % 'correlation',
    ['customer', 'bank_reference', 'amount'],
    ('Customer resolved', 'Customer resolution', 'CUSTOMER RESOLVED by deterministic rules (exact code or confirmed alias). If ambiguous: CUSTOMER REVIEW REQUIRED — a person confirms; AI may only recommend.',
@@ -344,8 +351,8 @@ ar('exception', 6, '6. Exception / Deduction Resolution', 'Runs alongside stages
      ['number', 'reason_code', 'severity', 'status', 'residual_amount', 'rule_result', 'ai_recommendation', 'decision', 'decided_by', 'assignment_group', 'sla_due'],
      'Exceptions', 'Exceptions: SYSTEM DETERMINATION (rule result, residual) | AI RECOMMENDATION (advisory) | HUMAN DECISION', 'SYSTEM / AI / HUMAN'),
     ('deductions', 'x_695068_bcfa_deduction', 'payment_allocation.payment={P}^ORDERBYDESCsys_created_on',
-     ['deduction_type', 'amount', 'credit_note', 'status', 'approved_by', 'approved_at', 'notes'],
-     'Deductions', 'HUMAN DECISION: classified deductions (bank charge, TCS, short pay, credit note)', 'HUMAN DECISION'),
+     ['deduction_type', 'amount', 'currency', 'advice_reason', 'advice_amount', 'category_source', 'credit_note', 'status', 'approved_by', 'approved_at'],
+     'Deductions', 'HUMAN DECISION: classified deductions (bank charge, TDS / TCS, withholding, credit / debit note, commercial, rounding, ...) with the reason printed on the advice; AI may suggest a category, a person confirms it', 'HUMAN DECISION'),
     ('ai_notes', 'x_695068_bcfa_ai_interaction', by('source_record'), AI_COLS,
      'AI recommendations', 'AI RECOMMENDATION — advisory only (Now Assist): never approves, clears or overrides tolerance', 'AI RECOMMENDATION')])
 ar('approval', 7, '7. Approval', 'Human approval of the allocation and any deduction; ApprovalEngine and segregation of duties are authoritative.', After % 'matching, exception',
@@ -373,7 +380,7 @@ ar('closure', 9, '9. Closure & Audit', 'Cleared, reconciled and closed; full evi
 
 playbook('ar_cash_application_playbook.now.ts', HEADER % 'BCFA Cash Application Playbook (9 stages).', 'arCashApplicationPlaybook', P,
          'BCFA Cash Application Playbook', 'bcfa_cash_application',
-         'BCFA cash application journey: payment & remittance intake, simulated extraction (POC) and correlation, customer, open items, matching & allocation, exceptions & deductions, approval, SAP DRAFT/DIRECT processing (MOCK SAP), closure. A view of the authoritative state only.',
+         'BCFA cash application journey: payment & remittance intake, payment advice extraction (native Document Intelligence; simulated provider for fixtures only) and correlation, customer, open items, matching & allocation, exceptions & deductions, approval, SAP DRAFT/DIRECT processing (MOCK SAP), closure. A view of the authoritative state only.',
          AR, ['admin', 'ar_processor', 'ar_approver', 'finance_reviewer', 'finance_approver', 'integration_operator', 'auditor', 'read_only'],
          ar_lanes)
 print('ok')

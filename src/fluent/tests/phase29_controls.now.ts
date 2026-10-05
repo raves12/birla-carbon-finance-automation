@@ -15,7 +15,19 @@ Test(
             script: `
                 (function(outputs, steps, params, stepResult, assertEqual) {
                     var ap = new ApDomainService();
-                    var inv = ap.intakeInvoice({ invoiceNumber: 'ATF-LC-' + gs.generateGUID(), currency: 'INR', grossAmount: 100, netAmount: 100, taxAmount: 0 }).apInvoiceSysId;
+                    // Inserted without engines: the record-triggered AP Invoice Intake Flow
+                    // would otherwise move a new RECEIVED invoice on in the background while
+                    // this test runs (a race seen on 2026-10-05).
+                    var quiet = new GlideRecord('x_695068_bcfa_ap_invoice');
+                    quiet.initialize();
+                    quiet.setValue('invoice_number', 'ATF-LC-' + gs.generateGUID());
+                    quiet.setValue('currency', 'INR');
+                    quiet.setValue('gross_amount', 100);
+                    quiet.setValue('net_amount', 100);
+                    quiet.setValue('tax_amount', 0);
+                    quiet.setValue('state', 'RECEIVED');
+                    quiet.setWorkflow(false);
+                    var inv = quiet.insert();
                     var error = '';
                     try { ap._setState(inv, 'CLOSED', null, 'ATF illegal jump'); } catch (e) { error = String(e); }
                     var gr = new GlideRecord('x_695068_bcfa_ap_invoice');
@@ -65,14 +77,29 @@ Test(
                     var r = new ApDomainService().intakeAndAutoProcess({ invoiceNumber: 'ATF-ORCH-' + gs.generateGUID(), vendor: vendor.getUniqueValue(), companyCode: '1000', currency: 'INR', grossAmount: 100, netAmount: 100, taxAmount: 0 });
                     assertEqual({ name: 'flow mode: intake hands off to the AP Invoice Intake Flow', shouldbe: 'RECEIVED', value: r.stoppedAt });
                     assertEqual({ name: 'hand-off named', shouldbe: 'AP Invoice Intake Flow', value: r.handedTo });
-                    var skipped = orch.run('ap_validation', r.apInvoiceSysId);
+                    // The stage guards are checked on an invoice the background flow cannot
+                    // pick up (inserted without engines): the flow handed off above may
+                    // already have moved r.apInvoiceSysId on (a race seen on 2026-10-05).
+                    var quiet = new GlideRecord('x_695068_bcfa_ap_invoice');
+                    quiet.initialize();
+                    quiet.setValue('invoice_number', 'ATF-ORCH-Q-' + gs.generateGUID());
+                    quiet.setValue('vendor', vendor.getUniqueValue());
+                    quiet.setValue('company_code', '1000');
+                    quiet.setValue('currency', 'INR');
+                    quiet.setValue('gross_amount', 100);
+                    quiet.setValue('net_amount', 100);
+                    quiet.setValue('tax_amount', 0);
+                    quiet.setValue('state', 'RECEIVED');
+                    quiet.setWorkflow(false);
+                    var id = quiet.insert();
+                    var skipped = orch.run('ap_validation', id);
                     assertEqual({ name: 'validation stage skipped while the invoice is RECEIVED', shouldbe: 'skipped', value: skipped.outcome });
-                    var ran = orch.run('ap_intake', r.apInvoiceSysId);
+                    var ran = orch.run('ap_intake', id);
                     var gr = new GlideRecord('x_695068_bcfa_ap_invoice');
-                    gr.get(r.apInvoiceSysId);
+                    gr.get(id);
                     assertEqual({ name: 'intake stage ran (extraction)', shouldbe: 'ran', value: ran.outcome });
                     assertEqual({ name: 'invoice EXTRACTED after the intake stage', shouldbe: 'EXTRACTED', value: gr.getValue('state') });
-                    assertEqual({ name: 'intake stage does not run twice', shouldbe: 'skipped', value: orch.run('ap_intake', r.apInvoiceSysId).outcome });
+                    assertEqual({ name: 'intake stage does not run twice', shouldbe: 'skipped', value: orch.run('ap_intake', id).outcome });
                 })(outputs, steps, params, stepResult, assertEqual);
             `,
         })

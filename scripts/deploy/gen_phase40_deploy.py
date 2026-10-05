@@ -81,7 +81,18 @@ STEPS['fixes'] = {
     'base': 'ac4462c',
     'new_si': [],
     'mod_si': ['NativeDocumentIntelligenceProvider', 'MatchingEngine'],
-    'atf': ['0f9684be734741daa3b97ec040e91399'],  # CP-TAX: split GST component rate
+    'atf': ['0f9684be734741daa3b97ec040e91399', '3943fb95ed7341bc9d6a7554304c5035', 'a93e389547e243dda3c7550a2d2b5b01', 'c98429799fcf464b90d8c73cf10a9842'],  # CP-TAX split GST; CP-EXT number formats; Lifecycle + Orchestration race fix
+}
+
+# Playbooks (Phase 14 of the client POC criteria): provider-aware extraction
+# stages, tax / withholding results, tolerances applied, payment advice and
+# deduction taxonomy. Follow with phase35_playbook_yokohama_fix_bg.js and
+# activate both Playbooks again in Workflow Studio.
+STEPS['playbooks'] = {
+    'base': '3dadc4c',
+    'new_si': [],
+    'mod_si': [],
+    'files': r'^sys_pd_process_definition_(74ce2044163b43e7bbaa53a0cb012d42|e01d2325600b49c5a0165460897cd11d)\.xml$',
 }
 
 

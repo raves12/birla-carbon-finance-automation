@@ -31,9 +31,15 @@ AI Discovery and the Now Assist connector inventoried the BCFA AI automatically 
 Workflow → agent → tool links come from AI Discovery. The agent → skill links were added in Phase 23, because the
 tools call the skills from script, which discovery cannot see.
 
-**Content Understanding.** Document Intelligence is not licensed on this instance, so the use case is registered as
-planned. The POC uses deterministic simulated extraction, logged in the AI Interaction Log with provider *Simulated*.
-When licensed, the extracted fields feed the same validation, matching and human review.
+**Content Understanding.** Superseded in Phase 40 (2026-10-05). The Document Intelligence generative pipeline works
+on this instance. BCFA extraction runs natively by default through two use cases pinned to Now LLM:
+- *BCFA AP Invoice Extraction (Now LLM)*;
+- *BCFA AR Payment Advice Extraction (Now LLM)*.
+
+The provider is selected by `x_695068_bcfa.document.extraction.provider`. The simulated provider remains for test fixtures
+only and is labelled SIMULATED DOCUMENT EXTRACTION — POC. Extraction output feeds the same validation, matching and human
+review. See `OCR_ACCURACY_REPORT.md`. Production entitlement for Document Intelligence is a commercial question that has
+not been verified here.
 
 ## Ownership
 

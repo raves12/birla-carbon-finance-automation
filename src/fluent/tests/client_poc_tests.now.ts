@@ -219,6 +219,11 @@ Test(
                         invoicespaid: [{ invoice_reference: 'ARI0002', amount_applied: 8000 }, { invoice_reference: 'ARI0003', amount_applied: 12000 }, { invoice_reference: 'ARI0004', amount_applied: 5000 }] });
                     assertEqual({ name: 'AR-OCR-002 multi-invoice advice: three references, applied amounts add up', shouldbe: '3/1', value: multi.invoice_references.length + '/' + multi.confidence });
                     assertEqual({ name: 'payment reference falls back to the bank reference', shouldbe: 'BANK-AR-003', value: multi.payment_reference });
+                    // AP-OCR-002 number formats as printed (German VAT fixture returned "2.058,80").
+                    assertEqual({ name: 'AP-OCR-002 German number 2.058,80', shouldbe: 2058.8, value: native._num('2.058,80') });
+                    assertEqual({ name: 'AP-OCR-002 English number 115,375.00', shouldbe: 115375, value: native._num('115,375.00') });
+                    assertEqual({ name: 'AP-OCR-002 Indian grouping 1,23,456.00', shouldbe: 123456, value: native._num('1,23,456.00') });
+                    assertEqual({ name: 'AP-OCR-002 space grouping 1 234,56', shouldbe: 1234.56, value: native._num('1 234,56') });
                 })(outputs, steps, params, stepResult, assertEqual);
             `,
         })

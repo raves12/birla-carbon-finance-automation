@@ -23,7 +23,7 @@ export const apInvoicePlaybook = PlaybookDefinition(
         $id: Now.ID['bcfa_pb_ap_playbook'],
         label: 'BCFA AP Invoice Processing Playbook',
         name: 'bcfa_ap_invoice_processing',
-        description: 'BCFA AP invoice journey: intake, simulated extraction (POC), validation, PO/GRN-SRN 3-way match, exceptions, approval, MOCK SAP posting, closure. A view of the authoritative state only.',
+        description: 'BCFA AP invoice journey: intake, document extraction (native Document Intelligence; simulated provider for fixtures only), validation with tax and withholding checks, PO/GRN-SRN 3-way match, exceptions, approval, MOCK SAP posting, closure. A view of the authoritative state only.',
         parentTable: 'x_695068_bcfa_ap_invoice',
         access: 'package_private',
         runStrategy: 'run_if_not_running',
@@ -117,7 +117,7 @@ export const apInvoicePlaybook = PlaybookDefinition(
                     label: '2. Document Extraction',
                     name: 'extraction',
                     order: 2,
-                    description: 'SIMULATED DOCUMENT EXTRACTION — POC. Header and line fields extracted from the invoice document; low confidence or missing fields go to a person.',
+                    description: 'Header, tax and line fields read from the invoice document by the configured provider (Extraction provider field): native ServiceNow Document Intelligence on Now LLM by default; SIMULATED DOCUMENT EXTRACTION — POC only for test fixtures. Low confidence or missing fields go to a person.',
                     startRule: wfa.playbook.run.After(intake),
                     restartRule: 'RUN_ALWAYS',
                 },
@@ -138,26 +138,26 @@ export const apInvoicePlaybook = PlaybookDefinition(
                         },
                         {
                             tagline: 'SYSTEM DETERMINATION',
-                            title: 'SIMULATED DOCUMENT EXTRACTION — POC',
-                            description: 'Fields were read by the POC extraction simulation (native Document Intelligence is not active on this instance). Low confidence or a missing mandatory field raises an exception: the stage does not complete until a person resolves it.',
-                            pending_title: 'SIMULATED DOCUMENT EXTRACTION — POC',
+                            title: 'Document extraction (provider shown)',
+                            description: 'Fields were read by the provider shown in Extraction provider. Native extraction failure never falls back to simulated values: it goes to manual review. The printed tax breakdown is recorded as read; it is validated in the next stage, not here. Low confidence or a missing mandatory field raises an exception: the stage does not complete until a person resolves it.',
+                            pending_title: 'Document extraction (provider shown)',
                             pending_description: 'Waiting for extraction, or for a person to review a low-confidence / missing-field exception.',
-                            record_fields: FieldList<'x_695068_bcfa_ap_invoice'>(['vendor', 'invoice_number', 'invoice_date', 'purchase_order', 'company_code', 'currency', 'net_amount', 'tax_amount', 'gross_amount', 'extraction_confidence', 'journey_stage', 'journey_status', 'journey_blocked_reason', 'journey_next_action', 'journey_owner', 'journey_open_exceptions', 'journey_banner', 'journey_stage_entered']),
+                            record_fields: FieldList<'x_695068_bcfa_ap_invoice'>(['extraction_provider', 'extraction_confidence', 'document_country', 'document_language', 'vendor', 'invoice_number', 'invoice_date', 'purchase_order', 'company_code', 'currency', 'net_amount', 'tax_type', 'tax_rate_pct', 'cgst_amount', 'sgst_amount', 'igst_amount', 'vat_amount', 'wht_amount', 'wht_rate_pct', 'tax_amount', 'gross_amount', 'journey_stage', 'journey_status', 'journey_blocked_reason', 'journey_next_action', 'journey_owner', 'journey_open_exceptions', 'journey_banner', 'journey_stage_entered']),
                         },
                     )
                     const extraction_records = wfa.playbook.activity(
                         ActivityDefinitions.Core.RecordList,
                         {
                             $id: Now.ID['bcfa_pb_ap_extraction_extraction_records'],
-                            label: 'Extraction result (SIMULATED)',
+                            label: 'Extraction result',
                             order: 2,
                             startRule: wfa.playbook.run.Immediately(),
                             restartRule: 'RUN_ALWAYS',
                         },
                         { wait: 'no' },
                         {
-                            tagline: 'SIMULATED DOCUMENT EXTRACTION — POC',
-                            list_title: 'SIMULATED DOCUMENT EXTRACTION — POC: extraction result and review',
+                            tagline: 'EXTRACTION (provider shown)',
+                            list_title: 'Extraction result and review (source = provider)',
                             table: 'x_695068_bcfa_ap_extraction',
                             list_query: `ap_invoice=${wfa.playbook.dataPill(params.parentRecord)}^ORDERBYDESCsys_created_on`,
                             columns: 'source,confidence,requires_review,reviewed_by,reviewed_at,sys_created_on',
@@ -176,7 +176,7 @@ export const apInvoicePlaybook = PlaybookDefinition(
                         },
                         { wait: 'no' },
                         {
-                            tagline: 'SIMULATED DOCUMENT EXTRACTION — POC',
+                            tagline: 'EXTRACTION (provider shown)',
                             list_title: 'Invoice lines as extracted',
                             table: 'x_695068_bcfa_ap_invoice_line',
                             list_query: `ap_invoice=${wfa.playbook.dataPill(params.parentRecord)}^ORDERBYline_number`,
@@ -216,10 +216,10 @@ export const apInvoicePlaybook = PlaybookDefinition(
                         {
                             tagline: 'SYSTEM DETERMINATION',
                             title: 'Validation & enrichment',
-                            description: 'Vendor master, company, PO reference, currency, duplicate and tax controls evaluated by the system. A failed control raises an exception and the stage stays open.',
+                            description: 'Vendor master, company, PO reference, currency, duplicate and tax controls evaluated by the system. TAX VALIDATION: the expected regime, rate and withholding come from configuration (decision table BCFA AP Tax Expectation, rule source shown; POC reference data, not SAP), never from the document; the result is PASS / WITHIN TOLERANCE / WARNING / FAIL / MANUAL REVIEW with the checks in the detail. A failed control raises an exception and the stage stays open.',
                             pending_title: 'Validation & enrichment',
                             pending_description: 'Waiting for validation, or for a person to resolve a failed control (duplicate, vendor, PO, tax).',
-                            record_fields: FieldList<'x_695068_bcfa_ap_invoice'>(['vendor', 'company_code', 'purchase_order', 'currency', 'gross_amount', 'tax_amount', 'duplicate_key', 'journey_stage', 'journey_status', 'journey_blocked_reason', 'journey_next_action', 'journey_owner', 'journey_open_exceptions', 'journey_banner', 'journey_stage_entered']),
+                            record_fields: FieldList<'x_695068_bcfa_ap_invoice'>(['vendor', 'company_code', 'purchase_order', 'currency', 'gross_amount', 'duplicate_key', 'tax_regime', 'tax_amount', 'expected_tax_amount', 'tax_variance_amount', 'tax_validation_result', 'tax_validation_detail', 'tax_rule_source', 'wht_applicable', 'wht_code', 'wht_expected_amount', 'wht_result', 'journey_stage', 'journey_status', 'journey_blocked_reason', 'journey_next_action', 'journey_owner', 'journey_open_exceptions', 'journey_banner', 'journey_stage_entered']),
                         },
                     )
                     const failed_controls = wfa.playbook.activity(
@@ -299,12 +299,32 @@ export const apInvoicePlaybook = PlaybookDefinition(
                             max_columns: '8',
                         },
                     )
+                    const tolerances = wfa.playbook.activity(
+                        ActivityDefinitions.Core.RecordList,
+                        {
+                            $id: Now.ID['bcfa_pb_ap_matching_tolerances'],
+                            label: 'Tolerances applied',
+                            order: 3,
+                            startRule: wfa.playbook.run.Immediately(),
+                            restartRule: 'RUN_ALWAYS',
+                        },
+                        { wait: 'no' },
+                        {
+                            tagline: 'SYSTEM DETERMINATION',
+                            list_title: 'TOLERANCE RULE APPLIED: rule source, configured tolerances, expected vs actual and result per check (AI never overrides a tolerance)',
+                            table: 'x_695068_bcfa_ap_match',
+                            list_query: `ap_invoice=${wfa.playbook.dataPill(params.parentRecord)}^ORDERBYDESCsys_created_on`,
+                            columns: 'tolerance_source,quantity_tolerance_pct,price_tolerance_pct,tax_tolerance_abs,tax_tolerance_pct,total_tolerance_abs,expected_tax,tax_result,tolerance_detail',
+                            row_count: '10',
+                            max_columns: '9',
+                        },
+                    )
                     const lines = wfa.playbook.activity(
                         ActivityDefinitions.Core.RecordList,
                         {
                             $id: Now.ID['bcfa_pb_ap_matching_lines'],
                             label: 'Invoice lines',
-                            order: 3,
+                            order: 4,
                             startRule: wfa.playbook.run.Immediately(),
                             restartRule: 'RUN_ALWAYS',
                         },
@@ -319,7 +339,7 @@ export const apInvoicePlaybook = PlaybookDefinition(
                             max_columns: '6',
                         },
                     )
-                    return { gate: gate, match_results: match_results, lines: lines }
+                    return { gate: gate, match_results: match_results, tolerances: tolerances, lines: lines }
                 },
             })
             const exception = wfa.playbook.lane({
