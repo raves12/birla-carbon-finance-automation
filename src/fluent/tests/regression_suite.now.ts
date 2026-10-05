@@ -47,6 +47,10 @@ export const bcfaRegressionSuite = TestSuite({
         'e37ab660219e4f0a8e9312e3a35e82d4', // PB-UI-005
         'c7572877490e461a8962956f9a17a722', // PB-UI-006
         '3f26577c57064596bf3efeb9afcd1e70', // PB-UI-007
+        '0f9684be734741daa3b97ec040e91399', // CP-TAX (AP-TAX-001..006)
+        '158431353b0a457195253cd20ac8bac1', // CP-TOL (AP-TOL-001..006)
+        'b389e812f61c4bb09ed7c730aa20b6ee', // CP-DED (AR-DED-001..005)
+        '3943fb95ed7341bc9d6a7554304c5035', // CP-EXT (extraction provider)
     ],
 })
 

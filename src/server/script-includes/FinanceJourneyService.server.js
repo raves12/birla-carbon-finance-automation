@@ -46,6 +46,8 @@ FinanceJourneyService.AR_REASON_STAGE = {
     customer_ambiguous: 3, unmatched: 5, ambiguous_match: 5, currency_mismatch: 5, duplicate: 5, short_pay: 6, over_pay: 6
 };
 FinanceJourneyService.SIMULATED_EXTRACTION = 'SIMULATED DOCUMENT EXTRACTION — POC';
+// Phase 40: a document read by the native provider says so instead.
+FinanceJourneyService.NATIVE_EXTRACTION = 'NATIVE EXTRACTION — ServiceNow Document Intelligence (Now LLM)';
 FinanceJourneyService.MOCK_SAP = 'MOCK SAP';
 
 FinanceJourneyService.prototype = {
@@ -164,6 +166,7 @@ FinanceJourneyService.prototype = {
         ex.setLimit(1);
         ex.query();
         if (ex.next() && String(ex.getValue('source')).indexOf('simulated') === 0) parts.push(FinanceJourneyService.SIMULATED_EXTRACTION);
+        else if (ex.isValidRecord() && ex.getValue('source') === 'servicenow_document_intelligence') parts.push(FinanceJourneyService.NATIVE_EXTRACTION);
         else if (!ex.isValidRecord()) parts.push(FinanceJourneyService.SIMULATED_EXTRACTION);
         parts.push(FinanceJourneyService.MOCK_SAP);
         return parts.join(' · ');
@@ -177,7 +180,8 @@ FinanceJourneyService.prototype = {
         var open = this._openExceptions('x_695068_bcfa_ar_exception', 'payment', id);
         var hasRemittance = this._exists('x_695068_bcfa_remittance', 'payment=' + id);
         var mode = pay.getValue('sap_processing_mode') || new FinancePolicy().arSapProcessingMode();
-        var j = { openExceptions: open.length, banner: FinanceJourneyService.SIMULATED_EXTRACTION + ' · ' + FinanceJourneyService.MOCK_SAP + ' · SAP mode ' + mode.toUpperCase() };
+        var reading = this._exists('x_695068_bcfa_remittance', 'payment=' + id + '^extraction_provider=native') ? FinanceJourneyService.NATIVE_EXTRACTION : FinanceJourneyService.SIMULATED_EXTRACTION;
+        var j = { openExceptions: open.length, banner: reading + ' · ' + FinanceJourneyService.MOCK_SAP + ' · SAP mode ' + mode.toUpperCase() };
         var order = FinanceJourneyService.AR_STATE_ORDER[state];
         if (state === 'RECEIVED' || state === 'NORMALIZED') order = hasRemittance ? 2 : 1;
 

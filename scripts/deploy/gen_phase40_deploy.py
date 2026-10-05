@@ -52,6 +52,29 @@ STEPS = {
 }
 
 
+# ATF tests of a step: the test records, their steps and the suite links
+# (BCFA Regression) of the given test sys_ids.
+def atf_files(test_ids):
+    upd = os.path.join(REPO, 'dist', 'app', 'update')
+    out = []
+    for f in os.listdir(upd):
+        if not f.startswith('sys_atf_'):
+            continue
+        x = io.open(os.path.join(upd, f), encoding='utf8').read()
+        if any(t in x for t in test_ids):
+            out.append(f[:-4])
+    return out
+
+
+CP_TESTS = ['0f9684be734741daa3b97ec040e91399', '158431353b0a457195253cd20ac8bac1', 'b389e812f61c4bb09ed7c730aa20b6ee', '3943fb95ed7341bc9d6a7554304c5035']
+STEPS['tests'] = {
+    'base': 'a2ed8cf',
+    'new_si': [],
+    'mod_si': ['FinanceJourneyService'],
+    'atf': CP_TESTS,
+}
+
+
 def h(t):
     a = 7
     for ch in t:
@@ -69,8 +92,14 @@ def main(step):
         guard.append({'api': 'x_695068_bcfa.' + n, 'head': h(head), 'work': h(work)})
     tmp = os.path.join(SCR, 'p40_loader_raw.js')
     args = ['node', 'scripts/deploy/gen_record_loader.mjs', tmp, '--si', ','.join(cfg['new_si'] + cfg['mod_si'])]
-    if cfg.get('files'):
-        args += ['--files', cfg['files']]
+    files = cfg.get('files')
+    if cfg.get('atf'):
+        names = atf_files(cfg['atf'])
+        print('atf files', len(names))
+        atf_re = '^(' + '|'.join(names) + ')\.xml$'
+        files = atf_re if not files else '(' + files + ')|(' + atf_re + ')'
+    if files:
+        args += ['--files', files]
     if cfg.get('choices'):
         args += ['--choices', cfg['choices']]
     for c in cfg.get('columns', []):
