@@ -124,8 +124,10 @@ Open items:
      Workspace Audience", then in source (workspace.now.ts,
      list_menu.now.ts). Deferred by the instance owner for the POC
      (2026-10-05): check that each demo user holds a role on the ACL.
-  7. E2E test data: E2E-* customers, open items and payments remain until
-     the next demo reset.
+  7. E2E test data: E2E-* customers, open items, invoices and payments
+     remain on the instance. The demo reset was skipped by the instance
+     owner on 2026-10-05. Run it (DEMO_DATA.md) before the client demo if
+     a clean data set is wanted; it also reseeds the Playbook scenarios.
 
 Non-Blocking Defects:
   - The Playbook page shows the stage list and the selected stage's

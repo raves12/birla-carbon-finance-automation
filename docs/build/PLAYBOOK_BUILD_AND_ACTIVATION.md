@@ -112,7 +112,7 @@ The builder opens in **Diagram view**; **Board view** is next to it. **Test**, *
 ### 1.6 Dependencies
 
 - Journey fields and FinanceJourneyService (section 2).
-- The platform Playbook Experience.
+- The platform Playbook component (Playbook Experience Components), shown in the BCFA Workspace Playbook page.
 
 ### 1.7 Security
 

@@ -10,7 +10,7 @@ These walkthroughs add the Playbook to the POC demo (`POC_DEMO_SCRIPT.md`, which
 
 **Say at the start.** Document reading is **SIMULATED DOCUMENT EXTRACTION — POC**, and SAP is **MOCK SAP**. Both labels are visible on every screen used below.
 
-**Playbook URL.** Open Playbook (form, Related Links) or `/now/bcfa/playbook/<table>/<sys_id>`.
+**Playbook URL.** Open Playbook (form, Related Links) opens the BCFA Workspace Playbook page, `/x/695068/bcfa/playbook/<table>/<sys_id>`. If a workspace tab shows "Not found" from an earlier visit, close it first.
 
 Column legend: **Persona**; **Navigation**; **Record**; **Action**; **Expected UI**; **State** (expected); **Automation** (background); **Records** (database records created); **Evidence** (logs and audit).
 
@@ -37,7 +37,7 @@ Invoice → quantity variance → exception → Playbook blocked → AI explanat
 | 1 | Finance approver | AP invoice INV-AP-004 → **Open Playbook** | INV-AP-004 | read | stages 1–3 complete; stage 4 open with **Blocked Because**: "WHAT HAPPENED: AEX… Quantity tolerance (high) at 3-Way Match / WHY: 15 invoiced vs 10 received …"; **Next**: Request Correction, Hold or Reject; **Who**: AP Processor | EXCEPTION | — | — | journey fields on the invoice |
 | 2 | Finance approver | Playbook stage 5 | Exceptions list | open the exception | columns SYSTEM DETERMINATION (rule result, variance), AI RECOMMENDATION, HUMAN DECISION (empty) | EXCEPTION | — | — | — |
 | 3 | Finance approver | exception form | | **Explain with Now Assist** | AI explanation and recommendation (advisory) | unchanged (AI never decides) | Now Assist skill via the BCFA guard | `ai_interaction` | AI Interaction Log; audit AI note |
-| 4 | Finance approver | exception form | | **Approve Override** with a reason | HUMAN DECISION filled (decision, decided by) | RESOLUTION → MATCHED → PENDING_APPROVAL → APPROVED | AP Exception Flow (re-match), approval (maker/checker) | `ap_approval` | audit override, decision, approval |
+| 4 | AP processor, then finance approver | exception form | | the processor saves the **Decision Reason**; the approver clicks **Approve Override** (the approver cannot type the reason: D6) | HUMAN DECISION filled (decision, decided by) | RESOLUTION → MATCHED → PENDING_APPROVAL → APPROVED | AP Exception Flow (re-match), approval (maker/checker) | `ap_approval` | audit override, decision, approval |
 | 5 | Finance approver | Playbook | | refresh | stage 5 completes (no open exceptions), 6 completes, 7 posting MOCK SAP, 8 closure | POSTED → CLOSED | AP Integration Flow | `integration_txn` | audit integration result, closure |
 
 **Blocked state without acting.** INV-PLAY-02 (price variance) stays blocked at stage 4.

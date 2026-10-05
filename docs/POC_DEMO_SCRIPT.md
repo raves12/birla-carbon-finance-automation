@@ -39,7 +39,7 @@ Switch persona with **Impersonate User** from the admin account. Never type or s
    - `test/fixtures/AP_INV_004_DUPLICATE.pdf`
    - `test/fixtures/AR_REMIT_101_EXACT.pdf`, `AR_REMIT_102_MULTI_INVOICE.pdf`, `AR_REMIT_103_BANK_CHARGE.pdf`
 5. **Rehearse Act 5.** Upload `AR_REMIT_101_EXACT.pdf` once, then reset again. The late-remittance path was fixed and verified on test data in Phase 33, but not yet with these three fixtures.
-6. **Open these browser tabs** in the workspace (`/now/bcfa`):
+6. **Open these browser tabs** in the workspace (`/x/695068/bcfa`):
    - the landing page
    - AP › Approvals
    - AP › Exceptions
@@ -95,7 +95,9 @@ The two POC journeys are AP invoice to posting, and cash receipt to clearing. Bo
    - The BCFA guard screens the input for prompt injection before the call.
    - It strips any sentence that claims an action happened, for example "the invoice has been approved".
 4. Click **Approve Override** with **no reason**. It is refused, because a reason of at least 10 characters is mandatory.
-5. Click **Approve Override** again with a reason, for example *"Receipt of 5 additional EA confirmed by warehouse, GRN to follow"*.
+5. **Known limitation (D6): the approver cannot type the Decision Reason.** The exception fields are writable only by the AP processor and admin. So the processor records the justification and the approver decides (maker/checker):
+   - Impersonate `bcfa.ap.processor` (or stay as admin). Enter the **Decision Reason**, for example *"Receipt of 5 additional EA confirmed by warehouse, GRN to follow"*, and click **Update**.
+   - Impersonate `bcfa.finance.approver` again and click **Approve Override**. Rehearse this; MT-AP-17 passed this way on 2026-10-05.
    - You are **overriding the AI's recommendation**, and the reason is recorded.
    - The exception is resolved.
    - An approval is requested in the owner's name and approved by you (maker/checker).
