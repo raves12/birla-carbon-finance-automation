@@ -105,7 +105,7 @@
         check('quantity exception', r.stoppedAt === 'MATCH_EXCEPTION' && r.detail.reasonCode === 'quantity_tolerance', r.stoppedAt + '/' + (r.detail ? r.detail.reasonCode : ''));
         var ex = openEx('x_695068_bcfa_ap_exception', 'ap_invoice', r.apInvoiceSysId);
         check('evidence names the tolerance rule', ex && ex.getValue('evidence').indexOf('BCFA AP Tolerance') >= 0, 'evidence');
-        check('variance 10%', ex && Math.abs(parseFloat(ex.getValue('variance_pct')) - 0.1) < 0.0001, ex ? ex.getValue('variance_pct') : 'none');
+        check('variance 10% (stored as percent)', ex && Math.abs(parseFloat(ex.getValue('variance_pct')) - 10) < 0.0001, ex ? ex.getValue('variance_pct') : 'none');
     });
 
     // ---- AR -------------------------------------------------------------------
