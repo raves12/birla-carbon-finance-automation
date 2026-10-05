@@ -28,8 +28,8 @@ AP E2E:               PASS    (fresh run 6ABE1: AP-A..F; AP-B override approval 
                                step for an authorised approver, the SoD refusal itself passes)
 AR E2E:               PASS    (fresh run 6ABE1: AR-A..I + AR-C2)
 Document Extraction:  SIMULATED (native Document Intelligence: LICENSE / CONFIG REQUIRED)
-Native AI:            PARTIAL (Now Assist skills and agents live, guarded and tested;
-                               Skill Kit prompt V3 publish outstanding)
+Native AI:            PASS    (Now Assist skills and agents live, guarded and tested;
+                               AR Recommended Next Action prompt v3 published)
 Approvals:            PASS
 SoD:                  PASS    (ATF; E2E AP-B: override refused for a non-approver)
 SAP Mock:             PASS
@@ -87,7 +87,8 @@ Open items:
      tracked in update sets".
   4. Stale inactive draft flow "AR Exception - Use case: BCFA Cash
      Application Review - 6ad14356…" (housekeeping).
-  5. Skill Kit prompt V3 publish.
+  5. (closed) Skill Kit prompt V3: "AR Recommended Next Action v3" is
+     Published and the default prompt of the skill (checked 2026-10-05).
   6. Route ACL bcfa.* omits ap_approver, ar_approver and
      integration_operator (admin decision).
   7. E2E test data: E2E-* customers, open items and payments remain until
