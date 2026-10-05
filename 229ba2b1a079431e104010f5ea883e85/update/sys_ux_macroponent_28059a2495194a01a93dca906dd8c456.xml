@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ux_macroponent">
+    <sys_ux_macroponent action="INSERT_OR_UPDATE">
+        <associated_types/>
+        <bundles/>
+        <category>page</category>
+        <component_dependencies/>
+        <composition>[{"definition":{"id":"ed99051389038d7a6d57069eecc5a122","type":"MACROPONENT"},"elementId":"bcfa_playbook","elementLabel":"BCFA Playbook","eventMappings":[],"isHero":false,"isHidden":{"type":"JSON_LITERAL"},"isNonDestructive":false,"propertyValues":{"activityView":{"type":"JSON_LITERAL","value":"stacked"},"compactMode":{"type":"JSON_LITERAL"},"daClientActionContract":{"type":"JSON_LITERAL"},"enableFullWidthCards":{"type":"JSON_LITERAL","value":true},"parentSysId":{"type":"CONTEXT_BINDING","binding":{"address":["sysId"],"category":"props"}},"parentTable":{"type":"CONTEXT_BINDING","binding":{"address":["table"],"category":"props"}},"recordGeneratorQuery":{"type":"JSON_LITERAL"},"selectedActivityContextId":{"type":"JSON_LITERAL"},"selectedLaneContextId":{"type":"JSON_LITERAL"},"selectedPlaybookContextId":{"type":"JSON_LITERAL","value":""},"userId":{"type":"JSON_LITERAL"},"userSession":{"binding":{"address":["user"],"category":"session"},"type":"CONTEXT_BINDING"}}}]</composition>
+        <da_relay_models/>
+        <data>[]</data>
+        <description/>
+        <disable_auto_reflow>false</disable_auto_reflow>
+        <dispatched_events/>
+        <ext_controller_dep/>
+        <extends display_value="Page Template">19be392623033300f4b4c50947bf65ba</extends>
+        <extension_point/>
+        <form_factors/>
+        <handled_events/>
+        <interactions/>
+        <interfaces/>
+        <internal_event_mappings/>
+        <layout>{"default":{"items":[{"element_id":"bcfa_playbook","styles":{}}],"styles":{"flex-direction":"column","width":""},"templateId":"5832fd4d53c31010e6bcddeeff7b12db","type":"flex"},"version":"3.0.0"}</layout>
+        <macroponent_dependencies/>
+        <name>BCFA Playbook</name>
+        <output_prop_mapping/>
+        <props>[{"description":"","disabled":false,"fieldType":"string","label":"Table","mandatory":false,"name":"table","readOnly":false,"selectable":false,"valueType":"string"},{"description":"","disabled":false,"fieldType":"string","label":"sysId","mandatory":false,"name":"sysId","readOnly":false,"selectable":false,"valueType":"string"}]</props>
+        <required_translations>[ ]</required_translations>
+        <root_component/>
+        <root_component_config>{}</root_component_config>
+        <root_component_definition/>
+        <schema_version>1.0.0</schema_version>
+        <state_persistence_config/>
+        <state_properties/>
+        <style_config/>
+        <sys_class_name>sys_ux_macroponent</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-01 17:29:55</sys_created_on>
+        <sys_id>28059a2495194a01a93dca906dd8c456</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>BCFA Playbook</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_ux_macroponent_28059a2495194a01a93dca906dd8c456</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-01 17:29:55</sys_updated_on>
+    </sys_ux_macroponent>
+    <sys_translated_text action="delete_multiple" query="documentkey=28059a2495194a01a93dca906dd8c456"/>
+</record_update>

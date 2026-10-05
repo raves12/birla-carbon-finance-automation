@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_atf_step">
+    <sys_atf_step action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <callable_outputs/>
+        <copied_from/>
+        <description/>
+        <display_name>Run Server Side Script</display_name>
+        <inputs/>
+        <mugshots_cache_json/>
+        <notes/>
+        <order>1</order>
+        <step_config display_value="Run Server Side Script">41de4a935332120028bc29cac2dc349a</step_config>
+        <sys_class_name>sys_atf_step</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-01 12:13:27</sys_created_on>
+        <sys_id>05fc368d605c4cbda9c583498be637ac</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Run Server Side Script</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_atf_step_05fc368d605c4cbda9c583498be637ac</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-01 12:13:27</sys_updated_on>
+        <table/>
+        <test display_value="PB-AR-009 SAP_DRAFT journey — waiting for SAP, nothing re-sent">8fd1020bc43f4cdb95801daee0016b5b</test>
+        <timeout/>
+        <warning_message/>
+    </sys_atf_step>
+    <sys_variable_value action="delete_multiple" query="document_key=05fc368d605c4cbda9c583498be637ac"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>05fc368d605c4cbda9c583498be637ac</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-01 12:13:27</sys_created_on>
+        <sys_id>55ad6eeb7b68498f85135d77bcb35d3a</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-01 12:13:27</sys_updated_on>
+        <value>3.1</value>
+        <variable display_value="Jasmine version">42f2564b73031300440211d8faf6a777</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>05fc368d605c4cbda9c583498be637ac</document_key>
+        <order>200</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-01 12:13:27</sys_created_on>
+        <sys_id>74c75526ef0145c58e0b092d6282859e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-01 12:13:27</sys_updated_on>
+        <value>
+            (function(outputs, steps, params, stepResult, assertEqual) {
+                function inv(state) {
+                    var g = new GlideRecord('x_695068_bcfa_ap_invoice');
+                    g.initialize();
+                    g.setValue('invoice_number', 'PB-TEST-' + gs.generateGUID().substring(0, 8));
+                    g.setValue('currency', 'INR');
+                    g.setValue('gross_amount', 100);
+                    g.setValue('state', state);
+                    g.setWorkflow(false);
+                    return g.insert();
+                }
+                function pay(state) {
+                    var g = new GlideRecord('x_695068_bcfa_payment');
+                    g.initialize();
+                    g.setValue('bank_reference', 'PB-TEST-' + gs.generateGUID().substring(0, 8));
+                    g.setValue('currency', 'INR');
+                    g.setValue('amount', 100);
+                    g.setValue('state', state);
+                    g.setWorkflow(false);
+                    return g.insert();
+                }
+                function exc(table, field, parentId, reason, rule, ai) {
+                    var g = new GlideRecord(table);
+                    g.initialize();
+                    g.setValue(field, parentId);
+                    g.setValue('reason_code', reason);
+                    g.setValue('status', 'open');
+                    g.setValue('severity', 'high');
+                    g.setValue('rule_result', rule || '');
+                    g.setValue('ai_recommendation', ai || '');
+                    g.setWorkflow(false);
+                    return g.insert();
+                }
+                function journey(table, id) {
+                    var g = new GlideRecord(table);
+                    g.get(id);
+                    var svc = new FinanceJourneyService();
+                    return table === 'x_695068_bcfa_ap_invoice' ? svc.invoiceJourney(g) : svc.paymentJourney(g);
+                }
+                var id = pay('SAP_DRAFT');
+                var g = new GlideRecord('x_695068_bcfa_payment'); g.get(id); g.setValue('sap_processing_mode', 'draft'); g.setValue('sap_reference', 'PARK-PB-TEST'); g.setWorkflow(false); g.update();
+                var j = journey('x_695068_bcfa_payment', id);
+                assertEqual({ name: 'stage 8, waiting', shouldbe: '8|waiting', value: j.order + '|' + j.status });
+                assertEqual({ name: 'says nothing is cleared yet', shouldbe: true, value: j.blocked.indexOf('Nothing is cleared yet') &gt; 0 });
+                assertEqual({ name: 'next action is a status query only', shouldbe: true, value: j.next.indexOf('nothing is re-sent') &gt; 0 });
+                assertEqual({ name: 'banner shows SAP mode DRAFT and MOCK SAP', shouldbe: true, value: j.banner.indexOf('SAP mode DRAFT') &gt; 0 &amp;&amp; j.banner.indexOf('MOCK SAP') &gt;= 0 });
+
+            })(outputs, steps, params, stepResult, assertEqual);
+        </value>
+        <variable display_value="Test script">989d9e235324220002c6435723dc3484</variable>
+    </sys_variable_value>
+</record_update>

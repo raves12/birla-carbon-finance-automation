@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_choice action="INSERT_OR_UPDATE" field="journey_stage" table="x_695068_bcfa_payment" version="3">
+        <sys_choice_set action="INSERT_OR_UPDATE">
+            <element>journey_stage</element>
+            <name>x_695068_bcfa_payment</name>
+            <sys_class_name>sys_choice_set</sys_class_name>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-01 12:13:39</sys_created_on>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>journey_stage</sys_name>
+            <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+            <sys_update_name>sys_choice_x_695068_bcfa_payment_journey_stage</sys_update_name>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-01 12:13:39</sys_updated_on>
+        </sys_choice_set>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>journey_stage</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>1. Payment &amp; Remittance Intake</label>
+            <language>en</language>
+            <name>x_695068_bcfa_payment</name>
+            <sequence>1</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-01 12:13:39</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-01 12:13:39</sys_updated_on>
+            <value>intake</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>journey_stage</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>2. Extraction &amp; Correlation</label>
+            <language>en</language>
+            <name>x_695068_bcfa_payment</name>
+            <sequence>2</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-01 12:13:39</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-01 12:13:39</sys_updated_on>
+            <value>correlation</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>journey_stage</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>3. Customer Resolution</label>
+            <language>en</language>
+            <name>x_695068_bcfa_payment</name>
+            <sequence>3</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-01 12:13:39</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-01 12:13:39</sys_updated_on>
+            <value>customer</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>journey_stage</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>4. Open Item Retrieval</label>
+            <language>en</language>
+            <name>x_695068_bcfa_payment</name>
+            <sequence>4</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-01 12:13:39</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-01 12:13:39</sys_updated_on>
+            <value>open_items</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>journey_stage</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>5. Matching &amp; Allocation</label>
+            <language>en</language>
+            <name>x_695068_bcfa_payment</name>
+            <sequence>5</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-01 12:13:39</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-01 12:13:39</sys_updated_on>
+            <value>matching</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>journey_stage</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>6. Exception / Deduction Resolution</label>
+            <language>en</language>
+            <name>x_695068_bcfa_payment</name>
+            <sequence>6</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-01 12:13:39</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-01 12:13:39</sys_updated_on>
+            <value>exception</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>journey_stage</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>7. Approval</label>
+            <language>en</language>
+            <name>x_695068_bcfa_payment</name>
+            <sequence>7</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-01 12:13:39</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-01 12:13:39</sys_updated_on>
+            <value>approval</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>journey_stage</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>8. SAP Draft / Direct Processing</label>
+            <language>en</language>
+            <name>x_695068_bcfa_payment</name>
+            <sequence>8</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-01 12:13:39</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-01 12:13:39</sys_updated_on>
+            <value>sap_processing</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>journey_stage</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>9. Closure &amp; Audit</label>
+            <language>en</language>
+            <name>x_695068_bcfa_payment</name>
+            <sequence>9</sequence>
+            <synonyms/>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-01 12:13:39</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-01 12:13:39</sys_updated_on>
+            <value>closure</value>
+        </sys_choice>
+    </sys_choice>
+</record_update>

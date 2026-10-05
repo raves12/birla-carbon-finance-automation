@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_atf_test_suite_test">
+    <sys_atf_test_suite_test action="INSERT_OR_UPDATE">
+        <abort_on_failure>false</abort_on_failure>
+        <order>16</order>
+        <sys_class_name>sys_atf_test_suite_test</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-01 12:13:30</sys_created_on>
+        <sys_id>0bda7f0db359464f90b17c9812b40875</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>a75a8ad82a6e43c8a70e5ded37db33f3</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_atf_test_suite_test_0bda7f0db359464f90b17c9812b40875</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-01 12:13:30</sys_updated_on>
+        <test display_value="PB-AP-003 AP Playbook — AI recommendation never advances the journey">a75a8ad82a6e43c8a70e5ded37db33f3</test>
+        <test_suite display_value="BCFA Regression">fc5aebad352146fd876beed00f871088</test_suite>
+    </sys_atf_test_suite_test>
+</record_update>

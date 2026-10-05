@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_di_key">
+    <sys_di_key action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <additional_details/>
+        <description>Extract the invoice information from this document.
+
+Return ONLY valid JSON.
+Do not include markdown, code fences, explanations, introductory text,
+or any content outside the JSON object.
+
+Use exactly this structure:
+
+{
+  "document_type": "invoice",
+  "invoice_number": null,
+  "invoice_date": null,
+  "vendor": {
+    "name": null,
+    "gstin": null,
+    "address": null,
+    "email": null
+  },
+  "purchase_order": null,
+  "company_code": null,
+  "currency": null,
+  "net_amount": null,
+  "tax_amount": null,
+  "gross_amount": null,
+  "payment_terms": null,
+  "bill_to": null,
+  "line_items": [
+    {
+      "description": null,
+      "quantity": null,
+      "unit": null,
+      "unit_price": null,
+      "net_amount": null
+    }
+  ]
+}
+
+Rules:
+- Return null when a value is not available.
+- Amounts and quantities must be numbers, not formatted strings.
+- Do not include currency symbols or thousands separators in numeric values.
+- Extract all available invoice line items.
+- Do not invent information.
+- Return valid JSON only.</description>
+        <display_name>Extract complete invoice information as JSON</display_name>
+        <group_index>0</group_index>
+        <key_config/>
+        <key_group/>
+        <mandatory>true</mandatory>
+        <metadata>{"hybridFieldType":"Field","key_prediction_type":"extraction"}</metadata>
+        <name>Company Code</name>
+        <order>0</order>
+        <prediction_method/>
+        <stp_threshold/>
+        <synonym/>
+        <sys_class_name>sys_di_key</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-30 12:58:32</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>ec61eb833ba3cb104035a50864e45a1f</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>Extract complete invoice information as JSON</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_di_key_ec61eb833ba3cb104035a50864e45a1f</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-30 13:15:44</sys_updated_on>
+        <target_field>extraction_json</target_field>
+        <target_table>x_695068_bcfa_finance_intake</target_table>
+        <task_definition display_value="RK - Invoice extraction">e90b13c73b63cb104035a50864e45adb</task_definition>
+        <total_used_positive_samples>0</total_used_positive_samples>
+        <type>Text</type>
+    </sys_di_key>
+</record_update>

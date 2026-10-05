@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="di_skill_config">
+    <di_skill_config action="INSERT_OR_UPDATE">
+        <capability display_value="Document QnA">899ed0f20763021017741f00ead3006e</capability>
+        <config>{"prompt":{},"provider":{},"pipeline":{"enable_native_translation":"false","enable_multimodal_input":false,"enable_citations":"false","response_type":"qna","include_key_info":"false","enable_relevance":"true","enable_multiple_requests":"true","enable_response_attribution":"false"}}</config>
+        <flow display_value="Document Q&amp;A">cf4882eca31e5210efd734f7651e6162</flow>
+        <key_group/>
+        <skill_config display_value="Extract information from documents">2a61d90d07c61210cf8c1f00ead300e5</skill_config>
+        <sys_class_name>di_skill_config</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-30 12:30:45</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>290b97c73b63cb104035a50864e45a59</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>di_skill_config_290b97c73b63cb104035a50864e45a59</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-30 12:30:45</sys_updated_on>
+        <task_definition display_value="RK - Invoice extraction">e90b13c73b63cb104035a50864e45adb</task_definition>
+        <type>question</type>
+    </di_skill_config>
+</record_update>

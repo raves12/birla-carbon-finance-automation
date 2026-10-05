@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_atf_test_suite_test">
+    <sys_atf_test_suite_test action="INSERT_OR_UPDATE">
+        <abort_on_failure>false</abort_on_failure>
+        <order>20</order>
+        <sys_class_name>sys_atf_test_suite_test</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-01 12:13:32</sys_created_on>
+        <sys_id>8fb6eadb1c784ae799da7e9a8d64cbcb</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>e37ab660219e4f0a8e9312e3a35e82d4</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_atf_test_suite_test_8fb6eadb1c784ae799da7e9a8d64cbcb</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-01 12:13:32</sys_updated_on>
+        <test display_value="PB-UI-005 Open Playbook and Check SAP Draft Status actions are correctly scoped">e37ab660219e4f0a8e9312e3a35e82d4</test>
+        <test_suite display_value="BCFA Playbook Regression">3979b8d46f5a40789cabbbeabfc5e71f</test_suite>
+    </sys_atf_test_suite_test>
+</record_update>

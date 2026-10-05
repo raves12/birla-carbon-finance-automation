@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_atf_step">
+    <sys_atf_step action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <callable_outputs/>
+        <copied_from/>
+        <description/>
+        <display_name>Run Server Side Script</display_name>
+        <inputs/>
+        <mugshots_cache_json/>
+        <notes/>
+        <order>1</order>
+        <step_config display_value="Run Server Side Script">41de4a935332120028bc29cac2dc349a</step_config>
+        <sys_class_name>sys_atf_step</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-01 12:13:27</sys_created_on>
+        <sys_id>3d8fdb0d703a4a2b9bb772be41932620</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Run Server Side Script</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_atf_step_3d8fdb0d703a4a2b9bb772be41932620</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-01 12:13:27</sys_updated_on>
+        <table/>
+        <test display_value="PB-UI-005 Open Playbook and Check SAP Draft Status actions are correctly scoped">e37ab660219e4f0a8e9312e3a35e82d4</test>
+        <timeout/>
+        <warning_message/>
+    </sys_atf_step>
+    <sys_variable_value action="delete_multiple" query="document_key=3d8fdb0d703a4a2b9bb772be41932620"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>3d8fdb0d703a4a2b9bb772be41932620</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-01 12:13:27</sys_created_on>
+        <sys_id>64bc7f38d4104f48adec7ca335761534</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-01 12:13:27</sys_updated_on>
+        <value>3.1</value>
+        <variable display_value="Jasmine version">42f2564b73031300440211d8faf6a777</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>3d8fdb0d703a4a2b9bb772be41932620</document_key>
+        <order>200</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-01 12:13:27</sys_created_on>
+        <sys_id>9d8b10152f0244f6b6ac0a0464bf4f4f</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-01 12:13:27</sys_updated_on>
+        <value>
+            (function(outputs, steps, params, stepResult, assertEqual) {
+                function inv(state) {
+                    var g = new GlideRecord('x_695068_bcfa_ap_invoice');
+                    g.initialize();
+                    g.setValue('invoice_number', 'PB-TEST-' + gs.generateGUID().substring(0, 8));
+                    g.setValue('currency', 'INR');
+                    g.setValue('gross_amount', 100);
+                    g.setValue('state', state);
+                    g.setWorkflow(false);
+                    return g.insert();
+                }
+                function pay(state) {
+                    var g = new GlideRecord('x_695068_bcfa_payment');
+                    g.initialize();
+                    g.setValue('bank_reference', 'PB-TEST-' + gs.generateGUID().substring(0, 8));
+                    g.setValue('currency', 'INR');
+                    g.setValue('amount', 100);
+                    g.setValue('state', state);
+                    g.setWorkflow(false);
+                    return g.insert();
+                }
+                function exc(table, field, parentId, reason, rule, ai) {
+                    var g = new GlideRecord(table);
+                    g.initialize();
+                    g.setValue(field, parentId);
+                    g.setValue('reason_code', reason);
+                    g.setValue('status', 'open');
+                    g.setValue('severity', 'high');
+                    g.setValue('rule_result', rule || '');
+                    g.setValue('ai_recommendation', ai || '');
+                    g.setWorkflow(false);
+                    return g.insert();
+                }
+                function journey(table, id) {
+                    var g = new GlideRecord(table);
+                    g.get(id);
+                    var svc = new FinanceJourneyService();
+                    return table === 'x_695068_bcfa_ap_invoice' ? svc.invoiceJourney(g) : svc.paymentJourney(g);
+                }
+                ['x_695068_bcfa_ap_invoice', 'x_695068_bcfa_payment'].forEach(function(t) {
+                    var a = new GlideRecord('sys_ui_action'); a.addQuery('table', t); a.addQuery('name', 'Open Playbook'); a.addQuery('active', true); a.query();
+                    assertEqual({ name: 'Open Playbook on ' + t, shouldbe: true, value: a.next() });
+                    assertEqual({ name: 'Open Playbook only navigates', shouldbe: true, value: a.getValue('script').indexOf('setRedirectURL') &gt;= 0 &amp;&amp; a.getValue('script').indexOf('update(') &lt; 0 });
+                });
+                var c = new GlideRecord('sys_ui_action'); c.addQuery('action_name', 'check_sap_draft_status_payment'); c.query();
+                assertEqual({ name: 'Check SAP Draft Status exists', shouldbe: true, value: c.next() });
+                assertEqual({ name: 'shown only for SAP_DRAFT', shouldbe: true, value: c.getValue('condition').indexOf('SAP_DRAFT') &gt;= 0 });
+                var roles = new GlideRecord('sys_ui_action_role'); roles.addQuery('sys_ui_action', c.getUniqueValue()); roles.addQuery('sys_user_role.name', 'x_695068_bcfa.ai_agent'); roles.query();
+                assertEqual({ name: 'the AI agent role cannot run it', shouldbe: false, value: roles.hasNext() });
+
+            })(outputs, steps, params, stepResult, assertEqual);
+        </value>
+        <variable display_value="Test script">989d9e235324220002c6435723dc3484</variable>
+    </sys_variable_value>
+</record_update>

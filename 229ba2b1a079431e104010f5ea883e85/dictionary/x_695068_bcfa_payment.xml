@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><database>
     <element audit="true" db_object_id="43051ff2835f43103d769be0deaad329" label="Payment" max_length="40" name="x_695068_bcfa_payment" type="collection">
         <element label="Correlation ID" max_length="64" name="correlation_id" type="string"/>
+        <element attributes="scale=2" label="Approved Deductions" max_length="20" name="deduction_amount" read_only="true" type="decimal"/>
         <element attributes="edge_encryption_enabled=true,scale=2" label="Amount" max_length="15" name="amount" type="decimal"/>
         <element attributes="edge_encryption_enabled=true" default="bank_statement" label="Source" max_length="40" name="source" type="choice">
             <choice>
@@ -8,16 +9,64 @@
                 <element inactive_on_update="false" label="Manual Entry" sequence="2" value="manual"/>
             </choice>
         </element>
+        <element label="SAP Reference" max_length="40" name="sap_reference" read_only="true" type="string"/>
+        <element label="Blocked Because" max_length="1000" name="journey_blocked_reason" read_only="true" type="string"/>
+        <element label="What Needs To Happen Next" max_length="500" name="journey_next_action" read_only="true" type="string"/>
         <element label="Value Date" max_length="40" name="value_date" type="glide_date"/>
         <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Customer" max_length="32" name="customer" reference="x_695068_bcfa_customer" type="reference"/>
+        <element label="Journey Updated" max_length="40" name="journey_updated" read_only="true" type="glide_date_time"/>
+        <element choice="1" label="SAP Processing Mode" max_length="40" name="sap_processing_mode" read_only="true" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Draft (staged in SAP for confirmation)" sequence="2" value="draft"/>
+                <element inactive_on_update="false" label="Direct (SAP clears immediately)" sequence="1" value="direct"/>
+            </choice>
+        </element>
+        <element label="POC Notice" max_length="200" name="journey_banner" read_only="true" type="string"/>
         <element label="Bank Account" max_length="40" name="bank_account" type="string"/>
+        <element attributes="scale=2" label="Allocated Amount" max_length="20" name="allocated_amount" read_only="true" type="decimal"/>
         <element hint="Managed by the Cash Application Lifecycle state model; only its transitions are allowed (Phase 26)." label="State" max_length="40" name="state" read_only="true" type="string"/>
         <element label="Idempotency Key" max_length="128" name="idempotency_key" type="string" unique="true"/>
+        <element label="Journey Stage Order" max_length="40" name="journey_stage_order" read_only="true" type="integer"/>
         <element label="Review Summary" max_length="8000" name="review_summary" read_only="true" type="string"/>
+        <element label="Open Exceptions" max_length="40" name="journey_open_exceptions" read_only="true" type="integer"/>
+        <element choice="1" label="Journey Status" max_length="40" name="journey_status" read_only="true" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Waiting for SAP" sequence="3" value="waiting"/>
+                <element inactive_on_update="false" label="Action required" sequence="2" value="action_required"/>
+                <element inactive_on_update="false" label="Rejected" sequence="6" value="rejected"/>
+                <element inactive_on_update="false" label="Complete" sequence="5" value="complete"/>
+                <element inactive_on_update="false" label="Blocked" sequence="4" value="blocked"/>
+                <element inactive_on_update="false" label="In progress (system)" sequence="1" value="in_progress"/>
+            </choice>
+        </element>
+        <element label="Stage Entered" max_length="40" name="journey_stage_entered" read_only="true" type="glide_date_time"/>
         <element label="Posting Date" max_length="40" name="posting_date" type="glide_date"/>
         <element display="true" label="Bank Reference" mandatory="true" max_length="60" name="bank_reference" type="string"/>
         <element label="Currency" max_length="3" name="currency" type="string"/>
+        <element attributes="scale=2" label="Residual" max_length="20" name="residual_amount" read_only="true" type="decimal"/>
+        <element choice="1" label="Journey Stage" max_length="40" name="journey_stage" read_only="true" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="8. SAP Draft / Direct Processing" sequence="8" value="sap_processing"/>
+                <element inactive_on_update="false" label="6. Exception / Deduction Resolution" sequence="6" value="exception"/>
+                <element inactive_on_update="false" label="4. Open Item Retrieval" sequence="4" value="open_items"/>
+                <element inactive_on_update="false" label="3. Customer Resolution" sequence="3" value="customer"/>
+                <element inactive_on_update="false" label="5. Matching &amp; Allocation" sequence="5" value="matching"/>
+                <element inactive_on_update="false" label="2. Extraction &amp; Correlation" sequence="2" value="correlation"/>
+                <element inactive_on_update="false" label="9. Closure &amp; Audit" sequence="9" value="closure"/>
+                <element inactive_on_update="false" label="7. Approval" sequence="7" value="approval"/>
+                <element inactive_on_update="false" label="1. Payment &amp; Remittance Intake" sequence="1" value="intake"/>
+            </choice>
+        </element>
         <element label="AI Match Explanation (advisory)" max_length="4000" name="ai_recommendation" read_only="true" type="string"/>
+        <element choice="1" label="SAP Status" max_length="40" name="sap_status" read_only="true" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Draft staged in SAP (awaiting SAP confirmation)" sequence="1" value="staged_draft"/>
+                <element inactive_on_update="false" label="Failed" sequence="3" value="failed"/>
+                <element inactive_on_update="false" label="Unknown outcome (reconciliation required)" sequence="4" value="unknown_outcome"/>
+                <element inactive_on_update="false" label="Cleared" sequence="2" value="cleared"/>
+            </choice>
+        </element>
+        <element label="Who Owns The Action" max_length="100" name="journey_owner" read_only="true" type="string"/>
         <index name="index">
             <element name="customer"/>
         </index>

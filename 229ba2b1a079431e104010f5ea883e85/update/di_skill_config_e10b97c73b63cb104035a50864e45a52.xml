@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="di_skill_config">
+    <di_skill_config action="INSERT_OR_UPDATE">
+        <capability display_value="Document Metadata Extraction">c1ed5cb20763021017741f00ead300d6</capability>
+        <config>{"prompt":{},"provider":{},"pipeline":{"document_extraction_inference_layout":"spatial","bounding_box_mapping_method":"default","include_key_info":"true","enable_multiple_requests":"false","enable_native_translation":"false","response_type":"document_extraction","enable_bounding_box_mapping":"true","enable_multimodal_input":false}}</config>
+        <flow display_value="Document Data Extraction for Fields">3afeadffa31a1210d6438d4eb31e6112</flow>
+        <key_group/>
+        <skill_config display_value="Extract information from documents">2a61d90d07c61210cf8c1f00ead300e5</skill_config>
+        <sys_class_name>di_skill_config</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-09-30 12:30:45</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>e10b97c73b63cb104035a50864e45a52</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>di_skill_config_e10b97c73b63cb104035a50864e45a52</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-09-30 12:30:45</sys_updated_on>
+        <task_definition display_value="RK - Invoice extraction">e90b13c73b63cb104035a50864e45adb</task_definition>
+        <type>extraction</type>
+    </di_skill_config>
+</record_update>

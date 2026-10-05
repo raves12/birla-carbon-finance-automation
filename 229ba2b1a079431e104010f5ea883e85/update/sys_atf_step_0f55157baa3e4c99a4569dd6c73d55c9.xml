@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_atf_step">
+    <sys_atf_step action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <callable_outputs/>
+        <copied_from/>
+        <description/>
+        <display_name>Run Server Side Script</display_name>
+        <inputs/>
+        <mugshots_cache_json/>
+        <notes/>
+        <order>1</order>
+        <step_config display_value="Run Server Side Script">41de4a935332120028bc29cac2dc349a</step_config>
+        <sys_class_name>sys_atf_step</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-01 12:13:27</sys_created_on>
+        <sys_id>0f55157baa3e4c99a4569dd6c73d55c9</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Run Server Side Script</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_atf_step_0f55157baa3e4c99a4569dd6c73d55c9</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-01 12:13:27</sys_updated_on>
+        <table/>
+        <test display_value="PB-AP-002 AP Playbook — blocked at 3-way match shows WHAT / WHY / NEXT / WHO">fe032d01d9e640bab97b0c78b6e58fad</test>
+        <timeout/>
+        <warning_message/>
+    </sys_atf_step>
+    <sys_variable_value action="delete_multiple" query="document_key=0f55157baa3e4c99a4569dd6c73d55c9"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>0f55157baa3e4c99a4569dd6c73d55c9</document_key>
+        <order>200</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-01 12:13:27</sys_created_on>
+        <sys_id>31162e5a345046f4b21623fb7380fcc4</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-01 12:13:27</sys_updated_on>
+        <value>
+            (function(outputs, steps, params, stepResult, assertEqual) {
+                function inv(state) {
+                    var g = new GlideRecord('x_695068_bcfa_ap_invoice');
+                    g.initialize();
+                    g.setValue('invoice_number', 'PB-TEST-' + gs.generateGUID().substring(0, 8));
+                    g.setValue('currency', 'INR');
+                    g.setValue('gross_amount', 100);
+                    g.setValue('state', state);
+                    g.setWorkflow(false);
+                    return g.insert();
+                }
+                function pay(state) {
+                    var g = new GlideRecord('x_695068_bcfa_payment');
+                    g.initialize();
+                    g.setValue('bank_reference', 'PB-TEST-' + gs.generateGUID().substring(0, 8));
+                    g.setValue('currency', 'INR');
+                    g.setValue('amount', 100);
+                    g.setValue('state', state);
+                    g.setWorkflow(false);
+                    return g.insert();
+                }
+                function exc(table, field, parentId, reason, rule, ai) {
+                    var g = new GlideRecord(table);
+                    g.initialize();
+                    g.setValue(field, parentId);
+                    g.setValue('reason_code', reason);
+                    g.setValue('status', 'open');
+                    g.setValue('severity', 'high');
+                    g.setValue('rule_result', rule || '');
+                    g.setValue('ai_recommendation', ai || '');
+                    g.setWorkflow(false);
+                    return g.insert();
+                }
+                function journey(table, id) {
+                    var g = new GlideRecord(table);
+                    g.get(id);
+                    var svc = new FinanceJourneyService();
+                    return table === 'x_695068_bcfa_ap_invoice' ? svc.invoiceJourney(g) : svc.paymentJourney(g);
+                }
+                var id = inv('EXCEPTION');
+                exc('x_695068_bcfa_ap_exception', 'ap_invoice', id, 'price_tolerance', 'Unit price 50.00 vs PO 40.00: +25% exceeds the 2% tolerance.');
+                var j = journey('x_695068_bcfa_ap_invoice', id);
+                assertEqual({ name: 'stops at stage 4 (3-way match)', shouldbe: 4, value: j.order });
+                assertEqual({ name: 'status blocked', shouldbe: 'blocked', value: j.status });
+                assertEqual({ name: 'WHAT HAPPENED stated', shouldbe: true, value: j.blocked.indexOf('WHAT HAPPENED') === 0 });
+                assertEqual({ name: 'WHY is the rule result', shouldbe: true, value: j.blocked.indexOf('WHY: Unit price 50.00 vs PO 40.00') &gt; 0 });
+                assertEqual({ name: 'next action given', shouldbe: true, value: j.next.length &gt; 0 });
+                assertEqual({ name: 'owner given', shouldbe: true, value: j.owner.length &gt; 0 });
+                assertEqual({ name: 'one open exception', shouldbe: 1, value: j.openExceptions });
+                stepResult.setOutputMessage(j.blocked + ' | NEXT: ' + j.next + ' | WHO: ' + j.owner);
+
+            })(outputs, steps, params, stepResult, assertEqual);
+        </value>
+        <variable display_value="Test script">989d9e235324220002c6435723dc3484</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>0f55157baa3e4c99a4569dd6c73d55c9</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-01 12:13:27</sys_created_on>
+        <sys_id>658f4dd486a0461db913a3d79fb3c25f</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-01 12:13:27</sys_updated_on>
+        <value>3.1</value>
+        <variable display_value="Jasmine version">42f2564b73031300440211d8faf6a777</variable>
+    </sys_variable_value>
+</record_update>

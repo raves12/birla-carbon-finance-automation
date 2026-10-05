@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_atf_step">
+    <sys_atf_step action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <callable_outputs/>
+        <copied_from/>
+        <description/>
+        <display_name>Run Server Side Script</display_name>
+        <inputs/>
+        <mugshots_cache_json/>
+        <notes/>
+        <order>1</order>
+        <step_config display_value="Run Server Side Script">41de4a935332120028bc29cac2dc349a</step_config>
+        <sys_class_name>sys_atf_step</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-01 12:13:27</sys_created_on>
+        <sys_id>4a48ea274d3a4a1e9715270a7dc6b4cd</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Run Server Side Script</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_atf_step_4a48ea274d3a4a1e9715270a7dc6b4cd</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-01 12:13:27</sys_updated_on>
+        <table/>
+        <test display_value="PB-AP-003 AP Playbook — AI recommendation never advances the journey">a75a8ad82a6e43c8a70e5ded37db33f3</test>
+        <timeout/>
+        <warning_message/>
+    </sys_atf_step>
+    <sys_variable_value action="delete_multiple" query="document_key=4a48ea274d3a4a1e9715270a7dc6b4cd"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>4a48ea274d3a4a1e9715270a7dc6b4cd</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-01 12:13:27</sys_created_on>
+        <sys_id>87ad7fa3ce2240738a91d3d370c79817</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-01 12:13:27</sys_updated_on>
+        <value>3.1</value>
+        <variable display_value="Jasmine version">42f2564b73031300440211d8faf6a777</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>4a48ea274d3a4a1e9715270a7dc6b4cd</document_key>
+        <order>200</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-01 12:13:27</sys_created_on>
+        <sys_id>9bb1224e4b624db380649673b76e8bce</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-01 12:13:27</sys_updated_on>
+        <value>
+            (function(outputs, steps, params, stepResult, assertEqual) {
+                function inv(state) {
+                    var g = new GlideRecord('x_695068_bcfa_ap_invoice');
+                    g.initialize();
+                    g.setValue('invoice_number', 'PB-TEST-' + gs.generateGUID().substring(0, 8));
+                    g.setValue('currency', 'INR');
+                    g.setValue('gross_amount', 100);
+                    g.setValue('state', state);
+                    g.setWorkflow(false);
+                    return g.insert();
+                }
+                function pay(state) {
+                    var g = new GlideRecord('x_695068_bcfa_payment');
+                    g.initialize();
+                    g.setValue('bank_reference', 'PB-TEST-' + gs.generateGUID().substring(0, 8));
+                    g.setValue('currency', 'INR');
+                    g.setValue('amount', 100);
+                    g.setValue('state', state);
+                    g.setWorkflow(false);
+                    return g.insert();
+                }
+                function exc(table, field, parentId, reason, rule, ai) {
+                    var g = new GlideRecord(table);
+                    g.initialize();
+                    g.setValue(field, parentId);
+                    g.setValue('reason_code', reason);
+                    g.setValue('status', 'open');
+                    g.setValue('severity', 'high');
+                    g.setValue('rule_result', rule || '');
+                    g.setValue('ai_recommendation', ai || '');
+                    g.setWorkflow(false);
+                    return g.insert();
+                }
+                function journey(table, id) {
+                    var g = new GlideRecord(table);
+                    g.get(id);
+                    var svc = new FinanceJourneyService();
+                    return table === 'x_695068_bcfa_ap_invoice' ? svc.invoiceJourney(g) : svc.paymentJourney(g);
+                }
+                var id = inv('EXCEPTION');
+                exc('x_695068_bcfa_ap_exception', 'ap_invoice', id, 'quantity_tolerance', 'Invoiced 15 vs received 10.', 'Recommend: accept the variance and approve.');
+                var j = journey('x_695068_bcfa_ap_invoice', id);
+                var g = new GlideRecord('x_695068_bcfa_ap_invoice'); g.get(id);
+                assertEqual({ name: 'still blocked despite an AI recommendation to approve', shouldbe: 'blocked', value: j.status });
+                assertEqual({ name: 'WHY uses the system determination, not the AI text', shouldbe: -1, value: j.blocked.indexOf('Recommend: accept') });
+                assertEqual({ name: 'invoice state unchanged (AI does not decide)', shouldbe: 'EXCEPTION', value: g.getValue('state') });
+                stepResult.setOutputMessage(j.blocked);
+
+            })(outputs, steps, params, stepResult, assertEqual);
+        </value>
+        <variable display_value="Test script">989d9e235324220002c6435723dc3484</variable>
+    </sys_variable_value>
+</record_update>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_message">
+    <sys_ui_message action="INSERT_OR_UPDATE">
+        <application/>
+        <code>playbook_74ce2044163b43e7bbaa53a0cb012d42</code>
+        <commented_message/>
+        <key>MATCH RESULT (MatchingEngine): PO line vs GRN/SRN vs invoice, variances and tolerance verdict</key>
+        <language>en</language>
+        <message>MATCH RESULT (MatchingEngine): PO line vs GRN/SRN vs invoice, variances and tolerance verdict</message>
+        <sys_class_name>sys_ui_message</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-01 12:19:42</sys_created_on>
+        <sys_id>691228233b678f104035a50864e45a5e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>MATCH RESULT (MatchingEngine): PO line vs GRN/SRN vs invoice, variances and tolerance verdict</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_ui_message_691228233b678f104035a50864e45a5e</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-01 12:19:42</sys_updated_on>
+    </sys_ui_message>
+</record_update>

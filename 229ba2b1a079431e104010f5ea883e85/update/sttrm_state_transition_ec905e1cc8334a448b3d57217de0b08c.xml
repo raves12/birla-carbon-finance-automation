@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sttrm_state_transition">
+    <sttrm_state_transition action="INSERT_OR_UPDATE">
+        <automatic>false</automatic>
+        <from_state display_value="Clearing">d6b9b748020749f6b8ce485da3e38969</from_state>
+        <name>Clearing to SAP Draft (awaiting SAP confirmation)</name>
+        <sys_class_name>sttrm_state_transition</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-01 12:13:26</sys_created_on>
+        <sys_id>ec905e1cc8334a448b3d57217de0b08c</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Clearing to SAP Draft (awaiting SAP confirmation)</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sttrm_state_transition_ec905e1cc8334a448b3d57217de0b08c</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-01 12:13:26</sys_updated_on>
+        <to_state display_value="SAP Draft (awaiting SAP confirmation)">ed8955e899e5434088c36103137c5d82</to_state>
+    </sttrm_state_transition>
+    <sys_translated_text action="delete_multiple" query="documentkey=ec905e1cc8334a448b3d57217de0b08c"/>
+</record_update>

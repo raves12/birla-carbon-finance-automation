@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_atf_step">
+    <sys_atf_step action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <callable_outputs/>
+        <copied_from/>
+        <description/>
+        <display_name>Run Server Side Script</display_name>
+        <inputs/>
+        <mugshots_cache_json/>
+        <notes/>
+        <order>1</order>
+        <step_config display_value="Run Server Side Script">41de4a935332120028bc29cac2dc349a</step_config>
+        <sys_class_name>sys_atf_step</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-01 12:13:28</sys_created_on>
+        <sys_id>aac5099cb28e429790852dd37c632523</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Run Server Side Script</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_atf_step_aac5099cb28e429790852dd37c632523</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-01 12:13:28</sys_updated_on>
+        <table/>
+        <test display_value="PB-UI-007 Review Summary shows the SAP processing mode with MOCK SAP label">3f26577c57064596bf3efeb9afcd1e70</test>
+        <timeout/>
+        <warning_message/>
+    </sys_atf_step>
+    <sys_variable_value action="delete_multiple" query="document_key=aac5099cb28e429790852dd37c632523"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>aac5099cb28e429790852dd37c632523</document_key>
+        <order>200</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-01 12:13:28</sys_created_on>
+        <sys_id>0d247c7fe73e47f4a75eca76fa9ac01e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-01 12:13:28</sys_updated_on>
+        <value>
+            (function(outputs, steps, params, stepResult, assertEqual) {
+                function inv(state) {
+                    var g = new GlideRecord('x_695068_bcfa_ap_invoice');
+                    g.initialize();
+                    g.setValue('invoice_number', 'PB-TEST-' + gs.generateGUID().substring(0, 8));
+                    g.setValue('currency', 'INR');
+                    g.setValue('gross_amount', 100);
+                    g.setValue('state', state);
+                    g.setWorkflow(false);
+                    return g.insert();
+                }
+                function pay(state) {
+                    var g = new GlideRecord('x_695068_bcfa_payment');
+                    g.initialize();
+                    g.setValue('bank_reference', 'PB-TEST-' + gs.generateGUID().substring(0, 8));
+                    g.setValue('currency', 'INR');
+                    g.setValue('amount', 100);
+                    g.setValue('state', state);
+                    g.setWorkflow(false);
+                    return g.insert();
+                }
+                function exc(table, field, parentId, reason, rule, ai) {
+                    var g = new GlideRecord(table);
+                    g.initialize();
+                    g.setValue(field, parentId);
+                    g.setValue('reason_code', reason);
+                    g.setValue('status', 'open');
+                    g.setValue('severity', 'high');
+                    g.setValue('rule_result', rule || '');
+                    g.setValue('ai_recommendation', ai || '');
+                    g.setWorkflow(false);
+                    return g.insert();
+                }
+                function journey(table, id) {
+                    var g = new GlideRecord(table);
+                    g.get(id);
+                    var svc = new FinanceJourneyService();
+                    return table === 'x_695068_bcfa_ap_invoice' ? svc.invoiceJourney(g) : svc.paymentJourney(g);
+                }
+                var id = pay('SAP_DRAFT');
+                var g = new GlideRecord('x_695068_bcfa_payment'); g.get(id); g.setValue('sap_processing_mode', 'draft'); g.setValue('sap_status', 'staged_draft'); g.setValue('sap_reference', 'PARK-PB-UI'); g.setWorkflow(false); g.update();
+                new FinanceReviewSummary().refreshPayment(id);
+                g.get(id);
+                var s = String(g.getValue('review_summary'));
+                assertEqual({ name: 'summary names the SAP processing mode', shouldbe: true, value: s.indexOf('SAP PROCESSING') &gt;= 0 });
+                assertEqual({ name: 'summary labels MOCK SAP', shouldbe: true, value: s.indexOf('MOCK SAP') &gt;= 0 });
+                assertEqual({ name: 'journey refreshed with the summary', shouldbe: '8', value: g.getValue('journey_stage_order') });
+
+            })(outputs, steps, params, stepResult, assertEqual);
+        </value>
+        <variable display_value="Test script">989d9e235324220002c6435723dc3484</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_atf_step</document>
+        <document_key>aac5099cb28e429790852dd37c632523</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-01 12:13:28</sys_created_on>
+        <sys_id>edff1ab921ec467e8724a8a9db8fb502</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-01 12:13:28</sys_updated_on>
+        <value>3.1</value>
+        <variable display_value="Jasmine version">42f2564b73031300440211d8faf6a777</variable>
+    </sys_variable_value>
+</record_update>

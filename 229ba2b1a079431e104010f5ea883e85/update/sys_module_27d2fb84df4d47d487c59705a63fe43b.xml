@@ -690,6 +690,213 @@ DemoDataSeeder.prototype = {
         return { created: created, customers: customerSysId, payments: paymentSysId };
     },
 
+    // ---- Playbook demo scenarios (Playbook phase) ---------------------------
+    // One transaction per Playbook situation, each on its own PO / receipt /
+    // open item (PB- prefix) so they never consume the baseline AP/AR
+    // scenarios' data:
+    //   AP-PLAY-01 happy path, closed             (all 8 stages complete)
+    //   AP-PLAY-02 price variance > tolerance     (blocked at 4, exception lane)
+    //   AP-PLAY-03 pending human approval         (waiting at 6)
+    //   AP-PLAY-04 SAP timeout, unreconciled      (blocked at 7, MOCK SAP)
+    //   AR-PLAY-01 exact match, DIRECT, closed    (all 9 stages complete)
+    //   AR-PLAY-02 DRAFT staged in SAP            (waiting at 8, SAP_DRAFT)
+    //   AR-PLAY-03 DRAFT confirmed by SAP         (closed via the draft check)
+    //   AR-PLAY-04 short payment                  (blocked at 6, deduction)
+    //   AR-PLAY-05 unknown remitter               (blocked at customer resolution)
+    //   AR-PLAY-06 pending human approval         (waiting at 7)
+    //   AR-PLAY-07 clearing timeout, unreconciled (blocked at 8, MOCK SAP)
+    // Idempotent: skipped when INV-PLAY-01 exists. resetAndReseed re-creates
+    // them (the reset deletes the PB- master rows as non-baseline data).
+    seedPlaybookScenarios: function() {
+        var self = this;
+        return FinanceOrchestration.runInline(function() { return self._seedPlaybookScenarios(); });
+    },
+
+    _seedPlaybookScenarios: function() {
+        if (this._lookupSysId('x_695068_bcfa_ap_invoice', 'invoice_number', 'INV-PLAY-01')) return { skipped: true };
+        var users = this._twoUsers();
+        var requester = users[0];
+        var approver = users[1];
+        var results = {};
+        var self = this;
+        var vendor = function(code) { return self._lookupSysId('x_695068_bcfa_vendor', 'vendor_code', code); };
+        var customer = function(code) { return self._lookupSysId('x_695068_bcfa_customer', 'customer_code', code); };
+        var po = function(number) { return self._lookupSysId('x_695068_bcfa_purchase_order', 'po_number', number); };
+
+        // AP master data: one PO line, fully received, per scenario.
+        this._playbookPo('PB-PO-01', 'V001', 100, 50, 'PB-GRN-01');
+        this._playbookPo('PB-PO-02', 'V005', 300, 40, 'PB-GRN-02');
+        this._playbookPo('PB-PO-03', 'V008', 75, 80, 'PB-GRN-03');
+        this._playbookPo('PB-PO-04', 'V010', 90, 60, 'PB-GRN-04');
+
+        var ap01 = this.apService.intakeAndAutoProcess({
+            invoiceNumber: 'INV-PLAY-01', vendor: vendor('V001'), companyCode: '1000', currency: 'INR', purchaseOrder: po('PB-PO-01'),
+            grossAmount: 5000, taxAmount: 900, netAmount: 5000,
+            seedExtraction: { invoiceNumber: 'INV-PLAY-01', vendor: 'V001', amount: 5000 },
+            lines: [this._seedLine('PB-PO-01', 'PB-GRN-01', 100, 50, 900, 5000)]
+        });
+        if (ap01.stoppedAt === 'MATCHED') {
+            var ap01Approval = this.apService.requestApproval(ap01.apInvoiceSysId, requester);
+            this.apService.decideApproval(ap01.apInvoiceSysId, ap01Approval.approvalSysId, 'approved', approver, 'Approved for Playbook demo AP-PLAY-01.');
+        }
+        results['AP-PLAY-01'] = this._playbookOutcome('x_695068_bcfa_ap_invoice', ap01.apInvoiceSysId);
+
+        // Unit price 50 against a PO price of 40: outside the price tolerance.
+        var ap02 = this.apService.intakeAndAutoProcess({
+            invoiceNumber: 'INV-PLAY-02', vendor: vendor('V005'), companyCode: '1000', currency: 'USD', purchaseOrder: po('PB-PO-02'),
+            grossAmount: 15000, netAmount: 15000, taxAmount: 0,
+            seedExtraction: { invoiceNumber: 'INV-PLAY-02' },
+            lines: [this._seedLine('PB-PO-02', 'PB-GRN-02', 300, 50, 0, 15000)]
+        });
+        results['AP-PLAY-02'] = this._playbookOutcome('x_695068_bcfa_ap_invoice', ap02.apInvoiceSysId);
+
+        var ap03 = this.apService.intakeAndAutoProcess({
+            invoiceNumber: 'INV-PLAY-03', vendor: vendor('V008'), companyCode: '1000', currency: 'EUR', purchaseOrder: po('PB-PO-03'),
+            grossAmount: 6000, netAmount: 6000, taxAmount: 1140,
+            seedExtraction: { invoiceNumber: 'INV-PLAY-03' },
+            lines: [this._seedLine('PB-PO-03', 'PB-GRN-03', 75, 80, 1140, 6000)]
+        });
+        if (ap03.stoppedAt === 'MATCHED') this.apService.requestApproval(ap03.apInvoiceSysId, requester);
+        results['AP-PLAY-03'] = this._playbookOutcome('x_695068_bcfa_ap_invoice', ap03.apInvoiceSysId);
+
+        var ap04 = this.apService.intakeAndAutoProcess({
+            invoiceNumber: 'INV-PLAY-04', vendor: vendor('V010'), companyCode: '1000', currency: 'INR', purchaseOrder: po('PB-PO-04'),
+            grossAmount: 6372, netAmount: 5400, taxAmount: 972,
+            seedExtraction: { invoiceNumber: 'INV-PLAY-04' },
+            lines: [this._seedLine('PB-PO-04', 'PB-GRN-04', 90, 60, 972, 5400)]
+        });
+        if (ap04.stoppedAt === 'MATCHED') {
+            var ap04Approval = this.apService.requestApproval(ap04.apInvoiceSysId, requester);
+            // Same cascade timing as AP-010: the profile is flipped before the
+            // approval, whose cascade posts synchronously. Left unreconciled.
+            this._setAdapterFailureMode('mock_sap', 'timeout');
+            this.apService.decideApproval(ap04.apInvoiceSysId, ap04Approval.approvalSysId, 'approved', approver, 'Approved — will time out for Playbook demo AP-PLAY-04.');
+            this._setAdapterFailureMode('mock_sap', 'success');
+        }
+        results['AP-PLAY-04'] = this._playbookOutcome('x_695068_bcfa_ap_invoice', ap04.apInvoiceSysId);
+
+        // AR master data: one open item per scenario, unique amounts.
+        this._playbookOpenItem('PB-ARI-01', 'C006', 'INR', 41000);
+        this._playbookOpenItem('PB-ARI-02', 'C002', 'INR', 42000);
+        this._playbookOpenItem('PB-ARI-03', 'C010', 'INR', 43000);
+        this._playbookOpenItem('PB-ARI-04', 'C008', 'EUR', 10400);
+        this._playbookOpenItem('PB-ARI-06', 'C004', 'EUR', 7600);
+        this._playbookOpenItem('PB-ARI-07', 'C005', 'USD', 8700);
+
+        var ar01 = this._playbookPayment('BANK-PLAY-01', customer('C006'), 'INR', 41000);
+        if (ar01.stoppedAt === 'PENDING_APPROVAL') {
+            this._setPaymentSapMode(ar01.paymentSysId, 'direct');
+            var ar01Approval = this.arService.requestApproval(ar01.paymentSysId, requester);
+            this.arService.decideApproval(ar01.paymentSysId, ar01Approval.approvalSysId, 'approved', approver, 'Approved for Playbook demo AR-PLAY-01 (DIRECT).');
+        }
+        results['AR-PLAY-01'] = this._playbookOutcome('x_695068_bcfa_payment', ar01.paymentSysId);
+
+        var ar02 = this._playbookPayment('BANK-PLAY-02', customer('C002'), 'INR', 42000);
+        if (ar02.stoppedAt === 'PENDING_APPROVAL') {
+            this._setPaymentSapMode(ar02.paymentSysId, 'draft');
+            var ar02Approval = this.arService.requestApproval(ar02.paymentSysId, requester);
+            this.arService.decideApproval(ar02.paymentSysId, ar02Approval.approvalSysId, 'approved', approver, 'Approved for Playbook demo AR-PLAY-02 (DRAFT).');
+        }
+        results['AR-PLAY-02'] = this._playbookOutcome('x_695068_bcfa_payment', ar02.paymentSysId);
+
+        var ar03 = this._playbookPayment('BANK-PLAY-03', customer('C010'), 'INR', 43000);
+        if (ar03.stoppedAt === 'PENDING_APPROVAL') {
+            this._setPaymentSapMode(ar03.paymentSysId, 'draft');
+            var ar03Approval = this.arService.requestApproval(ar03.paymentSysId, requester);
+            this.arService.decideApproval(ar03.paymentSysId, ar03Approval.approvalSysId, 'approved', approver, 'Approved for Playbook demo AR-PLAY-03 (DRAFT).');
+            // The simulated SAP user posts the draft; the status query (never
+            // a re-send) then clears and closes the payment.
+            var draftOutcome = gs.getProperty('x_695068_bcfa.mock_sap.draft_outcome', 'pending');
+            this._setAppProperty('x_695068_bcfa.mock_sap.draft_outcome', 'posted');
+            this.arService.checkSapDraftStatus(ar03.paymentSysId);
+            this._setAppProperty('x_695068_bcfa.mock_sap.draft_outcome', draftOutcome);
+        }
+        results['AR-PLAY-03'] = this._playbookOutcome('x_695068_bcfa_payment', ar03.paymentSysId);
+
+        // 500 short of PB-ARI-04: a short payment for a person to resolve.
+        var ar04 = this._playbookPayment('BANK-PLAY-04', customer('C008'), 'EUR', 9900);
+        results['AR-PLAY-04'] = this._playbookOutcome('x_695068_bcfa_payment', ar04.paymentSysId);
+
+        var ar05 = this.arService.intakeAndAutoProcess({
+            bankReference: 'BANK-PLAY-05', currency: 'INR', amount: 12345, bankAccount: 'COLL-PLAY',
+            idempotencyKey: 'AR-CLEAR-BANK-PLAY-05', candidateCustomerName: 'UNKNOWN REMITTER PLAYBOOK'
+        });
+        results['AR-PLAY-05'] = this._playbookOutcome('x_695068_bcfa_payment', ar05.paymentSysId);
+
+        var ar06 = this._playbookPayment('BANK-PLAY-06', customer('C004'), 'EUR', 7600);
+        if (ar06.stoppedAt === 'PENDING_APPROVAL') this.arService.requestApproval(ar06.paymentSysId, requester);
+        results['AR-PLAY-06'] = this._playbookOutcome('x_695068_bcfa_payment', ar06.paymentSysId);
+
+        var ar07 = this._playbookPayment('BANK-PLAY-07', customer('C005'), 'USD', 8700);
+        if (ar07.stoppedAt === 'PENDING_APPROVAL') {
+            this._setPaymentSapMode(ar07.paymentSysId, 'direct');
+            var ar07Approval = this.arService.requestApproval(ar07.paymentSysId, requester);
+            this._setAdapterFailureMode('mock_sap', 'timeout');
+            this.arService.decideApproval(ar07.paymentSysId, ar07Approval.approvalSysId, 'approved', approver, 'Approved — will time out for Playbook demo AR-PLAY-07.');
+            this._setAdapterFailureMode('mock_sap', 'success');
+        }
+        results['AR-PLAY-07'] = this._playbookOutcome('x_695068_bcfa_payment', ar07.paymentSysId);
+
+        return results;
+    },
+
+    _playbookPo: function(poNumber, vendorCode, qty, unitPrice, receiptNumber) {
+        var poId = this._upsert('x_695068_bcfa_purchase_order', { po_number: poNumber }, {
+            po_number: poNumber, vendor: this._lookupSysId('x_695068_bcfa_vendor', 'vendor_code', vendorCode), company_code: '1000',
+            currency: 'INR', status: 'open', created_date: new GlideDateTime().getDate()
+        });
+        var lineId = this._upsert('x_695068_bcfa_po_line', { purchase_order: poId, line_number: 1 }, {
+            purchase_order: poId, line_number: 1, material_or_service: 'Carbon black feedstock',
+            quantity: qty, unit: 'MT', unit_price: unitPrice, received_quantity: qty
+        });
+        this._upsert('x_695068_bcfa_receipt', { receipt_number: receiptNumber }, {
+            receipt_number: receiptNumber, po_line: lineId, receipt_type: 'grn',
+            quantity: qty, receipt_date: new GlideDateTime().getDate(), sap_document_id: 'MIGO' + receiptNumber
+        });
+    },
+
+    _playbookOpenItem: function(itemNumber, customerCode, currency, amount) {
+        this._upsert('x_695068_bcfa_ar_open_item', { item_number: itemNumber }, {
+            item_number: itemNumber, customer: this._lookupSysId('x_695068_bcfa_customer', 'customer_code', customerCode), company_code: '1000',
+            currency: currency, invoice_amount: amount, open_amount: amount, due_date: new GlideDateTime().getDate(), status: 'open'
+        });
+    },
+
+    _playbookPayment: function(bankReference, customerSysId, currency, amount) {
+        return this.arService.intakeAndAutoProcess({
+            bankReference: bankReference, customer: customerSysId, currency: currency, amount: amount,
+            bankAccount: 'COLL-PLAY', idempotencyKey: 'AR-CLEAR-' + bankReference
+        });
+    },
+
+    // The SAP processing mode of one demo payment (clearPayment keeps a mode
+    // already set on the payment instead of the property default).
+    _setPaymentSapMode: function(paymentSysId, mode) {
+        var payment = new GlideRecord('x_695068_bcfa_payment');
+        if (!payment.get(paymentSysId)) return;
+        payment.setValue('sap_processing_mode', mode);
+        payment.setWorkflow(false);
+        payment.update();
+    },
+
+    // One of this application's own properties (mock SAP simulation only).
+    _setAppProperty: function(name, value) {
+        var prop = new GlideRecord('sys_properties');
+        if (!prop.get('name', name)) return;
+        prop.setValue('value', value);
+        prop.update();
+    },
+
+    _playbookOutcome: function(table, sysId) {
+        var gr = new GlideRecord(table);
+        if (!sysId || !gr.get(sysId)) return { error: 'not created' };
+        return {
+            state: gr.getValue('state'), stage: gr.getValue('journey_stage'), stageOrder: gr.getValue('journey_stage_order'),
+            status: gr.getValue('journey_status'), owner: gr.getValue('journey_owner')
+        };
+    },
+
+
     _createdMark: function(created, label, sysId) {
         created.push(label);
         return sysId;
@@ -722,7 +929,8 @@ DemoDataSeeder.prototype = {
         // Phase 33: the POC 2 live cash journey (C1001-C1003, BANK-POC2-00x,
         // remittances AR_REMIT_101-103) is part of the demo baseline too; the
         // reset deletes its payments and open items.
-        return { reset: reset, seed: this.seedAll(), poc2: this.seedPoc2CashScenarios() };
+        // Playbook phase: the eleven Playbook demo transactions too.
+        return { reset: reset, seed: this.seedAll(), poc2: this.seedPoc2CashScenarios(), playbook: this.seedPlaybookScenarios() };
     },
 
     resetDemoData: function(confirm) {

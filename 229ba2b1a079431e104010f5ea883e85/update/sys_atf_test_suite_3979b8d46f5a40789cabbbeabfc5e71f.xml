@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_atf_test_suite">
+    <sys_atf_test_suite action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description>PB-AP-001..006, PB-AR-001..009, PB-UI-001..007: journey stage derivation (blocked because / next / owner), AI never advances the journey, SIMULATED extraction and MOCK SAP labels, SAP Draft/Direct processing, the two native Playbooks (read-only gates), the workspace Playbook route and actions.</description>
+        <input_filter/>
+        <name>BCFA Playbook Regression</name>
+        <parent/>
+        <sn_atf_tg_generated>false</sn_atf_tg_generated>
+        <sys_class_name>sys_atf_test_suite</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-01 12:13:30</sys_created_on>
+        <sys_id>3979b8d46f5a40789cabbbeabfc5e71f</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>BCFA Playbook Regression</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_atf_test_suite_3979b8d46f5a40789cabbbeabfc5e71f</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-01 12:13:30</sys_updated_on>
+    </sys_atf_test_suite>
+</record_update>

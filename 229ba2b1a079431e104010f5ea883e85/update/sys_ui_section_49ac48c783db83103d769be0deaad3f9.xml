@@ -378,6 +378,146 @@
             <sys_user/>
             <type>.end_split</type>
         </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>journey_stage</element>
+            <position>26</position>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-01 12:13:04</sys_created_on>
+            <sys_id>d09020ab3b278f104035a50864e45a43</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_695068_bcfa_ap_invoice" sys_domain="global" view="Default view">49ac48c783db83103d769be0deaad3f9</sys_ui_section>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-01 12:13:04</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>journey_stage_order</element>
+            <position>27</position>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-01 12:13:05</sys_created_on>
+            <sys_id>a09020ab3b278f104035a50864e45a94</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_695068_bcfa_ap_invoice" sys_domain="global" view="Default view">49ac48c783db83103d769be0deaad3f9</sys_ui_section>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-01 12:13:05</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>journey_status</element>
+            <position>28</position>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-01 12:13:05</sys_created_on>
+            <sys_id>289020ab3b278f104035a50864e45acb</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_695068_bcfa_ap_invoice" sys_domain="global" view="Default view">49ac48c783db83103d769be0deaad3f9</sys_ui_section>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-01 12:13:05</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>journey_blocked_reason</element>
+            <position>29</position>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-01 12:13:06</sys_created_on>
+            <sys_id>f09060ab3b278f104035a50864e45a00</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_695068_bcfa_ap_invoice" sys_domain="global" view="Default view">49ac48c783db83103d769be0deaad3f9</sys_ui_section>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-01 12:13:06</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>journey_next_action</element>
+            <position>30</position>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-01 12:13:07</sys_created_on>
+            <sys_id>7c9060ab3b278f104035a50864e45a41</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_695068_bcfa_ap_invoice" sys_domain="global" view="Default view">49ac48c783db83103d769be0deaad3f9</sys_ui_section>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-01 12:13:07</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>journey_owner</element>
+            <position>31</position>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-01 12:13:07</sys_created_on>
+            <sys_id>099060ab3b278f104035a50864e45a83</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_695068_bcfa_ap_invoice" sys_domain="global" view="Default view">49ac48c783db83103d769be0deaad3f9</sys_ui_section>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-01 12:13:07</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>journey_open_exceptions</element>
+            <position>32</position>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-01 12:13:08</sys_created_on>
+            <sys_id>1d9060ab3b278f104035a50864e45ab8</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_695068_bcfa_ap_invoice" sys_domain="global" view="Default view">49ac48c783db83103d769be0deaad3f9</sys_ui_section>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-01 12:13:08</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>journey_banner</element>
+            <position>33</position>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-01 12:13:08</sys_created_on>
+            <sys_id>199060ab3b278f104035a50864e45ae1</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_695068_bcfa_ap_invoice" sys_domain="global" view="Default view">49ac48c783db83103d769be0deaad3f9</sys_ui_section>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-01 12:13:08</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>journey_stage_entered</element>
+            <position>34</position>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-01 12:13:09</sys_created_on>
+            <sys_id>6990a0ab3b278f104035a50864e45a48</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_695068_bcfa_ap_invoice" sys_domain="global" view="Default view">49ac48c783db83103d769be0deaad3f9</sys_ui_section>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-01 12:13:09</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>journey_updated</element>
+            <position>35</position>
+            <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+            <sys_created_on>2026-10-01 12:13:10</sys_created_on>
+            <sys_id>bd90a0ab3b278f104035a50864e45a96</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_695068_bcfa_ap_invoice" sys_domain="global" view="Default view">49ac48c783db83103d769be0deaad3f9</sys_ui_section>
+            <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+            <sys_updated_on>2026-10-01 12:13:10</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
         <sys_ui_section action="INSERT_OR_UPDATE">
             <caption/>
             <header>false</header>

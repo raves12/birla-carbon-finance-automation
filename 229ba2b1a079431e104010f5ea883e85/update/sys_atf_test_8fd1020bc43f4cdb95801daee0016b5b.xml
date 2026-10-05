@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_atf_test">
+    <sys_atf_test action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <copied_from/>
+        <description/>
+        <enable_parameterized_testing>false</enable_parameterized_testing>
+        <fail_on_server_error>false</fail_on_server_error>
+        <name>PB-AR-009 SAP_DRAFT journey — waiting for SAP, nothing re-sent</name>
+        <parameters/>
+        <remember/>
+        <sn_atf_tg_generated>false</sn_atf_tg_generated>
+        <sys_class_name>sys_atf_test</sys_class_name>
+        <sys_created_by>ravi.n.kumar@pwc.com</sys_created_by>
+        <sys_created_on>2026-10-01 12:13:29</sys_created_on>
+        <sys_id>8fd1020bc43f4cdb95801daee0016b5b</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>PB-AR-009 SAP_DRAFT journey — waiting for SAP, nothing re-sent</sys_name>
+        <sys_package display_value="Birla Carbon Finance Automation" source="x_695068_bcfa">229ba2b1a079431e104010f5ea883e85</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Birla Carbon Finance Automation">229ba2b1a079431e104010f5ea883e85</sys_scope>
+        <sys_update_name>sys_atf_test_8fd1020bc43f4cdb95801daee0016b5b</sys_update_name>
+        <sys_updated_by>ravi.n.kumar@pwc.com</sys_updated_by>
+        <sys_updated_on>2026-10-01 12:13:29</sys_updated_on>
+        <test_origin/>
+    </sys_atf_test>
+    <sys_variable_value action="delete_multiple" query="document_key=8fd1020bc43f4cdb95801daee0016b5b"/>
+</record_update>

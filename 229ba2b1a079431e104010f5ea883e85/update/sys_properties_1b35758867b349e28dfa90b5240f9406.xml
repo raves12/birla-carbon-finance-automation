@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><record_update table="sys_properties">
     <sys_properties action="INSERT_OR_UPDATE">
         <choices/>
-        <description>POC ASSUMPTION. Short-pay residuals up to this amount (payment currency) are suggested as a bank charge by the matching engine. A suggestion only: the reviewer confirms the deduction.</description>
+        <description>POC ASSUMPTION. Short-pay residuals up to this amount (payment currency) are suggested as a bank charge by the matching engine, and a bank-charge deduction above it is refused (Phase 35). The reviewer confirms every deduction.</description>
         <ignore_cache>false</ignore_cache>
         <is_private>false</is_private>
         <name>x_695068_bcfa.ar.bank_charge.max_amount</name>
