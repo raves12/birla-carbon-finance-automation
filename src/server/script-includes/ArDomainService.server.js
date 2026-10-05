@@ -151,6 +151,19 @@ ArDomainService.prototype = {
         if (fields.extractedFields) {
             remittance.setValue('extracted_fields', JSON.stringify(fields.extractedFields));
             if (fields.confidence !== undefined) remittance.setValue('confidence', fields.confidence);
+            // Phase 40: the advice's key facts as columns (the JSON stays the
+            // full record). The advice's deduction statement is evidence only:
+            // the residual is always computed by the allocation.
+            var x = fields.extractedFields;
+            var num = function(v) { var n = parseFloat(v); return isNaN(n) ? '' : n; };
+            remittance.setValue('payer_name', String(x.customer_name || '').substring(0, 160));
+            remittance.setValue('bank_reference', String(x.bank_reference || x.payment_reference || '').substring(0, 80));
+            remittance.setValue('payment_amount', num(x.payment_amount));
+            remittance.setValue('currency', String(x.currency || '').substring(0, 3));
+            remittance.setValue('advice_deduction_amount', num(x.deduction_amount));
+            remittance.setValue('advice_deduction_reason', String(x.deduction_reason || '').substring(0, 255));
+            remittance.setValue('invoice_count', (x.invoice_lines || x.invoice_references || []).length);
+            if (fields.extractionProvider) remittance.setValue('extraction_provider', fields.extractionProvider);
         }
         var sysId = remittance.insert();
         var parentPayment = new GlideRecord('x_695068_bcfa_payment');

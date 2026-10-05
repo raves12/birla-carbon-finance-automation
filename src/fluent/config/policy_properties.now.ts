@@ -62,6 +62,32 @@ export const apTaxToleranceRelative = Property({
     description: 'POC ASSUMPTION. Tax tolerance as a fraction of the expected tax (0.02 = 2%).',
 })
 
+// Phase 40: total-amount and rounding tolerances (fallbacks; the BCFA AP
+// Tolerance decision table has them per company / country / vendor type).
+export const apTotalToleranceAbsolute = Property({
+    $id: Now.ID['prop-ap-tolerance-total-absolute'],
+    name: 'x_695068_bcfa.ap.tolerance.total_absolute',
+    type: 'string',
+    value: '1',
+    description: 'POC ASSUMPTION. Largest difference (invoice currency) between the header net amount and the sum of the line amounts that is accepted.',
+})
+
+export const apRoundingToleranceAbsolute = Property({
+    $id: Now.ID['prop-ap-tolerance-rounding-absolute'],
+    name: 'x_695068_bcfa.ap.tolerance.rounding_absolute',
+    type: 'string',
+    value: '0.05',
+    description: 'POC ASSUMPTION. A tax variance up to this amount is a PASS (rounding); above it and within the tax tolerance it is WITHIN TOLERANCE.',
+})
+
+export const apTaxReference = Property({
+    $id: Now.ID['prop-ap-tax-reference'],
+    name: 'x_695068_bcfa.ap.tax.reference',
+    type: 'string',
+    value: '{"India":{"regime":"GST","rate_pct":18},"Germany":{"regime":"VAT","rate_pct":19},"Hungary":{"regime":"VAT","rate_pct":27},"United States":{"regime":"SALES_TAX","rate_pct":0}}',
+    description: 'POC REFERENCE DATA (not tax advice, not read from SAP). Fallback when the BCFA AP Tax Expectation decision table has no row: expected tax regime and rate per vendor country. A country with no entry cannot be validated and goes to manual review.',
+})
+
 export const apExtractionConfidenceThreshold = Property({
     $id: Now.ID['prop-ap-extraction-confidence'],
     name: 'x_695068_bcfa.ap.extraction.confidence_threshold',
@@ -148,8 +174,8 @@ export const arDeductionAllowedTypes = Property({
     $id: Now.ID['prop-ar-deduction-allowed-types'],
     name: 'x_695068_bcfa.ar.deduction.allowed_types',
     type: 'string',
-    value: 'bank_charge,tcs,short_pay,credit_note_netting',
-    description: 'POC ASSUMPTION. Comma-separated deduction reason codes a reviewer may accept to balance a short payment (BANK_CHARGE, TCS, SHORT_PAY, CREDIT_NOTE netting against an open credit note of the same customer).',
+    value: 'bank_charge,tcs,withholding_tax,short_pay,credit_note_netting,debit_note,commercial_deduction,fx_difference,rounding',
+    description: 'POC ASSUMPTION. Fallback when the BCFA AR Deduction decision table cannot be read: comma-separated deduction types a reviewer may accept to balance a short payment. Dispute, unapplied cash and other are never deductions: they stay open for investigation.',
 })
 
 export const arHighValueResidual = Property({
@@ -182,6 +208,23 @@ export const arExceptionDefaultOwner = Property({
     type: 'string',
     value: BCFA_AR_PROCESSOR_USER,
     description: 'POC ASSUMPTION. sys_id of the user who owns new AR exceptions (demo user bcfa.ar.processor).',
+})
+
+// Phase 40: AR rounding and withholding limits.
+export const arRoundingMax = Property({
+    $id: Now.ID['prop-ar-rounding-max-amount'],
+    name: 'x_695068_bcfa.ar.rounding.max_amount',
+    type: 'string',
+    value: '1',
+    description: 'POC ASSUMPTION. A short-pay residual up to this amount is suggested as a rounding difference; a rounding deduction above it is refused.',
+})
+
+export const arWithholdingMaxPct = Property({
+    $id: Now.ID['prop-ar-withholding-max-pct'],
+    name: 'x_695068_bcfa.ar.withholding.max_pct',
+    type: 'string',
+    value: '0.1',
+    description: 'POC ASSUMPTION. The largest withholding-tax (TDS) deduction accepted, as a fraction of the invoice amounts it covers (0.1 = 10%). Above it the deduction is refused and the residual stays an exception.',
 })
 
 export const arBankChargeMax = Property({

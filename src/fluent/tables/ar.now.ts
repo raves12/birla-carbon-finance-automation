@@ -128,6 +128,19 @@ export const x_695068_bcfa_remittance = Table({
         extracted_fields: JsonColumn({ label: 'Extracted Fields' }),
         confidence: DecimalColumn({ label: 'Confidence', scale: 2 }),
         received_date: DateColumn({ label: 'Received Date' }),
+        // Phase 40: the payment advice's key facts (the extraction JSON keeps
+        // everything). The deduction it states is evidence only.
+        payer_name: StringColumn({ label: 'Payer (Advice)', maxLength: 160 }),
+        bank_reference: StringColumn({ label: 'Bank Reference / UTR (Advice)', maxLength: 80 }),
+        payment_amount: DecimalColumn({ label: 'Payment Amount (Advice)', scale: 2 }),
+        currency: StringColumn({ label: 'Currency (Advice)', maxLength: 3 }),
+        advice_deduction_amount: DecimalColumn({ label: 'Deduction Stated on Advice', scale: 2 }),
+        advice_deduction_reason: StringColumn({ label: 'Deduction Reason Stated', maxLength: 255 }),
+        invoice_count: IntegerColumn({ label: 'Invoices Referenced' }),
+        extraction_provider: ChoiceColumn({
+            label: 'Extraction Provider',
+            choices: { native: 'Native: ServiceNow Document Intelligence (Now LLM)', simulated: 'SIMULATED DOCUMENT EXTRACTION — POC' },
+        }),
         source: ChoiceColumn({
             label: 'Source',
             default: 'email',
@@ -194,9 +207,16 @@ export const x_695068_bcfa_deduction = Table({
             choices: {
                 short_pay: 'Short Pay',
                 bank_charge: 'Bank Charge',
-                tcs: 'TCS',
+                tcs: 'TDS / TCS',
+                withholding_tax: 'Withholding Tax',
                 credit_note_netting: 'Credit Note Netting',
+                debit_note: 'Debit Note',
+                commercial_deduction: 'Commercial Deduction',
+                dispute: 'Dispute (not a deduction)',
+                fx_difference: 'FX Difference',
+                rounding: 'Rounding',
                 unapplied: 'Unapplied Cash',
+                other: 'Other (manual review)',
             },
         }),
         amount: DecimalColumn({ label: 'Amount', scale: 2 }),
@@ -209,6 +229,17 @@ export const x_695068_bcfa_deduction = Table({
         notes: StringColumn({ label: 'Notes', maxLength: 4000 }),
         approved_by: ReferenceColumn({ label: 'Approved By', referenceTable: 'sys_user', readOnly: true }),
         approved_at: DateTimeColumn({ label: 'Approved At', readOnly: true }),
+        // Phase 40: currency, what the customer's advice stated, the AI's
+        // advisory note, and where the category came from. The amount is
+        // always the residual the allocation computed.
+        currency: StringColumn({ label: 'Currency', maxLength: 3 }),
+        advice_reason: StringColumn({ label: 'Reason Stated on Advice', maxLength: 255 }),
+        advice_amount: DecimalColumn({ label: 'Amount Stated on Advice', scale: 2 }),
+        ai_recommendation: StringColumn({ label: 'AI Recommendation (advisory)', maxLength: 1000 }),
+        category_source: ChoiceColumn({
+            label: 'Category Source',
+            choices: { human_confirmed: 'Human confirmed', rule_suggested: 'Rule suggested', advice_stated: 'Stated on advice' },
+        }),
     },
 })
 
@@ -264,11 +295,18 @@ export const x_695068_bcfa_ar_exception = Table({
         deduction_type: ChoiceColumn({
             label: 'Deduction Type',
             choices: {
-                bank_charge: 'Bank Charge',
-                tcs: 'TCS',
                 short_pay: 'Short Pay',
+                bank_charge: 'Bank Charge',
+                tcs: 'TDS / TCS',
+                withholding_tax: 'Withholding Tax',
                 credit_note_netting: 'Credit Note Netting',
+                debit_note: 'Debit Note',
+                commercial_deduction: 'Commercial Deduction',
+                dispute: 'Dispute (not a deduction)',
+                fx_difference: 'FX Difference',
+                rounding: 'Rounding',
                 unapplied: 'Unapplied Cash',
+                other: 'Other (manual review)',
             },
             hint: 'Pre-set by the matching engine as a suggestion (credit note of exactly the residual, else bank charge within the limit); the reviewer confirms or changes it before Approve Deduction. The amount is always the computed residual.',
         }),

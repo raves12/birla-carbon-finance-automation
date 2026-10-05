@@ -27,6 +27,28 @@ STEPS = {
         'choices': r'^sys_choice_x_695068_bcfa_finance_intake_extraction_provider\.xml$',
         'columns': ['x_695068_bcfa_finance_intake=extraction_provider,extraction_task'],
     },
+    # Tax (GST / VAT / withholding), tolerance visibility, AR deduction
+    # taxonomy and payment advice fields. The decision tables are built
+    # afterwards by phase40_decision_tables_bg.js (scope x_695068_bcfa).
+    'tax': {
+        'base': '1cfb575',
+        'new_si': [],
+        'mod_si': ['FinancePolicy', 'MatchingEngine', 'ApDomainService', 'ArDomainService', 'ArExceptionDecisionService', 'FinanceDocumentIntakeService'],
+        'files': r'^sys_properties_(fac5180f3ddb4078b27a16e16a899c49|fce08088c996402b8b4a514f6c2e4a36|7de59dea50f7489d934a307f2dfcb123'
+                 r'|1a8a42c456cc4ac98310e6d9dd50b290|83f6319d3267417b9ad650e54218b5af|6ec72ccb825549a791ae3ec89844b050)\.xml$',
+        'choices': r'^sys_choice_x_695068_bcfa_(ap_invoice_(extraction_provider|tax_validation_result|wht_result)|ap_match_tax_result'
+                   r'|ar_exception_deduction_type|deduction_(category_source|deduction_type)|remittance_extraction_provider|vendor_tax_category)\.xml$',
+        'columns': [
+            'x_695068_bcfa_ap_invoice=extraction_provider,document_country,document_language,tax_type,tax_rate_pct,cgst_amount,sgst_amount,igst_amount,'
+            'vat_amount,wht_amount,wht_rate_pct,tax_regime,expected_tax_amount,tax_variance_amount,tax_validation_result,tax_validation_detail,'
+            'tax_rule_source,wht_applicable,wht_code,wht_expected_amount,wht_result',
+            'x_695068_bcfa_ap_match=tolerance_source,quantity_tolerance_pct,price_tolerance_pct,tax_tolerance_abs,tax_tolerance_pct,total_tolerance_abs,'
+            'expected_tax,tax_result,tolerance_detail',
+            'x_695068_bcfa_vendor=tax_category',
+            'x_695068_bcfa_deduction=currency,advice_reason,advice_amount,ai_recommendation,category_source',
+            'x_695068_bcfa_remittance=payer_name,bank_reference,payment_amount,currency,advice_deduction_amount,advice_deduction_reason,invoice_count,extraction_provider',
+        ],
+    },
 }
 
 

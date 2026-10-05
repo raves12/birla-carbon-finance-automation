@@ -110,6 +110,17 @@ ApDomainService.prototype = {
         invoice.setValue('source', fields.source || 'email');
         invoice.setValue('correlation_id', correlationId);
         if (fields.externalReference) invoice.setValue('external_reference', fields.externalReference);
+        // Phase 40: the tax breakdown and document facts as printed (from the
+        // extraction). Validation compares them with the governed expectation.
+        var printed = fields.taxBreakdown || {};
+        var printedFields = { taxType: 'tax_type', ratePct: 'tax_rate_pct', cgst: 'cgst_amount', sgst: 'sgst_amount', igst: 'igst_amount',
+            vat: 'vat_amount', wht: 'wht_amount', whtRatePct: 'wht_rate_pct' };
+        for (var pf in printedFields) {
+            if (printed[pf] !== null && printed[pf] !== undefined && printed[pf] !== '') invoice.setValue(printedFields[pf], printed[pf]);
+        }
+        if (fields.documentCountry) invoice.setValue('document_country', fields.documentCountry);
+        if (fields.documentLanguage) invoice.setValue('document_language', fields.documentLanguage);
+        if (fields.extractionProvider) invoice.setValue('extraction_provider', fields.extractionProvider);
         invoice.setValue('state', 'RECEIVED');
         invoice.setValue('approval_state', 'not_required');
         invoice.setValue('posting_state', 'not_posted');
@@ -247,6 +258,7 @@ ApDomainService.prototype = {
         }
 
         var match = this.matchingEngine.threeWayMatch(apInvoiceSysId);
+        this._recordTaxValidation(apInvoiceSysId, match);
         if (!match.withinTolerance) {
             // One reason per exception, in order of what a reviewer must
             // fix first: PO linkage, receipt, quantity, price, tax, totals.
@@ -301,6 +313,10 @@ ApDomainService.prototype = {
         }
         evidence.push('Net ' + match.netAmount + ', tax ' + match.taxAmount +
             (match.expectedTax !== null ? ', expected tax ' + match.expectedTax + ' (' + match.vendorCountry + ' rate ' + pct(match.expectedTaxRate) + ')' : ', no expected tax rate for vendor country'));
+        if (match.taxEvaluation) {
+            evidence.push('Tax validation ' + match.taxEvaluation.result.toUpperCase().replace('_', ' ') + ': ' + match.taxEvaluation.checks.join(' | ') +
+                ' [' + match.taxEvaluation.source + ']');
+        }
         evidence.push('Tolerances (POC ASSUMPTION) from ' + (t.source || 'x_695068_bcfa.ap.tolerance.* properties') + '.');
 
         var varianceAmount = match.priceVarianceValue;
@@ -318,12 +334,45 @@ ApDomainService.prototype = {
             varianceAmount = null;
             variancePct = null;
         }
+        var subtype = '';
+        if (reasonCode === 'tax_validation' && match.taxEvaluation) {
+            var te = match.taxEvaluation;
+            subtype = te.result === 'manual_review' && te.regime === 'UNKNOWN' ? 'tax_not_configured'
+                : te.wht.result === 'fail' || te.wht.result === 'manual_review' ? 'withholding_tax'
+                : te.regime === 'GST' ? 'gst' : te.regime === 'VAT' ? 'vat' : 'tax_amount';
+            if (subtype === 'withholding_tax' && te.wht.expected !== null && te.wht.extracted !== null) {
+                varianceAmount = te.wht.variance;
+                variancePct = te.wht.expected ? te.wht.variance / te.wht.expected : 0;
+            }
+        }
         return {
             ruleResult: 'FAIL 3-way match (' + reasonCode + '): ' + checks.join('; ') + '.',
             evidence: evidence.join('\n'),
             varianceAmount: varianceAmount,
-            variancePct: variancePct
+            variancePct: variancePct,
+            subtype: subtype
         };
+    },
+
+    // Phase 40: stores the tax validation result on the invoice (expected
+    // regime and tax, variance, withholding, result and the rule source), so
+    // the workspace, Review Summary and Playbook show it.
+    _recordTaxValidation: function(apInvoiceSysId, match) {
+        var te = match && match.taxEvaluation;
+        if (!te) return;
+        var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
+        if (!invoice.get(apInvoiceSysId)) return;
+        invoice.setValue('tax_regime', te.regime);
+        if (te.expectedTax !== null) invoice.setValue('expected_tax_amount', te.expectedTax);
+        invoice.setValue('tax_variance_amount', te.taxVariance);
+        invoice.setValue('tax_validation_result', te.result);
+        invoice.setValue('tax_validation_detail', te.checks.join('\n').substring(0, 2000));
+        invoice.setValue('tax_rule_source', String(te.source || '').substring(0, 255));
+        invoice.setValue('wht_applicable', te.wht.applicable);
+        invoice.setValue('wht_code', te.wht.code || '');
+        if (te.wht.expected !== null) invoice.setValue('wht_expected_amount', te.wht.expected);
+        invoice.setValue('wht_result', te.wht.applicable || te.wht.extracted !== null ? te.wht.result : '');
+        invoice.update();
     },
 
     // Applies the configured approval rule to a MATCHED invoice: either

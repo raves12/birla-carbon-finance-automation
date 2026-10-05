@@ -194,6 +194,11 @@ FinanceDocumentIntakeService.prototype = {
             netAmount: data.net_amount,
             source: 'workspace_upload',
             externalReference: intake.getValue('source_reference') || undefined,
+            taxBreakdown: { taxType: data.tax_type, ratePct: data.tax_rate_pct, cgst: data.cgst_amount, sgst: data.sgst_amount,
+                igst: data.igst_amount, vat: data.vat_amount, wht: data.wht_amount, whtRatePct: data.wht_rate_pct },
+            documentCountry: data.vendor_country || '',
+            documentLanguage: data.document_language || '',
+            extractionProvider: envelope.provider,
         });
         apInvoiceSysId = intakeResult.apInvoiceSysId;
 

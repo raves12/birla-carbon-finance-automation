@@ -111,6 +111,46 @@ export const x_695068_bcfa_ap_invoice = Table({
         journey_banner: StringColumn({ label: 'POC Notice', maxLength: 200, readOnly: true, hint: 'Simulated and mock capabilities used by this transaction.' }),
         journey_stage_entered: DateTimeColumn({ label: 'Stage Entered', readOnly: true }),
         journey_updated: DateTimeColumn({ label: 'Journey Updated', readOnly: true }),
+        // Phase 40 (client POC criteria): document facts and the tax as
+        // printed on the invoice (extraction), and the tax validation against
+        // the governed expectation (MatchingEngine.evaluateTax). Extraction
+        // and validation are separate concerns.
+        extraction_provider: ChoiceColumn({
+            label: 'Extraction Provider',
+            choices: { native: 'Native: ServiceNow Document Intelligence (Now LLM)', simulated: 'SIMULATED DOCUMENT EXTRACTION — POC' },
+        }),
+        document_country: StringColumn({ label: 'Document Country', maxLength: 80, hint: 'Supplier country as printed on the invoice (extraction).' }),
+        document_language: StringColumn({ label: 'Document Language', maxLength: 40 }),
+        tax_type: StringColumn({ label: 'Tax Type (Printed)', maxLength: 40, hint: 'Tax name as printed, e.g. GST, IGST, CGST+SGST, VAT.' }),
+        tax_rate_pct: DecimalColumn({ label: 'Tax Rate % (Printed)', scale: 3 }),
+        cgst_amount: DecimalColumn({ label: 'CGST (Printed)', scale: 2 }),
+        sgst_amount: DecimalColumn({ label: 'SGST (Printed)', scale: 2 }),
+        igst_amount: DecimalColumn({ label: 'IGST (Printed)', scale: 2 }),
+        vat_amount: DecimalColumn({ label: 'VAT (Printed)', scale: 2 }),
+        wht_amount: DecimalColumn({ label: 'Withholding (Printed)', scale: 2 }),
+        wht_rate_pct: DecimalColumn({ label: 'Withholding Rate % (Printed)', scale: 3 }),
+        tax_regime: StringColumn({ label: 'Expected Tax Regime', maxLength: 40, readOnly: true }),
+        expected_tax_amount: DecimalColumn({ label: 'Expected Tax', scale: 2, readOnly: true }),
+        tax_variance_amount: DecimalColumn({ label: 'Tax Variance', scale: 2, readOnly: true }),
+        tax_validation_result: ChoiceColumn({ label: 'Tax Validation', readOnly: true, choices: {
+                pass: 'Pass',
+                within_tolerance: 'Within Tolerance',
+                warning: 'Warning',
+                manual_review: 'Manual Review',
+                fail: 'Fail',
+            } }),
+        tax_validation_detail: StringColumn({ label: 'Tax Validation Detail', maxLength: 2000, readOnly: true }),
+        tax_rule_source: StringColumn({ label: 'Tax Rule Source', maxLength: 255, readOnly: true }),
+        wht_applicable: BooleanColumn({ label: 'Withholding Applicable', readOnly: true, default: false }),
+        wht_code: StringColumn({ label: 'Withholding Code', maxLength: 60, readOnly: true }),
+        wht_expected_amount: DecimalColumn({ label: 'Withholding Expected', scale: 2, readOnly: true }),
+        wht_result: ChoiceColumn({ label: 'Withholding Validation', readOnly: true, choices: {
+                pass: 'Pass',
+                within_tolerance: 'Within Tolerance',
+                warning: 'Warning',
+                manual_review: 'Manual Review',
+                fail: 'Fail',
+            } }),
     },
     index: [{ unique: false, element: 'duplicate_key' }],
 })
@@ -174,6 +214,23 @@ export const x_695068_bcfa_ap_match = Table({
             choices: { matched: 'Matched', partial: 'Partial', mismatch: 'Mismatch' },
         }),
         evaluated_at: DateTimeColumn({ label: 'Evaluated At' }),
+        // Phase 40: the tolerance rule used and every check's expected /
+        // actual / variance / result (MatchingEngine.threeWayMatch).
+        tolerance_source: StringColumn({ label: 'Tolerance Rule', maxLength: 255 }),
+        quantity_tolerance_pct: DecimalColumn({ label: 'Quantity Tolerance', scale: 4 }),
+        price_tolerance_pct: DecimalColumn({ label: 'Price Tolerance', scale: 4 }),
+        tax_tolerance_abs: DecimalColumn({ label: 'Tax Tolerance (Absolute)', scale: 2 }),
+        tax_tolerance_pct: DecimalColumn({ label: 'Tax Tolerance (Relative)', scale: 4 }),
+        total_tolerance_abs: DecimalColumn({ label: 'Total Tolerance (Absolute)', scale: 2 }),
+        expected_tax: DecimalColumn({ label: 'Expected Tax', scale: 2 }),
+        tax_result: ChoiceColumn({ label: 'Tax Result', choices: {
+                pass: 'Pass',
+                within_tolerance: 'Within Tolerance',
+                warning: 'Warning',
+                manual_review: 'Manual Review',
+                fail: 'Fail',
+            } }),
+        tolerance_detail: StringColumn({ label: 'Tolerance Detail', maxLength: 4000 }),
     },
 })
 

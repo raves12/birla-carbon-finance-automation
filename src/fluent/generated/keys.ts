@@ -2199,6 +2199,10 @@ declare global {
                         table: 'sys_properties'
                         id: '7502dbbc0f4f4324972c97c80054d5b3'
                     }
+                    'prop-ap-tax-reference': {
+                        table: 'sys_properties'
+                        id: '7de59dea50f7489d934a307f2dfcb123'
+                    }
                     'prop-ap-tolerance-price': {
                         table: 'sys_properties'
                         id: 'fa77a24864c24e29b06cfc0617b21894'
@@ -2207,6 +2211,10 @@ declare global {
                         table: 'sys_properties'
                         id: 'a14c27534bc5451b8ef978ad9a3f8f25'
                     }
+                    'prop-ap-tolerance-rounding-absolute': {
+                        table: 'sys_properties'
+                        id: 'fce08088c996402b8b4a514f6c2e4a36'
+                    }
                     'prop-ap-tolerance-tax-absolute': {
                         table: 'sys_properties'
                         id: '777a494e258e4f418fbc1356c997c9db'
@@ -2214,6 +2222,10 @@ declare global {
                     'prop-ap-tolerance-tax-relative': {
                         table: 'sys_properties'
                         id: 'f4a041f48d9e4c2d9d60ee2bd91ffe99'
+                    }
+                    'prop-ap-tolerance-total-absolute': {
+                        table: 'sys_properties'
+                        id: 'fac5180f3ddb4078b27a16e16a899c49'
                     }
                     'prop-ar-approval-auto-approve-limit': {
                         table: 'sys_properties'
@@ -2251,9 +2263,17 @@ declare global {
                         table: 'sys_properties'
                         id: 'f021675c98ee4cebba94aa33a4a08dce'
                     }
+                    'prop-ar-rounding-max-amount': {
+                        table: 'sys_properties'
+                        id: '1a8a42c456cc4ac98310e6d9dd50b290'
+                    }
                     'prop-ar-sap-processing-mode': {
                         table: 'sys_properties'
                         id: 'ddb81580bbb94fa8987dd23a299753ed'
+                    }
+                    'prop-ar-withholding-max-pct': {
+                        table: 'sys_properties'
+                        id: '83f6319d3267417b9ad650e54218b5af'
                     }
                     'prop-claude-allowed-attachment-types': {
                         table: 'sys_properties'
@@ -3164,6 +3184,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '0015a483673d44da816d7b2d78448ec4'
+                        key: {
+                            name: 'x_695068_bcfa_remittance'
+                            element: 'currency'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '00329952490641ec902daa5ddab92068'
                         deleted: true
@@ -3339,6 +3367,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '019c71d2ec32461680ce77bf01542d34'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'igst_amount'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_variable_value'
                         id: '01c39abe143643ba894254628acc48d1'
                         key: {
@@ -3488,6 +3525,14 @@ declare global {
                         key: {
                             document_key: 'd118e2b70ceb43e1ac54281979b3ebc5'
                             variable: '29255db25b21001070e4492c11f91ac5'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '02e247bd99864708ae8c611dbee38048'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'tax_validation_result'
                         }
                     },
                     {
@@ -4076,6 +4121,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '06c15ac942c94f1a9d565026a3f45fd9'
+                        key: {
+                            name: 'x_695068_bcfa_deduction'
+                            element: 'advice_reason'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '06c562cdbe4b4f8bbbe4aa7b48ad4626'
                         key: {
@@ -4168,6 +4222,17 @@ declare global {
                             agent: 'ef84e321673c4969b17dea9d03c4dae5'
                             tool: 'f8a2cd60e6a54f59a8220618e881a5c2'
                             name: 'Get AP Exception Context (Resolution)'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '075c930b74c4462ba63befeae440515f'
+                        key: {
+                            name: 'x_695068_bcfa_deduction'
+                            element: 'deduction_type'
+                            value: 'dispute'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -4479,6 +4544,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '0abf1a7fc030467c9e64890633eab4d6'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'price_tolerance_pct'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_variable_value'
                         id: '0ac262aaeaeb4b299063a137b749c3cb'
                         key: {
@@ -4501,6 +4575,14 @@ declare global {
                         key: {
                             document_key: 'dc3bd3a407c847c08be13fafcf81e88a'
                             variable: '6688ff5d0700101070e493d0fad300f6'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '0af3cb0730e84501afbb4f06e28db675'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'tax_rate_pct'
                         }
                     },
                     {
@@ -4593,6 +4675,14 @@ declare global {
                             name: 'x_695068_bcfa_ap_invoice_line'
                             element: 'NULL'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '0b76cca8905b48adae4519e1c2a7a9be'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'price_tolerance_pct'
                         }
                     },
                     {
@@ -5045,6 +5135,26 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '0eba330f5d5c4e7a8dc6664714887c0f'
+                        key: {
+                            name: 'x_695068_bcfa_deduction'
+                            element: 'currency'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '0ec71de2ccf544de8180599579b556ed'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'tax_validation_result'
+                            value: 'warning'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_atf_test_suite_test'
                         id: '0ec9d8f505854c3e85fecd7d8048866e'
                         key: {
@@ -5230,6 +5340,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '107c53c7663f482fa64b1246dfc90a62'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'deduction_type'
+                            value: 'dispute'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '1093c8d550494d1d9fe12b5861ff2c63'
                         key: {
@@ -5381,6 +5502,14 @@ declare global {
                         key: {
                             document_key: '146459d15fe94b22af62c0de84a3fbb0'
                             variable: 'd6d1f7585b92001022527d6f7281c7cc'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '1165fe05e6ca4ccc89897947cb595ec3'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'wht_applicable'
                         }
                     },
                     {
@@ -5699,6 +5828,15 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_finance_intake'
                             element: 'currency'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '14312e3540f14e1285e3aa539528665a'
+                        key: {
+                            name: 'x_695068_bcfa_remittance'
+                            element: 'bank_reference'
                             language: 'en'
                         }
                     },
@@ -6045,6 +6183,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '170ee9f757734606a456337f50ae1161'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'document_language'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_variable_value'
                         id: '170ff4dffa9f47b6afc8b208e9bfc38d'
                         deleted: true
@@ -6280,6 +6427,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '197e02cf5ba5408e9a03df8a52aab58b'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'expected_tax_amount'
+                        }
+                    },
+                    {
                         table: 'sys_element_mapping'
                         id: '19a732bc506d43eb837f92d6d56c414b'
                         key: {
@@ -6505,6 +6660,14 @@ declare global {
                         key: {
                             document_key: '1117b94a35444838bbfda68951dbfb73'
                             variable: '12e9e761870300102252c88fc0e3ecb2'
+                        }
+                    },
+                    {
+                        table: 'sys_choice_set'
+                        id: '1b35285cc5cd43db8a7022e12c8e17a5'
+                        key: {
+                            name: 'x_695068_bcfa_remittance'
+                            element: 'extraction_provider'
                         }
                     },
                     {
@@ -7603,6 +7766,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '2322c06dcbd8409390153f5d04400baa'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'wht_result'
+                            value: 'manual_review'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '2337b0a456b54b60b5ec3fe37b596c91'
                         key: {
@@ -7664,6 +7838,15 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ap_match'
                             element: 'within_tolerance'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '243e6c8376d447da848161fb0c40dd79'
+                        key: {
+                            name: 'x_695068_bcfa_vendor'
+                            element: 'tax_category'
+                            language: 'en'
                         }
                     },
                     {
@@ -8068,6 +8251,17 @@ declare global {
                     },
                     {
                         table: 'sys_choice'
+                        id: '273c42634ace4693ac4e44bdc15cd200'
+                        key: {
+                            name: 'x_695068_bcfa_deduction'
+                            element: 'deduction_type'
+                            value: 'withholding_tax'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
                         id: '2774dd117f5147c79ee1990d39c70d6f'
                         key: {
                             name: 'x_695068_bcfa_audit_event'
@@ -8445,6 +8639,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '2a3f7b32badc4cfeab45e8ef35f1a0c3'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'tax_rule_source'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_element_mapping'
                         id: '2a585446827d489296d363a90ca3ae04'
                         key: {
@@ -8640,6 +8843,15 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_customer_alias'
                             element: 'customer'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '2c31e6e2a49e4e72b840022c96e55018'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'tolerance_source'
+                            language: 'en'
                         }
                     },
                     {
@@ -9344,6 +9556,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '31f99977698f40fc84bde8b3179b5091'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'wht_result'
+                            value: 'pass'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '321734bcbc2c418b810d743c8261ed22'
                         key: {
@@ -9665,6 +9888,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '3508bc27187f4bb9a5fd74b30a2d087a'
+                        key: {
+                            name: 'x_695068_bcfa_vendor'
+                            element: 'tax_category'
+                            value: 'goods'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '350db7cc93a642e1b919b1d9abb98925'
                         key: {
@@ -9741,6 +9975,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '35a37030a4b24050b6bbd29dedf872b3'
+                        key: {
+                            name: 'x_695068_bcfa_remittance'
+                            element: 'payer_name'
+                        }
+                    },
+                    {
                         table: 'ua_table_licensing_config'
                         id: '35d619689d3a4541a5b26245cdc82d91'
                         key: {
@@ -9790,6 +10032,14 @@ declare global {
                         key: {
                             document_key: '015f1e10efcd444c8bbf86775ce8550c'
                             variable: '4612be72c3211010381b60bc0eba8f47'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '365404b4a8e2426ea6cdb975946759e5'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'wht_code'
                         }
                     },
                     {
@@ -10020,6 +10270,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '37babac6110d4248ae1c374fbb87e1f8'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'document_language'
+                        }
+                    },
+                    {
                         table: 'sys_element_mapping'
                         id: '37f45c672121462a86597dc924c406e0'
                         key: {
@@ -10168,6 +10426,14 @@ declare global {
                     },
                     {
                         table: 'sys_dictionary'
+                        id: '38e8f2cb2ed049379ff351102b455a54'
+                        key: {
+                            name: 'x_695068_bcfa_deduction'
+                            element: 'currency'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
                         id: '38edabb68da0441bb649614465e867d7'
                         key: {
                             name: 'x_695068_bcfa_ap_exception'
@@ -10235,6 +10501,14 @@ declare global {
                             name: 'x_695068_bcfa_ap_extraction'
                             element: 'ap_invoice'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '397c82093c434dbea075724f43d325a3'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'tax_result'
                         }
                     },
                     {
@@ -10389,6 +10663,14 @@ declare global {
                             value: 'short_pay'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '3a9f913656c24498a6d26574af527209'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'tax_variance_amount'
                         }
                     },
                     {
@@ -10588,6 +10870,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '3c8a3f4e81024e2798472a25f2efa004'
+                        key: {
+                            name: 'x_695068_bcfa_deduction'
+                            element: 'advice_reason'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '3c9996f57993426fbfa53c737fb5afe6'
                         key: {
@@ -10598,6 +10888,17 @@ declare global {
                                     name: 'x_695068_bcfa.admin'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '3c9a49647c074eea9d381fdc9e81d4de'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'deduction_type'
+                            value: 'commercial_deduction'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -10841,11 +11142,28 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '3dce09e3974740c7b82fee1dcec25a00'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'wht_expected_amount'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_variable_value'
                         id: '3dd85453b1d246f5b0907edb98499b3e'
                         key: {
                             document_key: 'f0af780bab9d467b938821329c225ecc'
                             variable: '576de7780f1300102920c912d4767e52'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '3de8a42a8077409a83a4fc6b835aba3e'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'tax_validation_detail'
                         }
                     },
                     {
@@ -10898,6 +11216,14 @@ declare global {
                         id: '3e377aa16a5b477597d06b7ecccc8026'
                         key: {
                             agent: 'ede6a13bfc184c5d981db3b681d43ebf'
+                        }
+                    },
+                    {
+                        table: 'sys_choice_set'
+                        id: '3e4cc43ad1744f859351c66e181a35ae'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'extraction_provider'
                         }
                     },
                     {
@@ -11245,6 +11571,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '41141a8546a44c58a86c128a247b960d'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'tax_validation_result'
+                            value: 'fail'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '411ad4ea062a4757b8b008c532337215'
                         key: {
@@ -11341,6 +11678,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '421c14ca3b3b4529a7a3ad5ff53d4f4e'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'tax_result'
+                            value: 'pass'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_element_mapping'
                         id: '423162e94b7746ad84b40d9926d9c348'
                         key: {
@@ -11380,6 +11728,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '425f75f181954871b1dd04720b7c95e5'
+                        key: {
+                            name: 'x_695068_bcfa_vendor'
+                            element: 'tax_category'
+                            value: 'services'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_element_mapping'
                         id: '425fe720054d46578e37d7609c9dcebf'
                         key: {
@@ -11394,6 +11753,17 @@ declare global {
                         key: {
                             document_key: 'fe7dda5037a04d26943d6ab3cad3eb66'
                             variable: 'e9ae23190700101070e493d0fad300c1'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '426afd8b4eee469d9fc2b955a538a5ab'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'extraction_provider'
+                            value: 'simulated'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -11531,6 +11901,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '4426b4e221dc44fda3f549ccdce1b9bf'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'cgst_amount'
+                        }
+                    },
+                    {
                         table: 'sys_ui_action_role'
                         id: '443107b422c14639951fbe2574bb0dbc'
                         key: {
@@ -11648,6 +12026,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '4514b359972945f6b2239918b96d1ed6'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'tax_type'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_element_mapping'
                         id: '4533b3daf60740858f45aaa7a7fec2c3'
                         key: {
@@ -11714,6 +12101,17 @@ declare global {
                             id: '520bb35413b5481789625362fe1aaf17'
                             table: 'var__m_sys_pd_activity_type_prop_e12af577871333003058d1a936cb0ba4'
                             field: 'experience_status_table'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '45a9192f5c5448b5ba2c33608555faca'
+                        key: {
+                            name: 'x_695068_bcfa_deduction'
+                            element: 'deduction_type'
+                            value: 'fx_difference'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -12037,6 +12435,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '477c82b9664a46fa909cdb8d31c5f9b9'
+                        key: {
+                            name: 'x_695068_bcfa_vendor'
+                            element: 'tax_category'
+                        }
+                    },
+                    {
                         table: 'sys_choice_set'
                         id: '47a03f4976d84d0e817528c3dc507655'
                         key: {
@@ -12204,6 +12610,14 @@ declare global {
                             id: 'fe7dda5037a04d26943d6ab3cad3eb66'
                             table: 'var__m_sys_pd_activity_type_prop_e12af577871333003058d1a936cb0ba4'
                             field: 'pending_description'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '494b141918284e02bd28efd48d1dc4fd'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'total_tolerance_abs'
                         }
                     },
                     {
@@ -12466,10 +12880,28 @@ declare global {
                     },
                     {
                         table: 'sys_documentation'
+                        id: '4b5ffb248791491eb335a76b18a8a4a3'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'tax_regime'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
                         id: '4b7217d44997470b85b10781c62e5f90'
                         key: {
                             name: 'x_695068_bcfa_integration_txn'
                             element: 'operation'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '4b8290d000e1444a9554014cc518eb22'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'expected_tax'
                             language: 'en'
                         }
                     },
@@ -13252,6 +13684,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '52cb09294f754815a482ff4a957dbc71'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'wht_result'
+                            value: 'within_tolerance'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '52cf907873c94c3f8dfd4b460f839b5c'
                         key: {
@@ -13349,6 +13792,22 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '53ce664f999c473293fccd2f4a8ba92b'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'tax_type'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '53d7e2df65ab41209e11b6a9fdb1c441'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'igst_amount'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '53f327d702ae413f9c7a816e0f7148bc'
                         deleted: true
@@ -13376,6 +13835,15 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_payment'
                             element: 'journey_stage_order'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '5427acc8026440059f4bd1fc39074a61'
+                        key: {
+                            name: 'x_695068_bcfa_remittance'
+                            element: 'currency'
                             language: 'en'
                         }
                     },
@@ -13447,6 +13915,15 @@ declare global {
                             id: 'ac4a2e7aa5564a049714f4abaeaaf3d8'
                             table: 'var__m_sys_pd_activity_type_prop_fdbeceb95b61001070e4492c11f91a28'
                             field: 'title'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '546094a604ec497a917657cba06623e5'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'tolerance_detail'
+                            language: 'en'
                         }
                     },
                     {
@@ -13746,6 +14223,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '568d7b96e3e3419a8fd576c473ccb78e'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'tax_regime'
+                        }
+                    },
+                    {
                         table: 'sys_element_mapping'
                         id: '569996bb61104c61950ee517708f6a78'
                         key: {
@@ -13897,6 +14382,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice_set'
+                        id: '57ae0ae964384110ad3eefa6c93500bc'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'tax_validation_result'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '57b2f0b022b344a5afc3ec5851f72ecd'
                         key: {
@@ -13952,6 +14445,14 @@ declare global {
                             name: 'x_695068_bcfa_ap_approval'
                             element: 'ap_invoice'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '5810578e42134bd9a59dbc9654863206'
+                        key: {
+                            name: 'x_695068_bcfa_remittance'
+                            element: 'payment_amount'
                         }
                     },
                     {
@@ -14208,6 +14709,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '599514decd9b495fade87712b2da7c4b'
+                        key: {
+                            name: 'x_695068_bcfa_deduction'
+                            element: 'advice_amount'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_element_mapping'
                         id: '599d3ecadb3e467dab28363d0f49a2b4'
                         key: {
@@ -14245,6 +14755,17 @@ declare global {
                             name: 'x_695068_bcfa_receipt'
                             element: 'receipt_type'
                             value: 'srn'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '59d5358be9514004953f4132f0940caf'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'tax_result'
+                            value: 'within_tolerance'
                             language: 'en'
                             dependent_value: 'NULL'
                         }
@@ -14334,6 +14855,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '5adabab676d74525b2d9c4562f171338'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'wht_result'
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: '5ae08ef574d04dda8e5a585d74d4dea8'
                         key: {
@@ -14416,6 +14945,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '5b89ba360ecf4b8d981ccae97e1d5936'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'extraction_provider'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '5bb2b826efc148d492966d463e153bf6'
                         key: {
@@ -14440,6 +14977,15 @@ declare global {
                             id: 'e5fdd8ab83ab4a8aabcc08f592731305'
                             table: 'var__m_sys_pd_activity_type_prop_fdbeceb95b61001070e4492c11f91a28'
                             field: 'icon'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '5c0c8f3cea454aef900d109a57fc8154'
+                        key: {
+                            name: 'x_695068_bcfa_remittance'
+                            element: 'extraction_provider'
+                            language: 'en'
                         }
                     },
                     {
@@ -15047,6 +15593,14 @@ declare global {
                                     name: 'x_695068_bcfa.admin'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '6138f6f56e6841e1aadf6640fa03090a'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'tax_rule_source'
                         }
                     },
                     {
@@ -15858,6 +16412,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '6696a5d9de0b47ffb3690004c2334771'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'tax_tolerance_abs'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_ui_action_role'
                         id: '6696e137bfe8496bbc8aff68aa65d9bc'
                         key: {
@@ -16163,6 +16726,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '686e417626bf48f8a94536168072beb7'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'tax_result'
+                            value: 'fail'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_variable_value'
                         id: '686f9b7c24044e3ea48a4ad9a86ea429'
                         key: {
@@ -16193,6 +16767,17 @@ declare global {
                             id: 'a82c5ed4283d421b8f51802bd717a4cc'
                             table: 'var__m_sys_pd_activity_type_prop_fdbeceb95b61001070e4492c11f91a28'
                             field: 'table'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '68ab8d4c2f3a43bfa44d57a87f67f9b9'
+                        key: {
+                            name: 'x_695068_bcfa_remittance'
+                            element: 'extraction_provider'
+                            value: 'native'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -16278,6 +16863,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '6973ab4909874cf2a766b19f50e42516'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'wht_rate_pct'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '697dad4d5dd3430d88018acde70c80bf'
                         key: {
@@ -16323,6 +16917,14 @@ declare global {
                                     name: 'x_695068_bcfa.finance_approver'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '69e9f031424a4173b4f473f055cc8ce4'
+                        key: {
+                            name: 'x_695068_bcfa_remittance'
+                            element: 'invoice_count'
                         }
                     },
                     {
@@ -16872,6 +17474,15 @@ declare global {
                     },
                     {
                         table: 'sys_documentation'
+                        id: '6e75d33bb34c46c39b49b613e71b9e17'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'tax_validation_detail'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
                         id: '6e94ec9a2f0e46e88cfa15f72bcf5873'
                         key: {
                             name: 'x_695068_bcfa_ap_extraction'
@@ -17062,6 +17673,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '6fe5d86c53a74eed8f6824a10a4eb2cc'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'deduction_type'
+                            value: 'withholding_tax'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '7028c343d51248b3bc37c2d08e927985'
                         key: {
@@ -17132,6 +17754,15 @@ declare global {
                                     name: 'x_695068_bcfa.read_only'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '70a9e940741c4a39bef7b61615d3dbf5'
+                        key: {
+                            name: 'x_695068_bcfa_remittance'
+                            element: 'payer_name'
+                            language: 'en'
                         }
                     },
                     {
@@ -17816,6 +18447,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '758955331f0242dfbfd66d7ecc8b6f32'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'quantity_tolerance_pct'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sn_aia_agent_tool_m2m'
                         id: '7595d51388fb49ebb0b1d45fc4eed1e4'
                         key: {
@@ -17934,6 +18574,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '76a927f761ec4904831079f70ed4262b'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'deduction_type'
+                            value: 'fx_difference'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '76aa1156c21a47dfabdb737cf517e82e'
                         key: {
@@ -18038,6 +18689,15 @@ declare global {
                             id: '0cc560eb92024e86af60912ba423ef23'
                             table: 'var__m_sys_pd_activity_type_prop_fdbeceb95b61001070e4492c11f91a28'
                             field: 'columns'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '777a574729b14be088d5c9a61f19c9e9'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'total_tolerance_abs'
+                            language: 'en'
                         }
                     },
                     {
@@ -18482,6 +19142,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '7b2448b68fc34373ab046d0fa73ba690'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'wht_code'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_choice_set'
                         id: '7b5aac27bd4847f893ac25c12dc3f61c'
                         key: {
@@ -18828,6 +19497,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '7ea54af116bc4384b53b255135f37639'
+                        key: {
+                            name: 'x_695068_bcfa_deduction'
+                            element: 'deduction_type'
+                            value: 'rounding'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_choice_set'
                         id: '7eb146f1b86b4ba8a8b94940ce14ae18'
                         key: {
@@ -19067,6 +19747,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '80b1d096ce5e42f890eb3dab0db50c52'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'tolerance_source'
+                        }
+                    },
+                    {
                         table: 'sys_db_object'
                         id: '80b48fddc4c24937817eacc13469ae64'
                         key: {
@@ -19106,6 +19794,14 @@ declare global {
                         key: {
                             document_key: '4df94440c7c84b9382b0e68c441ca2f8'
                             variable: '989d9e235324220002c6435723dc3484'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '814921e43b284666b43bbd3ad04a0b40'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'expected_tax'
                         }
                     },
                     {
@@ -19456,6 +20152,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '84c21d6eea444120997c4f13d1b0d389'
+                        key: {
+                            name: 'x_695068_bcfa_deduction'
+                            element: 'advice_amount'
+                        }
+                    },
+                    {
                         table: 'sys_variable_value'
                         id: '84c78dd3f904480188ecde265995afc4'
                         key: {
@@ -19732,6 +20436,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '868c88beaf4745099cceb03958ce0882'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'vat_amount'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '86a185cb773343e68ee3b3308c9d24ac'
                         key: {
@@ -19814,6 +20527,15 @@ declare global {
                         key: {
                             sys_security_acl: '723e753574cb41b0a1342e95b84030ca'
                             sys_user_role: '03604bf4100246588f4250676240bc18'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '8732134a73d749b5a860202e59dff21a'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'tax_result'
+                            language: 'en'
                         }
                     },
                     {
@@ -20022,6 +20744,15 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_finance_intake'
                             element: 'ap_invoice'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '889da6f87bc44b68938672bc310dee34'
+                        key: {
+                            name: 'x_695068_bcfa_remittance'
+                            element: 'payment_amount'
+                            language: 'en'
                         }
                     },
                     {
@@ -20268,6 +20999,17 @@ declare global {
                         key: {
                             document_key: '5fe89dd4bee74690bc286be6f1d4aee3'
                             variable: '9d2ff6a7c3611010381b60bc0eba8f3c'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '8ab94f5d44a84750bf17dcf4105841cd'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'tax_result'
+                            value: 'manual_review'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -20542,6 +21284,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '8d4f176a24a349b095d2d9f3348339df'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'document_country'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '8d5846763ad44bae909d21d4442b468e'
                         key: {
@@ -20590,6 +21341,14 @@ declare global {
                             id: 'b0bf6fb7bcf94dc98f54977bb332dba4'
                             table: 'var__m_sys_pd_activity_type_prop_fdbeceb95b61001070e4492c11f91a28'
                             field: 'max_columns'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '8de167401bb446289f6f1b10a169b3be'
+                        key: {
+                            name: 'x_695068_bcfa_remittance'
+                            element: 'extraction_provider'
                         }
                     },
                     {
@@ -20736,6 +21495,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '8ebeacc6b78a497cbe4c66c401bda89c'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'deduction_type'
+                            value: 'rounding'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '8ee8067e71204865993d14b45b92443a'
                         key: {
@@ -20834,6 +21604,15 @@ declare global {
                             value: 'ap'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '8f7d95833b114bdeba21176fe7fd8190'
+                        key: {
+                            name: 'x_695068_bcfa_remittance'
+                            element: 'invoice_count'
+                            language: 'en'
                         }
                     },
                     {
@@ -21110,6 +21889,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '92b53c9dc3194b69b49773ba3111d8b3'
+                        key: {
+                            name: 'x_695068_bcfa_remittance'
+                            element: 'extraction_provider'
+                            value: 'simulated'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_variable_value'
                         id: '92c9238d24b54fd58a0af7ccfb0629a2'
                         key: {
@@ -21347,6 +22137,17 @@ declare global {
                             name: 'x_695068_bcfa_purchase_order'
                             element: 'status'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '94d6b2fe64694e989fb91b81aba72c70'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'extraction_provider'
+                            value: 'native'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -21639,11 +22440,33 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '978cd081920047a7907f636ab5a95327'
+                        key: {
+                            name: 'x_695068_bcfa_deduction'
+                            element: 'deduction_type'
+                            value: 'commercial_deduction'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_variable_value'
                         id: '978e1df9a17846cb98e0ebc94b743488'
                         key: {
                             document_key: '2cd18091509d49ea8419850c2ce4d51e'
                             variable: '77edf4e40f100010f5bf5ae9c4767edb'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '9793677bf4b54c6fb4187b37b0bb3ed9'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'tax_validation_result'
+                            value: 'pass'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -21770,6 +22593,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '98b54f158b444473b0dd321d840fb2d1'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'tax_validation_result'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_agent_access_role_configuration'
                         id: '98cf77d1724947afb1a1e507ccd940d3'
                         key: {
@@ -21888,6 +22720,15 @@ declare global {
                             id: 'b7025ad86ced467698d17d82c6349b92'
                             table: 'var__m_sys_pd_activity_type_prop_e12af577871333003058d1a936cb0ba4'
                             field: 'is_automated'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '99a539e76b764cd69cf55062026c523a'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'tax_variance_amount'
+                            language: 'en'
                         }
                     },
                     {
@@ -22777,6 +23618,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: 'a000946612464b4a84f8bb75ee7947b9'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'document_country'
+                        }
+                    },
+                    {
                         table: 'sys_variable_value'
                         id: 'a00456327d7041fa97e2354cc2ca0d7e'
                         key: {
@@ -23084,6 +23933,15 @@ declare global {
                     },
                     {
                         table: 'sys_documentation'
+                        id: 'a33da97cd7684fd3ab53443c8a0cc139'
+                        key: {
+                            name: 'x_695068_bcfa_remittance'
+                            element: 'advice_deduction_amount'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
                         id: 'a34dae74b3974247aa55fd7b63721cda'
                         key: {
                             name: 'x_695068_bcfa_ap_exception'
@@ -23209,6 +24067,17 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ap_exception'
                             element: 'decided_at'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'a4ac2b7fddca4b929aab05f0fb50d93f'
+                        key: {
+                            name: 'x_695068_bcfa_deduction'
+                            element: 'category_source'
+                            value: 'human_confirmed'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -24015,6 +24884,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: 'aadfd2bd2e924012b77ea41bbdcb92c5'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'wht_result'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_ux_form_action'
                         id: 'aaf87f83a182415b955ee77df5673e82'
                         key: {
@@ -24184,6 +25062,17 @@ declare global {
                         key: {
                             document_key: '1b38d35b1fe24b55a9a88afb9d4a9c87'
                             variable: '12e9e761870300102252c88fc0e3ecb2'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'acbd177cbaa543aba59ad9543e0f49b1'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'wht_result'
+                            value: 'fail'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -24424,6 +25313,15 @@ declare global {
                     },
                     {
                         table: 'sys_documentation'
+                        id: 'ae69b9f66fcf49f2a5d05fb7154d8441'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'expected_tax_amount'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
                         id: 'ae9f6f2058754fa4bd4a9ac6d2aa38cf'
                         key: {
                             name: 'x_695068_bcfa_audit_event'
@@ -24462,12 +25360,28 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: 'af26c4915fb34f32b4021a614fc82fa7'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'quantity_tolerance_pct'
+                        }
+                    },
+                    {
                         table: 'sys_element_mapping'
                         id: 'af397497d9f64568abf3c92cc161363f'
                         key: {
                             id: '49df08932c34408daafef2169e87c053'
                             table: 'var__m_atf_input_variable_41de4a935332120028bc29cac2dc349a'
                             field: 'script'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: 'af3f405dd0e94052a79cd65c4781e06c'
+                        key: {
+                            name: 'x_695068_bcfa_remittance'
+                            element: 'advice_deduction_amount'
                         }
                     },
                     {
@@ -24521,6 +25435,17 @@ declare global {
                             name: 'x_695068_bcfa_ap_invoice'
                             element: 'journey_stage_order'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'b026ef7ae16b44ce847d739642634498'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'tax_validation_result'
+                            value: 'manual_review'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -25386,6 +26311,15 @@ declare global {
                     },
                     {
                         table: 'sys_documentation'
+                        id: 'b6a28fe086f04f03b1e3859b84e0a067'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'sgst_amount'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
                         id: 'b6aa0e7843894a49bb296c6f429e43c0'
                         key: {
                             name: 'x_695068_bcfa_ap_invoice'
@@ -25644,12 +26578,31 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: 'b9358fea6d8b4ff2b0c4a7e0c9f8c03f'
+                        key: {
+                            name: 'x_695068_bcfa_deduction'
+                            element: 'deduction_type'
+                            value: 'other'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: 'b9781b9f824a49b1a23b7a241b2a1a1f'
                         key: {
                             name: 'x_695068_bcfa_customer'
                             element: 'company_code'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: 'b9abfbcaff2e46719f665440c7e8d68a'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'wht_expected_amount'
                         }
                     },
                     {
@@ -26085,6 +27038,17 @@ declare global {
                     },
                     {
                         table: 'sys_choice'
+                        id: 'bdb3b8e862c84713a47f1fdefc3c4021'
+                        key: {
+                            name: 'x_695068_bcfa_deduction'
+                            element: 'deduction_type'
+                            value: 'debit_note'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
                         id: 'bdb5b24d836744c9b745c1e3faafbae9'
                         key: {
                             name: 'x_695068_bcfa_payment_allocation'
@@ -26225,6 +27189,14 @@ declare global {
                         key: {
                             document_key: '146459d15fe94b22af62c0de84a3fbb0'
                             variable: '1d8b12fe5b61001070e4492c11f91a19'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: 'bf412a14dcb24fdf8dc3b803085b19f1'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'tolerance_detail'
                         }
                     },
                     {
@@ -26422,6 +27394,15 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_finance_intake'
                             element: 'claude_request_id'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'c06a1cf836b442b5b18c819784eb46f9'
+                        key: {
+                            name: 'x_695068_bcfa_remittance'
+                            element: 'advice_deduction_reason'
                             language: 'en'
                         }
                     },
@@ -26811,6 +27792,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: 'c3d7df6555684065afdabcd517063393'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'tax_rate_pct'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_variable_value'
                         id: 'c4027e6344f24a2bbbed2a42f905cf34'
                         key: {
@@ -27132,6 +28122,15 @@ declare global {
                         key: {
                             document_key: '555dfd84ea3c4951b8ebe6da59e1f97f'
                             variable: 'd803775a5b01001031a67d6f7281c7aa'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'c619bcd0101649c08db5ef2a1b27e1bc'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'cgst_amount'
+                            language: 'en'
                         }
                     },
                     {
@@ -27595,6 +28594,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: 'c9bf48c4ff6047d3a169860017cdf88e'
+                        key: {
+                            name: 'x_695068_bcfa_remittance'
+                            element: 'advice_deduction_reason'
+                        }
+                    },
+                    {
                         table: 'sys_choice_set'
                         id: 'c9f899717a564c3f86b10a9054e50f43'
                         key: {
@@ -27884,6 +28891,14 @@ declare global {
                         key: {
                             document_key: '832259ad0f4f445590679d62abf5b58e'
                             variable: '05bee8875b00001070e4492c11f91afb'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: 'cc2f3efe7ef944b993331f9107909b23'
+                        key: {
+                            name: 'x_695068_bcfa_deduction'
+                            element: 'ai_recommendation'
                         }
                     },
                     {
@@ -28282,6 +29297,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: 'cf613cfb43d846aeb42536cf62242124'
+                        key: {
+                            name: 'x_695068_bcfa_deduction'
+                            element: 'category_source'
+                        }
+                    },
+                    {
                         table: 'sn_aia_agent_tool_m2m'
                         id: 'cf66e45cdec64bcbbd6f9857e53218b7'
                         key: {
@@ -28518,6 +29541,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: 'd131da6c07fc47aa89867bd79326a2c1'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'wht_rate_pct'
+                        }
+                    },
+                    {
                         table: 'sys_db_object'
                         id: 'd132e0c928894abd88d337457009df0b'
                         key: {
@@ -28596,6 +29627,15 @@ declare global {
                         key: {
                             document_key: 'ac4a2e7aa5564a049714f4abaeaaf3d8'
                             variable: '9d2ff6a7c3611010381b60bc0eba8f3c'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'd233371dc0784d1f8c6017a0c3986ea6'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'wht_applicable'
+                            language: 'en'
                         }
                     },
                     {
@@ -28753,6 +29793,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: 'd31b61d259f44292a46fc3126a5b491b'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'tax_result'
+                            value: 'warning'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_variable_value'
                         id: 'd31e389b8521431dbee00cdcfb16671b'
                         key: {
@@ -28810,6 +29861,14 @@ declare global {
                         key: {
                             document_key: '825c973eca4f4a268ade29b269e0e59f'
                             variable: '12e9e761870300102252c88fc0e3ecb2'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: 'd340a44b0fb341549eeeea333a279bf7'
+                        key: {
+                            name: 'x_695068_bcfa_remittance'
+                            element: 'bank_reference'
                         }
                     },
                     {
@@ -28956,6 +30015,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice_set'
+                        id: 'd48ab8c3a47245a7b604b8549bb5ae43'
+                        key: {
+                            name: 'x_695068_bcfa_vendor'
+                            element: 'tax_category'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: 'd48c699a295949728a4f6bd916b4708c'
                         key: {
@@ -29063,11 +30130,27 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: 'd611e1d7f6ec46edaa2d8b93ea708daf'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'wht_amount'
+                        }
+                    },
+                    {
                         table: 'sys_variable_value'
                         id: 'd61980843cc741feb7c246ac1db61a74'
                         key: {
                             document_key: 'e2ee359e47014c559e6ffb145448dbaa'
                             variable: '54c49bc60f3200102920c912d4767ee2'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: 'd657b047a2db4ddcb89f40df91845b7c'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'sgst_amount'
                         }
                     },
                     {
@@ -29150,6 +30233,17 @@ declare global {
                         key: {
                             document_key: '1b38d35b1fe24b55a9a88afb9d4a9c87'
                             variable: '3f9d744673030010fe4a6da44cf6a7b9'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'd70d5750929440f99e7b6299d21b8446'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'tax_validation_result'
+                            value: 'within_tolerance'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -29729,6 +30823,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: 'dc3be8fb366c4d45b3ed734e106427a6'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'tax_tolerance_abs'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: 'dc44302b8432408ca2be79df8a87f2c4'
                         key: {
@@ -29791,6 +30893,17 @@ declare global {
                         key: {
                             document_key: 'e2ee359e47014c559e6ffb145448dbaa'
                             variable: '5e5272b2c3211010381b60bc0eba8f13'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'dcb329459b584b73b171f762ac419030'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'wht_result'
+                            value: 'warning'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -29994,6 +31107,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice_set'
+                        id: 'dddf5270b7574206bcd88035c854e3fd'
+                        key: {
+                            name: 'x_695068_bcfa_deduction'
+                            element: 'category_source'
+                        }
+                    },
+                    {
                         table: 'sys_element_mapping'
                         id: 'de0220554b8d4d1f897760485004a269'
                         key: {
@@ -30025,6 +31146,26 @@ declare global {
                         key: {
                             document_key: '8210cafa048f4b40b3c4675357071bf4'
                             variable: '77edf4e40f100010f5bf5ae9c4767edb'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'de37f41befd74af1b7e6b0ca40027080'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'deduction_type'
+                            value: 'other'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'de50a4d6444147fdb34934f7e8376108'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'tax_tolerance_pct'
+                            language: 'en'
                         }
                     },
                     {
@@ -30198,6 +31339,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: 'df1bd5d9a2b0414fa3715994bc4b2ff9'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'tax_tolerance_pct'
+                        }
+                    },
+                    {
                         table: 'sys_element_mapping'
                         id: 'df235c19caed415ba513d1e9c6177dcb'
                         key: {
@@ -30223,6 +31372,15 @@ declare global {
                         key: {
                             document_key: '10ae819410e24d449c4abada360e092e'
                             variable: '3f9d744673030010fe4a6da44cf6a7b9'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'df3bcbc11b6c4f6dbab960a9aca1413c'
+                        key: {
+                            name: 'x_695068_bcfa_deduction'
+                            element: 'category_source'
+                            language: 'en'
                         }
                     },
                     {
@@ -30682,6 +31840,15 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_integration_txn'
                             element: 'requested_at'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'e2b2c70e43994a31b82160a7427512ee'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'extraction_provider'
+                            language: 'en'
                         }
                     },
                     {
@@ -31358,6 +32525,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: 'e80f18b8208a4bd788bc4d7ceacfdde9'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'vat_amount'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: 'e819de7c053f46f8913f6f928602332f'
                         key: {
@@ -31419,6 +32594,17 @@ declare global {
                             name: 'x_695068_bcfa_payment'
                             element: 'sap_status'
                             value: 'unknown_outcome'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'e84b02263a63477b9c558c92ecac7ffc'
+                        key: {
+                            name: 'x_695068_bcfa_deduction'
+                            element: 'category_source'
+                            value: 'advice_stated'
                             language: 'en'
                             dependent_value: 'NULL'
                         }
@@ -31938,6 +33124,17 @@ declare global {
                             name: 'x_695068_bcfa_ai_interaction'
                             element: 'operation'
                             value: 'connectivity_test'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'ec485a6d592647dd8253dcc1a49ee1ce'
+                        key: {
+                            name: 'x_695068_bcfa_deduction'
+                            element: 'category_source'
+                            value: 'rule_suggested'
                             language: 'en'
                             dependent_value: 'NULL'
                         }
@@ -32829,6 +34026,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: 'f36e0a0e334843d29ab3357e5a1e49ce'
+                        key: {
+                            name: 'x_695068_bcfa_ar_exception'
+                            element: 'deduction_type'
+                            value: 'debit_note'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: 'f382892b71e8412dac0f07787ecd9294'
                         key: {
@@ -33009,6 +34217,15 @@ declare global {
                                     name: 'x_695068_bcfa.finance_reviewer'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'f4e2a8aed9ea45d0b2b23fb10f837002'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'wht_amount'
+                            language: 'en'
                         }
                     },
                     {
@@ -33319,6 +34536,14 @@ declare global {
                             id: '6ebb2fb065c24d16bbc145510dd60066'
                             table: 'var__m_sys_pd_activity_type_prop_fdbeceb95b61001070e4492c11f91a28'
                             field: 'list_title'
+                        }
+                    },
+                    {
+                        table: 'sys_choice_set'
+                        id: 'f6ee52cfee09403b8cc710c11ca67941'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'wht_result'
                         }
                     },
                     {
@@ -33711,6 +34936,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: 'fa13e495d8384b02b92a7f481bd5bd2e'
+                        key: {
+                            name: 'x_695068_bcfa_deduction'
+                            element: 'ai_recommendation'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: 'fa1b190fc91640c08c7922f61f7d83e6'
                         key: {
@@ -33875,6 +35109,14 @@ declare global {
                             id: 'd118e2b70ceb43e1ac54281979b3ebc5'
                             table: 'var__m_sys_pd_activity_type_prop_fdbeceb95b61001070e4492c11f91a28'
                             field: 'table'
+                        }
+                    },
+                    {
+                        table: 'sys_choice_set'
+                        id: 'fb38c5dee221487c8555676a5dbab7e7'
+                        key: {
+                            name: 'x_695068_bcfa_ap_match'
+                            element: 'tax_result'
                         }
                     },
                     {
