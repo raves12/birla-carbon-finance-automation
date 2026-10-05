@@ -24,14 +24,15 @@ Production readiness is not claimed.
 ============================================================
 CORE APPLICATION
 ============================================================
-AP E2E:               PASS    (fresh run 6ABE1: AP-A..F; AP-B override approval is a manual
-                               step for an authorised approver, the SoD refusal itself passes)
+AP E2E:               PASS    (fresh run 6ABE1: AP-A..F; AP-B completed 2026-10-05 by the
+                               override approval as bcfa.finance.controller, MT-AP-17)
 AR E2E:               PASS    (fresh run 6ABE1: AR-A..I + AR-C2)
 Document Extraction:  SIMULATED (native Document Intelligence: LICENSE / CONFIG REQUIRED)
 Native AI:            PASS    (Now Assist skills and agents live, guarded and tested;
                                AR Recommended Next Action prompt v3 published)
 Approvals:            PASS
-SoD:                  PASS    (ATF; E2E AP-B: override refused for a non-approver)
+SoD:                  PASS    (ATF; E2E AP-B: override refused for a non-approver and
+                               accepted for the controller, SoD check recorded)
 SAP Mock:             PASS
 Real SAP:             NOT CONFIGURED
 Audit:                PASS
@@ -91,12 +92,18 @@ Defects found and fixed in this phase:
 
 Open items:
   1. (closed 2026-10-05) BCFA Workspace Playbook page.
-  2. AP-B / MT-AP-17 (open, manual): approve the tolerance override on
-     APEX0001065 (invoice E2E-6ABE1-B, quantity variance 2,500 EUR) as an
-     authorised approver (bcfa.finance.controller). Because of D6:
-     (a) as admin or the AP processor, enter the Decision Reason and Update;
-     (b) impersonate bcfa.finance.controller and click Approve Override.
-     The assistant's tooling does not permit impersonating users.
+  2. (closed 2026-10-05) AP-B / MT-AP-17: the reason was entered first
+     (D6 workaround), then bcfa.finance.controller clicked Approve Override
+     on APEX0001065 (E2E-6ABE1-B). Verified on the instance:
+       - exception resolved, decision approve_override, decided by the
+         controller;
+       - override approval (group BCFA Finance Controllers) approved by the
+         controller; SoD: not an AI identity, holds ap_approver, not the
+         requester, not the processor, member of the group;
+       - invoice approved, posted once (MIRO1052731, attempt 1), archived,
+         CLOSED; journey complete;
+       - audit: override, approval_requested, approval_decision,
+         integration_call / result, reconciliation, closure.
   3. (closed 2026-10-05) Studio commit with "Include changes not tracked in
      update sets": commit 43edb7d on sn_instances/pwcmanagementservicesdemo01
      (367 files, including both Playbooks and the workspace Playbook page).
@@ -157,7 +164,7 @@ ATF passed:               35 (serial, 2026-10-01, after the Phase 35 deploy and 
                           PB-UI-004 / PB-UI-005 rerun and passed 2026-10-05
                           after the workspace page change)
 ATF failed:               0
-AP E2E result:            PASS (6/6; AP-B approval step manual)
+AP E2E result:            PASS (6/6; AP-B approval done as the controller, MT-AP-17)
 AR E2E result:            PASS (10/10 incl. AR-C2)
 Playbook test result:     PASS (22/22)
 Security result:          PASS (SoD, AI identity, override SoD in E2E)

@@ -83,7 +83,7 @@ Script `scripts/deploy/phase35_e2e_bg.js`, scope `x_695068_bcfa`, inline pipelin
 | Scenario | Result | Evidence (checks that passed) |
 |---|---|---|
 | AP-A clean invoice | PASS | matched without exception; 3-way match within tolerance; approved; posted MIRO…; one posting; audit trail; journey 9 complete |
-| AP-B quantity variance | PASS* | match failure → quantity tolerance exception; journey stage 4 blocked with WHY; override without a reason refused; **override refused by SoD for a user who is not an authorised approver**, nothing changed. *The approval itself must be made by an `ap_approver` in the routed group (bcfa.finance.controller): manual test MT-AP-17. The assistant cannot impersonate users.* |
+| AP-B quantity variance | PASS | match failure → quantity tolerance exception; journey stage 4 blocked with WHY; override without a reason refused; **override refused by SoD for a user who is not an authorised approver**, nothing changed. **Completed 2026-10-05 (MT-AP-17):** the reason was entered first (D6), then `bcfa.finance.controller` approved the override on APEX0001065. Result: SoD check passed and recorded; one posting, MIRO1052731 (attempt 1); archived; CLOSED; journey complete; full audit trail |
 | AP-C duplicate | PASS | duplicate detected; stage 3 blocked; override refused by policy; rejected; never posted |
 | AP-D low confidence | PASS | low-confidence exception; stage 2 blocked; no match created |
 | AP-E posting failure | PASS | FAILED, not closed; failed integration transaction; stage 7 blocked |
@@ -120,4 +120,4 @@ Earlier runs of the E2E script (BB6BE, CA9C9, B3EC9, E65D9, F3ADD, 137E5) failed
 
 ## 4. Manual tests
 
-`MANUAL_TEST_CASES.md` (MT-AP, MT-AR, MT-SEC, MT-UI). **Not run as a manual pass in this phase.** Their system behaviour is covered by the ATF and E2E runs above. MT-AP-17 (override approval by an authorised approver) is the one step that needs a person.
+`MANUAL_TEST_CASES.md` (MT-AP, MT-AR, MT-SEC, MT-UI). **Not run as a manual pass in this phase.** Their system behaviour is covered by the ATF and E2E runs above. MT-AP-17 (override approval by an authorised approver) was run on 2026-10-05: **PASS**, with the defect D6 workaround (the approver cannot edit the Decision Reason, so it is entered first).
