@@ -137,6 +137,54 @@ IntegrationService.prototype = {
         }
     },
 
+    // Phase 41: the adapter's own answer decides the outcome (real SAP), the
+    // same states the simulation modes produce. Adapter statuses (see
+    // RealSAPAdapter): SUCCESS, VALIDATION_ERROR, TECHNICAL_ERROR, TIMEOUT,
+    // UNKNOWN_OUTCOME, DUPLICATE, NOT_CONFIGURED. A result without a status
+    // (reads) is a success.
+    _applyAdapterOutcome: function(operation, adapterResult, result, txn) {
+        var status = String((adapterResult && adapterResult.status) || 'SUCCESS').toUpperCase();
+        var message = adapterResult && adapterResult.message ? String(adapterResult.message).substring(0, 1000) : '';
+        result.response = adapterResult || null;
+        result.message = message;
+        if (status === 'NOT_CONFIGURED') {
+            // Nothing was sent: a definite, safe failure.
+            result.status = 'failed';
+            txn.setValue('error_code', 'NOT_CONFIGURED');
+            txn.setValue('error_message', message);
+        } else if (status === 'VALIDATION_ERROR' || status === 'REJECTED') {
+            result.status = 'validation_error';
+            txn.setValue('error_code', 'VALIDATION_ERROR');
+            txn.setValue('error_message', message || 'Rejected by ' + txn.getValue('adapter'));
+        } else if (status === 'TECHNICAL_ERROR') {
+            result.status = 'technical_error';
+            txn.setValue('error_code', 'TECHNICAL_ERROR');
+            txn.setValue('error_message', message || 'Technical error from ' + txn.getValue('adapter'));
+        } else if (status === 'DUPLICATE') {
+            result.status = 'duplicate';
+            txn.setValue('error_code', 'DUPLICATE');
+            txn.setValue('error_message', message || 'Duplicate detected by ' + txn.getValue('adapter'));
+        } else if (status === 'TIMEOUT' || status === 'UNKNOWN_OUTCOME') {
+            if (IntegrationService.WRITE_OPERATIONS[operation]) {
+                result.status = status === 'TIMEOUT' ? 'timeout' : 'unknown_outcome';
+                result.unknownOutcome = true;
+                txn.setValue('unknown_outcome_flag', true);
+                txn.setValue('reconciliation_state', 'pending');
+                txn.setValue('error_code', status);
+                txn.setValue('error_message', (message ? message + ' ' : '') + 'Outcome unknown: do not retry the write; query the status and reconcile.');
+            } else {
+                result.status = 'technical_error';
+                txn.setValue('error_code', status);
+                txn.setValue('error_message', message || 'No answer from ' + txn.getValue('adapter') + ' (read; safe to repeat).');
+            }
+        } else {
+            if (adapterResult && adapterResult.sapDocumentId) txn.setValue('external_document_id', adapterResult.sapDocumentId);
+            if (adapterResult && adapterResult.warnings && adapterResult.warnings.length) {
+                txn.setValue('error_message', ('Warnings: ' + adapterResult.warnings.join('; ')).substring(0, 1000));
+            }
+        }
+    },
+
     _callAdapter: function(adapter, operation, payload) {
         switch (operation) {
             case 'getVendor': return adapter.getVendor(payload.vendorCode);
@@ -150,6 +198,7 @@ IntegrationService.prototype = {
             case 'postVendorInvoice': return adapter.postVendorInvoice(payload);
             case 'clearCustomerPayment': return adapter.clearCustomerPayment(payload);
             case 'queryTransactionStatus': return adapter.queryTransactionStatus(payload.operation, payload.idempotencyKey, payload.externalReference, payload.documentId);
+            case 'getDraftStatus': return adapter.getDraftStatus(payload.documentId, payload.draftIdempotencyKey);
             case 'getBankStatement': return adapter.getBankStatement(payload.bankAccount, payload.fromDate, payload.toDate);
             case 'archive': return adapter.archive(payload.sourceTable, payload.sourceRecord, payload.correlationId);
             default: throw 'Unknown operation: ' + operation;
@@ -248,18 +297,18 @@ IntegrationService.prototype = {
             // 'partial_response' execute the adapter call.
             var adapterPayload = JSON.parse(JSON.stringify(requestPayload));
             adapterPayload.idempotencyKey = idempotencyKey;
-            var adapterResult = this._callAdapter(this._getAdapter(adapterName), operation, adapterPayload);
-            if (adapterResult && adapterResult.status === 'NOT_CONFIGURED') {
-                // Nothing was sent: a definite, safe failure.
-                result.status = 'failed';
-                result.response = adapterResult;
-                txn.setValue('error_code', 'NOT_CONFIGURED');
-                txn.setValue('error_message', adapterResult.message);
-            } else {
-                if (effectiveMode === 'partial_response' && adapterResult) adapterResult.partial = true;
-                result.response = adapterResult;
-                if (adapterResult && adapterResult.sapDocumentId) txn.setValue('external_document_id', adapterResult.sapDocumentId);
+            var adapterResult;
+            try {
+                adapterResult = this._callAdapter(this._getAdapter(adapterName), operation, adapterPayload);
+            } catch (callError) {
+                // Phase 41: a real connection can fail mid-call. A write may
+                // have reached SAP, so its outcome is unknown; a read is a
+                // definite technical error (safe to repeat).
+                var text = String(callError && callError.message ? callError.message : callError).substring(0, 1000);
+                adapterResult = { status: IntegrationService.WRITE_OPERATIONS[operation] ? 'UNKNOWN_OUTCOME' : 'TECHNICAL_ERROR', message: 'Adapter call failed: ' + text };
             }
+            this._applyAdapterOutcome(operation, adapterResult, result, txn);
+            if (effectiveMode === 'partial_response' && result.response) result.response.partial = true;
         }
 
         txn.setValue('status', result.status);

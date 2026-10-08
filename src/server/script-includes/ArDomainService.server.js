@@ -167,6 +167,13 @@ ArDomainService.prototype = {
         }
         var sysId = remittance.insert();
         var parentPayment = new GlideRecord('x_695068_bcfa_payment');
+        // Phase 41, defect 7: the advice as read, in readable sections, on the
+        // payment (Playbook and form); display only.
+        if (fields.extractedFields && parentPayment.get(paymentSysId)) {
+            parentPayment.setValue('advice_summary', new FinanceTextFormat().extractionSummary(fields.extractedFields, 'ar'));
+            parentPayment.setWorkflow(false);
+            parentPayment.update();
+        }
         this.auditEngine.logEvent({
             correlationId: parentPayment.get(paymentSysId) ? parentPayment.getValue('correlation_id') : '',
             sourceTable: 'x_695068_bcfa_remittance',
@@ -858,6 +865,8 @@ ArDomainService.prototype = {
         options = options || {};
         if (!options.group) options.group = FinancePolicy.DEFAULT_APPROVAL_GROUP;
         var approvalSysId = this.approvalEngine.requestPaymentApproval(paymentSysId, requestedBy, options);
+        // The summary shows the approval: refresh it now the approval exists.
+        new FinanceReviewSummary().refreshPayment(paymentSysId);
         return { approvalSysId: approvalSysId };
     },
 
@@ -896,7 +905,7 @@ ArDomainService.prototype = {
             payment.setWorkflow(false);
             payment.update();
         }
-        this._setState(paymentSysId, 'CLEARING', null, 'Sending the approved clearing instruction to SAP (' + mode.toUpperCase() + ' mode, mock SAP)');
+        this._setState(paymentSysId, 'CLEARING', null, 'Sending the approved clearing instruction to ' + this.policy.sapLabel() + ' (' + mode.toUpperCase() + ' mode)');
 
         var idempotencyKey = payment.getValue('idempotency_key') || ('AR-CLEAR-' + paymentSysId);
         var result = this.integrationService.execute({
@@ -908,7 +917,8 @@ ArDomainService.prototype = {
             externalReference: payment.getValue('bank_reference'),
             sourceTable: 'x_695068_bcfa_payment',
             sourceRecord: paymentSysId,
-            payload: { bankReference: payment.getValue('bank_reference'), customer: payment.getValue('customer'), amount: payment.getValue('amount'), processingMode: mode },
+            // Phase 41: the SAP-ready request (SapPayloadBuilder, schema bcfa.sap/1).
+            payload: new SapPayloadBuilder().paymentClearing(paymentSysId, mode),
             simulateOutcome: simulateOutcome
         });
 
@@ -921,7 +931,7 @@ ArDomainService.prototype = {
             // is cleared yet: allocations and open items stay as they are until
             // SAP confirms the draft (checkSapDraftStatus).
             this._setSapStatus(paymentSysId, 'staged_draft', result.response.sapDocumentId);
-            this._setState(paymentSysId, 'SAP_DRAFT', null, 'Clearing instruction staged in SAP as a draft (mock SAP): ' + result.response.sapDocumentId + '; awaiting SAP confirmation.',
+            this._setState(paymentSysId, 'SAP_DRAFT', null, 'Clearing instruction staged in ' + this.policy.sapLabel() + ' as a draft: ' + result.response.sapDocumentId + '; awaiting SAP confirmation.',
                 { eventType: 'integration_result', reason: 'SAP processing mode DRAFT', after: { sap_processing_mode: 'draft', sap_draft_document: result.response.sapDocumentId, transaction: result.transactionSysId } });
             return { cleared: false, staged: true, sapDraftDocumentId: result.response.sapDocumentId, transactionSysId: result.transactionSysId };
         }
@@ -936,7 +946,8 @@ ArDomainService.prototype = {
                 allocation.update();
             }
             this._settleOpenItems(paymentSysId);
-            this._setState(paymentSysId, 'CLEARED', null, 'Cleared in SAP (simulated): ' + (result.response ? result.response.sapDocumentId : ''));
+            this._setState(paymentSysId, 'CLEARED', null, 'Cleared in ' + this.policy.sapLabel() + ': ' + (result.response ? result.response.sapDocumentId : '') +
+                (result.response && result.response.warnings && result.response.warnings.length ? ' (warnings: ' + result.response.warnings.join('; ') + ')' : ''));
             this.reconcileAndClose(paymentSysId);
             return { cleared: true, sapDocumentId: result.response ? result.response.sapDocumentId : null };
         }
@@ -948,8 +959,8 @@ ArDomainService.prototype = {
         }
 
         this._setSapStatus(paymentSysId, 'failed', '');
-        var exceptionSysId = this.exceptionEngine.createArException(paymentSysId, 'other', 'SAP clearing failed: ' + result.status);
-        this._setState(paymentSysId, 'FAILED', null, 'Clearing failed: ' + result.status);
+        var exceptionSysId = this.exceptionEngine.createArException(paymentSysId, 'other', 'SAP clearing failed: ' + result.status + (result.message ? ' - ' + result.message : ''));
+        this._setState(paymentSysId, 'FAILED', null, 'Clearing failed: ' + result.status + (result.message ? ' - ' + result.message : ''));
         return { cleared: false, failed: true, reasonCode: result.status, exceptionSysId: exceptionSysId };
     },
 
@@ -971,7 +982,18 @@ ArDomainService.prototype = {
         txn.setLimit(1);
         txn.query();
         if (!txn.next()) return { error: 'No staged clearing transaction found.' };
-        var status = this.integrationService.queryTransactionStatus(txn.getUniqueValue());
+        // Phase 41: the adapter's own draft-status operation (not a guess from
+        // the document number); read-only, nothing is re-sent.
+        var read = this.integrationService.execute({
+            operation: 'getDraftStatus',
+            adapter: txn.getValue('adapter') || this.policy.sapAdapter(),
+            correlationId: payment.getValue('correlation_id'),
+            idempotencyKey: 'DRAFT-STATUS-' + paymentSysId + '-' + gs.generateGUID().substring(0, 8),
+            sourceTable: 'x_695068_bcfa_payment',
+            sourceRecord: paymentSysId,
+            payload: { documentId: txn.getValue('external_document_id') || payment.getValue('sap_reference'), draftIdempotencyKey: txn.getValue('idempotency_key') }
+        });
+        var status = read.response || { outcome: 'UNAVAILABLE', message: read.message };
         if (status.outcome === 'POSTED') {
             var allocation = new GlideRecord('x_695068_bcfa_payment_allocation');
             allocation.addQuery('payment', paymentSysId);
@@ -983,7 +1005,7 @@ ArDomainService.prototype = {
             }
             this._settleOpenItems(paymentSysId);
             this._setSapStatus(paymentSysId, 'cleared', status.sapDocumentId || payment.getValue('sap_reference'));
-            this._setState(paymentSysId, 'CLEARED', null, 'SAP confirmed the draft (mock SAP): cleared as ' + (status.sapDocumentId || ''), { eventType: 'integration_result', reason: 'SAP draft posted',
+            this._setState(paymentSysId, 'CLEARED', null, this.policy.sapLabel() + ' confirmed the draft: cleared as ' + (status.sapDocumentId || ''), { eventType: 'integration_result', reason: 'SAP draft posted',
                 after: { sap_draft_document: payment.getValue('sap_reference'), sap_clearing_document: status.sapDocumentId } });
             this.reconcileAndClose(paymentSysId);
             return { cleared: true, sapDocumentId: status.sapDocumentId };
@@ -991,7 +1013,7 @@ ArDomainService.prototype = {
         if (status.outcome === 'DRAFT_REJECTED') {
             this._setSapStatus(paymentSysId, 'failed', payment.getValue('sap_reference'));
             var exceptionSysId = this.exceptionEngine.createArException(paymentSysId, 'other', 'SAP rejected the draft clearing document ' + payment.getValue('sap_reference') + ': ' + (status.message || ''));
-            this._setState(paymentSysId, 'FAILED', null, 'SAP rejected the draft clearing document (mock SAP).', { eventType: 'integration_result', reason: 'SAP draft rejected' });
+            this._setState(paymentSysId, 'FAILED', null, this.policy.sapLabel() + ' rejected the draft clearing document.', { eventType: 'integration_result', reason: 'SAP draft rejected' });
             return { cleared: false, failed: true, exceptionSysId: exceptionSysId };
         }
         this.auditEngine.logEvent({
@@ -1000,7 +1022,7 @@ ArDomainService.prototype = {
             sourceRecord: paymentSysId,
             eventType: 'integration_result',
             actorType: 'system',
-            description: 'SAP draft ' + payment.getValue('sap_reference') + ' not yet confirmed in SAP (mock SAP status: ' + (status.outcome || 'unknown') + '). No change; nothing re-sent.',
+            description: 'SAP draft ' + payment.getValue('sap_reference') + ' not yet confirmed in ' + this.policy.sapLabel() + ' (status: ' + (status.outcome || 'unknown') + '). No change; nothing re-sent.',
             afterValue: { outcome: status.outcome }
         });
         return { cleared: false, pending: true, outcome: status.outcome };

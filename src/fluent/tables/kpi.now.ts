@@ -12,11 +12,13 @@ export const x_695068_bcfa_kpi = Table({
         code: StringColumn({ label: 'Code', mandatory: true, unique: true, maxLength: 60 }),
         label: StringColumn({ label: 'KPI', mandatory: true, maxLength: 100 }),
         category: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Category',
             choices: { ap: 'Accounts Payable', ar: 'Accounts Receivable', ai: 'AI', integration: 'Integration' },
         }),
         value: DecimalColumn({ label: 'Value', scale: 2 }),
         unit: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Unit',
             choices: { count: 'Count', percent: 'Percent', hours: 'Hours', amount: 'Amount (INR)' },
         }),

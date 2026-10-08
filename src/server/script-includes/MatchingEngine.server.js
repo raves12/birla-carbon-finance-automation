@@ -70,6 +70,12 @@ MatchingEngine.prototype = {
             invoiceType: invoicePo ? 'po' : 'non_po'
         });
 
+        // Phase 41, defect 5: an invoice in another currency than its PO is
+        // compared only after conversion at a governed rate; without one the
+        // prices are not compared at all (never USD 100 = INR 100).
+        var currency = this.currencyCheck(invoice);
+        var priceFactor = !currency.required ? 1 : currency.available ? currency.rate : null;
+
         var maxQuantityVariancePct = 0;
         var maxPriceVariancePct = 0;
         var matchedPoLine = null;
@@ -121,10 +127,12 @@ MatchingEngine.prototype = {
                     evidence.poNumber = poLine.getDisplayValue('purchase_order');
                     evidence.poQuantity = parseFloat(poLine.getValue('quantity') || '0');
                     evidence.poUnitPrice = poUnitPrice;
-                    if (poUnitPrice > 0) {
-                        var priceVariancePct = Math.abs(lineUnitPrice - poUnitPrice) / poUnitPrice;
+                    if (poUnitPrice > 0 && priceFactor !== null) {
+                        var comparablePrice = Math.round(lineUnitPrice * priceFactor * 10000) / 10000;
+                        if (currency.required) evidence.invoiceUnitPriceInPoCurrency = comparablePrice;
+                        var priceVariancePct = Math.abs(comparablePrice - poUnitPrice) / poUnitPrice;
                         if (priceVariancePct > maxPriceVariancePct) maxPriceVariancePct = priceVariancePct;
-                        priceVarianceValue += Math.abs(lineUnitPrice - poUnitPrice) * lineQty;
+                        priceVarianceValue += Math.abs(comparablePrice - poUnitPrice) * lineQty;
                     }
                 }
             }
@@ -174,12 +182,23 @@ MatchingEngine.prototype = {
         var lineTotalDifference = lineCount > 0 ? Math.round(Math.abs(lineTotal - netAmount) * 100) / 100 : 0;
         var lineTotalOk = lineTotalDifference <= tolerances.totalAbsolute;
 
-        var withinTolerance = linkIssues.length === 0 && receiptIssues.length === 0 &&
+        var withinTolerance = (!currency.required || currency.available) && linkIssues.length === 0 && receiptIssues.length === 0 &&
             (maxQuantityVariancePct <= tolerances.quantityPct) &&
             (maxPriceVariancePct <= tolerances.pricePct) &&
             taxWithinTolerance && lineTotalOk;
 
         var matchResult = withinTolerance ? 'matched' : 'mismatch';
+
+        // Phase 41, defect 6: the earlier results of this invoice are kept as
+        // history and marked superseded, so only this run is current.
+        var earlier = new GlideRecord('x_695068_bcfa_ap_match');
+        earlier.addQuery('ap_invoice', apInvoiceSysId);
+        earlier.addEncodedQuery('superseded=false^ORsupersededISEMPTY'); // rows from before the column existed are empty
+        earlier.query();
+        while (earlier.next()) {
+            earlier.setValue('superseded', true);
+            earlier.update();
+        }
 
         var match = new GlideRecord('x_695068_bcfa_ap_match');
         match.initialize();
@@ -202,6 +221,7 @@ MatchingEngine.prototype = {
         match.setValue('total_tolerance_abs', tolerances.totalAbsolute);
         if (expectedTax !== null) match.setValue('expected_tax', expectedTax);
         match.setValue('tax_result', taxEvaluation.result);
+        if (currency.required) match.setValue('fx_detail', String(currency.detail).substring(0, 1000));
         match.setValue('tolerance_detail', this._toleranceDetail(lineEvidence, maxQuantityVariancePct, maxPriceVariancePct, tolerances, taxEvaluation,
             lineTotal, netAmount, lineTotalDifference, lineTotalOk, lineCount).substring(0, 4000));
         var matchSysId = match.insert();
@@ -229,8 +249,42 @@ MatchingEngine.prototype = {
             lineTotal: lineTotal,
             lineTotalDifference: lineTotalDifference,
             lineTotalOk: lineTotalOk,
-            tolerancesUsed: tolerances
+            tolerancesUsed: tolerances,
+            currency: currency
         };
+    },
+
+    // Defect 5: invoice vs PO currency. Same currency (or either unknown):
+    // { required: false }. Different: the rate comes only from the governed
+    // source, the SAP adapter's getExchangeRate through IntegrationService
+    // (MOCK SAP: its static POC rate table; real SAP: SAP's rate), logged as
+    // an integration transaction. Returns { required, available, from, to,
+    // rate, rateDate, source, detail }.
+    currencyCheck: function(invoice) {
+        var po = invoice.purchase_order.getRefRecord();
+        var from = String(invoice.getValue('currency') || '').toUpperCase();
+        var to = po && po.isValidRecord() ? String(po.getValue('currency') || '').toUpperCase() : '';
+        if (!from || !to || from === to) return { required: false, from: from, to: to };
+        var policy = new FinancePolicy();
+        var adapter = policy.sapAdapter();
+        var r = new IntegrationService().execute({
+            operation: 'getExchangeRate',
+            adapter: adapter,
+            correlationId: invoice.getValue('correlation_id'),
+            idempotencyKey: 'FX-' + from + '-' + to + '-' + gs.generateGUID(),
+            sourceTable: 'x_695068_bcfa_ap_invoice',
+            sourceRecord: invoice.getUniqueValue(),
+            payload: { fromCurrency: from, toCurrency: to, date: invoice.getValue('invoice_date') || '' }
+        });
+        var res = r.response || {};
+        var source = policy.sapLabel() + ' exchange rate (' + (adapter === 'mock_sap' ? 'POC static rate table, MockSAPAdapter' : 'SAP') + ')';
+        if (r.status !== 'success' || !res.found || !(res.rate > 0)) {
+            return { required: true, available: false, from: from, to: to, source: source,
+                detail: 'No approved ' + from + ' to ' + to + ' rate from ' + source + (r.message ? ' (' + r.message + ')' : '') + '; prices were not compared. A person checks the currency.' };
+        }
+        var rateDate = res.rateDate || new GlideDateTime().getLocalDate().getValue();
+        return { required: true, available: true, from: from, to: to, rate: res.rate, rateDate: rateDate, source: source,
+            detail: '1 ' + from + ' = ' + res.rate + ' ' + to + ' on ' + rateDate + ' from ' + source + '; invoice prices converted to ' + to + ' before comparison.' };
     },
 
     // Phase 14: an invoice is a duplicate when another live invoice of the
@@ -256,6 +310,12 @@ MatchingEngine.prototype = {
         other.addQuery('vendor', invoice.getValue('vendor'));
         other.addQuery('sys_id', '!=', apInvoiceSysId);
         other.addQuery('state', 'NOT IN', 'FAILED,REJECTED');
+        // Phase 41: only an EARLIER invoice can be the original. Re-checking
+        // the original (Re-run Validation / Match) must never flag it as a
+        // duplicate of a later copy.
+        other.addQuery('sys_created_on', '<=', invoice.getValue('sys_created_on'));
+        // Created in the same second: both stay candidates (conservative; a
+        // sys_id is not chronological).
         other.orderBy('sys_created_on');
         other.query();
         var sameNumber = null;

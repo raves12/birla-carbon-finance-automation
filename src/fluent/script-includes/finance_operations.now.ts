@@ -29,6 +29,15 @@ export const financeReviewSummary = ScriptInclude({
     script: Now.include('../../server/script-includes/FinanceReviewSummary.server.js'),
 })
 
+export const financeTextFormat = ScriptInclude({
+    $id: Now.ID['si-finance-text-format'],
+    name: 'FinanceTextFormat',
+    active: true,
+    apiName: 'x_695068_bcfa.FinanceTextFormat',
+    description: 'Readable text for the review summary and the advisory AI notes: section headings, bullets, record numbers instead of ids, amounts and status values written for a person. Presentation only.',
+    script: Now.include('../../server/script-includes/FinanceTextFormat.server.js'),
+})
+
 export const financeKpiRefreshJob = ScheduledScript({
     $id: Now.ID['job-finance-kpi-refresh'],
     name: 'BCFA - Finance KPI Refresh',

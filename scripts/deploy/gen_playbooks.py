@@ -213,9 +213,11 @@ ap('intake', 1, '1. Invoice Intake', 'Invoice received by email, upload or manua
    [('intake_records', 'x_695068_bcfa_finance_intake', by('ap_invoice'),
      ['number', 'source', 'source_reference', 'document_type', 'processing_status', 'correlation_id', 'sys_created_on'],
      'Intake record', 'Intake: source document, channel and status (open a row for the attachment)', 'SYSTEM DETERMINATION')])
-ap('extraction', 2, '2. Document Extraction', 'Header, tax and line fields read from the invoice document by the configured provider (Extraction provider field): native ServiceNow Document Intelligence on Now LLM by default; SIMULATED DOCUMENT EXTRACTION — POC only for test fixtures. Low confidence or missing fields go to a person.', After % 'intake',
-   ['extraction_provider', 'extraction_confidence', 'document_country', 'document_language', 'vendor', 'invoice_number', 'invoice_date', 'purchase_order', 'company_code', 'currency',
-    'net_amount', 'tax_type', 'tax_rate_pct', 'cgst_amount', 'sgst_amount', 'igst_amount', 'vat_amount', 'wht_amount', 'wht_rate_pct', 'tax_amount', 'gross_amount'],
+ap('extraction', 2, '2. Document Understanding', 'Header, tax and line fields read from the invoice document by the configured provider (Extraction provider field): native ServiceNow Document Intelligence on Now LLM by default; SIMULATED DOCUMENT EXTRACTION — POC only for test fixtures. Low confidence or missing fields go to a person.', After % 'intake',
+   # Phase 41, defect 7: structured, readable extracted data (document,
+   # supplier, invoice, PO/receipt references, amounts, taxes, charges, lines,
+   # confidence, source pages, normalization) instead of raw fields / JSON.
+   ['extraction_provider', 'extraction_confidence', 'document_language', 'document_country', 'amount_reconciliation', 'amount_reconciliation_detail', 'extraction_summary'],
    ('Extraction complete', 'Document extraction (provider shown)',
     'Fields were read by the provider shown in Extraction provider. Native extraction failure never falls back to simulated values: it goes to manual review. The printed tax breakdown is recorded as read; it is validated in the next stage, not here. Low confidence or a missing mandatory field raises an exception: the stage does not complete until a person resolves it.',
     'Waiting for extraction, or for a person to review a low-confidence / missing-field exception.'),
@@ -313,8 +315,8 @@ ar('intake', 1, '1. Payment & Remittance Intake', 'Bank payment received; the re
      'Intake records', 'Intake: bank line and remittance documents', 'SYSTEM DETERMINATION'),
     ('remittances', 'x_695068_bcfa_remittance', by('payment'), REMIT_COLS,
      'Remittance', 'REMITTANCE received for this payment', 'SYSTEM DETERMINATION')])
-ar('correlation', 2, '2. Extraction & Correlation', 'Payment advice read by the configured provider (native ServiceNow Document Intelligence on Now LLM by default; SIMULATED DOCUMENT EXTRACTION — POC only for test fixtures) and correlated to the payment by the system.', After % 'intake',
-   ['bank_reference', 'amount', 'currency'],
+ar('correlation', 2, '2. Document Understanding', 'Payment advice read by the configured provider (native ServiceNow Document Intelligence on Now LLM by default; SIMULATED DOCUMENT EXTRACTION — POC only for test fixtures) and correlated to the payment by the system.', After % 'intake',
+   ['bank_reference', 'amount', 'currency', 'advice_summary'],
    ('Remittance correlated', 'Payment advice extraction & correlation (provider shown)',
     'Advice fields (payer, payment and bank reference, invoice references, deductions with their printed reasons) were read by the provider shown on the remittance and correlated to the payment by the system. Reconciliation precedence: the bank statement and the SAP open items (through IntegrationService) are authoritative; the advice explains the payment, it never overrides them.',
     'Waiting for remittance correlation.'),

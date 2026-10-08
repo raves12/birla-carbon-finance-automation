@@ -10,7 +10,8 @@ export const intakeProcessDocument = UiAction({
     table: 'x_695068_bcfa_finance_intake',
     name: 'Process Document',
     actionName: 'process_document_intake',
-    hint: 'Processes the attached document: uses the document type set at upload, reads the fields (simulated extraction until Document Intelligence extraction is licensed), then creates the AP Invoice or Payment/Remittance and runs the deterministic pipeline.',
+    hint: 'Saves the intake, then processes the attached document: uses the document type set at upload, reads the fields with ServiceNow Document Intelligence (Now LLM), then creates the AP Invoice or links the payment advice / remittance and runs the deterministic pipeline.',
+    showInsert: true,
     showUpdate: true,
     condition: "current.processing_status == 'new'",
     form: {
@@ -22,9 +23,15 @@ export const intakeProcessDocument = UiAction({
         showFormButtonV2: true,
     },
     script: `
+        // Save first: on a new (unsaved) intake the record and its attachment
+        // exist only once inserted; on an existing one, unsaved form edits
+        // (e.g. the document type) are kept.
+        if (current.isNewRecord()) current.insert(); else current.update();
         var service = new FinanceDocumentIntakeService();
         var result = service.processDocument(current.getUniqueValue());
-        if (result && result.pending) {
+        if (result && result.attachmentRequired) {
+            gs.addErrorMessage(result.error);
+        } else if (result && result.pending) {
             gs.addInfoMessage('Native extraction is running (ServiceNow Document Intelligence). The document continues automatically when it finishes, usually within a minute; refresh to see the result.');
         }
         action.setRedirectURL(current);
@@ -78,7 +85,9 @@ export const intakeReprocess = UiAction({
     script: `
         var service = new FinanceDocumentIntakeService();
         var result = service.processDocument(current.getUniqueValue());
-        if (result && result.pending) {
+        if (result && result.attachmentRequired) {
+            gs.addErrorMessage(result.error);
+        } else if (result && result.pending) {
             gs.addInfoMessage('Native extraction is running (ServiceNow Document Intelligence). The document continues automatically when it finishes, usually within a minute; refresh to see the result.');
         }
         action.setRedirectURL(current);
@@ -173,9 +182,9 @@ export const apInvoiceRerunValidation = UiAction({
     table: 'x_695068_bcfa_ap_invoice',
     name: 'Re-run Validation',
     actionName: 're_run_validation_ap_invoice',
-    hint: 'Re-runs the existing deterministic validation step (confidence, mandatory fields, vendor, PO) against this invoice.',
+    hint: 'Re-checks the invoice from the current master data and configuration: validation, then the 3-way match. A pending approval is withdrawn first; earlier results are kept as history.',
     showUpdate: true,
-    condition: "current.approval_state != 'approved'",
+    condition: "current.state == 'VALIDATED' || current.state == 'MATCHED' || current.state == 'EXCEPTION' || current.state == 'ON_HOLD' || current.state == 'PENDING_APPROVAL'",
     form: {
         showButton: true,
         style: 'unstyled',
@@ -185,8 +194,14 @@ export const apInvoiceRerunValidation = UiAction({
         showFormButtonV2: true,
     },
     script: `
-        var service = new ApDomainService();
-        service.validateInvoice(current.getUniqueValue());
+        var result = new ApDomainService().rerunChecks(current.getUniqueValue(), 'validation', gs.getUserID());
+        if (result.error) {
+            gs.addErrorMessage(result.error);
+        } else {
+            gs.addInfoMessage('Re-run Validation done' + (result.withdrawnApprovals ? '; the pending approval was withdrawn' : '') +
+                (result.supersededExceptions ? '; ' + result.supersededExceptions + ' earlier exception(s) superseded' : '') +
+                '. Result: ' + (result.stoppedAt === 'MATCHED' ? 'matched; the approval rule applies again.' : 'stopped at ' + result.stoppedAt.toLowerCase() + ' with a new exception.'));
+        }
         action.setRedirectURL(current);
     `,
 })
@@ -224,9 +239,9 @@ export const apInvoiceRerunMatch = UiAction({
     table: 'x_695068_bcfa_ap_invoice',
     name: 'Re-run Match',
     actionName: 're_run_match_ap_invoice',
-    hint: 'Re-runs the existing deterministic duplicate-detection and 3-way match step against this invoice.',
+    hint: 'Re-runs the duplicate check and 3-way match from the current PO, receipts and tolerances (validation first). A pending approval is withdrawn first; earlier match results are kept as history.',
     showUpdate: true,
-    condition: "current.approval_state != 'approved'",
+    condition: "current.state == 'VALIDATED' || current.state == 'MATCHED' || current.state == 'EXCEPTION' || current.state == 'ON_HOLD' || current.state == 'PENDING_APPROVAL'",
     form: {
         showButton: true,
         style: 'unstyled',
@@ -236,8 +251,14 @@ export const apInvoiceRerunMatch = UiAction({
         showFormButtonV2: true,
     },
     script: `
-        var service = new ApDomainService();
-        service.matchInvoice(current.getUniqueValue());
+        var result = new ApDomainService().rerunChecks(current.getUniqueValue(), 'match', gs.getUserID());
+        if (result.error) {
+            gs.addErrorMessage(result.error);
+        } else {
+            gs.addInfoMessage('Re-run Match done' + (result.withdrawnApprovals ? '; the pending approval was withdrawn' : '') +
+                (result.supersededExceptions ? '; ' + result.supersededExceptions + ' earlier exception(s) superseded' : '') +
+                '. Result: ' + (result.stoppedAt === 'MATCHED' ? 'matched; the approval rule applies again.' : 'stopped at ' + result.stoppedAt.toLowerCase() + ' with a new exception.'));
+        }
         action.setRedirectURL(current);
     `,
 })

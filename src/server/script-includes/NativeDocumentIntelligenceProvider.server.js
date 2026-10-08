@@ -40,19 +40,31 @@ NativeDocumentIntelligenceProvider.FIELDS = {
         discountamount: 'discount_amount', freightamount: 'freight_amount', totaltaxamount: 'tax_amount', taxtype: 'tax_type',
         taxratepercent: 'tax_rate_pct', cgstamount: 'cgst_amount', sgstamount: 'sgst_amount', igstamount: 'igst_amount',
         vatamount: 'vat_amount', withholdingtaxamount: 'wht_amount', withholdingtaxratepercent: 'wht_rate_pct',
-        invoicetotal: 'gross_amount', documentlanguage: 'document_language', invoicelineitems: 'lines'
+        invoicetotal: 'gross_amount', documentlanguage: 'document_language', invoicelineitems: 'lines',
+        // Phase 41: charge components, references from notes, tax components
+        // and the page layout of multi-document PDFs.
+        shippingandhandlingamount: 'shipping_amount', surchargeamount: 'surcharge_amount', otherchargesamount: 'other_charge_amount',
+        duedate: 'due_date', goodsreceiptnumber: 'grn_number', serviceentrynumber: 'srn_number', taxcomponents: 'tax_components',
+        invoicepagenumbers: 'invoice_pages', supportingdocuments: 'supporting_documents'
     },
     ar: {
         payername: 'customer_name', customeraccountnumber: 'customer_code', paymentreference: 'payment_reference',
         bankreference: 'bank_reference', paymentdate: 'payment_date', paymentamount: 'payment_amount', currency: 'currency',
         totaldeductionamount: 'deduction_amount', deductionreason: 'deduction_reason', creditordebitnotereferences: 'note_references',
-        comments: 'comments', invoicespaid: 'invoice_lines'
+        comments: 'comments', invoicespaid: 'invoice_lines',
+        // Phase 41
+        beneficiaryname: 'beneficiary_name', valuedate: 'value_date', totaladvanceamount: 'advance_amount', totaltdsamount: 'tds_amount',
+        documentlanguage: 'document_language'
     }
 };
 NativeDocumentIntelligenceProvider.NUMERIC = [
     'net_amount', 'discount_amount', 'freight_amount', 'tax_amount', 'tax_rate_pct', 'cgst_amount', 'sgst_amount', 'igst_amount',
-    'vat_amount', 'wht_amount', 'wht_rate_pct', 'gross_amount', 'payment_amount', 'deduction_amount'
+    'vat_amount', 'wht_amount', 'wht_rate_pct', 'gross_amount', 'payment_amount', 'deduction_amount',
+    'shipping_amount', 'surcharge_amount', 'other_charge_amount', 'advance_amount', 'tds_amount'
 ];
+// Phase 41: absolute difference (document currency) within which printed
+// totals count as reconciled (rounding on the document).
+NativeDocumentIntelligenceProvider.RECONCILE_TOLERANCE = 1;
 
 NativeDocumentIntelligenceProvider.prototype = {
     initialize: function() {},
@@ -94,6 +106,9 @@ NativeDocumentIntelligenceProvider.prototype = {
             var started = new GlideDateTime(task.getValue('sys_created_on'));
             var ageMinutes = (new GlideDateTime().getNumericValue() - started.getNumericValue()) / 60000;
             if (ageMinutes > NativeDocumentIntelligenceProvider.TIMEOUT_MINUTES) {
+                // Forget the stuck task, so Reprocess starts a new one.
+                intake.setValue('extraction_task', '');
+                intake.update();
                 return { ok: false, taskId: taskId, safeError: 'Native extraction did not finish within ' + NativeDocumentIntelligenceProvider.TIMEOUT_MINUTES +
                     ' minutes (Document Intelligence task ' + taskId + '). Review the document manually.' };
             }
@@ -142,6 +157,11 @@ NativeDocumentIntelligenceProvider.prototype = {
         return { raw: raw, evidence: evidence };
     },
 
+    // Phase 41: extraction confidence and financial reconciliation are
+    // separate. data.confidence reflects only what was read (critical
+    // fields present, line quantity / price readable); the arithmetic is a
+    // deterministic result of its own (data.reconciliation), so a legitimate
+    // charge such as shipping/handling no longer lowers the confidence.
     _mapInvoice: function(raw) {
         var d = this._mapFields(raw, NativeDocumentIntelligenceProvider.FIELDS.ap);
         d.vendor_code = '';
@@ -155,30 +175,99 @@ NativeDocumentIntelligenceProvider.prototype = {
                 net_amount: this._num(l.net_amount), tax_amount: this._num(l.tax_amount)
             });
         }
+        d.tax_components = this._taxComponents(this._array(d.tax_components));
+        d.supporting_documents = this._array(d.supporting_documents);
+        d.invoice_pages = this._str(d.invoice_pages);
         var checks = this._confidence(d, ['invoice_number', 'vendor_name', 'currency', 'net_amount', 'tax_amount', 'gross_amount']);
-        if (d.net_amount !== null && d.tax_amount !== null && d.gross_amount !== null) {
-            var expectedGross = d.net_amount + d.tax_amount + (d.freight_amount || 0) - (d.discount_amount || 0);
-            // A freight amount the model read from a line already in the net
-            // must not count twice: accept either reading.
-            if (Math.abs(expectedGross - d.gross_amount) > 1 && Math.abs(d.net_amount + d.tax_amount - d.gross_amount) > 1) {
-                checks.penalty(0.2, 'Net ' + d.net_amount + ' + tax ' + d.tax_amount + ' does not equal the total ' + d.gross_amount + '.');
-            }
-        }
         if (d.lines.length) {
-            var lineTotal = 0;
             var unreadable = false;
             for (var j = 0; j < d.lines.length; j++) {
-                lineTotal += d.lines[j].net_amount || 0;
                 if (d.lines[j].quantity === null || d.lines[j].unit_price === null) unreadable = true;
-            }
-            if (d.net_amount !== null && Math.abs(lineTotal - d.net_amount) > 1) {
-                checks.penalty(0.1, 'Line amounts (' + Math.round(lineTotal * 100) / 100 + ') do not add up to the net amount (' + d.net_amount + ').');
             }
             if (unreadable) checks.penalty(0.2, 'Line quantity or unit price not readable on at least one line.');
         } else {
-            checks.penalty(0.1, 'No invoice lines were read.');
+            checks.note('No invoice lines were read.');
         }
+        d.reconciliation = this.reconcileInvoice(d);
+        if (d.reconciliation.result === 'not_reconciled') checks.note(d.reconciliation.detail);
         return checks.finish(d);
+    },
+
+    // Gross = net + tax + freight + shipping/handling + surcharge + other
+    // charges - discount. A charge the model read that is already inside the
+    // net must not count twice, so the readings tried are: everything; net +
+    // tax (charges and discount already in the net); net + tax + charges
+    // (discount already in the net). The first reading that holds is recorded.
+    reconcileInvoice: function(d) {
+        var tol = NativeDocumentIntelligenceProvider.RECONCILE_TOLERANCE;
+        var n = function(v) { return v === null || v === undefined ? 0 : v; };
+        var r2 = function(v) { return Math.round(v * 100) / 100; };
+        var charges = r2(n(d.freight_amount) + n(d.shipping_amount) + n(d.surcharge_amount) + n(d.other_charge_amount));
+        var out = {
+            components: { net: d.net_amount, tax: d.tax_amount, freight: d.freight_amount, shipping_handling: d.shipping_amount,
+                surcharge: d.surcharge_amount, other_charges: d.other_charge_amount, discount: d.discount_amount, gross: d.gross_amount },
+            charges: charges, discount: r2(n(d.discount_amount)), tolerance: tol
+        };
+        if (d.net_amount === null || d.gross_amount === null) {
+            out.result = 'incomplete';
+            out.detail = 'Totals not reconciled: net or gross amount not read.';
+            return out;
+        }
+        var readings = [
+            ['net + tax + charges - discount', n(d.net_amount) + n(d.tax_amount) + charges - n(d.discount_amount)],
+            ['net + tax (charges and discount included in the net)', n(d.net_amount) + n(d.tax_amount)],
+            ['net + tax + charges (discount included in the net)', n(d.net_amount) + n(d.tax_amount) + charges]
+        ];
+        for (var i = 0; i < readings.length; i++) {
+            if (Math.abs(readings[i][1] - d.gross_amount) <= tol) {
+                out.result = 'reconciled';
+                out.formula = readings[i][0];
+                out.expected = r2(readings[i][1]);
+                out.variance = r2(d.gross_amount - readings[i][1]);
+                out.detail = 'Totals reconcile: ' + readings[i][0] + ' = ' + out.expected + ' (printed total ' + d.gross_amount + ').';
+                break;
+            }
+        }
+        if (!out.result) {
+            out.result = 'not_reconciled';
+            out.formula = readings[0][0];
+            out.expected = r2(readings[0][1]);
+            out.variance = r2(d.gross_amount - readings[0][1]);
+            out.detail = 'Totals do not reconcile: net ' + d.net_amount + ' + tax ' + n(d.tax_amount) + ' + charges ' + charges + ' - discount ' + n(d.discount_amount) +
+                ' = ' + out.expected + ', printed total ' + d.gross_amount + ' (difference ' + out.variance + ').';
+        }
+        if (d.lines.length) {
+            var lineTotal = 0;
+            for (var j = 0; j < d.lines.length; j++) lineTotal += d.lines[j].net_amount || 0;
+            out.lines = { total: r2(lineTotal), net: d.net_amount, agree: Math.abs(lineTotal - d.net_amount) <= tol || Math.abs(lineTotal - (d.net_amount + charges)) <= tol };
+        }
+        return out;
+    },
+
+    _taxComponents: function(list) {
+        var out = [];
+        for (var i = 0; i < list.length; i++) {
+            var t = list[i] || {};
+            var label = this._str(t.printed_label);
+            out.push({ printed_label: label, normalized_tax_type: this._taxType(label), rate: this._num(t.rate), taxable_base: this._num(t.taxable_base), amount: this._num(t.amount) });
+        }
+        return out;
+    },
+
+    // Printed tax label -> normalized type (presentation and evidence only;
+    // tax validation stays in FinancePolicy / MatchingEngine.evaluateTax).
+    _taxType: function(label) {
+        var s = String(label || '').toUpperCase();
+        if (/IGST/.test(s)) return 'IGST';
+        if (/CGST/.test(s)) return 'CGST';
+        if (/SGST|UTGST/.test(s)) return 'SGST';
+        if (/TDS/.test(s)) return 'TDS';
+        if (/WITHHOLD|WHT|RETEN/.test(s)) return 'WHT';
+        if (/\bGST\b/.test(s)) return 'GST';
+        if (/SALES TAX|STATE TAX|COUNTY TAX|CITY TAX|\bPST\b|\bQST\b|\bRST\b/.test(s)) return 'SALES_TAX';
+        if (/VAT|IVA|TVA|MWST|UST|ÁFA|AFA|增值税|부가세|부가가치세|ภาษีมูลค่าเพิ่ม/.test(s)) return 'VAT';
+        if (/ICMS|IPI|PIS|COFINS|ISS/.test(s)) return 'OTHER_TAX';
+        return s ? 'OTHER_TAX' : '';
     },
 
     _mapAdvice: function(raw) {
@@ -191,42 +280,93 @@ NativeDocumentIntelligenceProvider.prototype = {
             var l = lines[i] || {};
             var ref = this._str(l.invoice_reference);
             d.invoice_lines.push({
-                invoice_reference: ref, customer_reference: this._str(l.customer_reference), invoice_amount: this._num(l.invoice_amount),
+                invoice_reference: ref, document_number: this._str(l.document_number), invoice_date: this._str(l.invoice_date),
+                customer_reference: this._str(l.customer_reference), invoice_amount: this._num(l.invoice_amount),
+                advance_amount: this._num(l.advance_amount), tds_amount: this._num(l.tds_amount),
                 amount_applied: this._num(l.amount_applied), deduction_amount: this._num(l.deduction_amount), deduction_reason: this._str(l.deduction_reason)
             });
             if (ref) d.invoice_references.push(ref);
         }
         var checks = this._confidence(d, ['customer_name', 'payment_reference', 'payment_amount', 'currency']);
-        if (!d.invoice_lines.length) checks.penalty(0.1, 'No invoice references were read.');
-        var applied = 0, allApplied = d.invoice_lines.length > 0;
-        for (var j = 0; j < d.invoice_lines.length; j++) {
-            if (d.invoice_lines[j].amount_applied === null) allApplied = false;
-            applied += d.invoice_lines[j].amount_applied || 0;
-        }
-        if (allApplied && d.payment_amount !== null && Math.abs(applied - d.payment_amount) > 1) {
-            checks.penalty(0.2, 'Amounts applied to invoices (' + Math.round(applied * 100) / 100 + ') do not add up to the payment amount (' + d.payment_amount + ').');
-        }
+        if (!d.invoice_lines.length) checks.note('No invoice references were read.');
+        d.reconciliation = this.reconcileAdvice(d);
+        if (d.reconciliation.result === 'not_reconciled') checks.note(d.reconciliation.detail);
         // The advice's own deduction statement is evidence only: the residual
         // is computed by the allocation, never taken from the document.
         return checks.finish(d);
     },
 
+    // Per invoice: gross - advance - TDS - other deductions = paid (where the
+    // advice prints them); overall: sum of amounts paid = payment amount.
+    reconcileAdvice: function(d) {
+        var tol = NativeDocumentIntelligenceProvider.RECONCILE_TOLERANCE;
+        var n = function(v) { return v === null || v === undefined ? 0 : v; };
+        var r2 = function(v) { return Math.round(v * 100) / 100; };
+        var out = { lines: [], tolerance: tol };
+        var applied = 0, allApplied = d.invoice_lines.length > 0, lineIssues = [];
+        for (var i = 0; i < d.invoice_lines.length; i++) {
+            var l = d.invoice_lines[i];
+            if (l.amount_applied === null) allApplied = false;
+            applied += n(l.amount_applied);
+            if (l.invoice_amount !== null && l.amount_applied !== null) {
+                var expected = r2(l.invoice_amount - n(l.advance_amount) - n(l.tds_amount) - n(l.deduction_amount));
+                var ok = Math.abs(expected - l.amount_applied) <= tol;
+                out.lines.push({ invoice: l.invoice_reference, gross: l.invoice_amount, advance: l.advance_amount, tds: l.tds_amount,
+                    other_deduction: l.deduction_amount, paid: l.amount_applied, expected_paid: expected, ok: ok });
+                if (!ok) lineIssues.push(l.invoice_reference + ': gross ' + l.invoice_amount + ' - advance ' + n(l.advance_amount) + ' - TDS ' + n(l.tds_amount) +
+                    ' - deduction ' + n(l.deduction_amount) + ' = ' + expected + ', printed paid ' + l.amount_applied);
+            }
+        }
+        out.total_paid = r2(applied);
+        out.payment_amount = d.payment_amount;
+        if (!allApplied || d.payment_amount === null) {
+            out.result = 'incomplete';
+            out.detail = 'Advice not fully reconciled: the amount paid per invoice or the payment amount was not read.';
+        } else if (Math.abs(applied - d.payment_amount) > tol) {
+            out.result = 'not_reconciled';
+            out.detail = 'Amounts paid per invoice (' + out.total_paid + ') do not add up to the payment amount (' + d.payment_amount + ').';
+        } else if (lineIssues.length) {
+            out.result = 'not_reconciled';
+            out.detail = 'Invoice lines do not reconcile: ' + lineIssues.join('; ') + '.';
+        } else {
+            out.result = 'reconciled';
+            out.detail = 'Advice reconciles: amounts paid per invoice add up to the payment amount ' + d.payment_amount + '.';
+        }
+        return out;
+    },
+
     _mapFields: function(raw, map) {
-        var d = {};
+        var d = {}, normalization = [];
         for (var k in map) d[map[k]] = null;
         for (var rawKey in raw) {
             var field = map[this._norm(rawKey)];
             if (!field) continue;
             var v = raw[rawKey];
-            if (field === 'lines' || field === 'invoice_lines') d[field] = v;
-            else if (NativeDocumentIntelligenceProvider.NUMERIC.indexOf(field) >= 0) d[field] = this._num(v);
-            else d[field] = this._str(v);
+            if (field === 'lines' || field === 'invoice_lines' || field === 'tax_components' || field === 'supporting_documents') d[field] = v;
+            else if (NativeDocumentIntelligenceProvider.NUMERIC.indexOf(field) >= 0) {
+                d[field] = this._num(v);
+                // Phase 41: the printed value and the rule are kept (only
+                // for a value that was read: an empty field is not normalized).
+                if (typeof v === 'string' && /\d/.test(v) && !/^\s*-?\d+(\.\d+)?\s*$/.test(v) && String(d[field]) !== v) {
+                    normalization.push({ field: field, original: v, normalized: d[field], rule: this._numRule(v) });
+                }
+            } else d[field] = this._str(v);
         }
+        d.normalization = normalization;
         return d;
     },
 
-    // Derived confidence: starts at 1 and loses 0.2 per missing critical
-    // field plus the penalties of the arithmetic checks.
+    _numRule: function(v) {
+        var s = String(v).replace(/[^0-9.,\-]/g, '');
+        var lastDot = s.lastIndexOf('.'), lastComma = s.lastIndexOf(',');
+        if (lastComma > lastDot && s.length - lastComma - 1 <= 2) return 'decimal comma, "." / space grouping (e.g. 1.234,56)';
+        if (lastDot > lastComma && s.length - lastDot - 1 <= 2) return 'decimal point, "," / space grouping (e.g. 1,234.56)';
+        return 'grouping separators and symbols removed';
+    },
+
+    // Extraction confidence: starts at 1 and loses 0.2 per missing critical
+    // field plus readability penalties. Notes (reconciliation, missing lines)
+    // are reported but do not change the confidence.
     _confidence: function(d, critical) {
         var score = 1, warnings = [];
         for (var i = 0; i < critical.length; i++) {
@@ -237,9 +377,11 @@ NativeDocumentIntelligenceProvider.prototype = {
         }
         return {
             penalty: function(amount, warning) { score -= amount; warnings.push(warning); },
+            note: function(warning) { warnings.push(warning); },
             finish: function(data) {
                 data.confidence = Math.max(0, Math.round(score * 100) / 100);
-                data.confidence_basis = 'Derived by BCFA from field completeness and arithmetic checks; Document Intelligence generative extraction returns no per-field confidence.';
+                data.confidence_basis = 'Derived by BCFA from field completeness and readability; Document Intelligence generative extraction returns no per-field confidence. ' +
+                    'Financial arithmetic is reported separately (reconciliation) and does not change it.';
                 data.warnings = warnings;
                 return data;
             }

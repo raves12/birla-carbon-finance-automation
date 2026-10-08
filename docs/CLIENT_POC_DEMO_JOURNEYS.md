@@ -81,4 +81,8 @@ These invoices were created by the E2E script with the printed tax breakdown, wi
 
 ## Repeating the live runs
 
-`python scripts/fixtures/gen_phase40_demo_journeys.py <suffix>` writes a new AP invoice, payment advice and background script, and `scripts/deploy/phase40_demo_journeys_<suffix>_bg.js` runs both journeys (scope x_695068_bcfa). The AR part needs ARINV2001 / ARINV2002 open: reset the demo data after a run is cleared (`DEMO_DATA.md`). The E2E records come from `scripts/deploy/phase40_e2e_bg.js`; each run creates its own (run FAAD2 shown here).
+`python scripts/fixtures/gen_phase40_demo_journeys.py <suffix>` writes a new AP invoice and payment advice (`test/fixtures/*_<suffix>_DEMO_NATIVE.pdf`) and two scripts (scope x_695068_bcfa):
+- `scripts/deploy/phase40_demo_prep_<suffix>_bg.js` creates this run's MOCK SAP open items (ARINV-<suffix>-01 / -02 of Nilgiri Rubber Compounds Ltd) and the bank line NRC-PAY-26-<suffix>; the presenter then uploads the two PDFs in Document Intake (live demo, `deliverables/BCFA_Client_Demo_Script.docx`);
+- `scripts/deploy/phase40_demo_journeys_<suffix>_bg.js` does the same and processes both documents unattended (rehearsal / check).
+
+Every run has its own invoice number, payment reference and open items, so no reset is needed between runs. Run D1 was executed unattended on 2026-10-05: INV-AP-D1 PENDING_APPROVAL with tax PASS; NRC-PAY-26-D1 short pay 1,600 suggested as withholding tax. Pack D2 is reserved for the client demo. (Run N1 above used the earlier version of the generator.) The E2E records come from `scripts/deploy/phase40_e2e_bg.js`; each run creates its own (run FAAD2 shown here).

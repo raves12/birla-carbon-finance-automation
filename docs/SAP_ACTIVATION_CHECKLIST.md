@@ -6,13 +6,23 @@
 - No SAP connection details have been provided (`OPEN_SAP_GAPS.md`).
 - Do not connect to SAP without approved connection details and the sign-offs below.
 
-## What does not change when SAP is connected
+## What is already in place (Phase 41)
 
-- Domain services, state models, tables, ACLs and approvals.
+- Domain services, state models, tables, ACLs, approvals, the Playbooks.
 - The Integration Transaction log, idempotency and Unknown Outcome Control (`INTEGRATION_CONTRACTS.md`).
-- The Playbooks.
+- **SAP-ready request data**: `SapPayloadBuilder` builds the posting and clearing requests from the records (company code, SAP vendor / customer number, dates, tax split, withholding, PO items with goods receipts, open items, deductions with reason codes) and `check()` lists what SAP would reject.
+- **Real outcomes honoured**: `IntegrationService` maps the adapter's own status (SUCCESS, VALIDATION_ERROR, TECHNICAL_ERROR, TIMEOUT / UNKNOWN_OUTCOME, DUPLICATE) and treats an exception during a write as an unknown outcome. SAP's reason reaches the exception and the audit trail.
+- **Draft status** is its own operation (`getDraftStatus`), not a guess from the document number.
+- **Background processing**: posting and clearing run in the flows (event + script action), never inside the approver's transaction. With `real_sap`, the `inline` orchestration mode is ignored (`FinanceOrchestration.isInline`).
+- **Labels** follow the adapter (`FinancePolicy.sapLabel()`: "MOCK SAP" or "SAP") in the journey banner, review summary and audit texts. The Playbook stage titles are static (3.8).
+- MOCK SAP rehearses SAP's checks: `x_695068_bcfa.mock_sap.strict_validation = true` rejects incomplete requests as SAP would.
 
-Only `RealSAPAdapter` and the Integration Profiles change.
+## What still changes when SAP is connected
+
+1. The transport inside `RealSAPAdapter` (every canonical operation, including `getDraftStatus`), against the confirmed interfaces (section 1).
+2. The master data source (1.8): replicate vendors, customers, POs and receipts from SAP, or route the checks through the adapter's read operations (`INTEGRATION_CONTRACTS.md`, Master data source).
+3. The real SAP reason codes for deductions (`SapPayloadBuilder.REASON_CODES`, POC placeholders Z01–Z09) and any tax-code mapping the posting interface needs.
+4. Settings: `x_695068_bcfa.sap.adapter = real_sap`, Integration Profile (2.8).
 
 ## 1. Decisions and sign-offs (before any build)
 
@@ -35,9 +45,12 @@ Only `RealSAPAdapter` and the Integration Profiles change.
 | 2.1 | Create a credential (Basic / OAuth 2.0 / certificate) for the SAP or CPI endpoint. **Never store credentials in source control or this repo** | All → Connections & Credentials → Credentials → New | ☐ |
 | 2.2 | Create a Connection & Credential Alias (e.g. `x_695068_bcfa.sap`) and an HTTP(S) connection to the endpoint | All → Connections & Credentials → Connection & Credential Aliases → New | ☐ |
 | 2.3 | If on-premise: MID server and its connection | All → MID Server → Servers | ☐ |
-| 2.4 | Implement `RealSAPAdapter` methods (`getVendor`, `getCustomer`, `getPurchaseOrder`, `getReceipt`, `getOpenItems`, `postVendorInvoice`, `clearCustomerPayment`, `queryTransactionStatus`) against the alias (sn_ws.RESTMessageV2 or IntegrationHub spoke). Keep the canonical response shapes (`INTEGRATION_CONTRACTS.md`) | source: `src/server/script-includes/RealSAPAdapter.server.js` | ☐ |
+| 2.4 | Implement `RealSAPAdapter` methods (`getVendor`, `getCustomer`, `getPurchaseOrder`, `getReceipt`, `getOpenItems`, `postVendorInvoice`, `clearCustomerPayment`, `queryTransactionStatus`, `getDraftStatus`) against the alias (sn_ws.RESTMessageV2 or IntegrationHub spoke). Writes receive the SAP-ready request (`SapPayloadBuilder`, schema `bcfa.sap/1`): call `new SapPayloadBuilder().check(payload)` first and return `VALIDATION_ERROR` on errors. Return the statuses in `INTEGRATION_CONTRACTS.md` (Adapter results and outcomes); never swallow a timeout as a success | source: `src/server/script-includes/RealSAPAdapter.server.js` | ☐ |
 | 2.5 | `clearCustomerPayment` honours `payload.processingMode`: `draft` → return `{ status: 'SUCCESS', staged: true, sapDocumentId: <parked doc> }`; `direct` → `{ status: 'SUCCESS', sapDocumentId: <clearing doc> }` | RealSAPAdapter | ☐ |
-| 2.6 | `queryTransactionStatus(operation, key, extRef, documentId)`: for a parked document return `POSTED` (with the posted document), `DRAFT_PENDING` or `DRAFT_REJECTED`, as MockSAPAdapter does | RealSAPAdapter | ☐ |
+| 2.6 | `getDraftStatus(documentId, idempotencyKey)`: return `POSTED` (with the posted document), `DRAFT_PENDING` or `DRAFT_REJECTED` for the parked document. `queryTransactionStatus` is for Unknown Outcome Control only | RealSAPAdapter | ☐ |
+| 2.6a | Replace the POC deduction reason codes (`SapPayloadBuilder.REASON_CODES`, Z01–Z09) with the client's SAP reason codes | `SapPayloadBuilder` | ☐ |
+| 2.6b | Keep `x_695068_bcfa.orchestration.mode = flow` (the default). With `real_sap` the `inline` mode is ignored anyway, so SAP calls always run in the background | System Properties | ☐ |
+| 2.6c | Rehearse on MOCK SAP first: set `x_695068_bcfa.mock_sap.strict_validation = true` and run the AP and AR journeys; every request SAP would reject fails with the reason. Fix the data gaps (e.g. invoice date, company code) before connecting | System Properties | ☐ |
 | 2.7 | `IntegrationService.checkAdapterContract('real_sap')` returns no missing operations | Scripts - Background | ☐ |
 | 2.8 | Point the integration profile at the real adapter: Integration Profile **Mock SAP - Default** → inactive; new profile adapter `real_sap`, mode **Passthrough (future real connectivity)**, active | BCFA Workspace → Integration Profiles (`x_695068_bcfa_integration_profile`) | ☐ |
 | 2.9 | Timeouts and retry policy agreed; an unknown outcome is never blind-retried (already enforced) | IntegrationService | ☐ |
@@ -53,7 +66,8 @@ Only `RealSAPAdapter` and the Integration Profiles change.
 | 3.5 | AR DIRECT clearing | FB05 document; open items cleared in SAP and in BCFA | ☐ |
 | 3.6 | AR DRAFT clearing | parked document; payment SAP_DRAFT; post the draft in SAP → Check SAP Draft Status → CLEARED; delete the draft in SAP → FAILED with exception | ☐ |
 | 3.7 | Authorisation failure (wrong credential) | definite failure, exception, nothing committed | ☐ |
-| 3.8 | Playbook stage 7 / 8 shows the real adapter and document (remove MOCK SAP labels: `FinanceJourneyService.MOCK_SAP`, Playbook stage titles via `gen_playbooks.py`) | labels updated | ☐ |
+| 3.7a | SAP rejects a request (e.g. a closed posting period) | VALIDATION_ERROR; SAP's message on the exception and the audit; nothing posted | ☐ |
+| 3.8 | Playbook stage 7 / 8 shows the real adapter and document. The journey banner, summary and audit texts follow the adapter already (`FinancePolicy.sapLabel()`); the static Playbook stage titles still say "Mock SAP": regenerate them via `gen_playbooks.py` | labels updated | ☐ |
 
 ## 4. Remaining production gaps (outside the POC)
 

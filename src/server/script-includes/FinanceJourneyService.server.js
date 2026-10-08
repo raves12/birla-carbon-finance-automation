@@ -40,7 +40,7 @@ FinanceJourneyService.AR_STATE_ORDER = {
 // Stage where an open exception of this reason blocks the transaction.
 FinanceJourneyService.AP_REASON_STAGE = {
     low_confidence: 2, missing_field: 2, duplicate: 3, vendor_invalid: 3, po_mismatch: 3, tax_validation: 3,
-    quantity_tolerance: 4, price_tolerance: 4, grn_missing: 4, line_total_mismatch: 4
+    quantity_tolerance: 4, price_tolerance: 4, grn_missing: 4, line_total_mismatch: 4, currency_mismatch: 4
 };
 FinanceJourneyService.AR_REASON_STAGE = {
     customer_ambiguous: 3, unmatched: 5, ambiguous_match: 5, currency_mismatch: 5, duplicate: 5, short_pay: 6, over_pay: 6
@@ -49,6 +49,10 @@ FinanceJourneyService.SIMULATED_EXTRACTION = 'SIMULATED DOCUMENT EXTRACTION — 
 // Phase 40: a document read by the native provider says so instead.
 FinanceJourneyService.NATIVE_EXTRACTION = 'NATIVE EXTRACTION — ServiceNow Document Intelligence (Now LLM)';
 FinanceJourneyService.MOCK_SAP = 'MOCK SAP';
+// Phase 41: the label follows the SAP adapter in use ('MOCK SAP' or 'SAP').
+FinanceJourneyService.sapLabel = function() {
+    return new FinancePolicy().sapLabel();
+};
 
 FinanceJourneyService.prototype = {
     initialize: function() {},
@@ -115,13 +119,13 @@ FinanceJourneyService.prototype = {
         }
         if (state === 'UNKNOWN_OUTCOME') {
             return this._finish(j, order, FinanceJourneyService.AP_STAGES, 'blocked',
-                'WHAT HAPPENED: SAP posting response unknown (' + FinanceJourneyService.MOCK_SAP + ')' +
+                'WHAT HAPPENED: SAP posting response unknown (' + FinanceJourneyService.sapLabel() + ')' +
                 '\nWHY: the write may or may not have committed; it is never blindly re-sent.',
                 'Reconciliation queries the posting status (AP Reconciliation Flow); retry only if SAP confirms nothing was posted.', 'Integration Operator');
         }
         if (state === 'FAILED') {
             return this._finish(j, order, FinanceJourneyService.AP_STAGES, 'blocked',
-                'WHAT HAPPENED: SAP posting failed (' + FinanceJourneyService.MOCK_SAP + ')' + '\nWHY: ' + (this._lastIntegrationError(id) || 'see the integration transaction'),
+                'WHAT HAPPENED: SAP posting failed (' + FinanceJourneyService.sapLabel() + ')' + '\nWHY: ' + (this._lastIntegrationError(id) || 'see the integration transaction'),
                 'Investigate the integration error, then Resolve & Retry.', 'Integration Operator');
         }
         if (state === 'CLOSED') return this._finish(j, order, FinanceJourneyService.AP_STAGES, 'complete', '', 'None: posted and closed.', '');
@@ -171,7 +175,7 @@ FinanceJourneyService.prototype = {
             if (String(ex.getValue('source')).indexOf('simulated') === 0) parts.push(FinanceJourneyService.SIMULATED_EXTRACTION);
             else if (ex.getValue('source') === 'servicenow_document_intelligence') parts.push(FinanceJourneyService.NATIVE_EXTRACTION);
         }
-        parts.push(FinanceJourneyService.MOCK_SAP);
+        parts.push(FinanceJourneyService.sapLabel());
         return parts.join(' · ');
     },
 
@@ -186,7 +190,7 @@ FinanceJourneyService.prototype = {
         // Phase 40: a payment without a remittance has no document reading to label.
         var reading = this._exists('x_695068_bcfa_remittance', 'payment=' + id + '^extraction_provider=native') ? FinanceJourneyService.NATIVE_EXTRACTION
             : hasRemittance ? FinanceJourneyService.SIMULATED_EXTRACTION : '';
-        var j = { openExceptions: open.length, banner: (reading ? reading + ' · ' : '') + FinanceJourneyService.MOCK_SAP + ' · SAP mode ' + mode.toUpperCase() };
+        var j = { openExceptions: open.length, banner: (reading ? reading + ' · ' : '') + FinanceJourneyService.sapLabel() + ' · SAP mode ' + mode.toUpperCase() };
         var order = FinanceJourneyService.AR_STATE_ORDER[state];
         if (state === 'RECEIVED' || state === 'NORMALIZED') order = hasRemittance ? 2 : 1;
 
@@ -213,18 +217,18 @@ FinanceJourneyService.prototype = {
         }
         if (state === 'SAP_DRAFT') {
             return this._finish(j, order, FinanceJourneyService.AR_STAGES, 'waiting',
-                'WHAT HAPPENED: approved clearing instruction staged in SAP as a DRAFT (' + FinanceJourneyService.MOCK_SAP + (pay.getValue('sap_reference') ? ' ' + pay.getValue('sap_reference') : '') + ')' +
+                'WHAT HAPPENED: approved clearing instruction staged in SAP as a DRAFT (' + FinanceJourneyService.sapLabel() + (pay.getValue('sap_reference') ? ' ' + pay.getValue('sap_reference') : '') + ')' +
                 '\nWHY: SAP processing mode is DRAFT: SAP must confirm (post) the draft before the payment is cleared. Nothing is cleared yet.',
                 'Confirm the draft in SAP, then Check SAP Draft Status (status query only, nothing is re-sent).', 'SAP user / Integration Operator');
         }
         if (state === 'UNKNOWN_OUTCOME') {
             return this._finish(j, order, FinanceJourneyService.AR_STAGES, 'blocked',
-                'WHAT HAPPENED: SAP clearing response unknown (' + FinanceJourneyService.MOCK_SAP + ')\nWHY: the clearing may or may not have committed; it is never blindly re-sent.',
+                'WHAT HAPPENED: SAP clearing response unknown (' + FinanceJourneyService.sapLabel() + ')\nWHY: the clearing may or may not have committed; it is never blindly re-sent.',
                 'Reconciliation queries the clearing status (AR Reconciliation Flow); retry only if SAP confirms nothing was cleared.', 'Integration Operator');
         }
         if (state === 'FAILED') {
             return this._finish(j, order, FinanceJourneyService.AR_STAGES, 'blocked',
-                'WHAT HAPPENED: SAP clearing failed (' + FinanceJourneyService.MOCK_SAP + ')\nWHY: ' + (this._lastIntegrationError(id) || 'see the integration transaction'),
+                'WHAT HAPPENED: SAP clearing failed (' + FinanceJourneyService.sapLabel() + ')\nWHY: ' + (this._lastIntegrationError(id) || 'see the integration transaction'),
                 'Investigate the integration error and resolve the exception.', 'Integration Operator');
         }
         if (state === 'CLOSED') return this._finish(j, order, FinanceJourneyService.AR_STAGES, 'complete', '', 'None: cleared and closed.', '');

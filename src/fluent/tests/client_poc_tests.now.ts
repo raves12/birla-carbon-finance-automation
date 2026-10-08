@@ -234,7 +234,9 @@ Test(
                         value: poor.confidence < new FinancePolicy().extractionConfidenceThreshold() });
                     var broken = native._mapInvoice({ suppliername: 'X', invoicenumber: 'Y', currency: 'INR', subtotalbeforetax: '1000', totaltaxamount: '180', invoicetotal: '2000',
                         invoicelineitems: [{ quantity: 1, unit_price: 1000, net_amount: 1000 }] });
-                    assertEqual({ name: 'net + tax not equal to total is flagged', shouldbe: true, value: broken.warnings.join(' ').indexOf('does not equal the total') >= 0 });
+                    // Phase 41 (defect 9): the arithmetic is a separate totals reconciliation; it is still flagged, but no longer lowers the extraction confidence.
+                    assertEqual({ name: 'net + tax not equal to total is flagged (totals not reconciled)', shouldbe: true,
+                        value: broken.reconciliation.result === 'not_reconciled' && broken.warnings.join(' ').indexOf('do not reconcile') >= 0 });
                     // AR-OCR-003 low confidence advice: missing amount and references.
                     var advice = native._mapAdvice({ payername: 'Some Customer', bankreference: 'UTR1', currency: 'INR', invoicespaid: [] });
                     assertEqual({ name: 'AR-OCR-003 advice without amount or invoices goes below the threshold', shouldbe: true,

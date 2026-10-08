@@ -110,6 +110,160 @@ STEPS['remaining'] = {
     'atf': ['f8bacf78488341a6a620d529cba81a17', 'b389e812f61c4bb09ed7c730aa20b6ee'],  # PB-AP-004 banner; CP-DED AR-REC-004
 }
 
+# Process Document saves a new intake before processing it (it ran on an
+# unsaved form and redirected to "Record not found", 2026-10-06).
+STEPS['intake_action'] = {
+    'base': '4e00db7',
+    'new_si': [],
+    'mod_si': [],
+    'files': r'^sys_ui_action_18d525d32dce47ce959ada18613b9a06\.xml$',
+}
+
+# Documents by email: inbound email actions (subject contains BCFA, new and
+# forwarded) and FinanceDocumentIntakeService.intakeFromEmail.
+STEPS['email_intake'] = {
+    'base': '4e00db7',
+    'new_si': [],
+    'mod_si': ['FinanceDocumentIntakeService'],
+    'files': r'^sysevent_in_email_action_(128b2c33deac4f43a03b35a7300afe31|a9751dac9f194764a2e0d28300701527)\.xml$',
+}
+
+# Email intake v2: images under 30 KB (signature logos, icons) are skipped.
+# The live version is the email_intake deploy, kept in scripts/deploy/baselines.
+STEPS['email_intake_v2'] = {
+    'base': '4e00db7',
+    'base_files': {'FinanceDocumentIntakeService': 'scripts/deploy/baselines/FinanceDocumentIntakeService.email_intake_v1.js'},
+    'new_si': [],
+    'mod_si': ['FinanceDocumentIntakeService'],
+}
+
+# Email intake v3: email intakes are queued and the poller job (system)
+# processes them, since Document Intelligence does not run for guest; a
+# timed-out extraction task is forgotten so Reprocess starts a new one.
+STEPS['email_intake_v3'] = {
+    'base': '4e00db7',
+    'base_files': {'FinanceDocumentIntakeService': 'scripts/deploy/baselines/FinanceDocumentIntakeService.email_intake_v2.js'},
+    'new_si': [],
+    'mod_si': ['FinanceDocumentIntakeService', 'NativeDocumentIntelligenceProvider'],
+    'files': r'^(sysevent_in_email_action_(128b2c33deac4f43a03b35a7300afe31|a9751dac9f194764a2e0d28300701527)|sysauto_script_629f380962754e42b25fe343f0140815)\.xml$',
+}
+
+# "Open Playbook" button on the BCFA Workspace AP invoice and payment forms
+# (declarative form action raising NAV_ITEM_SELECTED for the playbook route).
+STEPS['playbook_button'] = {
+    'base': '4e00db7',
+    'new_si': [],
+    'mod_si': [],
+    'files': r'^(sys_declarative_action_assignment_(425771e68cd443eba638eb679d783284|dd8fdfc2b68c4e8b88d60393512b617a)|sys_declarative_action_payload_definition_1507b8ec57a846abbab06aab42eb9fc6|sys_ux_addon_event_mapping_(8d2a07fda0a8484aa5024c06ed35e6b8|5891ea84e165495abffc8657580fe5b8))\.xml$',
+}
+
+# Readable review summary (sections, bullets) and advisory AI notes
+# (FinanceTextFormat; "Format AI Note" rules on the four tables holding them).
+STEPS['readable_text'] = {
+    'base': '4e00db7',
+    'new_si': ['FinanceTextFormat'],
+    'mod_si': ['FinanceReviewSummary'],
+    'files': r'^sys_script_(0b2adbe11d7242e0ac630e8eb7912772|b62093c1380749f7a49719df6bb6a33a|574789dbb1da40fdac0f73f7c263d45f|48d6605789e04e868e719c1c4f1dd416)\.xml$',
+}
+
+# Review summary v2: AI excerpts on one line (bullets dropped, "; " joins).
+STEPS['readable_text_v2'] = {
+    'base': '4e00db7',
+    'base_files': {'FinanceReviewSummary': 'scripts/deploy/baselines/FinanceReviewSummary.readable_v1.js'},
+    'new_si': [],
+    'mod_si': ['FinanceReviewSummary'],
+}
+
+# Review summary refreshed after an approval is requested (it showed
+# "Approval: Not required" until the next state change).
+STEPS['approval_summary'] = {
+    'base': '4e00db7',
+    'new_si': [],
+    'mod_si': ['ApDomainService', 'ArDomainService'],
+}
+
+# Phase 41, SAP readiness: SAP-ready request data (SapPayloadBuilder), the
+# adapter's own answer decides the outcome, draft status as its own
+# operation, labels follow the adapter, no inline posting with real SAP,
+# MOCK SAP checks the request (strict or warn).
+STEPS['sap_ready'] = {
+    'base': '4e00db7',
+    'base_files': {
+        'ApDomainService': 'scripts/deploy/baselines/ApDomainService.sap_ready_base.js',
+        'ArDomainService': 'scripts/deploy/baselines/ArDomainService.sap_ready_base.js',
+        'FinanceReviewSummary': 'scripts/deploy/baselines/FinanceReviewSummary.sap_ready_base.js',
+    },
+    'new_si': ['SapPayloadBuilder'],
+    'mod_si': ['IntegrationService', 'MockSAPAdapter', 'RealSAPAdapter', 'ApDomainService', 'ArDomainService', 'FinancePolicy',
+               'FinanceJourneyService', 'FinanceReviewSummary', 'FinanceOrchestration'],
+    'files': r'^sys_properties_55a168975d634587bcd11123a2432aa6\.xml$',
+}
+
+# Phase 41: client sample pack hardening, defects D6 and 1-11, and the SAP
+# readiness changes (sap_ready, never deployed on its own). Supersedes
+# 'sap_ready'. Baselines: the live versions, extracted from the loaders that
+# put them live (scripts/deploy/baseline_from_loader.py).
+P41_TESTS = ['1eda99ce35654de09db2537e41ab40e4', 'd09a7e9dcc544091855e186073b0c09c', 'c195e6625f8141a28e8d0f34eb05c79b',
+             '0cedd6bd2e5a4266838d9c70266eb805', 'a5e710b603c04c55bfc7e0e5487add80', '3afa39bdc5984e28989dedd23cd5ac67',
+             'e7688ebcbf4f4f36ab1294b705380553', '94ce522786d84b10ae39413a27e9f239', '597c9d2e699945d0bf245cef59ff0a71']
+STEPS['phase41'] = {
+    'base': '4e00db7',
+    'base_files': {n: 'scripts/deploy/baselines/' + n + '.p41_base.js' for n in [
+        'ApDomainService', 'ArDomainService', 'FinanceReviewSummary', 'FinanceDocumentIntakeService',
+        'NativeDocumentIntelligenceProvider', 'FinanceTextFormat']},
+    'new_si': ['SapPayloadBuilder'],
+    'mod_si': ['IntegrationService', 'MockSAPAdapter', 'RealSAPAdapter', 'ApDomainService', 'ArDomainService', 'FinancePolicy',
+               'FinanceJourneyService', 'FinanceReviewSummary', 'FinanceOrchestration', 'FinanceDocumentIntakeService',
+               'NativeDocumentIntelligenceProvider', 'FinanceTextFormat', 'MatchingEngine', 'ApprovalEngine'],
+    'columns': [
+        'x_695068_bcfa_finance_intake=duplicate_of,extraction_summary',
+        'x_695068_bcfa_ap_invoice=charges_amount,discount_amount,amount_reconciliation,amount_reconciliation_detail,extraction_summary',
+        'x_695068_bcfa_ap_match=fx_detail,superseded',
+        'x_695068_bcfa_ap_approval=eligible_approvers',
+        'x_695068_bcfa_ar_approval=eligible_approvers',
+        'x_695068_bcfa_payment=advice_summary',
+    ],
+    'choices': r'^sys_choice_x_695068_bcfa_(ap_exception_reason_code|ap_exception_resolution_code|ap_invoice_amount_reconciliation|ap_approval_decision|ar_approval_decision)\.xml$',
+    'files': r'^(sys_properties_55a168975d634587bcd11123a2432aa6'
+             r'|sys_security_acl_(19556feabb6e4cebb188466e0fe844d6|8efab6aed2954d8daa329c0ff58b2b72|a82769f5b7254201b100279d2395c60c|931ff5fa741e486488593966e3c4c45c)'
+             r'|sys_script_f80fe2fb0aa04d42a799be90b747db5e'
+             r'|sttrm_state_transition_(df9a5fc82393439a9deeb4318e511104|5b0eec8af64a473f8c57398fe0d052c3|1b1ff17cb7344e5fba4178d341ca3ba4)'
+             r'|sys_ui_action_(18d525d32dce47ce959ada18613b9a06|d6364c9589c84fea88ccac365a8fdbcc|2281a5684eea4af5b8e9850af7186ac9|aa49bcfe92ea415bab51ed26ca7b3d9f)'
+             r'|sys_atf_test_suite_fc5aebad352146fd876beed00f871088)\.xml$',
+    'atf': P41_TESTS,
+}
+
+# Phase 41 follow-up: the role links of the 4 decision-reason ACLs (the
+# phase41 loader carried the ACLs only) and the two corrected tests.
+STEPS['phase41_fix1'] = {
+    'base': '4e00db7',
+    'new_si': [],
+    'mod_si': [],
+    'files': r'^sys_security_acl_role_(981f759bef634df794e0c96285e48b92|b12a79289d704075843e7ca4ba4c89c8|ba26c467fd554e5b8c3287e096ce7b2e|dbca2e8e80ac4c78b3096fc2da243a59'
+             r'|89ec825bb5da4b9baf9e728af13c43c8|4476c63922bb4f2693ea6ad504a76985|7c9d0592656141ddbd2f1384b03716aa|d7171dc18bc5476395a3a1c418246a20)\.xml$',
+    'atf': ['c195e6625f8141a28e8d0f34eb05c79b', '3943fb95ed7341bc9d6a7554304c5035', 'e7688ebcbf4f4f36ab1294b705380553', '597c9d2e699945d0bf245cef59ff0a71'],
+}
+
+
+# Phase 41 client sample run: intake numbers were not unique for intakes
+# inserted in the same instant (business rule fallback), plus its ATF test.
+STEPS['phase41_fix2'] = {
+    'base': '4e00db7',
+    'new_si': [],
+    'mod_si': [],
+    'files': r'^(sys_script_02e3ad1ac8084ff3b5fc039b9b900023|sys_atf_test_suite_fc5aebad352146fd876beed00f871088)\.xml$',
+    'atf': ['44e53c4c828f47bfb064e267dd77dd19'],
+}
+
+# Phase 41 client sample run: the normalization log no longer records fields
+# that were not read (empty original value).
+STEPS['phase41_fix3'] = {
+    'base': '4e00db7',
+    'base_files': {'NativeDocumentIntelligenceProvider': 'scripts/deploy/baselines/NativeDocumentIntelligenceProvider.p41_live.js'},
+    'new_si': [],
+    'mod_si': ['NativeDocumentIntelligenceProvider'],
+}
+
 
 def h(t):
     a = 7
@@ -123,7 +277,11 @@ def main(step):
     guard = []
     for n in cfg['mod_si']:
         rel = 'src/server/script-includes/' + n + '.server.js'
-        head = subprocess.run(['git', 'show', cfg['base'] + ':' + rel], cwd=REPO, capture_output=True, check=True).stdout.decode('utf8').replace('\r\n', '\n')
+        if n in cfg.get('base_files', {}):
+            # Live version came from an uncommitted working copy: compare with the saved copy.
+            head = io.open(os.path.join(REPO, cfg['base_files'][n]), encoding='utf8').read().replace('\r\n', '\n')
+        else:
+            head = subprocess.run(['git', 'show', cfg['base'] + ':' + rel], cwd=REPO, capture_output=True, check=True).stdout.decode('utf8').replace('\r\n', '\n')
         work = io.open(os.path.join(REPO, rel), encoding='utf8').read().replace('\r\n', '\n')
         guard.append({'api': 'x_695068_bcfa.' + n, 'head': h(head), 'work': h(work)})
     tmp = os.path.join(SCR, 'p40_loader_raw.js')

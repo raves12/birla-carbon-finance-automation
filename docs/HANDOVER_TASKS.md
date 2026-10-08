@@ -128,3 +128,13 @@ The role is only for this person. Do not add it to a group other people are in.
 | 3e | Admin | After any Playbook deploy: run `phase35_playbook_yokohama_fix_bg.js` (scope global) and activate both Playbooks in Workflow Studio |
 | 3f | Build team | SAP Mode 2: RealSAPAdapter, connectivity, SAP test system (`SAP_POC_MODES.md`). AR-REC-004 and adapter selection were done on 2026-10-05 |
 | 3g | Build team | The DocIntel field keys and skill configs are global-scope records created by `gen_native_extraction.py`: include them when the app moves to another instance |
+
+## Task 4: Client sample pack findings (Phase 41), open since 2026-10-08
+
+| # | Who | What |
+|---|---|---|
+| 4a | Client IT with ServiceNow | Raise a case: the Document Intelligence reader text has no Chinese characters for Chinese VAT e-invoices (CS-18, CS-20; the PDFs have a Chinese text layer) and no Hangul / Thai for scanned or image pages (CS-19, CS-26). Bank documents keep Chinese. Evidence: `MULTILINGUAL_DOCUMENT_INTELLIGENCE_READINESS.md` (finding). Until fixed, these documents are processed from review |
+| 4b | Birla Carbon finance | Decide whether Chinese bank acceptance drafts (CS-10) are in scope for AR; BCFA has no draft model |
+| 4c | Birla Carbon | Supply samples written in French, Hungarian, Spanish, Arabic and Hindi (none in the pack) |
+| 4d | Birla Carbon | Send invoice pages only for large packages (the reader accepts up to 4 MB per file; CS-28 is 14.7 MB) |
+| 4e | Build team | Load the client vendors / customers as POC master data if the client samples should continue past review (all stop at "not in master data") |

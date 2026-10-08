@@ -31,6 +31,7 @@ export const x_695068_bcfa_vendor = Table({
         // Phase 40: POC reference data for the BCFA AP Tax Expectation
         // decision table (with the country). Not read from SAP.
         tax_category: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Tax Category (POC reference)',
             default: 'goods',
             choices: { goods: 'Goods', services: 'Services' },
@@ -63,6 +64,7 @@ export const x_695068_bcfa_purchase_order = Table({
         company_code: StringColumn({ label: 'Company Code', maxLength: 10 }),
         currency: StringColumn({ label: 'Currency', maxLength: 3 }),
         status: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Status',
             default: 'open',
             choices: { open: 'Open', partially_received: 'Partially Received', closed: 'Closed' },
@@ -113,6 +115,7 @@ export const x_695068_bcfa_ar_open_item = Table({
         open_amount: DecimalColumn({ label: 'Open Amount', scale: 2 }),
         due_date: DateColumn({ label: 'Due Date' }),
         status: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Status',
             default: 'open',
             choices: { open: 'Open', partially_cleared: 'Partially Cleared', cleared: 'Cleared' },
@@ -131,6 +134,7 @@ export const x_695068_bcfa_credit_note = Table({
         open_amount: DecimalColumn({ label: 'Open Amount', scale: 2 }),
         issue_date: DateColumn({ label: 'Issue Date' }),
         status: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Status',
             default: 'open',
             choices: { open: 'Open', applied: 'Applied', closed: 'Closed' },

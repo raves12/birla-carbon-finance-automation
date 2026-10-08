@@ -37,6 +37,7 @@ export const x_695068_bcfa_ai_interaction = Table({
         source_table: StringColumn({ label: 'Source Table', maxLength: 80 }),
         source_record: StringColumn({ label: 'Source Record', maxLength: 32 }),
         operation: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Operation',
             mandatory: true,
             choices: {
@@ -65,11 +66,13 @@ export const x_695068_bcfa_ai_interaction = Table({
             },
         }),
         process: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Process',
             default: 'platform',
             choices: { ap: 'Accounts Payable', ar: 'Accounts Receivable', intake: 'Document Intake', integration: 'Integration', platform: 'Platform' },
         }),
         provider: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Provider',
             choices: {
                 now_assist: 'Now Assist (Now LLM)',
@@ -78,6 +81,7 @@ export const x_695068_bcfa_ai_interaction = Table({
             },
         }),
         capability: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'AI Capability',
             choices: {
                 document_classification: 'Document Classification',
@@ -111,6 +115,7 @@ export const x_695068_bcfa_ai_interaction = Table({
         human_decided_at: DateTimeColumn({ label: 'Human Decided At' }),
         // Phase 21: what the guardrails did with this execution.
         guardrail_action: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Guardrail Action',
             default: 'none',
             choices: { none: 'None', sanitized: 'Output sanitized', blocked: 'Blocked (not sent)', guardian_blocked: 'Blocked by Now Assist Guardian' },
@@ -119,6 +124,7 @@ export const x_695068_bcfa_ai_interaction = Table({
         claude_model: StringColumn({ label: 'Model', maxLength: 100 }),
         prompt_version: StringColumn({ label: 'Prompt Version', maxLength: 20 }),
         status: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Status',
             mandatory: true,
             choices: {

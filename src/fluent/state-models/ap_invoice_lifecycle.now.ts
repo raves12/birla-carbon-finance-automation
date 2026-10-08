@@ -68,6 +68,12 @@ export const apInvoiceLifecycle = StateModel({
         { $id: Now.ID['ap-trans-exception-rejected'], from: 'exception', to: 'rejected' },
         { $id: Now.ID['ap-trans-on-hold-rejected'], from: 'on_hold', to: 'rejected' },
         { $id: Now.ID['ap-trans-resolution-pending-approval'], from: 'resolution', to: 'pending_approval' },
+        // Phase 41, defect 6: Re-run Validation / Re-run Match from a checked
+        // state re-enters the checks through RESOLUTION (a pending approval
+        // is withdrawn first; ApDomainService.rerunChecks).
+        { $id: Now.ID['ap-trans-validated-resolution'], from: 'validated', to: 'resolution' },
+        { $id: Now.ID['ap-trans-matched-resolution'], from: 'matched', to: 'resolution' },
+        { $id: Now.ID['ap-trans-pending-approval-resolution'], from: 'pending_approval', to: 'resolution' },
         // Phase 26: transitions the pipeline makes that the model lacked
         // (found by comparing the audit trail with the model).
         // An uploaded document's extraction is recorded before the invoice

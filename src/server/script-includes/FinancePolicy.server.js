@@ -9,6 +9,10 @@ var FinancePolicy = Class.create();
 FinancePolicy.PREFIX = 'x_695068_bcfa.';
 
 FinancePolicy.DEFAULTS = {
+    // Phase 41: names of the group's own companies, as printed on documents
+    // (Latin, Chinese, Korean). A "vendor invoice" whose seller is one of
+    // them is an outgoing sales invoice and never enters AP.
+    'own_company_names': 'Birla Carbon,Aditya Birla,博拉碳,비를라카본',
     'ai.provider': 'native',
     'ap.tolerance.quantity_pct': 0.02,
     'ap.tolerance.price_pct': 0.02,
@@ -294,6 +298,19 @@ FinancePolicy.prototype = {
         return this._number('ap.extraction.confidence_threshold');
     },
 
+    // Phase 41: true when the name is one of the group's own companies
+    // (x_695068_bcfa.own_company_names, comma separated, case-insensitive).
+    isOwnCompany: function(name) {
+        var n = String(name || '').toLowerCase().replace(/\s+/g, ' ');
+        if (!n) return false;
+        var list = this._string('own_company_names').split(',');
+        for (var i = 0; i < list.length; i++) {
+            var own = list[i].toLowerCase().replace(/\s+/g, ' ').trim();
+            if (own && n.indexOf(own) >= 0) return true;
+        }
+        return false;
+    },
+
     // Approval is required unless the gross amount is at or below the
     // configured auto-approve limit. The POC default limit is 0, so every
     // invoice goes to a human approver.
@@ -419,6 +436,11 @@ FinancePolicy.prototype = {
     // adapters are accepted; anything else is MOCK SAP.
     sapAdapter: function() {
         return this._string('sap.adapter') === 'real_sap' ? 'real_sap' : 'mock_sap';
+    },
+
+    // Phase 41: how screens and audit texts name the SAP system answering.
+    sapLabel: function() {
+        return this.sapAdapter() === 'real_sap' ? 'SAP' : 'MOCK SAP';
     },
 
     apExceptionDefaultOwner: function() {

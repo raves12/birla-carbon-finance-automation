@@ -36,9 +36,28 @@ export const x_695068_bcfa_ap_invoice = Table({
         gross_amount: DecimalColumn({ label: 'Gross Amount', scale: 2 }),
         tax_amount: DecimalColumn({ label: 'Tax Amount', scale: 2 }),
         net_amount: DecimalColumn({ label: 'Net Amount', scale: 2 }),
+        // Phase 41: charges printed as their own lines (freight, shipping /
+        // handling, surcharge, other) and discount, so the totals reconcile
+        // (gross = net + tax + charges - discount). Separate from the
+        // extraction confidence.
+        charges_amount: DecimalColumn({ label: 'Charges (Freight, Shipping, Other)', scale: 2, hint: 'Freight, shipping/handling, surcharges and other charges printed as their own lines on the invoice.' }),
+        discount_amount: DecimalColumn({ label: 'Discount', scale: 2 }),
+        amount_reconciliation: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
+            label: 'Totals Reconciliation',
+            readOnly: true,
+            choices: { reconciled: 'Reconciled', not_reconciled: 'Not Reconciled', incomplete: 'Incomplete' },
+            hint: 'Deterministic check of the printed totals (net + tax + charges - discount = gross). Independent of the extraction confidence.',
+        }),
+        amount_reconciliation_detail: StringColumn({ label: 'Totals Reconciliation Detail', maxLength: 1000, readOnly: true }),
+        // Phase 41, defect 7: what the document said, in readable sections
+        // (FinanceTextFormat.extractionSummary); the raw JSON stays on the
+        // intake and AP Extraction records as technical evidence.
+        extraction_summary: StringColumn({ label: 'Extracted Data', maxLength: 4000, readOnly: true, hint: 'What Document Intelligence read from the invoice, by section. Evidence only: validation and matching decide.' }),
         extraction_confidence: DecimalColumn({ label: 'Extraction Confidence', scale: 2 }),
         state: StringColumn({ label: 'State', maxLength: 40, readOnly: true, hint: 'Managed by the AP Invoice Lifecycle state model; only its transitions are allowed (Phase 26).' }),
         source: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Source',
             default: 'email',
             choices: { email: 'Email', shared_drive: 'Shared Drive', manual: 'Manual Entry' },
@@ -47,11 +66,13 @@ export const x_695068_bcfa_ap_invoice = Table({
         external_reference: StringColumn({ label: 'External Reference', maxLength: 64 }),
         duplicate_key: StringColumn({ label: 'Duplicate Key', maxLength: 100, hint: 'Hash of vendor+invoice_number+amount used for duplicate detection' }),
         approval_state: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Approval State',
             default: 'not_required',
             choices: { not_required: 'Not Required', pending: 'Pending', approved: 'Approved', rejected: 'Rejected' },
         }),
         posting_state: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Posting State',
             default: 'not_posted',
             choices: {
@@ -77,6 +98,7 @@ export const x_695068_bcfa_ap_invoice = Table({
         // Display only: the BCFA Playbook stages wait on journey_stage_order; no
         // business logic reads these fields.
         journey_stage: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Journey Stage',
             readOnly: true,
             choices: {
@@ -93,6 +115,7 @@ export const x_695068_bcfa_ap_invoice = Table({
         }),
         journey_stage_order: IntegerColumn({ label: 'Journey Stage Order', readOnly: true, hint: 'Playbook stage N completes when this is greater than N.' }),
         journey_status: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Journey Status',
             readOnly: true,
             choices: {
@@ -116,6 +139,7 @@ export const x_695068_bcfa_ap_invoice = Table({
         // the governed expectation (MatchingEngine.evaluateTax). Extraction
         // and validation are separate concerns.
         extraction_provider: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Extraction Provider',
             choices: { native: 'Native: ServiceNow Document Intelligence (Now LLM)', simulated: 'SIMULATED DOCUMENT EXTRACTION — POC' },
         }),
@@ -182,6 +206,7 @@ export const x_695068_bcfa_ap_extraction = Table({
         extracted_fields: JsonColumn({ label: 'Extracted Fields' }),
         confidence: DecimalColumn({ label: 'Confidence', scale: 2 }),
         source: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Source',
             default: 'simulated_document_intelligence',
             choices: {
@@ -211,6 +236,7 @@ export const x_695068_bcfa_ap_match = Table({
         tax_variance: DecimalColumn({ label: 'Tax Variance', scale: 2 }),
         within_tolerance: BooleanColumn({ label: 'Within Tolerance' }),
         match_result: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Match Result',
             choices: { matched: 'Matched', partial: 'Partial', mismatch: 'Mismatch' },
         }),
@@ -232,6 +258,12 @@ export const x_695068_bcfa_ap_match = Table({
                 fail: 'Fail',
             } }),
         tolerance_detail: StringColumn({ label: 'Tolerance Detail', maxLength: 4000 }),
+        // Phase 41, defect 6: a newer match of the same invoice supersedes this
+        // one (history kept; one current result).
+        // Phase 41, defect 5: invoice and PO in different currencies are
+        // compared only through a governed rate (source, date, rate, values).
+        fx_detail: StringColumn({ label: 'Currency Conversion', maxLength: 1000, readOnly: true }),
+        superseded: BooleanColumn({ label: 'Superseded', default: false, readOnly: true, hint: 'A later match of the same invoice replaced this result (re-run). Kept as history.' }),
     },
 })
 
@@ -243,6 +275,7 @@ export const x_695068_bcfa_ap_exception = Table({
     schema: {
         ap_invoice: ReferenceColumn({ label: 'AP Invoice', referenceTable: 'x_695068_bcfa_ap_invoice', mandatory: true }),
         reason_code: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Reason Code',
             mandatory: true,
             choices: {
@@ -256,11 +289,13 @@ export const x_695068_bcfa_ap_exception = Table({
                 vendor_invalid: 'Vendor Invalid',
                 grn_missing: 'Goods Receipt Missing',
                 line_total_mismatch: 'Line Total Mismatch',
+                currency_mismatch: 'Currency / FX (no approved rate)',
                 other: 'Other',
             },
         }),
         description: StringColumn({ label: 'Description', maxLength: 4000 }),
         status: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Status',
             default: 'open',
             choices: { open: 'Open', in_review: 'In Review', resolved: 'Resolved', closed: 'Closed' },
@@ -275,6 +310,7 @@ export const x_695068_bcfa_ap_exception = Table({
         // Phase 12 enrichment, set by ExceptionEngine when the exception is
         // raised (deterministic, from FinancePolicy and MatchingEngine).
         severity: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Severity',
             default: 'medium',
             readOnly: true,
@@ -289,6 +325,7 @@ export const x_695068_bcfa_ap_exception = Table({
         // Human decision (ApExceptionDecisionService). The reason is typed by
         // the finance user; the rest is recorded by the service.
         decision: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Decision',
             readOnly: true,
             choices: {
@@ -307,6 +344,7 @@ export const x_695068_bcfa_ap_exception = Table({
         process: ChoiceColumn({ label: 'Process', default: 'ap', readOnly: true, choices: { ap: 'Accounts Payable', ar: 'Accounts Receivable' } }),
         subtype: StringColumn({ label: 'Subtype', maxLength: 100, readOnly: true }),
         priority: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Priority',
             default: '3',
             readOnly: true,
@@ -315,12 +353,14 @@ export const x_695068_bcfa_ap_exception = Table({
         }),
         opened_at: DateTimeColumn({ label: 'Opened', readOnly: true }),
         sla_status: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'SLA Status',
             readOnly: true,
             choices: { on_track: 'On Track', at_risk: 'At Risk', breached: 'Breached', met: 'Met', missed: 'Missed' },
             hint: 'At risk from 75% of the SLA; set hourly by the exception sweep and on resolution.',
         }),
         aging_bucket: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Aging',
             readOnly: true,
             choices: { lt_1d: 'Under 1 day', '1_3d': '1-3 days', '3_7d': '3-7 days', gt_7d: 'Over 7 days' },
@@ -329,6 +369,7 @@ export const x_695068_bcfa_ap_exception = Table({
         ai_explanation: StringColumn({ label: 'AI Explanation (advisory)', maxLength: 4000, readOnly: true, hint: 'Explanation section of the advisory AI note.' }),
         ai_confidence: ChoiceColumn({ label: 'AI Confidence', readOnly: true, choices: { high: 'High', medium: 'Medium', low: 'Low' } }),
         resolution_code: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Resolution Code',
             readOnly: true,
             choices: {
@@ -337,6 +378,7 @@ export const x_695068_bcfa_ap_exception = Table({
                 deduction_approved: 'Deduction Approved',
                 corrected_and_retried: 'Corrected and Retried',
                 withdrawn: 'Withdrawn',
+                superseded_by_rerun: 'Superseded by Re-run',
                 other: 'Other',
             },
         }),
@@ -361,15 +403,27 @@ export const x_695068_bcfa_ap_approval = Table({
             readOnly: true,
             hint: 'Group the BCFA AP Approval decision table routed this approval to (Phase 15). Membership is enforced from Phase 17.',
         }),
+        // Phase 41, defect 4: approvals go to a group; the decider is recorded
+        // in approver only when someone decides. The eligible approvers (active
+        // group members who pass every segregation-of-duties check) are listed
+        // when the approval is requested, so the destination is never blank.
+        eligible_approvers: StringColumn({
+            label: 'Eligible Approvers',
+            maxLength: 1000,
+            readOnly: true,
+            hint: 'Active members of the approval group who may decide this approval: they hold the approver role, did not request it and did not process the transaction. Set when the approval is requested.',
+        }),
         decision: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Decision',
             default: 'pending',
-            choices: { pending: 'Pending', approved: 'Approved', rejected: 'Rejected' },
+            choices: { pending: 'Pending', approved: 'Approved', rejected: 'Rejected', withdrawn: 'Withdrawn' },
         }),
         decision_notes: StringColumn({ label: 'Decision Notes', maxLength: 4000 }),
         decided_at: DateTimeColumn({ label: 'Decided At' }),
         // Phase 17 decision record (ApprovalEngine).
         approval_type: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Approval Type',
             default: 'standard',
             readOnly: true,

@@ -51,6 +51,17 @@ export const bcfaRegressionSuite = TestSuite({
         '158431353b0a457195253cd20ac8bac1', // CP-TOL (AP-TOL-001..006)
         'b389e812f61c4bb09ed7c730aa20b6ee', // CP-DED (AR-DED-001..005)
         '3943fb95ed7341bc9d6a7554304c5035', // CP-EXT (extraction provider)
+        // Phase 41: client sample pack hardening and the POC team's defects
+        '1eda99ce35654de09db2537e41ab40e4', // H41-D6 decision reason ACL
+        'd09a7e9dcc544091855e186073b0c09c', // H41-D1 canonical duplicate intake
+        'c195e6625f8141a28e8d0f34eb05c79b', // H41-D2/D3 stale error, no attachment
+        '0cedd6bd2e5a4266838d9c70266eb805', // H41-D8 remittance correlation
+        'a5e710b603c04c55bfc7e0e5487add80', // H41-D10 payment lifecycle start
+        '3afa39bdc5984e28989dedd23cd5ac67', // H41-D9 totals reconciliation (shipping)
+        'e7688ebcbf4f4f36ab1294b705380553', // H41-D5 currency / FX
+        '94ce522786d84b10ae39413a27e9f239', // H41-D6b re-run and stale approval
+        '597c9d2e699945d0bf245cef59ff0a71', // H41-SAP adapter outcome mapping
+        '44e53c4c828f47bfb064e267dd77dd19', // H41-NUM distinct intake numbers
     ],
 })
 

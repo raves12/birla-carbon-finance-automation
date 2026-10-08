@@ -42,6 +42,7 @@ export const x_695068_bcfa_finance_intake = Table({
         // value after a real insert with this flag missing).
         number: StringColumn({ label: 'Number', primary: true }),
         source: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Source',
             default: 'workspace_upload',
             choices: {
@@ -57,6 +58,7 @@ export const x_695068_bcfa_finance_intake = Table({
             hint: 'Free-text origin reference — e.g. an email message ID — used alongside attachment_hash for Phase 10 duplicate-intake detection.',
         }),
         document_type: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Document Type',
             default: 'unknown',
             choices: {
@@ -67,6 +69,7 @@ export const x_695068_bcfa_finance_intake = Table({
             },
         }),
         processing_status: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Processing Status',
             mandatory: true,
             default: 'new',
@@ -99,11 +102,22 @@ export const x_695068_bcfa_finance_intake = Table({
         ap_invoice: ReferenceColumn({ label: 'AP Invoice', referenceTable: 'x_695068_bcfa_ap_invoice' }),
         payment: ReferenceColumn({ label: 'Payment', referenceTable: 'x_695068_bcfa_payment' }),
         remittance: ReferenceColumn({ label: 'Remittance', referenceTable: 'x_695068_bcfa_remittance' }),
+        // Phase 41, defect 1: the canonical (earliest) intake of the same
+        // document content. Set only on a later duplicate; a canonical intake
+        // never points at a duplicate, so references cannot loop.
+        duplicate_of: ReferenceColumn({
+            label: 'Duplicate Of',
+            referenceTable: 'x_695068_bcfa_finance_intake',
+            readOnly: true,
+            hint: 'The earlier intake of the same document (same content hash). This intake creates no transaction; it shows the original\'s result.',
+        }),
         processing_error: StringColumn({
             label: 'Processing Error',
             maxLength: 4000,
             hint: 'Human-readable failure description only — never exception internals or credential material (same discipline as ai_interaction.safe_error).',
         }),
+        // Phase 41, defect 7: the extracted data in readable sections.
+        extraction_summary: StringColumn({ label: 'Extracted Data (readable)', maxLength: 4000, readOnly: true }),
         extraction_json: JsonColumn({
             label: 'Extraction JSON',
             hint: 'Full, unedited structured extraction result. Retained verbatim for audit even after a reviewer corrects a value — see Phase 9/11.',
@@ -111,6 +125,7 @@ export const x_695068_bcfa_finance_intake = Table({
         // Phase 40: which provider read the document, and the Document
         // Intelligence task of a native extraction (one task per attachment).
         extraction_provider: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Extraction Provider',
             choices: {
                 native: 'Native: ServiceNow Document Intelligence (Now LLM)',

@@ -32,6 +32,16 @@ export const mockSapDraftOutcome = Property({
         'MOCK SAP simulation only: what the simulated SAP user has done with a staged draft when its status is checked. pending (default: not yet posted, the payment stays in SAP_DRAFT), posted or rejected. Set to posted to demonstrate the confirmation. Has no meaning for a real SAP adapter.',
 })
 
+// Phase 41: MOCK SAP checks the SAP-ready request data (SapPayloadBuilder).
+export const mockSapStrictValidation = Property({
+    $id: Now.ID['prop-mock-sap-strict-validation'],
+    name: 'x_695068_bcfa.mock_sap.strict_validation',
+    type: 'boolean',
+    value: 'false',
+    description:
+        'MOCK SAP simulation only. false (default): what real SAP would reject in a posting or clearing request (e.g. no invoice date, no company code) is recorded as warnings on the integration transaction and the audit, and the call succeeds. true: such a request is rejected with VALIDATION_ERROR, as real SAP would, to rehearse SAP-ready data. Has no meaning for a real SAP adapter.',
+})
+
 // DRAFT mode: a status query only (nothing is re-sent). Hidden unless the
 // payment is staged as an SAP draft.
 export const paymentCheckSapDraftStatus = UiAction({

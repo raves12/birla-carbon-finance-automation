@@ -22,8 +22,14 @@ FinanceOrchestration.EVENT = 'x_695068_bcfa.flow.stage';
 FinanceOrchestration._inlineDepth = 0;
 
 // True when the domain services should chain steps themselves.
+// Phase 41: with real SAP (x_695068_bcfa.sap.adapter = real_sap) the inline
+// property is ignored: inline mode posts and clears inside the approver's own
+// transaction, which is fine for the instant MOCK SAP but not for SAP calls
+// that take seconds or time out. The flows run them in the background
+// (event + script action). runInline (seeding, tests) still forces inline.
 FinanceOrchestration.isInline = function() {
-    return FinanceOrchestration._inlineDepth > 0 || gs.getProperty(FinanceOrchestration.PROPERTY, 'flow') === 'inline';
+    if (FinanceOrchestration._inlineDepth > 0) return true;
+    return gs.getProperty(FinanceOrchestration.PROPERTY, 'flow') === 'inline' && new FinancePolicy().sapAdapter() !== 'real_sap';
 };
 
 // Runs fn with synchronous (inline) chaining, whatever the property says.
