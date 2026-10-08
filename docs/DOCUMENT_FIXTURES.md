@@ -66,3 +66,22 @@ correctly on real inserts) and all 11 PDFs attached. Each sits at
 `processing_status: 'new'`, ready to be picked up by Phase 5's Content
 Understanding configuration and the native-AI-driven Finance Document
 Intake pipeline once that replaces the current Claude-only extraction path.
+
+## Non-Latin-script AP invoices (Chinese, Thai)
+
+Two more synthetic AP invoices for testing DocIntel extraction on CJK and
+Thai script. Same rules as above: fictional companies, tax IDs and bank
+accounts, a visible "synthetic sample" watermark, and line/tax arithmetic
+that adds up. They were rendered from HTML through the pre-installed Chromium
+(Playwright `page.pdf`), so the Thai vowel and tone marks are shaped
+correctly. The PDFs have a real text layer, not scanned images.
+
+| Fixture | Language / layout | Key values for the 13 AP fields |
+|---|---|---|
+| `AP_INV_106_CN_VAT13.pdf` | Simplified Chinese commercial invoice (商业发票) | Vendor 山东华源炭黑原料有限公司 / V011 · Invoice HY-2026-001847 · PO PO-CN-450078 · CNY · 2026-09-28 · Subtotal 660,000.00 · VAT 13% 85,800.00 · Total 745,800.00 · 3 lines |
+| `AP_INV_107_TH_VAT7.pdf` | Thai tax invoice (ใบกำกับภาษี/ใบแจ้งหนี้), Buddhist-era date | Vendor บริษัท สยามปิโตรฟีดสต็อก จำกัด / V012 · Invoice SPF-IV6909-0412 · PO PO-TH-560213 · THB · 30 ก.ย. 2569 (= 2026-09-30) · Subtotal 2,480,000.00 · VAT 7% 173,600.00 · Total 2,653,600.00 · 3 lines |
+
+Things these test that the Latin-script fixtures don't: CJK/Thai OCR,
+labels in the local language only (no English anchors), a Chinese amount
+written out in capital numerals (大写), and a Thai Buddhist-calendar date that
+the Date field has to normalise (2569 BE → 2026 CE).
