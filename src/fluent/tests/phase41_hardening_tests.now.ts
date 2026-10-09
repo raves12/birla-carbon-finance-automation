@@ -179,8 +179,13 @@ Test(
                     var p = new GlideRecord('x_695068_bcfa_payment'); p.initialize();
                     p.setValue('bank_reference', 'H41-D10-' + gs.generateGUID().substring(0, 8)); p.setValue('amount', 10); p.setValue('currency', 'INR');
                     var id = p.insert();
+                    // The state the insert produced (before-insert rule). The AR
+                    // intake flow may already have moved the payment on when it
+                    // is read back, so the re-read only checks it has a state.
+                    var started = p.getValue('state');
                     p.get(id);
-                    assertEqual({ name: 'state RECEIVED', shouldbe: 'RECEIVED', value: p.getValue('state') });
+                    assertEqual({ name: 'created in state RECEIVED', shouldbe: 'RECEIVED', value: started });
+                    assertEqual({ name: 'still in the lifecycle (state never empty)', shouldbe: true, value: !!p.getValue('state') });
                     assertEqual({ name: 'correlation id set', shouldbe: true, value: !!p.getValue('correlation_id') });
                     assertEqual({ name: 'idempotency key set', shouldbe: true, value: !!p.getValue('idempotency_key') });
                 })(outputs, steps, params, stepResult, assertEqual);

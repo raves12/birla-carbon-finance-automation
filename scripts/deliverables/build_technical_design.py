@@ -496,7 +496,7 @@ bullets(doc, ['D6: a finance approver cannot type the decision reason on an exce
 
 # 15 -----------------------------------------------------------------------
 h(doc, '15. Testing and quality')
-para(doc, 'Automated Test Framework: suite BCFA Regression (49 tests, run serially; last full run 49/49 on 2026-10-08). End-to-end scripts: '
+para(doc, 'Automated Test Framework: suite BCFA Regression (50 tests, run serially; last full run 50/50 on 2026-10-09). End-to-end scripts: '
      'phase35_e2e_bg.js (16 scenarios AP-A..F, AR-A..I, AR-C2; run C119F 16/16) and phase40_e2e_bg.js (11 scenarios; run 63D87 11/11). Manual tests: '
      'deliverables/BCFA_Manual_Test_Workbook.xlsx. Extraction measurement: scripts/eval.')
 table(doc, ['ATF test', 'Assertions'], [(t['name'], len(t['assertions'])) for t in INV['atf_tests']], widths=[14, 3], font=7.5)

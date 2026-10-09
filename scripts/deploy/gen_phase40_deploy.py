@@ -281,6 +281,16 @@ STEPS['phase41_fix4'] = {
 }
 
 
+# H41-D10 reads the state the insert produced (the AR intake flow may move the
+# payment on before the test reads it back).
+STEPS['phase41_fix5'] = {
+    'base': '4e00db7',
+    'new_si': [],
+    'mod_si': [],
+    'atf': ['a5e710b603c04c55bfc7e0e5487add80'],
+}
+
+
 def h(t):
     a = 7
     for ch in t:
