@@ -85,8 +85,9 @@ Per the completion rules, these are **not** declared complete:
    (could not trigger here because the Chinese text was not read).
 4. **Bank credit advices without invoice references (CS-15, CS-21, CS-13/14):** cash application relies on customer and
    amount, or SAP open items; expect review unless an exact single open item matches.
-5. **Client master data:** every client sample stopped at "vendor / customer not in master data". Load the client
-   vendors and customers to take samples past review.
+5. **Client master data:** the client vendors, POs and customers are not in the POC data. Since 2026-10-09 an AP
+   invoice read well is created anyway and sits in EXCEPTION (vendor invalid / PO mismatch); loading the master data
+   and Re-run Validation takes it further. AR advices still stop at review when the customer is unknown.
 6. **Large files:** CS-28 (14.7 MB) must be sent as invoice pages only (4 MB per file).
 7. **FX rates:** production rates must come from SAP (TCURR) or the client's treasury source.
 

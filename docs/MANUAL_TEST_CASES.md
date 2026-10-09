@@ -121,3 +121,4 @@ kept outside source control; ask the BCFA team for the pack). Automated equivale
 | MT-41-16 | Payment advices | AR Processor | Upload CS-04 (TDS), CS-05, CS-09 (mixed number formats) | Per-invoice lines reconcile to the payment; TDS per invoice on CS-04 | |
 | MT-41-17 | Chinese / Korean / Thai | AP Processor | Upload CS-18, CS-19, CS-26 | Known platform limitation: fields not read (no value invented), confidence low, review | yes |
 | MT-41-18 | Distinct numbers | admin | Create several intakes at once (e.g. by e-mail) | Every intake has its own number | |
+| MT-41-19 | Invoice created with unknown vendor / PO | AP Processor | Upload an invoice whose vendor and PO are not in master data (e.g. `test/fixtures/AP_INV_107_TH_VAT7.pdf`) → Process Document | Intake Completed; AP invoice created with Vendor (Printed) and PO Number (Printed); EXCEPTION Vendor Invalid. Add the vendor → Re-run Validation → vendor linked, then PO Mismatch until the PO exists | yes |

@@ -39,7 +39,7 @@ FinanceJourneyService.AR_STATE_ORDER = {
 };
 // Stage where an open exception of this reason blocks the transaction.
 FinanceJourneyService.AP_REASON_STAGE = {
-    low_confidence: 2, missing_field: 2, duplicate: 3, vendor_invalid: 3, po_mismatch: 3, tax_validation: 3,
+    low_confidence: 2, missing_field: 2, totals_not_reconciled: 3, duplicate: 3, vendor_invalid: 3, po_mismatch: 3, tax_validation: 3,
     quantity_tolerance: 4, price_tolerance: 4, grn_missing: 4, line_total_mismatch: 4, currency_mismatch: 4
 };
 FinanceJourneyService.AR_REASON_STAGE = {

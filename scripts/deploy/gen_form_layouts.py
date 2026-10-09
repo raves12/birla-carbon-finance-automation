@@ -32,7 +32,7 @@ LAYOUTS = {
              ['journey_banner', 'journey_blocked_reason', 'journey_next_action']),
         ('Review Summary', [], [], ['review_summary']),
         ('Amounts', ['net_amount', 'tax_amount', 'charges_amount', 'discount_amount', 'gross_amount'], ['company_code', 'posting_date', 'amount_reconciliation', 'sales_order_reference', 'source'], ['amount_reconciliation_detail']),
-        ('Document Extraction', ['extraction_provider', 'extraction_confidence'], ['document_country', 'document_language'], ['extraction_summary']),
+        ('Document Extraction', ['extraction_provider', 'extraction_confidence', 'printed_vendor_name', 'printed_vendor_code'], ['document_country', 'document_language', 'printed_po_number'], ['extraction_summary']),
         ('Tax as Printed on the Invoice', ['tax_type', 'tax_rate_pct', 'igst_amount', 'cgst_amount', 'sgst_amount'], ['vat_amount', 'wht_amount', 'wht_rate_pct'], []),
         ('Tax and Withholding Validation', ['tax_regime', 'expected_tax_amount', 'tax_variance_amount', 'tax_validation_result'],
              ['wht_applicable', 'wht_code', 'wht_expected_amount', 'wht_result'], ['tax_validation_detail', 'tax_rule_source']),

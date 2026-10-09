@@ -43,6 +43,7 @@ test, full regression.
 | E4 (found) | SAP request check vs charges | Found while fixing D9 | SAP-ready check required net + tax = gross | **Fixed, deployed; ATF H41-D9 PASS** |
 | E5 (found) | Two intakes with the same number | **Yes, in the client sample run**: two intakes created in the same second were both FDI-C51DFC39 | The number business rule falls back to the first 8 characters of the sys_id, which are shared by records inserted in the same instant | **Fixed, deployed** (a taken number gets the end of the sys_id appended); ATF H41-NUM PASS; the affected intake was renumbered |
 | E6 (found) | Noise in the normalization evidence | Seen in the client run (CS-01) | Fields that were not read were listed as "normalized" (empty original) | **Fixed, deployed** (only values read are listed) |
+| E8 (POC team, FDI-BE98E1F5) | Invoice not created when the vendor is unknown | **Yes, on the live instance**: a complete, reconciled reading (confidence 1) stopped at the intake with "Vendor could not be resolved" | The intake resolved vendor and PO before creating the invoice and sent the intake to review when either failed (also when the printed totals did not reconcile) | **Fixed, deployed 2026-10-09**: a good reading always creates the invoice; the printed vendor / PO are kept and validation raises vendor_invalid / po_mismatch / totals_not_reconciled on the invoice; Re-run Validation links them once they exist. ATF H41-INV PASS; FDI-BE98E1F5 reprocessed: invoice SPF-IV6909-0412 in EXCEPTION (APEX0001104 vendor invalid) |
 | E7 (found) | File without an extension | Seen in the client run (CS-24, "Pasted Image") | The platform reader never finished the task | Safe: the 10-minute timeout sends it to review. No change |
 
 ## Detail
@@ -213,3 +214,27 @@ See `MULTILINGUAL_DOCUMENT_INTELLIGENCE_READINESS.md`.
 - **Client samples:** `CLIENT_DOCUMENT_TEST_MATRIX.md` (28 samples, results per sample).
 - **Manual:** `MANUAL_TEST_CASES.md` (MT-41-*) and `deliverables/BCFA_Manual_Test_Workbook.xlsx` (P41-*). Steps that need
   a persona (Finance Approver decisions) are run by the POC team; impersonation is not done by the build agent.
+
+### E8: the invoice must be created when the document was read well (FDI-BE98E1F5)
+
+- **Report:** the POC team uploaded a Thai invoice (synthetic fixture, digital PDF). Every field was read
+  (confidence 1, totals reconciled, 3 lines), but the intake stopped in review with "Vendor could not be resolved" and
+  no invoice was created.
+- **Root cause:** `processApInvoiceDocument` checked master data before creating the invoice: vendor not resolved,
+  printed PO not found, or printed totals not reconciled sent the intake to review.
+- **Fix (requirement: extraction only decides whether the reading is good; business checks happen on the invoice):**
+  - The intake stops only for a poor reading (confidence below the threshold, i.e. a critical field missing) or a
+    group-company seller (an outgoing invoice, not AP).
+  - Otherwise the AP invoice is always created. Vendor and PO are linked when they resolve; the printed vendor name /
+    code and PO number are kept on the invoice (`printed_vendor_name`, `printed_vendor_code`, `printed_po_number`,
+    shown in the Document Extraction section).
+  - `ApDomainService.validateInvoice` first links a printed vendor / PO that now resolves (and the lines to the PO's
+    lines and receipts), then raises, one at a time: `missing_field`, `totals_not_reconciled` (new reason),
+    `vendor_invalid` ("Vendor "…" printed on the invoice is not in the vendor master"), `po_mismatch` ("Purchase
+    order "…" printed on the invoice was not found"). A printed PO that is not found is never treated as a non-PO
+    invoice.
+  - Re-run Validation therefore completes the invoice once the vendor / PO are added to master data.
+- **Evidence:** ATF H41-INV (8 assertions); FDI-BE98E1F5 reprocessed: AP invoice SPF-IV6909-0412 (THB 2,653,600, 3
+  lines) in EXCEPTION with APEX0001104 Vendor Invalid.
+- **Not changed:** AR advices still go to review when the customer is unknown (a remittance needs a payment to apply
+  to).

@@ -28,6 +28,12 @@ export const x_695068_bcfa_ap_invoice = Table({
         invoice_date: DateColumn({ label: 'Invoice Date' }),
         posting_date: DateColumn({ label: 'Posting Date' }),
         purchase_order: ReferenceColumn({ label: 'Purchase Order', referenceTable: 'x_695068_bcfa_purchase_order' }),
+        // Vendor and PO as printed on the document. The invoice is created from
+        // a good read even when they do not resolve to master data; validation
+        // resolves them (again on Re-run Validation) or raises the exception.
+        printed_vendor_name: StringColumn({ label: 'Vendor (Printed)', maxLength: 255, readOnly: true, hint: 'Supplier name as printed on the document (extraction).' }),
+        printed_vendor_code: StringColumn({ label: 'Vendor Code (Printed)', maxLength: 40, readOnly: true, hint: 'Supplier code / tax ID used as vendor code, as printed (extraction).' }),
+        printed_po_number: StringColumn({ label: 'PO Number (Printed)', maxLength: 40, readOnly: true, hint: 'Purchase order number as printed on the document (extraction).' }),
         sales_order_reference: StringColumn({
             label: 'Sales Order Reference',
             maxLength: 40,
@@ -290,6 +296,7 @@ export const x_695068_bcfa_ap_exception = Table({
                 grn_missing: 'Goods Receipt Missing',
                 line_total_mismatch: 'Line Total Mismatch',
                 currency_mismatch: 'Currency / FX (no approved rate)',
+                totals_not_reconciled: 'Printed Totals Not Reconciled',
                 other: 'Other',
             },
         }),

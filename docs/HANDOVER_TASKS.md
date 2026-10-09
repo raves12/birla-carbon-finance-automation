@@ -137,4 +137,4 @@ The role is only for this person. Do not add it to a group other people are in.
 | 4b | Birla Carbon finance | Decide whether Chinese bank acceptance drafts (CS-10) are in scope for AR; BCFA has no draft model |
 | 4c | Birla Carbon | Supply samples written in French, Hungarian, Spanish, Arabic and Hindi (none in the pack) |
 | 4d | Birla Carbon | Send invoice pages only for large packages (the reader accepts up to 4 MB per file; CS-28 is 14.7 MB) |
-| 4e | Build team | Load the client vendors / customers as POC master data if the client samples should continue past review (all stop at "not in master data") |
+| 4e | Build team | Load the client vendors / POs / customers as POC master data. Since 2026-10-09 a client invoice with an unknown vendor or PO is created and sits in EXCEPTION (vendor invalid / PO mismatch); after loading, Re-run Validation links it |

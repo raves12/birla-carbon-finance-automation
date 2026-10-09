@@ -20,6 +20,43 @@ MatchingEngine.prototype = {
     // FinancePolicy.apTaxExpectation, and evaluateTax() below compares the
     // tax printed on the invoice with it.
 
+    // ---- AP: master-data resolution (never guesses an ambiguity) -------------
+
+    // Vendor by exact active vendor code, then by a unique exact active name.
+    resolveVendor: function(vendorCode, vendorName) {
+        if (vendorCode) {
+            var byCode = new GlideRecord('x_695068_bcfa_vendor');
+            byCode.addQuery('vendor_code', vendorCode);
+            byCode.addQuery('active', true);
+            byCode.query();
+            if (byCode.next()) {
+                return { resolved: true, vendorSysId: byCode.getUniqueValue(), method: 'vendor_code' };
+            }
+        }
+        if (vendorName) {
+            var byName = new GlideRecord('x_695068_bcfa_vendor');
+            byName.addQuery('name', vendorName);
+            byName.addQuery('active', true);
+            byName.query();
+            if (byName.getRowCount() === 1) {
+                byName.next();
+                return { resolved: true, vendorSysId: byName.getUniqueValue(), method: 'exact_name' };
+            }
+        }
+        return { resolved: false, reason: 'No unique active vendor match for code "' + (vendorCode || '') + '" / name "' + (vendorName || '') + '".' };
+    },
+
+    resolvePurchaseOrder: function(poNumber) {
+        if (!poNumber) return { resolved: false, reason: 'No PO number supplied.' };
+        var po = new GlideRecord('x_695068_bcfa_purchase_order');
+        po.addQuery('po_number', poNumber);
+        po.query();
+        if (po.next()) {
+            return { resolved: true, poSysId: po.getUniqueValue() };
+        }
+        return { resolved: false, reason: 'No Purchase Order found with number "' + poNumber + '".' };
+    },
+
     // ---- AP: PO validation and 3-way match -----------------------------------
 
     // Phase 14: the referenced purchase order must exist, belong to the

@@ -269,7 +269,7 @@ Results: `FINAL_E2E_TEST_RESULTS.md`. Manual tests: `MANUAL_TEST_CASES.md`.
 
 ## Phase 41: POC team defects and the client sample pack (`phase41_hardening_tests.now.ts`)
 
-10 tests, all in **BCFA Regression** (now 49 tests). Deterministic: each test creates its own data (rolled back by
+11 tests, all in **BCFA Regression** (now 50 tests). Deterministic: each test creates its own data (rolled back by
 ATF); no document extraction call, no SAP write, no AI. Run on 2026-10-08: 49 / 49 passed (serial).
 
 | Test | sys_id | Checks |
@@ -284,6 +284,7 @@ ATF); no document extraction call, no SAP write, no AI. Run on 2026-10-08: 49 / 
 | H41-D6b | `94ce522786d84b10ae39413a27e9f239` | re-run only before approval; a pending approval is withdrawn; the original is never a duplicate of a later copy |
 | H41-SAP | `597c9d2e699945d0bf245cef59ff0a71` | adapter status decides the integration outcome; a crashed write is UNKNOWN_OUTCOME; real adapter implements every operation |
 | H41-NUM | `44e53c4c828f47bfb064e267dd77dd19` | 6 intakes inserted back to back get 6 distinct numbers |
+| H41-INV | `dce97236d47a4ebba8395297d6a10d24` | a complete reading creates the invoice with unknown vendor / PO (printed values kept, vendor_invalid on the invoice); Re-run Validation links the vendor, then raises po_mismatch for the unknown printed PO, then links the PO and its line; totals not reconciled is an invoice exception |
 
 The client sample pack (28 real documents) is not an ATF test: the documents stay out of source control. Its run is
 recorded in `CLIENT_DOCUMENT_TEST_MATRIX.md` and repeated with `MANUAL_TEST_CASES.md` MT-41-12..17.

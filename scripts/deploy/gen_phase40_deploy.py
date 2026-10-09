@@ -265,6 +265,22 @@ STEPS['phase41_fix3'] = {
 }
 
 
+# Phase 41 follow-up (FDI-BE98E1F5): a good reading always creates the AP
+# invoice; vendor / PO not found and printed totals that do not reconcile
+# become invoice exceptions (printed values kept; Re-run Validation links them).
+STEPS['phase41_fix4'] = {
+    'base': '4e00db7',
+    'base_files': {n: 'scripts/deploy/baselines/' + n + '.p41_live.js' for n in [
+        'ApDomainService', 'MatchingEngine', 'FinanceDocumentIntakeService', 'FinanceJourneyService']},
+    'new_si': [],
+    'mod_si': ['ApDomainService', 'MatchingEngine', 'FinanceDocumentIntakeService', 'FinanceJourneyService'],
+    'columns': ['x_695068_bcfa_ap_invoice=printed_vendor_name,printed_vendor_code,printed_po_number'],
+    'choices': r'^sys_choice_x_695068_bcfa_ap_exception_reason_code\.xml$',
+    'files': r'^sys_atf_test_suite_fc5aebad352146fd876beed00f871088\.xml$',
+    'atf': ['dce97236d47a4ebba8395297d6a10d24'],
+}
+
+
 def h(t):
     a = 7
     for ch in t:

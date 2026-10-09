@@ -8,7 +8,7 @@ var ApDomainService = Class.create();
 // approval decision yet), and the exception reasons the re-run re-checks.
 ApDomainService.RERUN_FROM = ['VALIDATED', 'MATCHED', 'EXCEPTION', 'ON_HOLD', 'PENDING_APPROVAL'];
 ApDomainService.RECHECKED_REASONS = ['duplicate', 'po_mismatch', 'quantity_tolerance', 'price_tolerance', 'tax_validation', 'low_confidence',
-    'missing_field', 'vendor_invalid', 'grn_missing', 'line_total_mismatch', 'currency_mismatch'];
+    'missing_field', 'vendor_invalid', 'grn_missing', 'line_total_mismatch', 'currency_mismatch', 'totals_not_reconciled'];
 ApDomainService.prototype = {
     initialize: function() {
         this.auditEngine = new AuditEngine();
@@ -108,6 +108,10 @@ ApDomainService.prototype = {
         invoice.setValue('currency', fields.currency || '');
         if (fields.invoiceDate) invoice.setValue('invoice_date', fields.invoiceDate);
         if (fields.purchaseOrder) invoice.setValue('purchase_order', fields.purchaseOrder);
+        // As printed on the document; validation resolves them to master data.
+        if (fields.printedVendorName) invoice.setValue('printed_vendor_name', String(fields.printedVendorName).substring(0, 255));
+        if (fields.printedVendorCode) invoice.setValue('printed_vendor_code', String(fields.printedVendorCode).substring(0, 40));
+        if (fields.printedPoNumber) invoice.setValue('printed_po_number', String(fields.printedPoNumber).substring(0, 40));
         if (fields.salesOrderReference) invoice.setValue('sales_order_reference', fields.salesOrderReference);
         invoice.setValue('gross_amount', fields.grossAmount || 0);
         invoice.setValue('tax_amount', fields.taxAmount || 0);
@@ -197,16 +201,35 @@ ApDomainService.prototype = {
         extraction.query();
         var confidence = extraction.next() ? parseFloat(extraction.getValue('confidence') || '1') : 1;
 
+        // Vendor / PO printed on the document but not yet linked: resolve them
+        // now (master data may have been added since; Re-run Validation).
+        var references = this._resolvePrintedReferences(invoice);
+        var printedVendor = invoice.getValue('printed_vendor_name') || invoice.getValue('printed_vendor_code');
+        var printedPo = invoice.getValue('printed_po_number');
+
         var confidenceThreshold = this.policy.extractionConfidenceThreshold();
         var failure = null;
         if (confidence < confidenceThreshold) {
             failure = { reasonCode: 'low_confidence', description: 'Extraction confidence ' + confidence + ' is below the ' + confidenceThreshold + ' review threshold (POC ASSUMPTION).' };
-        } else if (!invoice.getValue('invoice_number') || !invoice.getValue('vendor') || !invoice.getValue('gross_amount')) {
+        } else if (!invoice.getValue('invoice_number') || !invoice.getValue('gross_amount') || (!invoice.getValue('vendor') && !printedVendor)) {
             failure = { reasonCode: 'missing_field', description: 'One or more mandatory fields (invoice number, vendor, gross amount) are missing.' };
+        } else if (invoice.getValue('amount_reconciliation') === 'not_reconciled') {
+            // Phase 41: the printed totals do not add up (net + tax + charges
+            // - discount vs gross). A person checks the amounts on the invoice.
+            failure = { reasonCode: 'totals_not_reconciled', description: 'The printed totals do not reconcile: ' +
+                (invoice.getValue('amount_reconciliation_detail') || 'net + tax + charges - discount differs from the gross amount') + '.' };
+        } else if (!invoice.getValue('vendor')) {
+            failure = { reasonCode: 'vendor_invalid', description: 'Vendor "' + printedVendor + '" printed on the invoice is not in the vendor master (no active vendor with this code or exactly this name). ' +
+                'Create or activate the vendor, or set the Vendor field, then Re-run Validation.' };
         } else {
             var vendor = new GlideRecord('x_695068_bcfa_vendor');
             if (!vendor.get(invoice.getValue('vendor')) || vendor.getValue('active') !== '1') {
                 failure = { reasonCode: 'vendor_invalid', description: 'Vendor could not be resolved to an active master record.' };
+            } else if (printedPo && !invoice.getValue('purchase_order')) {
+                // A printed PO that does not resolve is never treated as a
+                // non-PO invoice.
+                failure = { reasonCode: 'po_mismatch', description: 'Purchase order "' + printedPo + '" printed on the invoice was not found. ' +
+                    'Check the PO number (or create the PO), or set the Purchase Order field, then Re-run Validation.' };
             } else {
                 // PO exists, belongs to this vendor and is not closed (Phase 14).
                 var poCheck = this.matchingEngine.validatePurchaseOrder(apInvoiceSysId);
@@ -219,9 +242,11 @@ ApDomainService.prototype = {
                 ruleResult: 'FAIL validation: ' + failure.description,
                 evidence: 'Extraction confidence: ' + confidence + ' (threshold ' + confidenceThreshold + ')\n' +
                     'Invoice number: ' + (invoice.getValue('invoice_number') || 'missing') + '\n' +
-                    'Vendor: ' + (invoice.getDisplayValue('vendor') || 'missing') + '\n' +
+                    'Vendor: ' + (invoice.getDisplayValue('vendor') || (printedVendor ? 'not in vendor master (printed: ' + printedVendor + ')' : 'missing')) + '\n' +
                     'Gross amount: ' + (invoice.getValue('gross_amount') || 'missing') + ' ' + invoice.getValue('currency') + '\n' +
-                    'Purchase order: ' + (invoice.getDisplayValue('purchase_order') || invoice.getValue('purchase_order') || 'none')
+                    'Purchase order: ' + (invoice.getDisplayValue('purchase_order') || (printedPo ? 'not found (printed: ' + printedPo + ')' : 'none')) + '\n' +
+                    'Printed totals: ' + (invoice.getDisplayValue('amount_reconciliation') || 'not checked') +
+                    (references.linked.length ? '\nLinked now: ' + references.linked.join('; ') : '')
             });
             this._explainApException(exceptionSysId);
             this._setState(apInvoiceSysId, 'EXCEPTION', null, 'Validation failed: ' + failure.reasonCode,
@@ -232,6 +257,68 @@ ApDomainService.prototype = {
         this._setState(apInvoiceSysId, 'VALIDATED', null, 'Validation passed',
             { reason: 'Confidence ' + confidence + ' >= ' + confidenceThreshold + '; mandatory fields present; vendor active; PO valid.', after: { rule: 'validation', result: 'PASS', confidence: confidence } });
         return { validated: true };
+    },
+
+    // Links the vendor / PO printed on the document when they now resolve to
+    // master data (exact code, unique exact name, PO number), and links the
+    // invoice lines to that PO's lines and receipts. Updates the given record.
+    // Never guesses: an unresolved value stays printed-only for validation.
+    _resolvePrintedReferences: function(invoice) {
+        var linked = [];
+        var updated = false;
+        var printedVendorName = invoice.getValue('printed_vendor_name');
+        var printedVendorCode = invoice.getValue('printed_vendor_code');
+        if (!invoice.getValue('vendor') && (printedVendorName || printedVendorCode)) {
+            var vendor = this.matchingEngine.resolveVendor(printedVendorCode, printedVendorName);
+            if (vendor.resolved) {
+                invoice.setValue('vendor', vendor.vendorSysId);
+                linked.push('vendor "' + (printedVendorName || printedVendorCode) + '" (' + vendor.method + ')');
+                updated = true;
+            }
+        }
+        var printedPo = invoice.getValue('printed_po_number');
+        var newPo = null;
+        if (!invoice.getValue('purchase_order') && printedPo) {
+            var po = this.matchingEngine.resolvePurchaseOrder(printedPo);
+            if (po.resolved) {
+                invoice.setValue('purchase_order', po.poSysId);
+                newPo = po.poSysId;
+                linked.push('purchase order ' + printedPo);
+                updated = true;
+            }
+        }
+        if (updated) invoice.update();
+        if (newPo) {
+            var resolver = new ApLineResolutionService();
+            var line = new GlideRecord('x_695068_bcfa_ap_invoice_line');
+            line.addQuery('ap_invoice', invoice.getUniqueValue());
+            line.addNullQuery('po_line');
+            line.query();
+            var lines = 0;
+            while (line.next()) {
+                var poLine = resolver.resolvePoLine(newPo, { line_number: line.getValue('line_number'),
+                    description: line.getValue('material_or_service'), quantity: line.getValue('quantity') });
+                if (!poLine.resolved) continue;
+                line.setValue('po_line', poLine.poLineSysId);
+                var receipt = resolver.resolveReceipt(poLine.poLineSysId);
+                if (receipt.resolved) line.setValue('receipt_reference', receipt.receiptSysId);
+                line.update();
+                lines++;
+            }
+            if (lines) linked.push(lines + ' line(s) to PO lines');
+        }
+        if (linked.length) {
+            this.auditEngine.logEvent({
+                correlationId: invoice.getValue('correlation_id'),
+                sourceTable: 'x_695068_bcfa_ap_invoice',
+                sourceRecord: invoice.getUniqueValue(),
+                eventType: 'rule_evaluated',
+                actorType: 'system',
+                description: 'Printed references resolved to master data: ' + linked.join('; ') + '.',
+                afterValue: { vendor: invoice.getValue('vendor'), purchase_order: invoice.getValue('purchase_order') }
+            });
+        }
+        return { linked: linked };
     },
 
     matchInvoice: function(apInvoiceSysId) {

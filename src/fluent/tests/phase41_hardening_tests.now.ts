@@ -338,3 +338,49 @@ Test(
         })
     }
 )
+
+Test(
+    { $id: Now.ID['test-h41-inv-unresolved'], name: 'H41-INV A good reading creates the invoice even when vendor / PO are unknown; validation raises the exception; Re-run Validation links them later', active: true },
+    (atf) => {
+        atf.server.runServerSideScript({
+            $id: Now.ID['test-h41-inv-unresolved-step'],
+            script: `
+                (function(outputs, steps, params, stepResult, assertEqual) {
+                    var tag = 'H41INV' + gs.generateGUID().substring(0, 6).toUpperCase();
+                    var intake = new GlideRecord('x_695068_bcfa_finance_intake'); intake.initialize(); intake.setValue('document_type', 'ap_invoice'); intake.setWorkflow(false); var iid = intake.insert();
+                    var data = { vendor_name: 'Vendor ' + tag, vendor_code: '', invoice_number: tag, invoice_date: '2026-10-01', po_number: 'PO' + tag, currency: 'INR',
+                        net_amount: 1000, tax_amount: 0, gross_amount: 1000, lines: [{ line_number: 1, description: 'Item ' + tag, quantity: 10, unit_price: 100, net_amount: 1000 }],
+                        confidence: 1, warnings: [], reconciliation: { result: 'reconciled' } };
+                    var svc = new FinanceDocumentIntakeService();
+                    // The reading itself is not under test: a fixed, complete reading.
+                    svc._extract = function() { return { ok: true, data: data, source: 'native_document_intelligence', provider: 'native', label: 'Test reading' }; };
+                    var r = FinanceOrchestration.runInline(function() { return svc.processApInvoiceDocument(iid); });
+                    var inv = new GlideRecord('x_695068_bcfa_ap_invoice');
+                    assertEqual({ name: 'a good reading creates the invoice although vendor and PO are unknown', shouldbe: true, value: !!r.apInvoiceSysId && inv.get(r.apInvoiceSysId) });
+                    assertEqual({ name: 'printed vendor and PO kept on the invoice', shouldbe: 'Vendor ' + tag + '|PO' + tag, value: inv.getValue('printed_vendor_name') + '|' + inv.getValue('printed_po_number') });
+                    assertEqual({ name: 'stops at validation with vendor_invalid (an invoice exception, not an intake review)', shouldbe: 'VALIDATION_EXCEPTION|vendor_invalid', value: r.stoppedAt + '|' + (r.detail && r.detail.reasonCode) });
+                    var ik = new GlideRecord('x_695068_bcfa_finance_intake'); ik.get(iid);
+                    assertEqual({ name: 'intake completed and linked to the invoice', shouldbe: 'completed|' + r.apInvoiceSysId, value: ik.getValue('processing_status') + '|' + ik.getValue('ap_invoice') });
+
+                    var v = new GlideRecord('x_695068_bcfa_vendor'); v.initialize(); v.setValue('vendor_code', tag); v.setValue('name', 'Vendor ' + tag); v.setValue('active', true); var vendor = v.insert();
+                    var ap = new ApDomainService();
+                    var rr = FinanceOrchestration.runInline(function() { return ap.rerunChecks(r.apInvoiceSysId, 'validation', gs.getUserID()); });
+                    inv.get(r.apInvoiceSysId);
+                    assertEqual({ name: 'Re-run Validation links the vendor added to master data', shouldbe: vendor, value: inv.getValue('vendor') });
+                    assertEqual({ name: 'printed PO not found: po_mismatch, never treated as a non-PO invoice', shouldbe: 'po_mismatch', value: rr.result && rr.result.reasonCode });
+
+                    var po = new GlideRecord('x_695068_bcfa_purchase_order'); po.initialize(); po.setValue('po_number', 'PO' + tag); po.setValue('vendor', vendor); po.setValue('currency', 'INR'); po.setValue('status', 'open'); var poId = po.insert();
+                    var pl = new GlideRecord('x_695068_bcfa_po_line'); pl.initialize(); pl.setValue('purchase_order', poId); pl.setValue('line_number', 1); pl.setValue('material_or_service', 'Item ' + tag); pl.setValue('quantity', 10); pl.setValue('unit_price', 100); var plId = pl.insert();
+                    FinanceOrchestration.runInline(function() { return ap.rerunChecks(r.apInvoiceSysId, 'validation', gs.getUserID()); });
+                    inv.get(r.apInvoiceSysId);
+                    var line = new GlideRecord('x_695068_bcfa_ap_invoice_line'); line.addQuery('ap_invoice', r.apInvoiceSysId); line.query(); line.next();
+                    assertEqual({ name: 'Re-run Validation links the PO and the invoice line to its PO line', shouldbe: poId + '|' + plId, value: inv.getValue('purchase_order') + '|' + line.getValue('po_line') });
+
+                    var t = new GlideRecord('x_695068_bcfa_ap_invoice'); t.initialize(); t.setValue('invoice_number', tag + '-T'); t.setValue('vendor', vendor); t.setValue('gross_amount', 1000); t.setValue('state', 'RECEIVED');
+                    t.setValue('amount_reconciliation', 'not_reconciled'); t.setValue('amount_reconciliation_detail', 'net 900 + tax 0 = 900 vs gross 1000'); t.setWorkflow(false); var tId = t.insert();
+                    assertEqual({ name: 'printed totals not reconciled: exception on the invoice', shouldbe: 'totals_not_reconciled', value: ap.validateInvoice(tId).reasonCode });
+                })(outputs, steps, params, stepResult, assertEqual);
+            `,
+        })
+    }
+)

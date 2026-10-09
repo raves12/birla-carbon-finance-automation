@@ -205,16 +205,13 @@ FinanceDocumentIntakeService.prototype = {
         intake.setValue('extraction_confidence', data.confidence);
         intake.update();
 
+        // Only the quality of the READING decides here. A document that was
+        // not read well enough (low confidence: a critical field is missing)
+        // goes to a person; nothing is created from a poor reading.
         var threshold = this.policy.extractionConfidenceThreshold();
         if (data.confidence < threshold) {
             this.sendToManualReview(intakeSysId, 'Extraction confidence ' + data.confidence + ' is below the ' + threshold + ' review threshold.' +
                 (data.warnings && data.warnings.length ? ' ' + data.warnings.join(' ') : ''));
-            return { requiresReview: true };
-        }
-        // Phase 41: the printed totals are a deterministic check of their own
-        // (charges and discount included), separate from the confidence.
-        if (data.reconciliation && data.reconciliation.result === 'not_reconciled') {
-            this.sendToManualReview(intakeSysId, data.reconciliation.detail + ' (Extraction confidence ' + data.confidence + ' is not affected; a person checks the amounts.)');
             return { requiresReview: true };
         }
 
@@ -227,25 +224,21 @@ FinanceDocumentIntakeService.prototype = {
             return { requiresReview: true, outgoingInvoice: true };
         }
 
+        // A good reading always becomes an AP invoice. Vendor and PO are
+        // linked when they resolve to master data; when they do not, the
+        // printed values are kept on the invoice and validation raises the
+        // exception (vendor invalid, PO mismatch, totals not reconciled), so
+        // the reviewer works on the invoice, not on the intake.
         var vendorResolution = this.resolveVendor(data.vendor_code, data.vendor_name);
-        if (!vendorResolution.resolved) {
-            this.sendToManualReview(intakeSysId, 'Vendor could not be resolved: ' + vendorResolution.reason);
-            return { requiresReview: true };
-        }
-
         var poResolution = data.po_number ? this.resolvePurchaseOrder(data.po_number) : { resolved: false };
-        if (data.po_number && !poResolution.resolved) {
-            // A PO was stated on the invoice but couldn't be resolved — do
-            // not silently drop it and proceed as if there were none; a
-            // human needs to see why the PO reference didn't resolve.
-            this.sendToManualReview(intakeSysId, 'PO number "' + data.po_number + '" was extracted but could not be resolved to an existing Purchase Order.');
-            return { requiresReview: true };
-        }
 
         var intakeResult = this.apService.intakeInvoice({
             correlationId: intake.getValue('correlation_id') || undefined,
             invoiceNumber: data.invoice_number,
-            vendor: vendorResolution.vendorSysId,
+            vendor: vendorResolution.resolved ? vendorResolution.vendorSysId : undefined,
+            printedVendorName: data.vendor_name || '',
+            printedVendorCode: data.vendor_code || '',
+            printedPoNumber: data.po_number || '',
             companyCode: data.company_code || intake.getValue('company_code') || '',
             currency: data.currency,
             invoiceDate: data.invoice_date || undefined,
@@ -277,7 +270,9 @@ FinanceDocumentIntakeService.prototype = {
             sourceRecord: intakeSysId,
             eventType: 'record_created',
             actorType: 'system',
-            description: 'Finance Document Intake created AP Invoice ' + data.invoice_number + ' from the uploaded document (vendor resolved by ' + vendorResolution.method + ').',
+            description: 'Finance Document Intake created AP Invoice ' + data.invoice_number + ' from the uploaded document (' +
+                (vendorResolution.resolved ? 'vendor resolved by ' + vendorResolution.method : 'vendor "' + (data.vendor_name || data.vendor_code || '') + '" not in vendor master: validation decides') +
+                (data.po_number ? (poResolution.resolved ? '; PO ' + data.po_number + ' linked' : '; PO ' + data.po_number + ' not found: validation decides') : '') + ').',
             afterValue: { ap_invoice: apInvoiceSysId },
         });
 
@@ -372,37 +367,11 @@ FinanceDocumentIntakeService.prototype = {
     // ==== Deterministic master-data resolvers (never guess ambiguity) ======
 
     resolveVendor: function(vendorCode, vendorName) {
-        if (vendorCode) {
-            var byCode = new GlideRecord('x_695068_bcfa_vendor');
-            byCode.addQuery('vendor_code', vendorCode);
-            byCode.addQuery('active', true);
-            byCode.query();
-            if (byCode.next()) {
-                return { resolved: true, vendorSysId: byCode.getUniqueValue(), method: 'vendor_code' };
-            }
-        }
-        if (vendorName) {
-            var byName = new GlideRecord('x_695068_bcfa_vendor');
-            byName.addQuery('name', vendorName);
-            byName.addQuery('active', true);
-            byName.query();
-            if (byName.getRowCount() === 1) {
-                byName.next();
-                return { resolved: true, vendorSysId: byName.getUniqueValue(), method: 'exact_name' };
-            }
-        }
-        return { resolved: false, reason: 'No unique active vendor match for code "' + (vendorCode || '') + '" / name "' + (vendorName || '') + '".' };
+        return this.matchingEngine.resolveVendor(vendorCode, vendorName);
     },
 
     resolvePurchaseOrder: function(poNumber) {
-        if (!poNumber) return { resolved: false, reason: 'No PO number supplied.' };
-        var po = new GlideRecord('x_695068_bcfa_purchase_order');
-        po.addQuery('po_number', poNumber);
-        po.query();
-        if (po.next()) {
-            return { resolved: true, poSysId: po.getUniqueValue() };
-        }
-        return { resolved: false, reason: 'No Purchase Order found with number "' + poNumber + '".' };
+        return this.matchingEngine.resolvePurchaseOrder(poNumber);
     },
 
     // Tries an exact customer_code match first (strongest deterministic
