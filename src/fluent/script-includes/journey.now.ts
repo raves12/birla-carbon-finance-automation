@@ -42,6 +42,17 @@ export const mockSapStrictValidation = Property({
         'MOCK SAP simulation only. false (default): what real SAP would reject in a posting or clearing request (e.g. no invoice date, no company code) is recorded as warnings on the integration transaction and the audit, and the call succeeds. true: such a request is rejected with VALIDATION_ERROR, as real SAP would, to rehearse SAP-ready data. Has no meaning for a real SAP adapter.',
 })
 
+// Client test kit (scripts/client_samples/build_test_kit.py): when it was
+// installed. Its reset only touches client-document intakes created after it.
+export const clientKitInstalledOn = Property({
+    $id: Now.ID['prop-client-kit-installed-on'],
+    name: 'x_695068_bcfa.client_kit.installed_on',
+    type: 'string',
+    value: '',
+    description:
+        'Client test kit: install time (UTC, yyyy-MM-dd HH:mm:ss), set by the kit setup. The kit reset deletes only client-document intakes created after it. Empty: kit not installed.',
+})
+
 // DRAFT mode: a status query only (nothing is re-sent). Hidden unless the
 // payment is staged as an SAP draft.
 export const paymentCheckSapDraftStatus = UiAction({

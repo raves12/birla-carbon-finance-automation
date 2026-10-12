@@ -699,21 +699,32 @@ FinanceDocumentIntakeService.prototype = {
     findCandidatePayments: function(criteria) {
         criteria = criteria || {};
         var customerResolution = this.resolveCustomer(criteria.customerCode, criteria.customerName);
-        var gr = new GlideRecord('x_695068_bcfa_payment');
-        if (criteria.amount !== undefined && criteria.amount !== null && criteria.amount !== '') gr.addQuery('amount', criteria.amount);
-        if (criteria.currency) gr.addQuery('currency', criteria.currency);
-        if (customerResolution.resolved) gr.addQuery('customer', customerResolution.customerSysId);
-        if (criteria.date) {
-            var from = new GlideDateTime(criteria.date + ' 00:00:00');
-            from.addDaysUTC(-5);
-            var to = new GlideDateTime(criteria.date + ' 00:00:00');
-            to.addDaysUTC(5);
-            gr.addQuery('value_date', '>=', from);
-            gr.addQuery('value_date', '<=', to);
-        }
-        gr.query();
+        // A date printed as 05.10.2026 can be 5 October or 10 May. When both
+        // parts are 12 or less, the day / month swapped reading is searched
+        // too (same window); every other condition is unchanged.
+        var dates = criteria.date ? [String(criteria.date)] : [null];
+        var m = criteria.date ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(criteria.date)) : null;
+        if (m && m[2] !== m[3] && parseInt(m[2], 10) <= 12 && parseInt(m[3], 10) <= 12) dates.push(m[1] + '-' + m[3] + '-' + m[2]);
         var results = [];
-        while (gr.next()) results.push(gr.getUniqueValue());
+        for (var di = 0; di < dates.length; di++) {
+            var gr = new GlideRecord('x_695068_bcfa_payment');
+            if (criteria.amount !== undefined && criteria.amount !== null && criteria.amount !== '') gr.addQuery('amount', criteria.amount);
+            if (criteria.currency) gr.addQuery('currency', criteria.currency);
+            // The customer's payments, and bank lines not yet assigned to any
+            // customer (a bank statement line rarely names the customer).
+            // Another customer's payment is never a candidate.
+            if (customerResolution.resolved) gr.addQuery('customer', customerResolution.customerSysId).addOrCondition('customer', 'ISEMPTY', '');
+            if (dates[di]) {
+                var from = new GlideDateTime(dates[di] + ' 00:00:00');
+                from.addDaysUTC(-5);
+                var to = new GlideDateTime(dates[di] + ' 00:00:00');
+                to.addDaysUTC(5);
+                gr.addQuery('value_date', '>=', from);
+                gr.addQuery('value_date', '<=', to);
+            }
+            gr.query();
+            while (gr.next()) if (results.indexOf(gr.getUniqueValue()) < 0) results.push(gr.getUniqueValue());
+        }
         return results;
     },
 

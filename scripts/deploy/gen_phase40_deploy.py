@@ -291,6 +291,50 @@ STEPS['phase41_fix5'] = {
 }
 
 
+# Vendor resolution by the normalized printed name (spacing / case /
+# punctuation), only when exactly one active vendor fits; test H41-VEN.
+STEPS['phase41_fix6'] = {
+    'base': '5dc2181',
+    'new_si': [],
+    'mod_si': ['MatchingEngine'],
+    'files': r'^sys_atf_test_suite_fc5aebad352146fd876beed00f871088\.xml$',
+    'atf': ['c14c5a0850f646758f69254571c72363'],
+}
+
+
+# Payment advice correlation without a reference match: a unique unassigned
+# bank line also links when the advice customer is resolved (H41-D8).
+# Deployed once; its loader was superseded by phase41_fix8 (same change plus
+# the swapped-date reading), which is the loader kept in the repository.
+STEPS['phase41_fix7'] = {
+    'base': '5dc2181',
+    'base_files': {'FinanceDocumentIntakeService': 'scripts/deploy/baselines/FinanceDocumentIntakeService.p41_fix4.js'},
+    'new_si': [],
+    'mod_si': ['FinanceDocumentIntakeService'],
+    'atf': ['0cedd6bd2e5a4266838d9c70266eb805'],
+}
+
+
+# Advice date read day / month swapped: both readings searched (H41-D8). The
+# live version is the first phase41_fix7 build (hash measured on the instance).
+STEPS['phase41_fix8'] = {
+    'base': '5dc2181',
+    'base_hash': {'FinanceDocumentIntakeService': 1923424934},
+    'new_si': [],
+    'mod_si': ['FinanceDocumentIntakeService'],
+    'atf': ['0cedd6bd2e5a4266838d9c70266eb805'],
+}
+
+
+# Client test kit install-time property (x_695068_bcfa.client_kit.installed_on).
+STEPS['client_kit_prop'] = {
+    'base': '5dc2181',
+    'new_si': [],
+    'mod_si': [],
+    'files': r'^sys_properties_b876a1e9d8ee4d27a3b6e26ce9ebaaea\.xml$',
+}
+
+
 def h(t):
     a = 7
     for ch in t:
@@ -303,13 +347,17 @@ def main(step):
     guard = []
     for n in cfg['mod_si']:
         rel = 'src/server/script-includes/' + n + '.server.js'
-        if n in cfg.get('base_files', {}):
+        if n in cfg.get('base_hash', {}):
+            # The live version is known only by its hash (measured on the
+            # instance), e.g. an intermediate build replaced locally.
+            head = None
+        elif n in cfg.get('base_files', {}):
             # Live version came from an uncommitted working copy: compare with the saved copy.
             head = io.open(os.path.join(REPO, cfg['base_files'][n]), encoding='utf8').read().replace('\r\n', '\n')
         else:
             head = subprocess.run(['git', 'show', cfg['base'] + ':' + rel], cwd=REPO, capture_output=True, check=True).stdout.decode('utf8').replace('\r\n', '\n')
         work = io.open(os.path.join(REPO, rel), encoding='utf8').read().replace('\r\n', '\n')
-        guard.append({'api': 'x_695068_bcfa.' + n, 'head': h(head), 'work': h(work)})
+        guard.append({'api': 'x_695068_bcfa.' + n, 'head': cfg['base_hash'][n] if head is None else h(head), 'work': h(work)})
     tmp = os.path.join(SCR, 'p40_loader_raw.js')
     args = ['node', 'scripts/deploy/gen_record_loader.mjs', tmp, '--si', ','.join(cfg['new_si'] + cfg['mod_si'])]
     files = cfg.get('files')

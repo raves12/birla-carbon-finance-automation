@@ -160,6 +160,16 @@ Test(
                     pay(tag + '-B2', B, 2000, 'INR');
                     var twoB = svc.correlatePayment(adv({ customer_code: tag + 'B', payment_amount: 2000 }));
                     assertEqual({ name: 'two candidate payments: none chosen', shouldbe: true, value: !twoB.paymentSysId && twoB.candidates.length === 2 });
+                    var unassigned = pay(tag + '-U1', '', 7777.77, 'INR');
+                    pay(tag + '-U2', B, 7777.77, 'INR');
+                    var byUnassigned = svc.correlatePayment(adv({ customer_code: tag + 'A', payment_amount: 7777.77 }));
+                    assertEqual({ name: 'no reference, resolved customer: a unique unassigned bank line links (another customer\\'s payment never does)', shouldbe: unassigned, value: byUnassigned.paymentSysId || '' });
+                    var swapped = pay(tag + '-S1', '', 6666.66, 'INR');
+                    var bySwapped = svc.correlatePayment(adv({ customer_code: tag + 'A', payment_amount: 6666.66, payment_date: '2026-05-10' }));
+                    assertEqual({ name: 'advice date read day / month swapped (05.10 as 10 May) still finds the 5 October bank line', shouldbe: swapped, value: bySwapped.paymentSysId || '' });
+                    pay(tag + '-U3', '', 7777.77, 'INR');
+                    var twoUnassigned = svc.correlatePayment(adv({ customer_code: tag + 'A', payment_amount: 7777.77 }));
+                    assertEqual({ name: 'two unassigned bank lines fit: none chosen', shouldbe: '', value: twoUnassigned.paymentSysId || '' });
                     pay(tag + '-DUP', A, 500, 'INR'); pay(tag + '-DUP', B, 500, 'INR');
                     var dupRef = svc.correlatePayment(adv({ payment_reference: tag + '-DUP', customer_code: tag + 'A', payment_amount: 500 }));
                     assertEqual({ name: 'reference carried by two payments: none chosen', shouldbe: '', value: dupRef.paymentSysId || '' });
@@ -384,6 +394,28 @@ Test(
                     var t = new GlideRecord('x_695068_bcfa_ap_invoice'); t.initialize(); t.setValue('invoice_number', tag + '-T'); t.setValue('vendor', vendor); t.setValue('gross_amount', 1000); t.setValue('state', 'RECEIVED');
                     t.setValue('amount_reconciliation', 'not_reconciled'); t.setValue('amount_reconciliation_detail', 'net 900 + tax 0 = 900 vs gross 1000'); t.setWorkflow(false); var tId = t.insert();
                     assertEqual({ name: 'printed totals not reconciled: exception on the invoice', shouldbe: 'totals_not_reconciled', value: ap.validateInvoice(tId).reasonCode });
+                })(outputs, steps, params, stepResult, assertEqual);
+            `,
+        })
+    }
+)
+
+Test(
+    { $id: Now.ID['test-h41-ven'], name: 'H41-VEN Vendor resolved from the printed name despite spacing / case / punctuation, only when unique', active: true },
+    (atf) => {
+        atf.server.runServerSideScript({
+            $id: Now.ID['test-h41-ven-step'],
+            script: `
+                (function(outputs, steps, params, stepResult, assertEqual) {
+                    var tag = 'VEN' + gs.generateGUID().substring(0, 6).toUpperCase();
+                    var mk = function(code, name) { var v = new GlideRecord('x_695068_bcfa_vendor'); v.initialize(); v.setValue('vendor_code', code); v.setValue('name', name); v.setValue('active', true); return v.insert(); };
+                    var one = mk(tag + 'A', 'D. Sureshprasad ' + tag);
+                    var me = new MatchingEngine();
+                    var r = me.resolveVendor('', 'D . SURESHPRASAD ' + tag);
+                    assertEqual({ name: 'spacing / case differences resolve to the one vendor', shouldbe: one + '|normalized_name', value: r.vendorSysId + '|' + r.method });
+                    mk(tag + 'B', 'D Sureshprasad ' + tag);
+                    assertEqual({ name: 'two vendors with the same normalized name: not resolved', shouldbe: false, value: me.resolveVendor('', 'D . SURESHPRASAD ' + tag).resolved });
+                    assertEqual({ name: 'exact name still wins', shouldbe: one, value: me.resolveVendor('', 'D. Sureshprasad ' + tag).vendorSysId });
                 })(outputs, steps, params, stepResult, assertEqual);
             `,
         })

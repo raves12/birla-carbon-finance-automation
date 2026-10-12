@@ -42,8 +42,27 @@ MatchingEngine.prototype = {
                 byName.next();
                 return { resolved: true, vendorSysId: byName.getUniqueValue(), method: 'exact_name' };
             }
+            // The same name read with other spacing, case or punctuation
+            // ("D . SURESHPRASAD" = "D. Sureshprasad"); linked only when
+            // exactly one active vendor has that normalized name.
+            var key = this._vendorNameKey(vendorName);
+            if (key.length >= 3) {
+                var all = new GlideRecord('x_695068_bcfa_vendor');
+                all.addQuery('active', true);
+                all.query();
+                var hits = [];
+                while (all.next()) {
+                    if (this._vendorNameKey(all.getValue('name')) === key) hits.push(all.getUniqueValue());
+                }
+                if (hits.length === 1) return { resolved: true, vendorSysId: hits[0], method: 'normalized_name' };
+            }
         }
         return { resolved: false, reason: 'No unique active vendor match for code "' + (vendorCode || '') + '" / name "' + (vendorName || '') + '".' };
+    },
+
+    // Letters and digits only, upper case (any script).
+    _vendorNameKey: function(name) {
+        return String(name || '').toUpperCase().replace(/[\s.,;:'"`\-_\/\\()&]+/g, '');
     },
 
     resolvePurchaseOrder: function(poNumber) {

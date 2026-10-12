@@ -238,3 +238,16 @@ See `MULTILINGUAL_DOCUMENT_INTELLIGENCE_READINESS.md`.
   lines) in EXCEPTION with APEX0001104 Vendor Invalid.
 - **Not changed:** AR advices still go to review when the customer is unknown (a remittance needs a payment to apply
   to).
+
+### Found while preparing the client sample test kit (2026-10-12)
+
+| Item | Found on | Root cause | Status |
+|---|---|---|---|
+| E9 Vendor not linked when the printed name differs only in spacing / case / punctuation | Client readings ("D . SURESHPRASAD") | Vendor resolution was exact-name only; generative readings vary in punctuation | **Fixed, deployed**: unique normalized-name match (`MatchingEngine.resolveVendor`), ATF H41-VEN |
+| E10 Advice not linked to an unassigned bank line | CS-13 dry run: the reading took another reference and read 05.10.2026 as 10 May | The fallback (resolved customer + amount + currency + date) only searched payments already assigned to that customer, and only the date as read | **Fixed, deployed**: unassigned bank lines are candidates too (another customer's payment never is), and an ambiguous day / month date is searched both ways; still links only when exactly one payment fits. ATF H41-D8 (3 new assertions) |
+| E11 NF-e totals flagged as not reconciled | CS-12 (Brazil) | ICMS is included in the item prices on an NF-e; the reconciliation adds the tax on top | **Open (known limitation)**: the invoice goes to EXCEPTION Printed Totals Not Reconciled (no override for this reason); tax-inclusive regimes need a rule |
+| E12 Bank booked as customer | CS-15 / CS-21 with customer CD01 ("JPMORGAN CHASE BANK (CHINA)…", created by a tester on 2026-10-09) | Master data: the remitting bank exists as a customer, so the misread payer resolves to it | **Open (data)**: deactivate CD01; the client test guide says so |
+
+The client sample test kit (`scripts/client_samples/build_test_kit.py`; spec, loaders and guide in the git-ignored
+`test/client_samples/kit/`) sets up POC test data from the documents, lists the expected result per sample (from a dry
+run of all 28 on the instance) and provides an owner-run reset.

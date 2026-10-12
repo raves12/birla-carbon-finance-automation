@@ -63,6 +63,7 @@ export const bcfaRegressionSuite = TestSuite({
         '597c9d2e699945d0bf245cef59ff0a71', // H41-SAP adapter outcome mapping
         '44e53c4c828f47bfb064e267dd77dd19', // H41-NUM distinct intake numbers
         'dce97236d47a4ebba8395297d6a10d24', // H41-INV invoice created when vendor / PO unknown
+        'c14c5a0850f646758f69254571c72363', // H41-VEN vendor by normalized printed name
     ],
 })
 
