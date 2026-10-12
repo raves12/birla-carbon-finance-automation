@@ -7,7 +7,7 @@ the POC team's defects. A row is PASS only with evidence from the instance (ATF,
 
 - **Deployed** on the instance on 2026-10-08: all Phase 41 fixes, the extended Document Intelligence fields, forms and
   labels, and both Playbooks (re-activated). Details: `DEFECT_REMEDIATION_REPORT.md`.
-- **ATF, BCFA Regression:** 50 / 50 passed on 2026-10-09 (serial run after the invoice-creation change; H41-D10 failed once on a timing race in the test itself, was corrected and passes).
+- **ATF, BCFA Regression:** 51 / 51 passed on 2026-10-12 (serial run after the vendor-matching and advice-correlation changes; 50 / 50 on 2026-10-09).
 - **Client sample pack:** all 28 samples processed with native Document Intelligence on the instance
   (`CLIENT_DOCUMENT_TEST_MATRIX.md`):
   - Latin-script invoices (English, Italian, Portuguese): 85 % of critical fields read correctly;
@@ -56,7 +56,7 @@ the POC team's defects. A row is PASS only with evidence from the instance (ATF,
 | Duplicate detection | **PASS** | Hash duplicates on the client pairs; invoice-level duplicate CS-08 / CS-19 not testable (invoice number not read) |
 | Playbook | **PASS (re-activated)** | Visual check of the Document Understanding stage by the POC team |
 | Approvals / SoD | **PASS (ATF)** | Withdrawal (H41-D6b); eligible approvers deployed |
-| ATF Regression | **PASS 50/50 (2026-10-09)** | |
+| ATF Regression | **PASS 51/51 (2026-10-12)** | |
 
 ### Languages
 

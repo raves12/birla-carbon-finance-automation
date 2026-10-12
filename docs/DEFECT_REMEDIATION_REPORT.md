@@ -18,7 +18,7 @@ test, full regression.
 | `phase40_phase41_fix2_bg.js` | E5: distinct intake numbers + test H41-NUM |
 | `phase40_phase41_fix3_bg.js` | E6: normalization evidence only for values read |
 
-- **ATF, BCFA Regression:** 50 / 50 passed on 2026-10-09 (serial run after the invoice-creation change; H41-D10 failed once on a timing race in the test itself, was corrected and passes).
+- **ATF, BCFA Regression:** 51 / 51 passed on 2026-10-12 (serial run after the vendor-matching and advice-correlation changes; 50 / 50 on 2026-10-09).
 - **Client sample pack:** all 28 samples processed natively (`CLIENT_DOCUMENT_TEST_MATRIX.md`).
 
 ## Summary
@@ -209,7 +209,7 @@ See `MULTILINGUAL_DOCUMENT_INTELLIGENCE_READINESS.md`.
 
 ## Regression
 
-- **ATF:** BCFA Regression 50 / 50 passed on 2026-10-09 (serial run after the invoice-creation change; H41-D10 failed once on a timing race in the test itself, was corrected and passes) (Phase 40 baseline 35/35; Phase 41 adds H41-D1, D2/D3, D5, D6, D6b, D8,
+- **ATF:** BCFA Regression 51 / 51 passed on 2026-10-12 (serial run after the vendor-matching and advice-correlation changes; 50 / 50 on 2026-10-09) (Phase 40 baseline 35/35; Phase 41 adds H41-D1, D2/D3, D5, D6, D6b, D8,
   D9, D10, SAP, NUM and INV).
 - **Client samples:** `CLIENT_DOCUMENT_TEST_MATRIX.md` (28 samples, results per sample).
 - **Manual:** `MANUAL_TEST_CASES.md` (MT-41-*) and `deliverables/BCFA_Manual_Test_Workbook.xlsx` (P41-*). Steps that need
