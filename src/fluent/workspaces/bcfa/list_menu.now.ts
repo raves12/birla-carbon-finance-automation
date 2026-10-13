@@ -79,7 +79,7 @@ export const bcfaListConfig = UxListMenuConfig({
                     order: 10,
                     condition: 'stateNOT INPOSTED,RECONCILED,CLOSED,REJECTED',
                     table: 'x_695068_bcfa_ap_invoice',
-                    columns: 'invoice_number,vendor,state,approval_state,posting_state,gross_amount,currency,extraction_confidence,sys_created_on',
+                    columns: 'number,invoice_number,vendor,state,approval_state,posting_state,gross_amount,currency,extraction_confidence,sys_created_on',
                     applicabilities: [{ $id: Now.ID['bcfa-list-ap-invoice-all-app'], applicability: bcfaWorkspaceApplicability }],
                 },
                 {
@@ -88,7 +88,7 @@ export const bcfaListConfig = UxListMenuConfig({
                     order: 20,
                     condition: 'stateINEXCEPTION,ON_HOLD,RESOLUTION,UNKNOWN_OUTCOME,FAILED',
                     table: 'x_695068_bcfa_ap_invoice',
-                    columns: 'invoice_number,vendor,state,gross_amount,currency,extraction_confidence,purchase_order',
+                    columns: 'number,invoice_number,vendor,state,gross_amount,currency,extraction_confidence,purchase_order',
                     applicabilities: [{ $id: Now.ID['bcfa-list-ap-invoice-exception-app'], applicability: bcfaWorkspaceApplicability }],
                 },
                 {
@@ -124,7 +124,7 @@ export const bcfaListConfig = UxListMenuConfig({
                     order: 60,
                     condition: 'posting_state=posted',
                     table: 'x_695068_bcfa_ap_invoice',
-                    columns: 'invoice_number,vendor,gross_amount,currency,sap_document_id,state,sys_updated_on',
+                    columns: 'number,invoice_number,vendor,gross_amount,currency,sap_document_id,state,sys_updated_on',
                     applicabilities: [{ $id: Now.ID['bcfa-list-ap-posted-app'], applicability: bcfaWorkspaceApplicability }],
                 },
             ],
@@ -140,7 +140,7 @@ export const bcfaListConfig = UxListMenuConfig({
                     order: 10,
                     condition: '',
                     table: 'x_695068_bcfa_payment',
-                    columns: 'bank_reference,customer,state,amount,currency,value_date,sys_created_on',
+                    columns: 'number,bank_reference,customer,state,amount,currency,value_date,sys_created_on',
                     applicabilities: [{ $id: Now.ID['bcfa-list-payment-all-app'], applicability: bcfaWorkspaceApplicability }],
                 },
                 {
@@ -149,7 +149,7 @@ export const bcfaListConfig = UxListMenuConfig({
                     order: 20,
                     condition: '',
                     table: 'x_695068_bcfa_remittance',
-                    columns: 'remittance_reference,payment,source,received_date,confidence',
+                    columns: 'number,remittance_reference,payment,source,received_date,confidence',
                     applicabilities: [{ $id: Now.ID['bcfa-list-remittance-app'], applicability: bcfaWorkspaceApplicability }],
                 },
                 {

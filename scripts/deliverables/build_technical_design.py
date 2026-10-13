@@ -412,7 +412,7 @@ table(doc, ['Control', 'Design'], [
 h(doc, '11. AI design (ServiceNow-native, advisory)')
 table(doc, ['Element', 'Design'], [
     ('Rule', 'AI may recommend, explain or summarise. It never approves, overrides a tolerance, posts or clears.'),
-    ('Where AI runs', 'Document reading (Document Intelligence on Now LLM); exception review (agentic workflows started by the exception); "Explain with Now Assist" on demand; multi-invoice match explanation. Approval, posting, clearing, reconciliation and aging are deterministic.'),
+    ('Where AI runs', 'Document reading (Document Intelligence on Now LLM); exception review (agentic workflows started by the exception); "Explain with AI" on demand; multi-invoice match explanation. Approval, posting, clearing, reconciliation and aging are deterministic.'),
     ('Now Assist skills (9)', 'ap_invoice_summary, ap_match_exception_explanation, ap_recommended_next_action, ap_clarification_draft, cash_application_summary, ar_match_explanation, ar_residual_explanation, ar_recommended_next_action, customer_clarification_draft; called through NowAssistSkillClient (sn_one_extend).'),
     ('AI identity', 'bcfa.ai.reviewer (identity_type ai_agent) holds only processor roles and x_695068_bcfa.ai_agent; ApprovalEngine refuses any AI identity; AI tools write only the advisory note.'),
     ('Guardrails', 'Now Assist Guardian on each BCFA skill capability (prompt injection and offensiveness: BLOCK; instance runs Guardian asynchronously). FinanceAiGuard: input screening (instructions, prompt reveal, role markers, financial commands, control bypass, jailbreak) -> call not made; output sanitising (markdown removed, sentences claiming a completed financial action removed).'),
@@ -496,7 +496,7 @@ bullets(doc, ['D6: a finance approver cannot type the decision reason on an exce
 
 # 15 -----------------------------------------------------------------------
 h(doc, '15. Testing and quality')
-para(doc, 'Automated Test Framework: suite BCFA Regression (51 tests, run serially; last full run 51/51 on 2026-10-12). End-to-end scripts: '
+para(doc, 'Automated Test Framework: suite BCFA Regression (51 tests, run serially; last full run 51/51 on 2026-10-13). End-to-end scripts: '
      'phase35_e2e_bg.js (16 scenarios AP-A..F, AR-A..I, AR-C2; run C119F 16/16) and phase40_e2e_bg.js (11 scenarios; run 63D87 11/11). Manual tests: '
      'deliverables/BCFA_Manual_Test_Workbook.xlsx. Extraction measurement: scripts/eval.')
 table(doc, ['ATF test', 'Assertions'], [(t['name'], len(t['assertions'])) for t in INV['atf_tests']], widths=[14, 3], font=7.5)

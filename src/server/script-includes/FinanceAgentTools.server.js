@@ -325,8 +325,8 @@ FinanceAgentTools.prototype = {
             eventType: 'ai_recommendation',
             actor: gs.getUserID(),
             actorType: 'now_assist_ai',
-            aiAgent: this._isAiSession() ? 'BCFA ' + (domain === 'ap' ? 'AP Invoice' : 'Cash Application') + ' Review (agentic workflow)' : 'Now Assist skills (Explain with Now Assist)',
-            description: 'Now Assist advisory note recorded on ' + domain.toUpperCase() + ' exception (advisory field only)',
+            aiAgent: this._isAiSession() ? 'BCFA ' + (domain === 'ap' ? 'AP Invoice' : 'Cash Application') + ' Review (agentic workflow)' : 'AI skills (Explain with AI)',
+            description: 'AI advisory note recorded on ' + domain.toUpperCase() + ' exception (advisory field only)',
             beforeValue: { ai_recommendation: before },
             afterValue: { ai_recommendation: advice }
         });
@@ -376,8 +376,8 @@ FinanceAgentTools.prototype = {
             });
             this.auditEngine.logEvent({
                 sourceTable: sourceTable, sourceRecord: sysId, eventType: 'ai_invocation', actor: gs.getUserID(), actorType: 'now_assist_ai',
-                aiAgent: 'Now Assist skill: ' + skillKey, reason: screen.reason,
-                description: 'Now Assist skill ' + skillKey + ' NOT called: BCFA guardrail found possible prompt injection (' + screen.findings.join(', ') + ').',
+                aiAgent: 'AI skill: ' + skillKey, reason: screen.reason,
+                description: 'AI skill ' + skillKey + ' NOT called: BCFA guardrail found possible prompt injection (' + screen.findings.join(', ') + ').',
                 afterValue: { skill: skillKey, blocked: true, findings: screen.findings }
             });
             return this._error('input_blocked', screen.reason);
@@ -421,10 +421,10 @@ FinanceAgentTools.prototype = {
             eventType: 'ai_invocation',
             actor: gs.getUserID(),
             actorType: 'now_assist_ai',
-            aiAgent: 'Now Assist skill: ' + skillKey,
+            aiAgent: 'AI skill: ' + skillKey,
             reason: result.ok ? '' : String(result.message || result.error || ''),
-            description: 'Now Assist skill ' + skillKey + (result.ok ? ' returned advisory text' + (guardrailAction === 'sanitized' ? ' (guardrail: ' + guardrailReason + ')' : '') :
-                ' failed: ' + result.error + (guardrailAction === 'guardian_blocked' ? ' (Now Assist Guardian)' : '')),
+            description: 'AI skill ' + skillKey + (result.ok ? ' returned advisory text' + (guardrailAction === 'sanitized' ? ' (guardrail: ' + guardrailReason + ')' : '') :
+                ' failed: ' + result.error + (guardrailAction === 'guardian_blocked' ? ' (AI Guardian)' : '')),
             afterValue: { skill: skillKey, ok: result.ok, latencyMs: result.latencyMs, provider: result.provider || '' }
         });
         if (!result.ok) return this._error(result.error, result.message);

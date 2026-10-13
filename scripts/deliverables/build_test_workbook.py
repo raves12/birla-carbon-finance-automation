@@ -92,7 +92,7 @@ CASES = [
     # ---------------------------------------------------------------- AP exceptions and approval
     ('AP-EXC-01', 'AP · Exceptions', 'Exception framework fields', 'Medium', 'Positive', AP_P, RESET, '1. Open the exception of INV-AP-004.',
      'Number APEX…, severity, priority, owner, assignment group, SLA due, SLA status, aging bucket, rule result, evidence, variance, AI recommendation (advisory).', 'Exception form'),
-    ('AP-EXC-02', 'AP · Exceptions', 'Explain with Now Assist (advisory)', 'High', 'Positive', AP_P, RESET, '1. On an open AP exception click Explain with Now Assist; wait up to 60 s; refresh.',
+    ('AP-EXC-02', 'AP · Exceptions', 'Explain with AI (advisory)', 'High', 'Positive', AP_P, RESET, '1. On an open AP exception click Explain with AI; wait up to 60 s; refresh.',
      'AI recommendation updated; AI Interaction Log row (provider now_assist, guardrail); invoice state and exception status unchanged.', 'AI Interaction Log'),
     ('AP-EXC-03', 'AP · Exceptions', 'Hold / Request Correction / Resolve & Retry', 'Medium', 'Positive', AP_P, RESET,
      '1. Enter a Decision Reason, Update.\n2. Click Hold (or Request Correction).\n3. On another exception click Resolve & Retry.',

@@ -36,7 +36,7 @@ Invoice → quantity variance → exception → Playbook blocked → AI explanat
 |---|---|---|---|---|---|---|---|---|---|
 | 1 | Finance approver | AP invoice INV-AP-004 → **Open Playbook** | INV-AP-004 | read | stages 1–3 complete; stage 4 open with **Blocked Because**: "WHAT HAPPENED: AEX… Quantity tolerance (high) at 3-Way Match / WHY: 15 invoiced vs 10 received …"; **Next**: Request Correction, Hold or Reject; **Who**: AP Processor | EXCEPTION | — | — | journey fields on the invoice |
 | 2 | Finance approver | Playbook stage 5 | Exceptions list | open the exception | columns SYSTEM DETERMINATION (rule result, variance), AI RECOMMENDATION, HUMAN DECISION (empty) | EXCEPTION | — | — | — |
-| 3 | Finance approver | exception form | | **Explain with Now Assist** | AI explanation and recommendation (advisory) | unchanged (AI never decides) | Now Assist skill via the BCFA guard | `ai_interaction` | AI Interaction Log; audit AI note |
+| 3 | Finance approver | exception form | | **Explain with AI** | AI explanation and recommendation (advisory) | unchanged (AI never decides) | Now Assist skill via the BCFA guard | `ai_interaction` | AI Interaction Log; audit AI note |
 | 4 | AP processor, then finance approver | exception form | | the processor saves the **Decision Reason**; the approver clicks **Approve Override** (the approver cannot type the reason: D6) | HUMAN DECISION filled (decision, decided by) | RESOLUTION → MATCHED → PENDING_APPROVAL → APPROVED | AP Exception Flow (re-match), approval (maker/checker) | `ap_approval` | audit override, decision, approval |
 | 5 | Finance approver | Playbook | | refresh | stage 5 completes (no open exceptions), 6 completes, 7 posting MOCK SAP, 8 closure | POSTED → CLOSED | AP Integration Flow | `integration_txn` | audit integration result, closure |
 
@@ -69,7 +69,7 @@ Payment → residual → deduction → AI recommendation → human decision → 
 | # | Persona | Navigation | Record | Action | Expected UI | State | Automation | Records | Evidence |
 |---|---|---|---|---|---|---|---|---|---|
 | 1 | AR processor | BANK-PLAY-04 → **Open Playbook** | BANK-PLAY-04 (9,900 against 10,400) | read | stage 5 allocation 10,400, residual −500; stage 6 blocked: "Short pay … WHY: FAIL allocation balance … residual 500 short"; Next: "Classify the residual: Approve Deduction …"; Who: AR Processor | EXCEPTION (short pay) | — | — | journey |
-| 2 | AR processor | stage 6 → exception | | **Explain with Now Assist** | AI RECOMMENDATION (e.g. likely bank charge or short pay) | unchanged | Now Assist | `ai_interaction` | AI log |
+| 2 | AR processor | stage 6 → exception | | **Explain with AI** | AI RECOMMENDATION (e.g. likely bank charge or short pay) | unchanged | Now Assist | `ai_interaction` | AI log |
 | 3 | AR processor | exception | | **Approve Deduction**, type Short Pay (or Bank Charge) + reason | HUMAN DECISION recorded; Deductions list shows the deduction | → PENDING_APPROVAL | ArDomainService.advanceAfterDeduction (allocated − deductions = payment) | `deduction` | audit deduction approved |
 | 4 | Finance approver | Approvals | | **Approve** | stages 6, 7 complete; 8 clears (MOCK SAP) | CLEARED → CLOSED | AR Clearing Flow | `integration_txn` | audit |
 
@@ -80,7 +80,7 @@ Payment → ambiguous customer / invoice → Playbook blocked → AI evidence �
 | # | Persona | Navigation | Record | Action | Expected UI | State | Automation | Records | Evidence |
 |---|---|---|---|---|---|---|---|---|---|
 | 1 | AR processor | BANK-PLAY-05 (or BANK-POC2-002) → **Open Playbook** | | read | stage 3 blocked: "Customer ambiguous … WHY: remitter name … did not resolve to a customer"; Next: "Wait for or upload the remittance …"; candidates list (system ranking) | EXCEPTION (customer ambiguous) | — | — | journey |
-| 2 | AR processor | exception | | **Explain with Now Assist** | AI evidence and candidate ranking; AI cannot commit a customer | unchanged | Now Assist | `ai_interaction` | AI log |
+| 2 | AR processor | exception | | **Explain with AI** | AI evidence and candidate ranking; AI cannot commit a customer | unchanged | Now Assist | `ai_interaction` | AI log |
 | 3 | AR processor | Document Intake | `AR_REMIT_102_MULTI_INVOICE.pdf` for BANK-POC2-002 | **Process Document** | customer resolved from the remittance (human-supplied evidence); stage 3 completes | → MATCHING → PENDING_APPROVAL | Remittance Processing → Match | allocations ARINV2001 + ARINV2002 | audit |
 | 4 | Finance approver | Approvals | | **Approve** | stages 7–9 complete | CLEARED → CLOSED | AR Clearing Flow | `integration_txn` | audit |
 

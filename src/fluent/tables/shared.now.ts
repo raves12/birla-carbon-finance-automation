@@ -246,7 +246,7 @@ export const x_695068_bcfa_audit_event = Table({
                 system: 'System',
                 simulated_ai: 'Simulated AI (advisory, legacy)',
                 claude_ai: 'Claude (legacy, removed in Phase 34)',
-                now_assist_ai: 'Now Assist (advisory)',
+                now_assist_ai: 'AI (advisory)',
             },
         }),
         description: StringColumn({ label: 'Description', maxLength: 4000 }),

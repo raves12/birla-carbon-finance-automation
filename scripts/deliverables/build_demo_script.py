@@ -76,7 +76,7 @@ numbered(doc, [
     'Rehearse once with a throw-away pack: python scripts/fixtures/gen_phase40_demo_journeys.py R1, run scripts/deploy/phase40_demo_prep_R1_bg.js, and walk Acts 2 and 4 with test/fixtures/AP_INV_R1_DEMO_NATIVE.pdf and AR_REMIT_R1_DEMO_NATIVE.pdf. (Pack D1 was used for the dry run on 2026-10-05; its records stay as a fallback.)',
     'Optional, only if a clean data set is wanted and agreed: run the demo reset (scripts/deploy/phase28_reset_and_reseed_bg.js, scope x_695068_bcfa). It restores the seeded scenarios used in Acts 3, 5 and 6. Do it at least 15 minutes before the landing page is shown (KPI refresh).',
     'Check the settings (System Properties): x_695068_bcfa.document.extraction.provider = native; x_695068_bcfa.sap.adapter = mock_sap; x_695068_bcfa.ar.sap_processing_mode = direct; x_695068_bcfa.mock_sap.draft_outcome = pending; Integration Profile "Mock SAP - Default" failure mode = success.',
-    'Check Now Assist: open any AP exception, click Explain with Now Assist; a note appears within 5–60 seconds.',
+    'Check Now Assist: open any AP exception, click Explain with AI; a note appears within 5–60 seconds.',
     'Copy %s and %s from test/fixtures to the presenting laptop (desktop). Open both PDFs in a viewer so you can show them.' % (AP_PDF, AR_PDF)])
 h(doc, '2.2 Thirty minutes before', 2)
 numbered(doc, [
@@ -143,7 +143,7 @@ h(doc, '6. Act 3: AP exceptions with AI advice (8 minutes)')
 para(doc, 'Uses seeded records (after a demo reset) and the Phase 40 E2E records. Persona: %s.' % APP, bold_lead='Data: ')
 steps(doc, [
     ('1', 'AP > Exceptions. Open the Quantity tolerance exception of INV-AP-004', '15 units invoiced vs 10 received, beyond the 2 % tolerance; number APEX…, severity, SLA, owner, rule result, evidence', 'The system decided this is an exception; the evidence is deterministic'),
-    ('2', 'Show the AI recommendation; click Explain with Now Assist', 'Advisory note: explains the 50 % variance, recommends asking the supplier, includes a draft message marked NOT sent', 'AI explains and drafts. It reads only this exception\'s evidence, input is screened for prompt injection, and any sentence claiming an action was done is removed'),
+    ('2', 'Show the AI recommendation; click Explain with AI', 'Advisory note: explains the 50 % variance, recommends asking the supplier, includes a draft message marked NOT sent', 'AI explains and drafts. It reads only this exception\'s evidence, input is screened for prompt injection, and any sentence claiming an action was done is removed'),
     ('3', 'Optional: open a tax exception: invoice E2E-<run>-T2 (GST 50 printed vs 900 expected) or E2E-<run>-T4 (VAT 7 % vs 19 %)', 'Tax Validation Fail with each check listed; subtype gst / vat', 'The same governed expectation catches GST, VAT and withholding mismatches'),
     ('4', 'On the INV-AP-004 exception click Approve Override with no reason', 'Refused: a reason of at least 10 characters is mandatory', 'Controls are code'),
     ('5', 'As %s enter Decision Reason "Receipt of 5 additional units confirmed by warehouse", Update. Impersonate %s, click Approve Override' % (APP, FCT), 'Override approved; an approval recorded with the controller and SoD checks; the invoice posts to MOCK SAP and closes', 'Maker / checker: the processor records why, an authorised controller decides (known limitation D6: approvers cannot type the reason themselves yet)')])
@@ -223,7 +223,7 @@ table(doc, ['Symptom', 'Likely cause', 'What to do'], [
     ('Advice goes to Review Required: payment already …', 'The bank line was used already', 'Run the prep script of a new pack'),
     ('Approve refused: requester / processor', 'Wrong persona', 'Impersonate %s (not the user who uploaded or confirmed the deduction)' % FAP),
     ('Approve Override refused: reason missing', 'D6: approver cannot type the reason', 'As the AP processor enter the Decision Reason first'),
-    ('Explain with Now Assist shows nothing', 'Now Assist slow (5–60 s)', 'Refresh after a minute; show the existing AI note on the record'),
+    ('Explain with AI shows nothing', 'Now Assist slow (5–60 s)', 'Refresh after a minute; show the existing AI note on the record'),
     ('Landing page numbers look stale', 'KPI refresh every 15 minutes', 'Mention it; numbers catch up')], widths=[4.5, 4.5, 8])
 
 h(doc, '13. Reference card')

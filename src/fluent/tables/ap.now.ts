@@ -20,7 +20,15 @@ export const x_695068_bcfa_ap_invoice = Table({
     label: 'AP Invoice',
     display: 'invoice_number',
     audit: true,
+    // Record numbers AP00000001, AP00000002, ... (10 characters). The
+    // vendor's own number stays in invoice_number (the display value).
+    autoNumber: {
+        prefix: 'AP',
+        number: 1,
+        numberOfDigits: 8,
+    },
     schema: {
+        number: StringColumn({ label: 'Number', maxLength: 40, readOnly: true, default: 'javascript:global.getNextObjNumberPadded();' }),
         invoice_number: StringColumn({ label: 'Invoice Number', mandatory: true, maxLength: 40 }),
         vendor: ReferenceColumn({ label: 'Vendor', referenceTable: 'x_695068_bcfa_vendor' }),
         company_code: StringColumn({ label: 'Company Code', maxLength: 10 }),
@@ -218,7 +226,7 @@ export const x_695068_bcfa_ap_extraction = Table({
             choices: {
                 claude_document_intelligence: 'Claude (legacy, removed in Phase 34)',
                 simulated_document_intelligence: 'Simulated extraction (fixture values, tests and demo seed only)',
-                now_assist_document_intelligence: 'Now Assist in Document Intelligence (legacy value, not used)',
+                now_assist_document_intelligence: 'AI in Document Intelligence (legacy value, not used)',
                 servicenow_document_intelligence: 'ServiceNow Document Intelligence (Now LLM)',
             },
             hint: 'Records which engine produced this extraction row: ServiceNow Document Intelligence on Now LLM for uploaded documents (Phase 40), or the simulated extraction for test fixtures and seeded demo data. Claude rows are historical (removed in Phase 34).',
@@ -312,7 +320,7 @@ export const x_695068_bcfa_ap_exception = Table({
         ai_recommendation: StringColumn({
             label: 'AI Recommendation (advisory)',
             maxLength: 4000,
-            hint: 'Advisory AI output only (Now Assist, or the legacy simulation). Never read by deterministic rules or approval/posting logic.',
+            hint: 'Advisory AI output only (ServiceNow AI, or the legacy simulation). Never read by deterministic rules or approval/posting logic.',
         }),
         // Phase 12 enrichment, set by ExceptionEngine when the exception is
         // raised (deterministic, from FinancePolicy and MatchingEngine).

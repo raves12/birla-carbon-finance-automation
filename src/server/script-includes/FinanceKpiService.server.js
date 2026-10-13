@@ -65,7 +65,7 @@ FinanceKpiService.prototype = {
 
         // --- AI -----------------------------------------------------------------
         k.ai_assisted_reviews = this._kpi('ai', 'AI-assisted reviews', this._count('x_695068_bcfa_ai_interaction', 'capability=exception_review^status=success'), 'count',
-            'Exception reviews completed by an agentic workflow or Explain with Now Assist.');
+            'Exception reviews completed by an agentic workflow or Explain with AI.');
         var accepted = this._count('x_695068_bcfa_ai_interaction', 'human_accepted=true');
         var overridden = this._count('x_695068_bcfa_ai_interaction', 'human_overridden=true');
         k.ai_acceptance_rate = this._kpi('ai', 'AI recommendation acceptance', this._pct(accepted, accepted + overridden), 'percent',

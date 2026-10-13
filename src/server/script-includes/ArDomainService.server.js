@@ -521,7 +521,7 @@ ArDomainService.prototype = {
                 eventType: 'ai_invocation',
                 actorType: 'system',
                 aiAgent: 'BCFA Cash Application Review (agentic workflow)',
-                description: 'AI review handed to the BCFA Cash Application Review agentic workflow (Now Assist), which starts on exception creation and records an advisory note.'
+                description: 'AI review handed to the BCFA Cash Application Review AI agentic workflow, which starts on exception creation and records an advisory note.'
             });
             new AiInteractionLog().start({ sourceTable: 'x_695068_bcfa_ar_exception', sourceRecord: exceptionSysId, provider: 'now_assist',
                 operation: 'exception_review', capability: 'exception_review', workflow: 'BCFA Cash Application Review' });
@@ -700,8 +700,8 @@ ArDomainService.prototype = {
                 eventType: 'ai_recommendation',
                 actor: gs.getUserID(),
                 actorType: 'now_assist_ai',
-                aiAgent: 'Now Assist skill: explain AR match',
-                description: 'Now Assist explanation of the multi-invoice allocation recorded on the payment (advisory field only)'
+                aiAgent: 'AI skill: explain AR match',
+                description: 'AI explanation of the multi-invoice allocation recorded on the payment (advisory field only)'
             });
             return { ok: true };
         } catch (e) {

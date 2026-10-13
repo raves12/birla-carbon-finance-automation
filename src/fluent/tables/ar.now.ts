@@ -19,7 +19,14 @@ export const x_695068_bcfa_payment = Table({
     label: 'Payment',
     display: 'bank_reference',
     audit: true,
+    // Record numbers AR00000001, AR00000002, ... (10 characters).
+    autoNumber: {
+        prefix: 'AR',
+        number: 1,
+        numberOfDigits: 8,
+    },
     schema: {
+        number: StringColumn({ label: 'Number', maxLength: 40, readOnly: true, default: 'javascript:global.getNextObjNumberPadded();' }),
         bank_reference: StringColumn({ label: 'Bank Reference', mandatory: true, maxLength: 60 }),
         value_date: DateColumn({ label: 'Value Date' }),
         posting_date: DateColumn({ label: 'Posting Date' }),
@@ -40,7 +47,7 @@ export const x_695068_bcfa_payment = Table({
             label: 'AI Match Explanation (advisory)',
             maxLength: 4000,
             readOnly: true,
-            hint: 'Now Assist explanation of a multi-invoice allocation, for the reviewer who confirms it. Never read by matching, allocation, approval or clearing logic.',
+            hint: 'AI explanation of a multi-invoice allocation, for the reviewer who confirms it. Never read by matching, allocation, approval or clearing logic.',
         }),
         // Phase 24: one read-only block with the whole review evidence
         // (document, extraction, PO/GRN, match, tolerance, exception, AI,
@@ -129,7 +136,14 @@ export const x_695068_bcfa_remittance = Table({
     name: 'x_695068_bcfa_remittance',
     label: 'Remittance',
     display: 'remittance_reference',
+    // Record numbers RT00000001, RT00000002, ... (10 characters).
+    autoNumber: {
+        prefix: 'RT',
+        number: 1,
+        numberOfDigits: 8,
+    },
     schema: {
+        number: StringColumn({ label: 'Number', maxLength: 40, readOnly: true, default: 'javascript:global.getNextObjNumberPadded();' }),
         payment: ReferenceColumn({ label: 'Payment', referenceTable: 'x_695068_bcfa_payment' }),
         remittance_reference: StringColumn({ label: 'Remittance Reference', maxLength: 60 }),
         extracted_fields: JsonColumn({ label: 'Extracted Fields' }),
@@ -291,7 +305,7 @@ export const x_695068_bcfa_ar_exception = Table({
         ai_recommendation: StringColumn({
             label: 'AI Recommendation (advisory)',
             maxLength: 4000,
-            hint: 'Advisory AI output only (Now Assist, or the legacy simulation). Never read by deterministic rules or approval/clearing logic.',
+            hint: 'Advisory AI output only (ServiceNow AI, or the legacy simulation). Never read by deterministic rules or approval/clearing logic.',
         }),
         // Phase 13 enrichment, set by ExceptionEngine when the exception is
         // raised (deterministic, from FinancePolicy and the matching result).

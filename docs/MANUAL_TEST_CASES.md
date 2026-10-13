@@ -33,7 +33,7 @@ Every implemented feature has at least one manual test, and every exception has 
 | MT-AP-10 | Price variance | AP Processor | Open INV-PLAY-02 (or INV-AP-005) | Exception price tolerance; match result shows price variance; stage 4 blocked | yes |
 | MT-AP-11 | Tax variance | AP Processor | Open INV-AP-006 | Exception tax validation; stage 3 blocked | yes |
 | MT-AP-12 | Exception actions | AP Processor | On an open exception: **Request Correction**, **Hold**, **Resolve & Retry** | Each action recorded with decision and comment; Resolve & Retry re-validates; journey refreshes | |
-| MT-AP-13 | AI explanation | AP Processor | On an exception: **Explain with Now Assist** | AI explanation saved to the exception and the AI Interaction Log; state unchanged; journey still blocked | |
+| MT-AP-13 | AI explanation | AP Processor | On an exception: **Explain with AI** | AI explanation saved to the exception and the AI Interaction Log; state unchanged; journey still blocked | |
 | MT-AP-14 | Approval | Finance Approver | INV-PLAY-03 → approval → **Approve** | Approved; posted to MOCK SAP; CLOSED; journey stages 6–8 complete | |
 | MT-AP-15 | Rejection | Finance Approver | Another pending approval → **Reject** with a comment | Invoice REJECTED; journey status rejected; nothing posted | |
 | MT-AP-16 | SoD | AP Processor (as requester) | Try **Approve** on an approval you requested | Refused (segregation of duties); audited | yes |
@@ -59,7 +59,7 @@ Every implemented feature has at least one manual test, and every exception has 
 | MT-AR-09 | Ambiguous customer | AR Processor | BANK-PLAY-05 | Exception customer ambiguous; journey stage 3 blocked; AI may rank, cannot commit | yes |
 | MT-AR-10 | Late remittance | AR Processor | Payment without remittance (PAYMENT ONLY) → upload the remittance later | Remittance Processing Flow resumes matching | |
 | MT-AR-11 | Deduction / bank charge | AR Processor | BANK-AR-007 | Bank charge suggested by rule; reviewer confirms with **Approve Deduction** | |
-| MT-AR-12 | AI | AR Processor | Exception → **Explain with Now Assist** | Explanation saved; nothing approved or cleared | |
+| MT-AR-12 | AI | AR Processor | Exception → **Explain with AI** | Explanation saved; nothing approved or cleared | |
 | MT-AR-13 | Approval | Finance Approver | BANK-PLAY-06 → approval → **Approve** | Approved; cleared (DIRECT); CLOSED | |
 | MT-AR-14 | DRAFT mode | Finance Approver, then Integration Operator | Property `x_695068_bcfa.ar.sap_processing_mode` = draft → approve a payment → **Check SAP Draft Status** (outcome pending) → set `x_695068_bcfa.mock_sap.draft_outcome` = posted → **Check SAP Draft Status** | SAP_DRAFT with PARK document and open item unchanged; then CLEARED → CLOSED; nothing re-sent (one clearing transaction) | |
 | MT-AR-15 | DIRECT mode | Finance Approver | Mode direct → approve | Cleared immediately (FB05) | |

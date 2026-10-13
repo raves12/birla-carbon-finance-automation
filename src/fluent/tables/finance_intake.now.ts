@@ -25,8 +25,10 @@ export const x_695068_bcfa_finance_intake = Table({
     label: 'Finance Document Intake',
     display: 'number',
     audit: true,
+    // Record numbers FDI0000001, FDI0000002, ... (10 characters).
     autoNumber: {
         prefix: 'FDI',
+        number: 1,
         numberOfDigits: 7,
     },
     schema: {
@@ -40,7 +42,10 @@ export const x_695068_bcfa_finance_intake = Table({
         // counter — without it the counter record exists but is never
         // consulted (confirmed live: the counter stayed at its initial
         // value after a real insert with this flag missing).
-        number: StringColumn({ label: 'Number', primary: true }),
+        // The platform numbering (sys_number / getNextObjNumberPadded) runs
+        // from this default; without it the number was never generated and
+        // the Assign Number rule fell back to a sys_id fragment.
+        number: StringColumn({ label: 'Number', primary: true, maxLength: 40, default: 'javascript:global.getNextObjNumberPadded();' }),
         source: ChoiceColumn({
             dropdown: 'dropdown_with_none',
             label: 'Source',

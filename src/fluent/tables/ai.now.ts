@@ -75,7 +75,7 @@ export const x_695068_bcfa_ai_interaction = Table({
             dropdown: 'dropdown_with_none',
             label: 'Provider',
             choices: {
-                now_assist: 'Now Assist (Now LLM)',
+                now_assist: 'AI (Now LLM)',
                 simulated: 'Simulated (deterministic, no model)',
                 claude_legacy: 'Claude (legacy, removed in Phase 34)',
             },
@@ -118,7 +118,7 @@ export const x_695068_bcfa_ai_interaction = Table({
             dropdown: 'dropdown_with_none',
             label: 'Guardrail Action',
             default: 'none',
-            choices: { none: 'None', sanitized: 'Output sanitized', blocked: 'Blocked (not sent)', guardian_blocked: 'Blocked by Now Assist Guardian' },
+            choices: { none: 'None', sanitized: 'Output sanitized', blocked: 'Blocked (not sent)', guardian_blocked: 'Blocked by AI Guardian' },
         }),
         guardrail_reason: StringColumn({ label: 'Guardrail Reason', maxLength: 1000 }),
         claude_model: StringColumn({ label: 'Model', maxLength: 100 }),

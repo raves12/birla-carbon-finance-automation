@@ -55,7 +55,7 @@ AuditEngine.PROCESS_BY_TABLE = {
 AuditEngine.AI_AGENT_BY_ACTOR = {
     simulated_ai: 'Simulated Document Intelligence',
     claude_ai: 'Claude (legacy provider, removed in Phase 34; historical events only)',
-    now_assist_ai: 'Now Assist'
+    now_assist_ai: 'AI'
 };
 
 // Lifecycle states whose transition is itself a named business event.

@@ -332,7 +332,7 @@ Test(
 )
 
 Test(
-    { $id: Now.ID['test-h41-num'], name: 'H41-NUM Intakes inserted in the same instant get distinct numbers', active: true },
+    { $id: Now.ID['test-h41-num'], name: 'H41-NUM Record numbers: FDI + 7 digits, AP / AR / RT + 8 digits (10 characters), distinct when inserted back to back', active: true },
     (atf) => {
         atf.server.runServerSideScript({
             $id: Now.ID['test-h41-num-step'],
@@ -348,6 +348,19 @@ Test(
                         if (n && !seen[n]) { seen[n] = true; distinct++; }
                     }
                     assertEqual({ name: '6 intakes inserted back to back have 6 distinct numbers', shouldbe: 6, value: distinct });
+                    assertEqual({ name: 'intake number is FDI + 7 digits', shouldbe: true, value: /^FDI[0-9]{7}$/.test(n) });
+                    var mk = function(table, values) {
+                        var r = new GlideRecord(table); r.initialize();
+                        for (var f in values) r.setValue(f, values[f]);
+                        r.setWorkflow(false); r.insert();
+                        return r.getValue('number');
+                    };
+                    var ap = mk('x_695068_bcfa_ap_invoice', { invoice_number: 'H41NUM-' + gs.generateGUID().substring(0, 6), gross_amount: 1, state: 'RECEIVED' });
+                    var ar = mk('x_695068_bcfa_payment', { bank_reference: 'H41NUM-' + gs.generateGUID().substring(0, 6), amount: 1, currency: 'INR', state: 'RECEIVED' });
+                    var rt = mk('x_695068_bcfa_remittance', { remittance_reference: 'H41NUM-' + gs.generateGUID().substring(0, 6) });
+                    assertEqual({ name: 'AP invoice number is AP + 8 digits', shouldbe: true, value: /^AP[0-9]{8}$/.test(ap) });
+                    assertEqual({ name: 'payment number is AR + 8 digits', shouldbe: true, value: /^AR[0-9]{8}$/.test(ar) });
+                    assertEqual({ name: 'remittance number is RT + 8 digits', shouldbe: true, value: /^RT[0-9]{8}$/.test(rt) });
                 })(outputs, steps, params, stepResult, assertEqual);
             `,
         })

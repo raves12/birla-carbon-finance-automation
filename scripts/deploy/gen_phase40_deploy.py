@@ -335,6 +335,30 @@ STEPS['client_kit_prop'] = {
 }
 
 
+# Record numbers (FDI0000001, AP00000001, AR00000001, RT00000001) through the
+# platform numbering, Number in lists and forms, and "Now Assist" -> "AI" in
+# user-facing text (choice labels, hints, UI actions, audit / KPI text).
+STEPS['numbers_ai_terms'] = {
+    'base': '63b939e',
+    'new_si': [],
+    'mod_si': ['AuditEngine', 'ApDomainService', 'ArDomainService', 'FinanceAgentTools', 'FinanceKpiService', 'FinancePocScorecard', 'NowAssistSkillClient'],
+    'columns': [
+        'x_695068_bcfa_ap_invoice=number',
+        'x_695068_bcfa_payment=number',
+        'x_695068_bcfa_remittance=number',
+    ],
+    'choices': r'^sys_choice_x_695068_bcfa_(ai_interaction_guardrail_action|ai_interaction_provider|ap_extraction_source|audit_event_actor_type)\.xml$',
+    'files': r'^(sys_number_(06f296e0d013467fa76e8f487eaf62de|4e8d1e79e9ee47bcbbca837d6878a86f|9f8c8a18e581485b8a6b4e8853e8ed27|eb046407223a43cb9355946749ddf77e)'
+             r'|sys_dictionary_x_695068_bcfa_finance_intake_number'
+             r'|sys_documentation_x_695068_bcfa_(ap_exception|ar_exception|payment)_ai_recommendation_en'
+             r'|sys_ui_action_(83a2a055103042c8962ed9a56f25bef5|bc2017ca30674afebde162cd93a9aaa6)'
+             r'|sys_ux_form_action_(7ad99fb3124b49cbbbc026595a0f95b4|e5b9785bbba24b2cbfb265e471c82392)'
+             r'|sys_ux_form_action_layout_item_(0c77e7ea276e4a8a89bb98bb7bc0942f|ef917fbe842f4aed99b76e2485f7e907)'
+             r'|sys_ux_list_(3eb9cd097064452fb5a7203309028379|4efabd9d1c8f4463903a115fa8088508|538d8d5edfed4e0e99e676a6a92ec0a5|6c161d4edb934599aa4e41d2e0563a58|e4c850e33d56444182dd38e5a6790358))\.xml$',
+    'atf': ['44e53c4c828f47bfb064e267dd77dd19'],
+}
+
+
 def h(t):
     a = 7
     for ch in t:

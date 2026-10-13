@@ -445,7 +445,7 @@ export const arCashApplicationPlaybook = PlaybookDefinition(
                         { wait: 'no' },
                         {
                             tagline: 'AI RECOMMENDATION',
-                            list_title: 'AI RECOMMENDATION — advisory only (Now Assist): never approves, clears or overrides tolerance',
+                            list_title: 'AI RECOMMENDATION — advisory only: never approves, clears or overrides tolerance',
                             table: 'x_695068_bcfa_ai_interaction',
                             list_query: `source_record=${wfa.playbook.dataPill(params.parentRecord)}^ORDERBYDESCsys_created_on`,
                             columns: 'capability,skill,recommendation,confidence,guardrail_action,human_decision,human_decided_by,sys_created_on',

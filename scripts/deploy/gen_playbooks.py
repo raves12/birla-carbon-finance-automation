@@ -258,7 +258,7 @@ ap('exception', 5, '5. Exception Resolution', 'Runs alongside stages 2-4 and com
      ['number', 'reason_code', 'severity', 'status', 'rule_result', 'variance_amount', 'variance_pct', 'ai_recommendation', 'decision', 'decided_by', 'assignment_group', 'sla_due', 'aging_bucket'],
      'Exceptions', 'Exceptions: SYSTEM DETERMINATION (rule result, variance) | AI RECOMMENDATION (advisory) | HUMAN DECISION', 'SYSTEM / AI / HUMAN'),
     ('ai_notes', 'x_695068_bcfa_ai_interaction', by('source_record'), AI_COLS,
-     'AI recommendations', 'AI RECOMMENDATION — advisory only (Now Assist): never approves, posts or overrides tolerance', 'AI RECOMMENDATION')])
+     'AI recommendations', 'AI RECOMMENDATION — advisory only: never approves, posts or overrides tolerance', 'AI RECOMMENDATION')])
 ap('approval', 6, '6. Approval', 'Human approval within the delegation of authority; ApprovalEngine and segregation of duties are authoritative.', After % 'matching, exception',
    ['approval_state', 'gross_amount', 'currency'],
    ('Approved', 'Approval', 'Approval is a HUMAN DECISION by an authorised approver. The requester and the processor cannot approve (SoD check recorded on the approval). AI cannot approve.',
@@ -356,7 +356,7 @@ ar('exception', 6, '6. Exception / Deduction Resolution', 'Runs alongside stages
      ['deduction_type', 'amount', 'currency', 'advice_reason', 'advice_amount', 'category_source', 'credit_note', 'status', 'approved_by', 'approved_at'],
      'Deductions', 'HUMAN DECISION: classified deductions (bank charge, TDS / TCS, withholding, credit / debit note, commercial, rounding, ...) with the reason printed on the advice; AI may suggest a category, a person confirms it', 'HUMAN DECISION'),
     ('ai_notes', 'x_695068_bcfa_ai_interaction', by('source_record'), AI_COLS,
-     'AI recommendations', 'AI RECOMMENDATION — advisory only (Now Assist): never approves, clears or overrides tolerance', 'AI RECOMMENDATION')])
+     'AI recommendations', 'AI RECOMMENDATION — advisory only: never approves, clears or overrides tolerance', 'AI RECOMMENDATION')])
 ar('approval', 7, '7. Approval', 'Human approval of the allocation and any deduction; ApprovalEngine and segregation of duties are authoritative.', After % 'matching, exception',
    ['amount', 'allocated_amount', 'deduction_amount', 'residual_amount'],
    ('Approved', 'Approval', 'Approval is a HUMAN DECISION by an authorised approver (deductions above the threshold need a Finance Approver). The requester and the processor cannot approve. AI cannot approve.',

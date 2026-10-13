@@ -270,7 +270,7 @@ Results: `FINAL_E2E_TEST_RESULTS.md`. Manual tests: `MANUAL_TEST_CASES.md`.
 ## Phase 41: POC team defects and the client sample pack (`phase41_hardening_tests.now.ts`)
 
 12 tests, all in **BCFA Regression** (now 51 tests). Deterministic: each test creates its own data (rolled back by
-ATF); no document extraction call, no SAP write, no AI. Run on 2026-10-09: 51 / 51 passed on 2026-10-12 (serial run after the vendor-matching and advice-correlation changes; 50 / 50 on 2026-10-09).
+ATF); no document extraction call, no SAP write, no AI. Run on 2026-10-09: 51 / 51 passed on 2026-10-13 (serial run after the record-numbering and AI-terminology changes; 51 / 51 on 2026-10-12).
 
 | Test | sys_id | Checks |
 |---|---|---|

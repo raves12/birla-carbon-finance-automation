@@ -27,7 +27,7 @@ P = 'x_695068_bcfa_'
 # section: (caption, left column, right column, full-width fields below)
 LAYOUTS = {
     P + 'ap_invoice': [
-        ('', ['invoice_number', 'vendor', 'purchase_order', 'invoice_date', 'currency'],
+        ('', ['number', 'invoice_number', 'vendor', 'purchase_order', 'invoice_date', 'currency'],
              ['state', 'journey_stage', 'journey_status', 'journey_owner', 'journey_open_exceptions'],
              ['journey_banner', 'journey_blocked_reason', 'journey_next_action']),
         ('Review Summary', [], [], ['review_summary']),
@@ -40,7 +40,7 @@ LAYOUTS = {
         ('Technical', ['correlation_id', 'duplicate_key', 'external_reference'], ['journey_stage_order', 'journey_stage_entered', 'journey_updated'], []),
     ],
     P + 'payment': [
-        ('', ['bank_reference', 'customer', 'amount', 'currency', 'value_date'],
+        ('', ['number', 'bank_reference', 'customer', 'amount', 'currency', 'value_date'],
              ['state', 'journey_stage', 'journey_status', 'journey_owner', 'journey_open_exceptions'],
              ['journey_banner', 'journey_blocked_reason', 'journey_next_action']),
         ('Review Summary', [], [], ['review_summary']),
@@ -57,7 +57,7 @@ LAYOUTS = {
         ('Technical', ['company_code', 'currency', 'correlation_id'], ['attachment_hash', 'duplicate_of', 'classification_confidence', 'classification_reason'], ['extraction_json']),
     ],
     P + 'remittance': [
-        ('', ['payment', 'remittance_reference', 'bank_reference', 'payer_name', 'received_date'],
+        ('', ['number', 'payment', 'remittance_reference', 'bank_reference', 'payer_name', 'received_date'],
              ['payment_amount', 'currency', 'advice_deduction_amount', 'advice_deduction_reason', 'invoice_count'], []),
         ('Extraction', ['extraction_provider', 'source', 'confidence'], [], ['extracted_fields']),
     ],

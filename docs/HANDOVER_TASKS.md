@@ -138,3 +138,18 @@ The role is only for this person. Do not add it to a group other people are in.
 | 4c | Birla Carbon | Supply samples written in French, Hungarian, Spanish, Arabic and Hindi (none in the pack) |
 | 4d | Birla Carbon | Send invoice pages only for large packages (the reader accepts up to 4 MB per file; CS-28 is 14.7 MB) |
 | 4e | Build team | Load the client vendors / POs / customers as POC master data. Since 2026-10-09 a client invoice with an unknown vendor or PO is created and sits in EXCEPTION (vendor invalid / PO mismatch); after loading, Re-run Validation links it |
+
+## Task 5: Fresh start of the front-end data (owner), prepared 2026-10-13
+
+Removes every Document Intake, AP and Cash Application transaction and keeps the master data (vendors, customers,
+POs, PO lines, GRN / SRN receipts, open items, credit notes), configuration, users and Playbooks.
+
+| # | Where | What |
+|---|---|---|
+| 5a | Scripts - Background, scope **x_695068_bcfa** | Paste `scripts/deploy/clean_transactions_bg.js` as is (PREVIEW = true) and run: it lists what it would delete. |
+| 5b | Same | Set `var PREVIEW = false;` and run again. It PERMANENTLY DELETES the transactions (intakes and their documents, AP invoices, payments, remittances, exceptions, approvals, allocations, deductions, integration transactions, AI interaction log) and reopens the open items. Audit events stay (`PURGE_AUDIT = false`). |
+| 5c | Scripts - Background, scope **global** | Paste `scripts/deploy/reset_number_counters_bg.js`, set `PREVIEW = false`, run: the next records are FDI0000001, AP00000001, AR00000001, RT00000001. |
+| 5d | Optional | For the client sample test, run `test/client_samples/kit/kit_setup_bg.js` (scope x_695068_bcfa) to re-create the 6 bank lines the payment advices need. |
+
+Run 5c last and do not run ATF tests in between (each test that creates an intake, invoice, payment or remittance
+uses a number). KPIs and the POC scorecard recalculate within 15 minutes.

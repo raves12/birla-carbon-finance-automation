@@ -29,7 +29,7 @@ follow it.
 | AR · Auto-match rate | Payments matched and allocated without any exception ÷ payments that went through matching | KPI | 45.83% (11 of 24) |
 | AR · Open exceptions | AR exceptions open or in review | live | 5 |
 | AR · Pending approvals | AR approvals awaiting a decision | live | 2 |
-| AI · AI-assisted reviews | Exception reviews completed by an agentic workflow or *Explain with Now Assist* | live | 7 |
+| AI · AI-assisted reviews | Exception reviews completed by an agentic workflow or *Explain with AI* | live | 7 |
 | AI · Recommendation acceptance | Accepted ÷ (accepted + overridden) AI outputs a person decided on (AI Interaction Log) | KPI | 40% (2 of 5) |
 | AI · Overrides | AI outputs a person overrode, with a reason | live | 3 |
 | AI · Low-confidence documents | Extraction confidence below the review threshold (0.85) across AP extractions, remittances and document intakes | KPI | 1 |

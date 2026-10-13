@@ -5429,6 +5429,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '0e7c0a8c91de42fc8a1870abb48501bb'
+                        key: {
+                            name: 'x_695068_bcfa_remittance'
+                            element: 'number'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_element_mapping'
                         id: '0e8b6b5117ae4508bf4fe98dd6411ac5'
                         key: {
@@ -8550,6 +8559,14 @@ declare global {
                             id: '520bb35413b5481789625362fe1aaf17'
                             table: 'var__m_sys_hub_flow_input_e11c763eff50311029c46b6d253bf11c'
                             field: 'table'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '263bf5c532954087b92957ca4217126f'
+                        key: {
+                            name: 'x_695068_bcfa_remittance'
+                            element: 'number'
                         }
                     },
                     {
@@ -13991,6 +14008,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_number'
+                        id: '4e8d1e79e9ee47bcbbca837d6878a86f'
+                        key: {
+                            category: 'x_695068_bcfa_ap_invoice'
+                            prefix: 'AP'
+                        }
+                    },
+                    {
                         table: 'sys_variable_value'
                         id: '4eb96e8bffcc467fb9f5d26011c4215e'
                         key: {
@@ -14436,6 +14461,15 @@ declare global {
                             id: 'dd7f3d9b01c54767b4952d341ddaa27d'
                             table: 'var__m_sys_pd_activity_type_prop_fdbeceb95b61001070e4492c11f91a28'
                             field: 'tagline'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '52bed9acd7fe4579a79847fb8dd2bda1'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'number'
+                            language: 'en'
                         }
                     },
                     {
@@ -18589,6 +18623,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '707feef80c61460785d6e12f39354314'
+                        key: {
+                            name: 'x_695068_bcfa_payment'
+                            element: 'number'
+                        }
+                    },
+                    {
                         table: 'sys_variable_value'
                         id: '709a3debb53a44188c9e91da9be419cc'
                         key: {
@@ -21803,6 +21845,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '88da819212df4d39b38f6d4b6d393154'
+                        key: {
+                            name: 'x_695068_bcfa_ap_invoice'
+                            element: 'number'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '88ee43b0420247a8937308c9d5028e04'
                         key: {
@@ -24656,6 +24706,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_number'
+                        id: '9f8c8a18e581485b8a6b4e8853e8ed27'
+                        key: {
+                            category: 'x_695068_bcfa_remittance'
+                            prefix: 'RT'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '9f90076f23314ef3a48c27482a48c6b5'
                         key: {
@@ -25615,6 +25673,15 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ai_interaction'
                             element: 'skill'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'a7bd2d5dd45241389d861d0a4692d4ed'
+                        key: {
+                            name: 'x_695068_bcfa_payment'
+                            element: 'number'
                             language: 'en'
                         }
                     },
@@ -34575,6 +34642,14 @@ declare global {
                                     name: 'x_695068_bcfa.ar_approver'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_number'
+                        id: 'eb046407223a43cb9355946749ddf77e'
+                        key: {
+                            category: 'x_695068_bcfa_payment'
+                            prefix: 'AR'
                         }
                     },
                     {
