@@ -5,6 +5,11 @@
 var PREVIEW = true;
 
 (function() {
+    // sys_number_counter can only be written from the global scope.
+    if (gs.getCurrentScopeName() != 'rhino.global') {
+        gs.info('BCFA_COUNTERS NOT RUN: switch the Scripts - Background scope to "global" and run again ||');
+        return;
+    }
     var out = [];
     ['finance_intake', 'ap_invoice', 'payment', 'remittance'].forEach(function(t) {
         var table = 'x_695068_bcfa_' + t;
@@ -19,5 +24,5 @@ var PREVIEW = true;
         out.push(t + ': last number ' + c.getValue('number') + (PREVIEW ? ' (would restart at 1' + (left ? '; ' + left + ' record(s) still exist' : '') + ')' : ' -> next is 1'));
         if (!PREVIEW) { c.setValue('number', 0); c.update(); }
     });
-    gs.print('BCFA_COUNTERS ' + (PREVIEW ? 'PREVIEW ' : '') + out.join(' ; ') + ' ||');
+    gs.info('BCFA_COUNTERS ' + (PREVIEW ? 'PREVIEW ' : '') + out.join(' ; ') + ' ||');
 })();
