@@ -26,7 +26,17 @@
         counter.update();
     } else {
         // No counter record found at all — fall back to something unique
-        // and traceable rather than leaving the record unnumbered.
-        current.setValue('number', 'FDI-' + current.getUniqueValue().substring(0, 8).toUpperCase());
+        // and traceable rather than leaving the record unnumbered. The first
+        // 8 characters of the sys_id are not unique for records inserted in
+        // the same instant (two client samples got the same number), so a
+        // taken number gets the last 4 characters of the sys_id appended.
+        var id = current.getUniqueValue();
+        var number = 'FDI-' + id.substring(0, 8).toUpperCase();
+        var taken = new GlideRecord('x_695068_bcfa_finance_intake');
+        taken.addQuery('number', number);
+        taken.setLimit(1);
+        taken.query();
+        if (taken.hasNext()) number += '-' + id.substring(id.length - 4).toUpperCase();
+        current.setValue('number', number);
     }
 })(current, previous);

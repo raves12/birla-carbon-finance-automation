@@ -39,7 +39,7 @@ NowAssistSkillClient.prototype = {
     // message is safe to show a user: never exception internals or payloads.
     invoke: function(skillKey, context) {
         if (!this.isKnownSkill(skillKey)) {
-            return this._fail(skillKey, 'unknown_skill', 'Unknown Now Assist skill: ' + skillKey, 0);
+            return this._fail(skillKey, 'unknown_skill', 'Unknown AI skill: ' + skillKey, 0);
         }
         if (!context) {
             return this._fail(skillKey, 'empty_context', 'No context was supplied to the skill.', 0);
@@ -61,7 +61,7 @@ NowAssistSkillClient.prototype = {
             if (!capability || capability.status !== 'success') {
                 var reason = (result && result.message) || (capability && capability.status) || 'no response';
                 gs.warn('NowAssistSkillClient: skill ' + skillKey + ' did not succeed: ' + reason);
-                var failed = this._fail(skillKey, 'skill_error', 'The Now Assist skill did not return a result.', latencyMs);
+                var failed = this._fail(skillKey, 'skill_error', 'The AI skill did not return a result.', latencyMs);
                 // The platform's own reason (for example a Now Assist Guardian
                 // block): a status or message, never payload content.
                 failed.platformReason = String((capability && (capability.status + (capability.message ? ': ' + capability.message : ''))) || reason).substring(0, 500);
@@ -71,7 +71,7 @@ NowAssistSkillClient.prototype = {
 
             var text = this._extractText(capability.response);
             if (!text) {
-                return this._fail(skillKey, 'invalid_response', 'The Now Assist skill returned an empty result.', latencyMs);
+                return this._fail(skillKey, 'invalid_response', 'The AI skill returned an empty result.', latencyMs);
             }
             return {
                 ok: true,
@@ -82,7 +82,7 @@ NowAssistSkillClient.prototype = {
             };
         } catch (e) {
             gs.warn('NowAssistSkillClient: skill ' + skillKey + ' threw: ' + e);
-            return this._fail(skillKey, 'exception', 'The Now Assist skill could not be invoked.', new Date().getTime() - started);
+            return this._fail(skillKey, 'exception', 'The AI skill could not be invoked.', new Date().getTime() - started);
         }
     },
 

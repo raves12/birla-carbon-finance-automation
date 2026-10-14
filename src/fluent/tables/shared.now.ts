@@ -32,11 +32,13 @@ export const x_695068_bcfa_integration_txn = Table({
         source_table: StringColumn({ label: 'Source Table', maxLength: 80 }),
         source_record: StringColumn({ label: 'Source Record', maxLength: 32, hint: 'sys_id of the AP/AR record this call was made for' }),
         adapter: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Adapter',
             mandatory: true,
             choices: { mock_sap: 'Mock SAP Adapter', mock_bank: 'Mock Bank Adapter', mock_archive: 'Mock Archive Adapter', real_sap: 'Real SAP Adapter (seam, not configured)' },
         }),
         status: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Status',
             mandatory: true,
             default: 'pending',
@@ -65,6 +67,7 @@ export const x_695068_bcfa_integration_txn = Table({
         request_hash: StringColumn({ label: 'Request Hash', maxLength: 64, readOnly: true, hint: 'SHA-256 of operation + request payload, to show exactly what was sent on each attempt.' }),
         external_reference: StringColumn({ label: 'External Reference', maxLength: 100, readOnly: true, hint: 'Business reference of the financial write (vendor + invoice number, bank reference); a second successful post/clear for it is blocked.' }),
         reconciliation_state: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Reconciliation State',
             default: 'not_required',
             readOnly: true,
@@ -87,6 +90,7 @@ export const x_695068_bcfa_finance_exception = Table({
     schema: {
         correlation_id: StringColumn({ label: 'Correlation ID', maxLength: 64 }),
         domain: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Domain',
             mandatory: true,
             choices: { ap: 'Accounts Payable', ar: 'Accounts Receivable', integration: 'Integration', general: 'General' },
@@ -96,11 +100,13 @@ export const x_695068_bcfa_finance_exception = Table({
         reason_code: StringColumn({ label: 'Reason Code', mandatory: true, maxLength: 64 }),
         description: StringColumn({ label: 'Description', maxLength: 4000 }),
         severity: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Severity',
             default: 'medium',
             choices: { low: 'Low', medium: 'Medium', high: 'High', critical: 'Critical' },
         }),
         status: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Status',
             default: 'open',
             choices: { open: 'Open', in_review: 'In Review', resolved: 'Resolved', closed: 'Closed' },
@@ -133,6 +139,7 @@ export const x_695068_bcfa_reference_mapping = Table({
     display: 'external_value',
     schema: {
         mapping_type: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Mapping Type',
             mandatory: true,
             choices: {
@@ -161,6 +168,7 @@ export const x_695068_bcfa_customer_alias = Table({
         customer: ReferenceColumn({ label: 'Customer', referenceTable: 'x_695068_bcfa_customer', mandatory: true }),
         alias_name: StringColumn({ label: 'Alias Name', mandatory: true, maxLength: 200 }),
         alias_type: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Alias Type',
             choices: {
                 legal_name: 'Legal Name',
@@ -183,6 +191,7 @@ export const x_695068_bcfa_audit_event = Table({
         source_table: StringColumn({ label: 'Source Table', maxLength: 80 }),
         source_record: StringColumn({ label: 'Source Record', maxLength: 32 }),
         event_type: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Event Type',
             mandatory: true,
             // Phase 19 vocabulary (AuditEngine.EVENTS).
@@ -213,6 +222,7 @@ export const x_695068_bcfa_audit_event = Table({
             },
         }),
         process: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Process',
             default: 'platform',
             choices: {
@@ -227,6 +237,7 @@ export const x_695068_bcfa_audit_event = Table({
         ai_agent: StringColumn({ label: 'AI Agent', maxLength: 100, hint: 'AI agent, skill or agentic workflow involved, when the event is AI-related.' }),
         actor: ReferenceColumn({ label: 'Actor', referenceTable: 'sys_user' }),
         actor_type: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Actor Type',
             mandatory: true,
             default: 'system',
@@ -235,7 +246,7 @@ export const x_695068_bcfa_audit_event = Table({
                 system: 'System',
                 simulated_ai: 'Simulated AI (advisory, legacy)',
                 claude_ai: 'Claude (legacy, removed in Phase 34)',
-                now_assist_ai: 'Now Assist (advisory)',
+                now_assist_ai: 'AI (advisory)',
             },
         }),
         description: StringColumn({ label: 'Description', maxLength: 4000 }),
@@ -253,11 +264,13 @@ export const x_695068_bcfa_integration_profile = Table({
     schema: {
         name: StringColumn({ label: 'Name', mandatory: true, unique: true, maxLength: 100 }),
         adapter: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Adapter',
             mandatory: true,
             choices: { mock_sap: 'Mock SAP Adapter', mock_bank: 'Mock Bank Adapter', mock_archive: 'Mock Archive Adapter', real_sap: 'Real SAP Adapter (seam, not configured)' },
         }),
         mode: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Mode',
             default: 'simulation',
             choices: { simulation: 'Simulation', passthrough: 'Passthrough (future real connectivity)' },
@@ -265,6 +278,7 @@ export const x_695068_bcfa_integration_profile = Table({
         active: BooleanColumn({ label: 'Active', default: true }),
         response_delay_ms: IntegerColumn({ label: 'Response Delay (ms)', default: 0, min: 0 }),
         failure_mode: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Failure Mode',
             default: 'success',
             choices: {

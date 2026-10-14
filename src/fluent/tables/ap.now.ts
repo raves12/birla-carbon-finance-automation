@@ -20,7 +20,15 @@ export const x_695068_bcfa_ap_invoice = Table({
     label: 'AP Invoice',
     display: 'invoice_number',
     audit: true,
+    // Record numbers AP00000001, AP00000002, ... (10 characters). The
+    // vendor's own number stays in invoice_number (the display value).
+    autoNumber: {
+        prefix: 'AP',
+        number: 1,
+        numberOfDigits: 8,
+    },
     schema: {
+        number: StringColumn({ label: 'Number', maxLength: 40, readOnly: true, default: 'javascript:global.getNextObjNumberPadded();' }),
         invoice_number: StringColumn({ label: 'Invoice Number', mandatory: true, maxLength: 40 }),
         vendor: ReferenceColumn({ label: 'Vendor', referenceTable: 'x_695068_bcfa_vendor' }),
         company_code: StringColumn({ label: 'Company Code', maxLength: 10 }),
@@ -28,6 +36,12 @@ export const x_695068_bcfa_ap_invoice = Table({
         invoice_date: DateColumn({ label: 'Invoice Date' }),
         posting_date: DateColumn({ label: 'Posting Date' }),
         purchase_order: ReferenceColumn({ label: 'Purchase Order', referenceTable: 'x_695068_bcfa_purchase_order' }),
+        // Vendor and PO as printed on the document. The invoice is created from
+        // a good read even when they do not resolve to master data; validation
+        // resolves them (again on Re-run Validation) or raises the exception.
+        printed_vendor_name: StringColumn({ label: 'Vendor (Printed)', maxLength: 255, readOnly: true, hint: 'Supplier name as printed on the document (extraction).' }),
+        printed_vendor_code: StringColumn({ label: 'Vendor Code (Printed)', maxLength: 40, readOnly: true, hint: 'Supplier code / tax ID used as vendor code, as printed (extraction).' }),
+        printed_po_number: StringColumn({ label: 'PO Number (Printed)', maxLength: 40, readOnly: true, hint: 'Purchase order number as printed on the document (extraction).' }),
         sales_order_reference: StringColumn({
             label: 'Sales Order Reference',
             maxLength: 40,
@@ -36,9 +50,28 @@ export const x_695068_bcfa_ap_invoice = Table({
         gross_amount: DecimalColumn({ label: 'Gross Amount', scale: 2 }),
         tax_amount: DecimalColumn({ label: 'Tax Amount', scale: 2 }),
         net_amount: DecimalColumn({ label: 'Net Amount', scale: 2 }),
+        // Phase 41: charges printed as their own lines (freight, shipping /
+        // handling, surcharge, other) and discount, so the totals reconcile
+        // (gross = net + tax + charges - discount). Separate from the
+        // extraction confidence.
+        charges_amount: DecimalColumn({ label: 'Charges (Freight, Shipping, Other)', scale: 2, hint: 'Freight, shipping/handling, surcharges and other charges printed as their own lines on the invoice.' }),
+        discount_amount: DecimalColumn({ label: 'Discount', scale: 2 }),
+        amount_reconciliation: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
+            label: 'Totals Reconciliation',
+            readOnly: true,
+            choices: { reconciled: 'Reconciled', not_reconciled: 'Not Reconciled', incomplete: 'Incomplete' },
+            hint: 'Deterministic check of the printed totals (net + tax + charges - discount = gross). Independent of the extraction confidence.',
+        }),
+        amount_reconciliation_detail: StringColumn({ label: 'Totals Reconciliation Detail', maxLength: 1000, readOnly: true }),
+        // Phase 41, defect 7: what the document said, in readable sections
+        // (FinanceTextFormat.extractionSummary); the raw JSON stays on the
+        // intake and AP Extraction records as technical evidence.
+        extraction_summary: StringColumn({ label: 'Extracted Data', maxLength: 4000, readOnly: true, hint: 'What Document Intelligence read from the invoice, by section. Evidence only: validation and matching decide.' }),
         extraction_confidence: DecimalColumn({ label: 'Extraction Confidence', scale: 2 }),
         state: StringColumn({ label: 'State', maxLength: 40, readOnly: true, hint: 'Managed by the AP Invoice Lifecycle state model; only its transitions are allowed (Phase 26).' }),
         source: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Source',
             default: 'email',
             choices: { email: 'Email', shared_drive: 'Shared Drive', manual: 'Manual Entry' },
@@ -47,11 +80,13 @@ export const x_695068_bcfa_ap_invoice = Table({
         external_reference: StringColumn({ label: 'External Reference', maxLength: 64 }),
         duplicate_key: StringColumn({ label: 'Duplicate Key', maxLength: 100, hint: 'Hash of vendor+invoice_number+amount used for duplicate detection' }),
         approval_state: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Approval State',
             default: 'not_required',
             choices: { not_required: 'Not Required', pending: 'Pending', approved: 'Approved', rejected: 'Rejected' },
         }),
         posting_state: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Posting State',
             default: 'not_posted',
             choices: {
@@ -77,6 +112,7 @@ export const x_695068_bcfa_ap_invoice = Table({
         // Display only: the BCFA Playbook stages wait on journey_stage_order; no
         // business logic reads these fields.
         journey_stage: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Journey Stage',
             readOnly: true,
             choices: {
@@ -93,6 +129,7 @@ export const x_695068_bcfa_ap_invoice = Table({
         }),
         journey_stage_order: IntegerColumn({ label: 'Journey Stage Order', readOnly: true, hint: 'Playbook stage N completes when this is greater than N.' }),
         journey_status: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Journey Status',
             readOnly: true,
             choices: {
@@ -116,6 +153,7 @@ export const x_695068_bcfa_ap_invoice = Table({
         // the governed expectation (MatchingEngine.evaluateTax). Extraction
         // and validation are separate concerns.
         extraction_provider: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Extraction Provider',
             choices: { native: 'Native: ServiceNow Document Intelligence (Now LLM)', simulated: 'SIMULATED DOCUMENT EXTRACTION — POC' },
         }),
@@ -151,6 +189,37 @@ export const x_695068_bcfa_ap_invoice = Table({
                 manual_review: 'Manual Review',
                 fail: 'Fail',
             } }),
+        // Phase 42: document evidence (stamp / seal / chop presence and
+        // handwriting). Presence detection only: BCFA never claims a stamp is
+        // authentic. The AI finding is kept read-only next to the human
+        // decision; the governed BCFA Document Evidence Requirement decides
+        // whether a stamp is required.
+        printed_vendor_tax_id: StringColumn({ label: 'Supplier Tax ID (Printed)', maxLength: 60, readOnly: true, hint: 'Supplier tax registration / organization identifier as printed (extraction). Used to resolve the vendor.' }),
+        stamp_required: BooleanColumn({ label: 'Stamp Required', readOnly: true, default: false, hint: 'Set by the BCFA Document Evidence Requirement decision table (POC business configuration, not a statement of law).' }),
+        stamp_present: ChoiceColumn({ label: 'Stamp Present', readOnly: true, dropdown: 'dropdown_with_none', choices: { yes: 'Yes', no: 'No', uncertain: 'Uncertain' },
+            hint: 'Current stamp finding: the human decision when recorded, otherwise the extraction finding. Presence only, never authenticity.' }),
+        stamp_type: ChoiceColumn({ label: 'Stamp Type', readOnly: true, dropdown: 'dropdown_with_none', choices: {
+                company_chop: 'Company Chop', company_seal: 'Company Seal', finance_seal: 'Finance Seal', invoice_seal: 'Invoice Seal',
+                tax_seal: 'Tax Seal', other: 'Other', unknown: 'Unknown' } }),
+        stamp_text: StringColumn({ label: 'Stamp Text', maxLength: 400, readOnly: true, hint: 'Text read inside the stamp, best effort. Empty does not mean the stamp is absent.' }),
+        stamp_page: StringColumn({ label: 'Stamp Page', maxLength: 40, readOnly: true }),
+        stamp_count: IntegerColumn({ label: 'Stamp Count', readOnly: true }),
+        stamp_detection_method: ChoiceColumn({ label: 'Stamp Detection Method', readOnly: true, dropdown: 'dropdown_with_none', choices: {
+                native_visual: 'Native visual (image) reading', ocr_text: 'OCR text only (no image understanding)', human: 'Human review', not_run: 'Not run' } }),
+        stamp_evidence_status: ChoiceColumn({ label: 'Stamp Evidence Status', readOnly: true, dropdown: 'dropdown_with_none', choices: {
+                confirmed_by_native_visual: 'Confirmed by native visual reading', detected_best_effort: 'Detected (best effort, not confirmed)',
+                uncertain: 'Uncertain', not_detected: 'Not detected', human_confirmed: 'Human confirmed', human_rejected: 'Human rejected (no stamp)' } }),
+        stamp_ai_finding: StringColumn({ label: 'Stamp AI Finding', maxLength: 1000, readOnly: true, hint: 'What the extraction reported about stamps, as read (evidence, immutable).' }),
+        stamp_validation_result: ChoiceColumn({ label: 'Stamp Validation', readOnly: true, dropdown: 'dropdown_with_none', choices: {
+                not_required: 'Not required', passed: 'Passed', missing: 'Required stamp missing', review_required: 'Review required' } }),
+        stamp_validation_detail: StringColumn({ label: 'Stamp Validation Detail', maxLength: 1000, readOnly: true }),
+        handwriting_status: ChoiceColumn({ label: 'Handwriting', readOnly: true, dropdown: 'dropdown_with_none', choices: {
+                none: 'No handwriting found', readable: 'Handwriting readable', partially_readable: 'Partially readable', not_readable: 'Not readable', unknown: 'Unknown' } }),
+        handwritten_values: StringColumn({ label: 'Handwritten Values (Read)', maxLength: 1000, readOnly: true, hint: 'Handwritten values the extraction could read, as read. Never completed by guessing.' }),
+        visual_review_required: BooleanColumn({ label: 'Visual Review Required', readOnly: true, default: false }),
+        evidence_reviewed_by: ReferenceColumn({ label: 'Evidence Reviewed By', referenceTable: 'sys_user', readOnly: true }),
+        evidence_reviewed_on: DateTimeColumn({ label: 'Evidence Reviewed On', readOnly: true }),
+        evidence_review_decision: StringColumn({ label: 'Evidence Review Decision', maxLength: 400, readOnly: true }),
     },
     index: [{ unique: false, element: 'duplicate_key' }],
 })
@@ -182,12 +251,13 @@ export const x_695068_bcfa_ap_extraction = Table({
         extracted_fields: JsonColumn({ label: 'Extracted Fields' }),
         confidence: DecimalColumn({ label: 'Confidence', scale: 2 }),
         source: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Source',
             default: 'simulated_document_intelligence',
             choices: {
                 claude_document_intelligence: 'Claude (legacy, removed in Phase 34)',
                 simulated_document_intelligence: 'Simulated extraction (fixture values, tests and demo seed only)',
-                now_assist_document_intelligence: 'Now Assist in Document Intelligence (legacy value, not used)',
+                now_assist_document_intelligence: 'AI in Document Intelligence (legacy value, not used)',
                 servicenow_document_intelligence: 'ServiceNow Document Intelligence (Now LLM)',
             },
             hint: 'Records which engine produced this extraction row: ServiceNow Document Intelligence on Now LLM for uploaded documents (Phase 40), or the simulated extraction for test fixtures and seeded demo data. Claude rows are historical (removed in Phase 34).',
@@ -211,6 +281,7 @@ export const x_695068_bcfa_ap_match = Table({
         tax_variance: DecimalColumn({ label: 'Tax Variance', scale: 2 }),
         within_tolerance: BooleanColumn({ label: 'Within Tolerance' }),
         match_result: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Match Result',
             choices: { matched: 'Matched', partial: 'Partial', mismatch: 'Mismatch' },
         }),
@@ -232,6 +303,12 @@ export const x_695068_bcfa_ap_match = Table({
                 fail: 'Fail',
             } }),
         tolerance_detail: StringColumn({ label: 'Tolerance Detail', maxLength: 4000 }),
+        // Phase 41, defect 6: a newer match of the same invoice supersedes this
+        // one (history kept; one current result).
+        // Phase 41, defect 5: invoice and PO in different currencies are
+        // compared only through a governed rate (source, date, rate, values).
+        fx_detail: StringColumn({ label: 'Currency Conversion', maxLength: 1000, readOnly: true }),
+        superseded: BooleanColumn({ label: 'Superseded', default: false, readOnly: true, hint: 'A later match of the same invoice replaced this result (re-run). Kept as history.' }),
     },
 })
 
@@ -243,6 +320,7 @@ export const x_695068_bcfa_ap_exception = Table({
     schema: {
         ap_invoice: ReferenceColumn({ label: 'AP Invoice', referenceTable: 'x_695068_bcfa_ap_invoice', mandatory: true }),
         reason_code: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Reason Code',
             mandatory: true,
             choices: {
@@ -256,11 +334,16 @@ export const x_695068_bcfa_ap_exception = Table({
                 vendor_invalid: 'Vendor Invalid',
                 grn_missing: 'Goods Receipt Missing',
                 line_total_mismatch: 'Line Total Mismatch',
+                currency_mismatch: 'Currency / FX (no approved rate)',
+                totals_not_reconciled: 'Printed Totals Not Reconciled',
+                document_evidence_missing: 'Required Stamp Missing',
+                document_evidence_review: 'Document Evidence Review (stamp)',
                 other: 'Other',
             },
         }),
         description: StringColumn({ label: 'Description', maxLength: 4000 }),
         status: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Status',
             default: 'open',
             choices: { open: 'Open', in_review: 'In Review', resolved: 'Resolved', closed: 'Closed' },
@@ -270,11 +353,12 @@ export const x_695068_bcfa_ap_exception = Table({
         ai_recommendation: StringColumn({
             label: 'AI Recommendation (advisory)',
             maxLength: 4000,
-            hint: 'Advisory AI output only (Now Assist, or the legacy simulation). Never read by deterministic rules or approval/posting logic.',
+            hint: 'Advisory AI output only (ServiceNow AI, or the legacy simulation). Never read by deterministic rules or approval/posting logic.',
         }),
         // Phase 12 enrichment, set by ExceptionEngine when the exception is
         // raised (deterministic, from FinancePolicy and MatchingEngine).
         severity: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Severity',
             default: 'medium',
             readOnly: true,
@@ -289,6 +373,7 @@ export const x_695068_bcfa_ap_exception = Table({
         // Human decision (ApExceptionDecisionService). The reason is typed by
         // the finance user; the rest is recorded by the service.
         decision: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Decision',
             readOnly: true,
             choices: {
@@ -307,6 +392,7 @@ export const x_695068_bcfa_ap_exception = Table({
         process: ChoiceColumn({ label: 'Process', default: 'ap', readOnly: true, choices: { ap: 'Accounts Payable', ar: 'Accounts Receivable' } }),
         subtype: StringColumn({ label: 'Subtype', maxLength: 100, readOnly: true }),
         priority: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Priority',
             default: '3',
             readOnly: true,
@@ -315,12 +401,14 @@ export const x_695068_bcfa_ap_exception = Table({
         }),
         opened_at: DateTimeColumn({ label: 'Opened', readOnly: true }),
         sla_status: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'SLA Status',
             readOnly: true,
             choices: { on_track: 'On Track', at_risk: 'At Risk', breached: 'Breached', met: 'Met', missed: 'Missed' },
             hint: 'At risk from 75% of the SLA; set hourly by the exception sweep and on resolution.',
         }),
         aging_bucket: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Aging',
             readOnly: true,
             choices: { lt_1d: 'Under 1 day', '1_3d': '1-3 days', '3_7d': '3-7 days', gt_7d: 'Over 7 days' },
@@ -329,6 +417,7 @@ export const x_695068_bcfa_ap_exception = Table({
         ai_explanation: StringColumn({ label: 'AI Explanation (advisory)', maxLength: 4000, readOnly: true, hint: 'Explanation section of the advisory AI note.' }),
         ai_confidence: ChoiceColumn({ label: 'AI Confidence', readOnly: true, choices: { high: 'High', medium: 'Medium', low: 'Low' } }),
         resolution_code: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Resolution Code',
             readOnly: true,
             choices: {
@@ -337,6 +426,7 @@ export const x_695068_bcfa_ap_exception = Table({
                 deduction_approved: 'Deduction Approved',
                 corrected_and_retried: 'Corrected and Retried',
                 withdrawn: 'Withdrawn',
+                superseded_by_rerun: 'Superseded by Re-run',
                 other: 'Other',
             },
         }),
@@ -361,15 +451,27 @@ export const x_695068_bcfa_ap_approval = Table({
             readOnly: true,
             hint: 'Group the BCFA AP Approval decision table routed this approval to (Phase 15). Membership is enforced from Phase 17.',
         }),
+        // Phase 41, defect 4: approvals go to a group; the decider is recorded
+        // in approver only when someone decides. The eligible approvers (active
+        // group members who pass every segregation-of-duties check) are listed
+        // when the approval is requested, so the destination is never blank.
+        eligible_approvers: StringColumn({
+            label: 'Eligible Approvers',
+            maxLength: 1000,
+            readOnly: true,
+            hint: 'Active members of the approval group who may decide this approval: they hold the approver role, did not request it and did not process the transaction. Set when the approval is requested.',
+        }),
         decision: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Decision',
             default: 'pending',
-            choices: { pending: 'Pending', approved: 'Approved', rejected: 'Rejected' },
+            choices: { pending: 'Pending', approved: 'Approved', rejected: 'Rejected', withdrawn: 'Withdrawn' },
         }),
         decision_notes: StringColumn({ label: 'Decision Notes', maxLength: 4000 }),
         decided_at: DateTimeColumn({ label: 'Decided At' }),
         // Phase 17 decision record (ApprovalEngine).
         approval_type: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Approval Type',
             default: 'standard',
             readOnly: true,

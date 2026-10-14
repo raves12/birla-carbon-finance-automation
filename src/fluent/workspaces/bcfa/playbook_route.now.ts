@@ -158,3 +158,103 @@ export const paymentOpenPlaybook = UiAction({
     form: { showLink: true },
     script: `action.setRedirectURL('/x/695068/bcfa/playbook/x_695068_bcfa_payment/' + current.getUniqueValue());`,
 })
+
+// "Open Playbook" button on the BCFA Workspace record page (the record page
+// itself is preset-based, so the Playbook gets a button, not a tab). A
+// declarative form action (client action BCFA_OPEN_PLAYBOOK, payload: the
+// "playbook" route above with this record's table and sys_id) and a UX
+// add-on event mapping that hands it, from the form action bar, to the
+// record page's own "Item Selected" navigation event: the platform pattern
+// for a form button that opens a workspace page (e.g. Manage Announcements
+// on incident), independent of the record page. Navigation only.
+// (A workspace UI action client script cannot navigate: it runs sandboxed.)
+// The Fluent SDK identifies sys_ux_form_action records by their UI action, so
+// declarative form actions (no UI action) are not defined here.
+const FORM_MODEL = '360935e9534723003eddddeeff7b127d' // sys_declarative_action_model_definition "Form"
+const FORM_CONTROLLER = '029f04e053610110ac9bddeeff7b1294' // sys_ux_controller "Form"
+const ACTION_BAR = '6759357892ba1957c0a25d74e5d2a4a4' // sys_ux_macroponent "Action bar"
+const RECORD_PAGE_ITEM_SELECTED = '835ec4a00f4310107d20409dc4767eaa' // sys_ux_event "[Record Page] Item Selected"
+// Event payload -> [Record Page] Item Selected (route, fields, ...), opening the route in the current tab.
+const NAVIGATE_MAPPING = '{"type": "MAP_CONTAINER", "container": {"route": {"type": "EVENT_PAYLOAD_BINDING", "binding": {"address": ["route"]}}, "fields": {"type": "EVENT_PAYLOAD_BINDING", "binding": {"address": ["fields"]}}, "params": {"type": "EVENT_PAYLOAD_BINDING", "binding": {"address": ["params"]}}, "redirect": {"type": "EVENT_PAYLOAD_BINDING", "binding": {"address": ["redirect"]}}, "passiveNavigation": {"type": "EVENT_PAYLOAD_BINDING", "binding": {"address": ["passiveNavigation"]}}, "title": {"type": "JSON_LITERAL", "value": "Playbook"}, "multiInstField": {"type": "EVENT_PAYLOAD_BINDING", "binding": {"address": ["multiInstField"]}}, "external": {"type": "EVENT_PAYLOAD_BINDING", "binding": {"address": ["external"]}}, "targetRoute": {"type": "JSON_LITERAL", "value": "current"}}}'
+
+const bcfaOpenPlaybookClientAction = Record({
+    $id: Now.ID['bcfa-da-open-playbook-client-action'],
+    table: 'sys_declarative_action_payload_definition',
+    data: {
+        label: 'BCFA Open Playbook',
+        action_key: 'BCFA_OPEN_PLAYBOOK',
+        applicable_to: FORM_MODEL,
+        description: 'Opens the BCFA Playbook route for the record on the form.',
+        payload_template: JSON.stringify({ route: 'playbook', fields: { table: '{{table}}', sysId: '{{sysId}}' } }),
+    },
+})
+
+export const apInvoiceOpenPlaybookAssignment = Record({
+    $id: Now.ID['bcfa-da-ap-invoice-open-playbook'],
+    table: 'sys_declarative_action_assignment',
+    data: {
+        action_name: 'bcfa_open_playbook',
+        label: 'Open Playbook',
+        description: 'Opens the BCFA Playbook page for this record (view only).',
+        table: 'x_695068_bcfa_ap_invoice',
+        model: FORM_MODEL,
+        declarative_action_type: 'uxf_client_action',
+        client_action: bcfaOpenPlaybookClientAction,
+        form_position: 'action_bar',
+        button_type: 'secondary',
+        order: 50,
+        active: true,
+        enabled: true,
+        enable_for_all_experiences: true, // only on BCFA tables; no per-workspace action configuration needed
+    },
+})
+
+export const paymentOpenPlaybookAssignment = Record({
+    $id: Now.ID['bcfa-da-payment-open-playbook'],
+    table: 'sys_declarative_action_assignment',
+    data: {
+        action_name: 'bcfa_open_playbook',
+        label: 'Open Playbook',
+        description: 'Opens the BCFA Playbook page for this record (view only).',
+        table: 'x_695068_bcfa_payment',
+        model: FORM_MODEL,
+        declarative_action_type: 'uxf_client_action',
+        client_action: bcfaOpenPlaybookClientAction,
+        form_position: 'action_bar',
+        button_type: 'secondary',
+        order: 50,
+        active: true,
+        enabled: true,
+        enable_for_all_experiences: true, // only on BCFA tables; no per-workspace action configuration needed
+    },
+})
+
+Record({
+    $id: Now.ID['bcfa-da-ap-invoice-open-playbook-event-mapping'],
+    table: 'sys_ux_addon_event_mapping',
+    data: {
+        name: 'BCFA Open Playbook (AP invoice)',
+        description: 'Opens the BCFA Playbook page from the AP invoice form action bar.',
+        controller: FORM_CONTROLLER,
+        source_component: ACTION_BAR,
+        source_da: apInvoiceOpenPlaybookAssignment,
+        target_event: RECORD_PAGE_ITEM_SELECTED,
+        target_payload_mapping: NAVIGATE_MAPPING,
+        active: true,
+    },
+})
+
+Record({
+    $id: Now.ID['bcfa-da-payment-open-playbook-event-mapping'],
+    table: 'sys_ux_addon_event_mapping',
+    data: {
+        name: 'BCFA Open Playbook (payment)',
+        description: 'Opens the BCFA Playbook page from the payment form action bar.',
+        controller: FORM_CONTROLLER,
+        source_component: ACTION_BAR,
+        source_da: paymentOpenPlaybookAssignment,
+        target_event: RECORD_PAGE_ITEM_SELECTED,
+        target_payload_mapping: NAVIGATE_MAPPING,
+        active: true,
+    },
+})

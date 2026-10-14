@@ -13,7 +13,7 @@ Status: **verified live end to end** (happy path and all four exception decision
 | Upload PDF, set document type | Finance Document Intake (`x_695068_bcfa_finance_intake`), "Process Document" button | No |
 | Read invoice fields | `SimulatedDocumentExtraction`: printed values of the synthetic fixture, labelled **SIMULATED** (Document Intelligence extraction is not licensed/trained on this instance, see `CONTENT_UNDERSTANDING.md`) | No |
 | Confidence check | `ApDomainService.validateInvoice` vs `ap.extraction.confidence_threshold` (0.85) | No |
-| Vendor, PO, PO line, GRN | `FinanceDocumentIntakeService.resolveVendor/resolvePurchaseOrder`, `ApLineResolutionService` | No |
+| Vendor, PO, PO line, GRN | `MatchingEngine.resolveVendor/resolvePurchaseOrder`, `ApLineResolutionService`. The invoice is always created from a good reading; an unknown vendor or PO becomes an invoice exception (vendor invalid / PO mismatch) and Re-run Validation links them once they exist | No |
 | Duplicate, quantity, price, tax checks | `MatchingEngine` with `ap.tolerance.*` (quantity 2%, price 2%, tax max(1, 2%)) | No |
 | Approval routing | `ApDomainService.routeForApproval` with `ap.approval.auto_approve_limit` (0: always human); requester ≠ approver | No |
 | Posting | Approval cascade → `IntegrationService` → Mock SAP (`MIRO…` document) → archive → CLOSED | No |

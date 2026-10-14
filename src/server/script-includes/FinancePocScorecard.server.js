@@ -124,13 +124,13 @@ FinancePocScorecard.prototype = {
         var interventions = this._count('x_695068_bcfa_ai_interaction', 'guardrail_actionINsanitized,blocked,guardian_blocked');
         var aiTotal = this._count('x_695068_bcfa_ai_interaction', 'status!=started');
         m.push(this._metric('ai_guardrail_interventions', 'ai_safety', 'Guardrail interventions', interventions, 'count', null, null,
-            interventions + ' of ' + aiTotal + ' AI executions were sanitized or blocked (BCFA guardrail or Now Assist Guardian). Information: no target.', aiTotal));
+            interventions + ' of ' + aiTotal + ' AI executions were sanitized or blocked (BCFA guardrail or AI Guardian). Information: no target.', aiTotal));
         // Now Assist only: the legacy Claude path (removed in Phase 34) fails
         // with credential_error by design and says nothing about the native AI.
         var naTotal = this._count('x_695068_bcfa_ai_interaction', 'provider=now_assist^status!=started');
         var naFailed = this._count('x_695068_bcfa_ai_interaction', 'provider=now_assist^statusINhttp_error,timeout,invalid_response,credential_error,failed');
-        m.push(this._metric('ai_failure_rate', 'ai_safety', 'Now Assist execution failure rate', this._pct(naFailed, naTotal), 'percent', 'lte', 5,
-            naFailed + ' of ' + naTotal + ' Now Assist executions failed (errors or timeouts; guardrail refusals are not failures).', naTotal));
+        m.push(this._metric('ai_failure_rate', 'ai_safety', 'AI execution failure rate', this._pct(naFailed, naTotal), 'percent', 'lte', 5,
+            naFailed + ' of ' + naTotal + ' AI executions failed (errors or timeouts; guardrail refusals are not failures).', naTotal));
 
         // --- AI value ------------------------------------------------------------
         var exTotal = this._count('x_695068_bcfa_ap_exception', '') + this._count('x_695068_bcfa_ar_exception', '');
@@ -148,8 +148,8 @@ FinancePocScorecard.prototype = {
         li.addNotNullQuery('latency_ms');
         li.query();
         while (li.next()) lat.push(parseInt(li.getValue('latency_ms'), 10) || 0);
-        m.push(this._metric('ai_latency_p50', 'ai_value', 'Now Assist skill latency, median (ms)', this._median(lat), 'ms', 'lte', 5000,
-            'Median over ' + lat.length + ' successful Now Assist skill calls.', lat.length));
+        m.push(this._metric('ai_latency_p50', 'ai_value', 'AI skill latency, median (ms)', this._median(lat), 'ms', 'lte', 5000,
+            'Median over ' + lat.length + ' successful AI skill calls.', lat.length));
 
         return m;
     },

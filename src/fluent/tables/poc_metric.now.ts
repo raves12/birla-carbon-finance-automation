@@ -12,17 +12,20 @@ export const x_695068_bcfa_poc_metric = Table({
         code: StringColumn({ label: 'Code', mandatory: true, unique: true, maxLength: 60 }),
         label: StringColumn({ label: 'Metric', mandatory: true, maxLength: 100 }),
         pillar: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Pillar',
             choices: { automation: 'Automation', speed: 'Speed', control: 'Control', ai_safety: 'AI safety', ai_value: 'AI value' },
         }),
         value: DecimalColumn({ label: 'Value', scale: 2 }),
         unit: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Unit',
             choices: { percent: 'Percent', count: 'Count', hours: 'Hours', ms: 'Milliseconds', ratio: 'Ratio' },
         }),
         comparator: ChoiceColumn({ label: 'Target Rule', choices: { gte: 'At least', lte: 'At most' } }),
         target_value: DecimalColumn({ label: 'Proposed Target', scale: 2, hint: 'Proposed for the POC, to be agreed with Birla Carbon.' }),
         status: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Status',
             choices: { met: 'Met', not_met: 'Not met', no_data: 'No data yet', info: 'Information (no target)' },
         }),

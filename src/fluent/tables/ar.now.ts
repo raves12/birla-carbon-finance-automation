@@ -19,7 +19,14 @@ export const x_695068_bcfa_payment = Table({
     label: 'Payment',
     display: 'bank_reference',
     audit: true,
+    // Record numbers AR00000001, AR00000002, ... (10 characters).
+    autoNumber: {
+        prefix: 'AR',
+        number: 1,
+        numberOfDigits: 8,
+    },
     schema: {
+        number: StringColumn({ label: 'Number', maxLength: 40, readOnly: true, default: 'javascript:global.getNextObjNumberPadded();' }),
         bank_reference: StringColumn({ label: 'Bank Reference', mandatory: true, maxLength: 60 }),
         value_date: DateColumn({ label: 'Value Date' }),
         posting_date: DateColumn({ label: 'Posting Date' }),
@@ -28,6 +35,7 @@ export const x_695068_bcfa_payment = Table({
         amount: DecimalColumn({ label: 'Amount', scale: 2 }),
         bank_account: StringColumn({ label: 'Bank Account', maxLength: 40 }),
         source: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Source',
             default: 'bank_statement',
             choices: { bank_statement: 'Bank Statement', manual: 'Manual Entry' },
@@ -39,11 +47,13 @@ export const x_695068_bcfa_payment = Table({
             label: 'AI Match Explanation (advisory)',
             maxLength: 4000,
             readOnly: true,
-            hint: 'Now Assist explanation of a multi-invoice allocation, for the reviewer who confirms it. Never read by matching, allocation, approval or clearing logic.',
+            hint: 'AI explanation of a multi-invoice allocation, for the reviewer who confirms it. Never read by matching, allocation, approval or clearing logic.',
         }),
         // Phase 24: one read-only block with the whole review evidence
         // (document, extraction, PO/GRN, match, tolerance, exception, AI,
         // approval, integration, audit), kept current by FinanceReviewSummary.
+        // Phase 41, defect 7: the payment advice as read, in readable sections.
+        advice_summary: StringColumn({ label: 'Payment Advice (as read)', maxLength: 4000, readOnly: true, hint: 'What Document Intelligence read from the payment advice / remittance, by section. Evidence only: matching and allocation decide; deductions are never approved automatically.' }),
         review_summary: StringColumn({
             label: 'Review Summary',
             maxLength: 8000,
@@ -59,12 +69,14 @@ export const x_695068_bcfa_payment = Table({
         // SAP processing mode (client requirement): captured when clearing
         // starts, from x_695068_bcfa.ar.sap_processing_mode.
         sap_processing_mode: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'SAP Processing Mode',
             readOnly: true,
             choices: { direct: 'Direct (SAP clears immediately)', draft: 'Draft (staged in SAP for confirmation)' },
             hint: 'Set when clearing starts, from x_695068_bcfa.ar.sap_processing_mode. POC: MOCK SAP simulates both modes.',
         }),
         sap_status: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'SAP Status',
             readOnly: true,
             choices: {
@@ -80,6 +92,7 @@ export const x_695068_bcfa_payment = Table({
         // Display only: the BCFA Playbook stages wait on journey_stage_order; no
         // business logic reads these fields.
         journey_stage: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Journey Stage',
             readOnly: true,
             choices: {
@@ -97,6 +110,7 @@ export const x_695068_bcfa_payment = Table({
         }),
         journey_stage_order: IntegerColumn({ label: 'Journey Stage Order', readOnly: true, hint: 'Playbook stage N completes when this is greater than N.' }),
         journey_status: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Journey Status',
             readOnly: true,
             choices: {
@@ -122,7 +136,14 @@ export const x_695068_bcfa_remittance = Table({
     name: 'x_695068_bcfa_remittance',
     label: 'Remittance',
     display: 'remittance_reference',
+    // Record numbers RT00000001, RT00000002, ... (10 characters).
+    autoNumber: {
+        prefix: 'RT',
+        number: 1,
+        numberOfDigits: 8,
+    },
     schema: {
+        number: StringColumn({ label: 'Number', maxLength: 40, readOnly: true, default: 'javascript:global.getNextObjNumberPadded();' }),
         payment: ReferenceColumn({ label: 'Payment', referenceTable: 'x_695068_bcfa_payment' }),
         remittance_reference: StringColumn({ label: 'Remittance Reference', maxLength: 60 }),
         extracted_fields: JsonColumn({ label: 'Extracted Fields' }),
@@ -138,10 +159,12 @@ export const x_695068_bcfa_remittance = Table({
         advice_deduction_reason: StringColumn({ label: 'Deduction Reason Stated', maxLength: 255 }),
         invoice_count: IntegerColumn({ label: 'Invoices Referenced' }),
         extraction_provider: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Extraction Provider',
             choices: { native: 'Native: ServiceNow Document Intelligence (Now LLM)', simulated: 'SIMULATED DOCUMENT EXTRACTION — POC' },
         }),
         source: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Source',
             default: 'email',
             choices: { email: 'Email', document: 'Document Upload', bank_advice: 'Bank Advice' },
@@ -163,6 +186,7 @@ export const x_695068_bcfa_payment_allocation = Table({
         tcs: DecimalColumn({ label: 'TCS', scale: 2 }),
         residual_amount: DecimalColumn({ label: 'Residual Amount', scale: 2 }),
         allocation_state: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Allocation State',
             default: 'proposed',
             choices: { proposed: 'Proposed', approved: 'Approved', cleared: 'Cleared', reversed: 'Reversed' },
@@ -179,6 +203,7 @@ export const x_695068_bcfa_match_candidate = Table({
         ar_open_item: ReferenceColumn({ label: 'AR Open Item', referenceTable: 'x_695068_bcfa_ar_open_item' }),
         customer_candidate: ReferenceColumn({ label: 'Customer Candidate', referenceTable: 'x_695068_bcfa_customer' }),
         match_type: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Match Type',
             mandatory: true,
             choices: {
@@ -202,6 +227,7 @@ export const x_695068_bcfa_deduction = Table({
     schema: {
         payment_allocation: ReferenceColumn({ label: 'Payment Allocation', referenceTable: 'x_695068_bcfa_payment_allocation' }),
         deduction_type: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Deduction Type',
             mandatory: true,
             choices: {
@@ -222,6 +248,7 @@ export const x_695068_bcfa_deduction = Table({
         amount: DecimalColumn({ label: 'Amount', scale: 2 }),
         credit_note: ReferenceColumn({ label: 'Credit Note', referenceTable: 'x_695068_bcfa_credit_note' }),
         status: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Status',
             default: 'proposed',
             choices: { proposed: 'Proposed', approved: 'Approved', rejected: 'Rejected' },
@@ -237,6 +264,7 @@ export const x_695068_bcfa_deduction = Table({
         advice_amount: DecimalColumn({ label: 'Amount Stated on Advice', scale: 2 }),
         ai_recommendation: StringColumn({ label: 'AI Recommendation (advisory)', maxLength: 1000 }),
         category_source: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Category Source',
             choices: { human_confirmed: 'Human confirmed', rule_suggested: 'Rule suggested', advice_stated: 'Stated on advice' },
         }),
@@ -251,6 +279,7 @@ export const x_695068_bcfa_ar_exception = Table({
     schema: {
         payment: ReferenceColumn({ label: 'Payment', referenceTable: 'x_695068_bcfa_payment', mandatory: true }),
         reason_code: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Reason Code',
             mandatory: true,
             choices: {
@@ -266,6 +295,7 @@ export const x_695068_bcfa_ar_exception = Table({
         }),
         description: StringColumn({ label: 'Description', maxLength: 4000 }),
         status: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Status',
             default: 'open',
             choices: { open: 'Open', in_review: 'In Review', resolved: 'Resolved', closed: 'Closed' },
@@ -275,11 +305,12 @@ export const x_695068_bcfa_ar_exception = Table({
         ai_recommendation: StringColumn({
             label: 'AI Recommendation (advisory)',
             maxLength: 4000,
-            hint: 'Advisory AI output only (Now Assist, or the legacy simulation). Never read by deterministic rules or approval/clearing logic.',
+            hint: 'Advisory AI output only (ServiceNow AI, or the legacy simulation). Never read by deterministic rules or approval/clearing logic.',
         }),
         // Phase 13 enrichment, set by ExceptionEngine when the exception is
         // raised (deterministic, from FinancePolicy and the matching result).
         severity: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Severity',
             default: 'medium',
             readOnly: true,
@@ -293,6 +324,7 @@ export const x_695068_bcfa_ar_exception = Table({
         // Human decision (ArExceptionDecisionService). The reviewer sets the
         // deduction type and reason; the service records the rest.
         deduction_type: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Deduction Type',
             choices: {
                 short_pay: 'Short Pay',
@@ -316,6 +348,7 @@ export const x_695068_bcfa_ar_exception = Table({
             hint: 'For Credit Note Netting: an open credit note of the same customer for exactly the residual. Suggested by the matching engine when unique.',
         }),
         decision: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Decision',
             readOnly: true,
             choices: {
@@ -333,6 +366,7 @@ export const x_695068_bcfa_ar_exception = Table({
         process: ChoiceColumn({ label: 'Process', default: 'ar', readOnly: true, choices: { ap: 'Accounts Payable', ar: 'Accounts Receivable' } }),
         subtype: StringColumn({ label: 'Subtype', maxLength: 100, readOnly: true }),
         priority: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Priority',
             default: '3',
             readOnly: true,
@@ -341,12 +375,14 @@ export const x_695068_bcfa_ar_exception = Table({
         }),
         opened_at: DateTimeColumn({ label: 'Opened', readOnly: true }),
         sla_status: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'SLA Status',
             readOnly: true,
             choices: { on_track: 'On Track', at_risk: 'At Risk', breached: 'Breached', met: 'Met', missed: 'Missed' },
             hint: 'At risk from 75% of the SLA; set hourly by the exception sweep and on resolution.',
         }),
         aging_bucket: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Aging',
             readOnly: true,
             choices: { lt_1d: 'Under 1 day', '1_3d': '1-3 days', '3_7d': '3-7 days', gt_7d: 'Over 7 days' },
@@ -355,6 +391,7 @@ export const x_695068_bcfa_ar_exception = Table({
         ai_explanation: StringColumn({ label: 'AI Explanation (advisory)', maxLength: 4000, readOnly: true, hint: 'Explanation section of the advisory AI note.' }),
         ai_confidence: ChoiceColumn({ label: 'AI Confidence', readOnly: true, choices: { high: 'High', medium: 'Medium', low: 'Low' } }),
         resolution_code: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Resolution Code',
             readOnly: true,
             choices: {
@@ -382,9 +419,10 @@ export const x_695068_bcfa_ar_approval = Table({
         requested_by: ReferenceColumn({ label: 'Requested By', referenceTable: 'sys_user' }),
         approver: ReferenceColumn({ label: 'Approver', referenceTable: 'sys_user' }),
         decision: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Decision',
             default: 'pending',
-            choices: { pending: 'Pending', approved: 'Approved', rejected: 'Rejected' },
+            choices: { pending: 'Pending', approved: 'Approved', rejected: 'Rejected', withdrawn: 'Withdrawn' },
         }),
         decision_notes: StringColumn({ label: 'Decision Notes', maxLength: 4000 }),
         decided_at: DateTimeColumn({ label: 'Decided At' }),
@@ -394,8 +432,19 @@ export const x_695068_bcfa_ar_approval = Table({
             readOnly: true,
             hint: 'Group that must approve (Phase 17: the approver must be a member).',
         }),
+        // Phase 41, defect 4: approvals go to a group; the decider is recorded
+        // in approver only when someone decides. The eligible approvers (active
+        // group members who pass every segregation-of-duties check) are listed
+        // when the approval is requested, so the destination is never blank.
+        eligible_approvers: StringColumn({
+            label: 'Eligible Approvers',
+            maxLength: 1000,
+            readOnly: true,
+            hint: 'Active members of the approval group who may decide this approval: they hold the approver role, did not request it and did not process the transaction. Set when the approval is requested.',
+        }),
         // Phase 17 decision record (ApprovalEngine).
         approval_type: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Approval Type',
             default: 'standard',
             readOnly: true,

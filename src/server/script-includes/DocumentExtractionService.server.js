@@ -34,7 +34,10 @@ DocumentExtractionService.prototype = {
     extract: function(intakeSysId, kind) {
         var provider = this.provider();
         var envelope;
-        if (provider === 'simulated') {
+        if (provider === 'simulated' && kind === 'grn') {
+            // Phase 42: goods receipts are read natively only (no fixtures).
+            envelope = { ok: false, safeError: 'Goods receipt documents are read by native Document Intelligence only; the simulated provider has no GRN fixtures. Review the document manually.' };
+        } else if (provider === 'simulated') {
             envelope = kind === 'ap' ? this.simulatedProvider.extractApInvoiceDocument(intakeSysId) : this.simulatedProvider.extractArRemittanceDocument(intakeSysId);
         } else {
             envelope = this.nativeProvider.extract(intakeSysId, kind);

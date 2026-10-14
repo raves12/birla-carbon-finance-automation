@@ -134,7 +134,7 @@ export const arCashApplicationPlaybook = PlaybookDefinition(
             const correlation = wfa.playbook.lane({
                 config: {
                     $id: Now.ID['bcfa_pb_ar_lane_correlation'],
-                    label: '2. Extraction & Correlation',
+                    label: '2. Document Understanding',
                     name: 'correlation',
                     order: 2,
                     description: 'Payment advice read by the configured provider (native ServiceNow Document Intelligence on Now LLM by default; SIMULATED DOCUMENT EXTRACTION — POC only for test fixtures) and correlated to the payment by the system.',
@@ -162,7 +162,7 @@ export const arCashApplicationPlaybook = PlaybookDefinition(
                             description: 'Advice fields (payer, payment and bank reference, invoice references, deductions with their printed reasons) were read by the provider shown on the remittance and correlated to the payment by the system. Reconciliation precedence: the bank statement and the SAP open items (through IntegrationService) are authoritative; the advice explains the payment, it never overrides them.',
                             pending_title: 'Payment advice extraction & correlation (provider shown)',
                             pending_description: 'Waiting for remittance correlation.',
-                            record_fields: FieldList<'x_695068_bcfa_payment'>(['bank_reference', 'amount', 'currency', 'journey_stage', 'journey_status', 'journey_blocked_reason', 'journey_next_action', 'journey_owner', 'journey_open_exceptions', 'journey_banner', 'journey_stage_entered']),
+                            record_fields: FieldList<'x_695068_bcfa_payment'>(['bank_reference', 'amount', 'currency', 'advice_summary', 'journey_stage', 'journey_status', 'journey_blocked_reason', 'journey_next_action', 'journey_owner', 'journey_open_exceptions', 'journey_banner', 'journey_stage_entered']),
                         },
                     )
                     const remittances = wfa.playbook.activity(
@@ -445,7 +445,7 @@ export const arCashApplicationPlaybook = PlaybookDefinition(
                         { wait: 'no' },
                         {
                             tagline: 'AI RECOMMENDATION',
-                            list_title: 'AI RECOMMENDATION — advisory only (Now Assist): never approves, clears or overrides tolerance',
+                            list_title: 'AI RECOMMENDATION — advisory only: never approves, clears or overrides tolerance',
                             table: 'x_695068_bcfa_ai_interaction',
                             list_query: `source_record=${wfa.playbook.dataPill(params.parentRecord)}^ORDERBYDESCsys_created_on`,
                             columns: 'capability,skill,recommendation,confidence,guardrail_action,human_decision,human_decided_by,sys_created_on',

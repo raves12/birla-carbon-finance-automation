@@ -184,8 +184,38 @@ MockSAPAdapter.prototype = {
         // Never touches x_695068_bcfa_ap_invoice — the canonical contract
         // returns a result; the AP domain layer applies it. See
         // docs/INTEGRATION_CONTRACTS.md.
+        var rejected = this._checkRequest(payload);
+        if (rejected.status) return rejected;
         var sapDocId = this._sapDocId('MIRO', payload.idempotencyKey);
-        return { status: 'SUCCESS', sapDocumentId: sapDocId, message: 'Vendor invoice posted (simulated).' };
+        return this._withFindings({ status: 'SUCCESS', sapDocumentId: sapDocId, message: 'Vendor invoice posted (MOCK SAP, simulated).' }, rejected);
+    },
+
+    // Phase 41: SAP-ready payloads (SapPayloadBuilder.SCHEMA) are checked the
+    // way SAP would check them. x_695068_bcfa.mock_sap.strict_validation:
+    //   false (default) - what SAP would reject is reported as warnings on the
+    //                     result and the call succeeds (POC data often lacks
+    //                     e.g. the invoice date);
+    //   true            - rejected with VALIDATION_ERROR, as real SAP would.
+    // Older payloads without the schema (direct calls in tests) are not checked.
+    _checkRequest: function(payload) {
+        var findings = new SapPayloadBuilder().check(payload);
+        if (!findings.checked) return {};
+        var strict = String(gs.getProperty('x_695068_bcfa.mock_sap.strict_validation', 'false')) === 'true';
+        if (strict && findings.errors.length) {
+            return { status: 'VALIDATION_ERROR', errors: findings.errors, warnings: findings.warnings,
+                message: 'MOCK SAP (strict) rejected the request: ' + findings.errors.join('; ') + '.' };
+        }
+        return { findings: findings };
+    },
+
+    _withFindings: function(result, checked) {
+        var f = checked && checked.findings;
+        if (!f) return result;
+        var warnings = [];
+        for (var i = 0; i < f.errors.length; i++) warnings.push('SAP would reject: ' + f.errors[i]);
+        result.warnings = warnings.concat(f.warnings);
+        if (result.warnings.length) result.message += ' Warnings: ' + result.warnings.join('; ') + '.';
+        return result;
     },
 
     // SAP processing mode (client requirement), simulated:
@@ -193,12 +223,14 @@ MockSAPAdapter.prototype = {
     //   draft  - the instruction is staged as a parked document (PARK...) that
     //            an SAP user must post; nothing is cleared yet.
     clearPayment: function(payload) {
+        var rejected = this._checkRequest(payload);
+        if (rejected.status) return rejected;
         if (payload && payload.processingMode === 'draft') {
-            return { status: 'SUCCESS', staged: true, processingMode: 'draft', sapDocumentId: this._sapDocId('PARK', payload.idempotencyKey),
-                message: 'Clearing instruction staged as an SAP draft (parked document), awaiting SAP-side confirmation (MOCK SAP, simulated).' };
+            return this._withFindings({ status: 'SUCCESS', staged: true, processingMode: 'draft', sapDocumentId: this._sapDocId('PARK', payload.idempotencyKey),
+                message: 'Clearing instruction staged as an SAP draft (parked document), awaiting SAP-side confirmation (MOCK SAP, simulated).' }, rejected);
         }
         var sapDocId = this._sapDocId('FB05', payload.idempotencyKey);
-        return { status: 'SUCCESS', processingMode: 'direct', sapDocumentId: sapDocId, message: 'Payment cleared directly (MOCK SAP, simulated).' };
+        return this._withFindings({ status: 'SUCCESS', processingMode: 'direct', sapDocumentId: sapDocId, message: 'Payment cleared directly (MOCK SAP, simulated).' }, rejected);
     },
 
     // Status of a staged draft. The SAP-side decision is simulated by the
@@ -229,8 +261,10 @@ MockSAPAdapter.prototype = {
     getPurchaseOrder: function(poNumber) { return this.getPO(poNumber); },
     getOpenItems: function(customerSysId) { return this.getOpenARItems(customerSysId); },
     clearCustomerPayment: function(payload) { return this.clearPayment(payload); },
+    // Unknown Outcome Control only. The status of a staged draft is its own
+    // operation (getDraftStatus), so no adapter has to recognise drafts by
+    // their document number.
     queryTransactionStatus: function(operation, idempotencyKey, externalReference, documentId) {
-        if (documentId && String(documentId).indexOf('PARK') === 0) return this.getDraftStatus(documentId, idempotencyKey);
         return this.getPostingStatus(operation, idempotencyKey);
     },
 

@@ -1,4 +1,22 @@
 var MatchingEngine = Class.create();
+
+// Phase 42: separators for canonicalText: whitespace, ASCII punctuation and
+// symbols, Latin-1 punctuation (no-break space, inverted marks, middle dot,
+// guillemets), general punctuation (dashes, quotes, bullets, ellipsis), CJK
+// symbols and punctuation except the ideographic iteration / number marks
+// 々 〆 〇 (U+3005-3007, used in names), CJK compatibility and small form
+// variants, half-width brackets and the katakana middle dot.
+MatchingEngine.CANONICAL_SEPARATORS = /[\s!-\/:-@\[-`{-~ -¿‐-⁞　-〄〈-〿︰-﹫｟-･・]+/g;
+
+// Full-width ASCII (U+FF01-FF5E) -> ASCII and the ideographic space -> a
+// space, for an engine without String.prototype.normalize (a no-op after
+// NFKC).
+MatchingEngine.foldFullWidth = function(s) {
+    return String(s).replace(/[！-～]/g, function(c) {
+        return String.fromCharCode(c.charCodeAt(0) - 0xfee0);
+    }).replace(/　/g, ' ');
+};
+
 MatchingEngine.prototype = {
     initialize: function() {},
 
@@ -19,6 +37,178 @@ MatchingEngine.prototype = {
     // x_695068_bcfa.ap.tax.reference property) through
     // FinancePolicy.apTaxExpectation, and evaluateTax() below compares the
     // tax printed on the invoice with it.
+
+    // ---- AP: master-data resolution (never guesses an ambiguity) -------------
+
+    // Phase 42: deterministic precedence, never a translation and never a
+    // guess between candidates:
+    //   1. vendor code
+    //   2. tax registration / organization identifier (opts.taxId)
+    //   3. purchase order -> its vendor (opts.poNumber), unless the printed
+    //      name points to a different vendor (conflict: manual review)
+    //   4. active vendor alias in the printed language
+    //   5. exact or Unicode-normalized vendor name
+    //   6. otherwise unresolved (manual review / vendor exception)
+    resolveVendor: function(vendorCode, vendorName, opts) {
+        opts = opts || {};
+        if (vendorCode) {
+            var byCode = new GlideRecord('x_695068_bcfa_vendor');
+            byCode.addQuery('vendor_code', vendorCode);
+            byCode.addQuery('active', true);
+            byCode.query();
+            if (byCode.next()) {
+                return { resolved: true, vendorSysId: byCode.getUniqueValue(), method: 'vendor_code' };
+            }
+        }
+        var taxKey = this._idKey(opts.taxId);
+        // Phase 42: a supplier tax ID equal to the buyer's tax ID printed on the
+        // same document is a misreading (the Chinese e-invoice reading put the
+        // buyer block's ID in the seller field): it is not used.
+        if (taxKey && opts.buyerTaxId && this._idKey(opts.buyerTaxId) === taxKey) taxKey = '';
+        if (taxKey.length >= 5) {
+            var byTax = new GlideRecord('x_695068_bcfa_vendor');
+            byTax.addQuery('active', true);
+            byTax.addNotNullQuery('tax_registration_number');
+            byTax.query();
+            var taxHits = [];
+            while (byTax.next()) {
+                if (this._idKey(byTax.getValue('tax_registration_number')) === taxKey) taxHits.push(byTax.getUniqueValue());
+            }
+            if (taxHits.length === 1) {
+                // Phase 42: the printed name must not point at another vendor.
+                var nameCheck = this._vendorByName(vendorName);
+                if (nameCheck.resolved && nameCheck.vendorSysId !== taxHits[0]) {
+                    return { resolved: false, conflict: true, candidates: [taxHits[0], nameCheck.vendorSysId],
+                        reason: 'Tax registration number "' + opts.taxId + '" belongs to one vendor, but the printed supplier "' + vendorName +
+                            '" matches another vendor (' + nameCheck.method + '); not resolved automatically.' };
+                }
+                // ... nor the printed purchase order (a tax ID read from the
+                // wrong block of the document must not win over the PO).
+                var poOfTax = this._poVendor(opts.poNumber);
+                if (poOfTax && poOfTax !== taxHits[0]) {
+                    return { resolved: false, conflict: true, candidates: [taxHits[0], poOfTax],
+                        reason: 'Tax registration number "' + opts.taxId + '" belongs to one vendor, but purchase order ' + opts.poNumber +
+                            ' belongs to another; not resolved automatically.' };
+                }
+                return { resolved: true, vendorSysId: taxHits[0], method: 'tax_registration_number' };
+            }
+            if (taxHits.length > 1) return { resolved: false, ambiguous: true, candidates: taxHits,
+                reason: taxHits.length + ' active vendors share tax registration number "' + opts.taxId + '"; not resolved automatically.' };
+        }
+        var byNameEvidence = this._vendorByName(vendorName);
+        if (opts.poNumber) {
+            var po = new GlideRecord('x_695068_bcfa_purchase_order');
+            po.addQuery('po_number', opts.poNumber);
+            po.query();
+            if (po.next() && po.getValue('vendor')) {
+                var poVendor = po.getValue('vendor');
+                var poVendorRec = new GlideRecord('x_695068_bcfa_vendor');
+                if (poVendorRec.get(poVendor) && poVendorRec.getValue('active') !== '0' && poVendorRec.getValue('active') !== 'false') {
+                    if (byNameEvidence.resolved && byNameEvidence.vendorSysId !== poVendor) {
+                        return { resolved: false, conflict: true, candidates: [poVendor, byNameEvidence.vendorSysId],
+                            reason: 'Purchase order ' + opts.poNumber + ' belongs to vendor ' + poVendorRec.getValue('name') + ', but the printed supplier "' +
+                                vendorName + '" matches another vendor (' + byNameEvidence.method + '); not resolved automatically.' };
+                    }
+                    return { resolved: true, vendorSysId: poVendor, method: 'purchase_order_vendor' };
+                }
+            }
+        }
+        if (byNameEvidence.resolved || byNameEvidence.ambiguous) return byNameEvidence;
+        return { resolved: false, reason: 'No unique active vendor match for code "' + (vendorCode || '') + '"' + (opts.taxId ? ' / tax id "' + opts.taxId + '"' : '') +
+            (opts.poNumber ? ' / PO "' + opts.poNumber + '"' : '') + ' / name "' + (vendorName || '') + '".' };
+    },
+
+    // Phase 42: the vendor of a printed PO number ('' when not found).
+    _poVendor: function(poNumber) {
+        if (!poNumber) return '';
+        var po = new GlideRecord('x_695068_bcfa_purchase_order');
+        po.addQuery('po_number', poNumber);
+        po.query();
+        return po.next() ? (po.getValue('vendor') || '') : '';
+    },
+
+    // Steps 4 and 5 of resolveVendor: active alias (unique vendor), then the
+    // exact name, then the Unicode-normalized name (unique vendor).
+    _vendorByName: function(vendorName) {
+        if (!vendorName) return { resolved: false };
+        var key = this._vendorNameKey(vendorName);
+        if (key.length >= 2) {
+            var aliasHits = {};
+            var alias = new GlideRecord('x_695068_bcfa_vendor_alias');
+            if (alias.isValid()) {
+                alias.addQuery('active', true);
+                alias.query();
+                while (alias.next()) {
+                    if (this._vendorNameKey(alias.getValue('alias_name')) !== key) continue;
+                    var aliasVendor = new GlideRecord('x_695068_bcfa_vendor');
+                    if (aliasVendor.get(alias.getValue('vendor')) && aliasVendor.getValue('active') !== '0' && aliasVendor.getValue('active') !== 'false') {
+                        aliasHits[alias.getValue('vendor')] = true;
+                    }
+                }
+            }
+            var aliasIds = [];
+            for (var v in aliasHits) aliasIds.push(v);
+            if (aliasIds.length === 1) return { resolved: true, vendorSysId: aliasIds[0], method: 'vendor_alias' };
+            if (aliasIds.length > 1) return { resolved: false, ambiguous: true, candidates: aliasIds,
+                reason: 'The alias "' + vendorName + '" belongs to ' + aliasIds.length + ' vendors; not resolved automatically.' };
+        }
+        return this._vendorByPrintedName(vendorName);
+    },
+
+    // Comparison key of an identifier (tax registration, organization code):
+    // canonical text without spaces.
+    _idKey: function(value) {
+        return this.canonicalText(value).replace(/ /g, '');
+    },
+
+    _vendorByPrintedName: function(vendorName) {
+        if (vendorName) {
+            var byName = new GlideRecord('x_695068_bcfa_vendor');
+            byName.addQuery('name', vendorName);
+            byName.addQuery('active', true);
+            byName.query();
+            if (byName.getRowCount() === 1) {
+                byName.next();
+                return { resolved: true, vendorSysId: byName.getUniqueValue(), method: 'exact_name' };
+            }
+            // The same name read with other spacing, case or punctuation
+            // ("D . SURESHPRASAD" = "D. Sureshprasad"); linked only when
+            // exactly one active vendor has that normalized name.
+            // Phase 42: Unicode-safe, so a Chinese, Korean or accented name
+            // is compared as printed (two characters are a valid CJK name).
+            var key = this._vendorNameKey(vendorName);
+            if (key.length >= 2) {
+                var all = new GlideRecord('x_695068_bcfa_vendor');
+                all.addQuery('active', true);
+                all.query();
+                var hits = [];
+                while (all.next()) {
+                    if (this._vendorNameKey(all.getValue('name')) === key) hits.push(all.getUniqueValue());
+                }
+                if (hits.length === 1) return { resolved: true, vendorSysId: hits[0], method: 'normalized_name' };
+                if (hits.length > 1) return { resolved: false, ambiguous: true, candidates: hits,
+                    reason: hits.length + ' active vendors have the name "' + vendorName + '"; not resolved automatically.' };
+            }
+        }
+        return { resolved: false };
+    },
+
+    // Comparison key of a vendor name: the canonical text without spaces
+    // (any script; see canonicalText).
+    _vendorNameKey: function(name) {
+        return this.canonicalText(name).replace(/ /g, '');
+    },
+
+    resolvePurchaseOrder: function(poNumber) {
+        if (!poNumber) return { resolved: false, reason: 'No PO number supplied.' };
+        var po = new GlideRecord('x_695068_bcfa_purchase_order');
+        po.addQuery('po_number', poNumber);
+        po.query();
+        if (po.next()) {
+            return { resolved: true, poSysId: po.getUniqueValue() };
+        }
+        return { resolved: false, reason: 'No Purchase Order found with number "' + poNumber + '".' };
+    },
 
     // ---- AP: PO validation and 3-way match -----------------------------------
 
@@ -69,6 +259,12 @@ MatchingEngine.prototype = {
             vendorType: 'standard',
             invoiceType: invoicePo ? 'po' : 'non_po'
         });
+
+        // Phase 41, defect 5: an invoice in another currency than its PO is
+        // compared only after conversion at a governed rate; without one the
+        // prices are not compared at all (never USD 100 = INR 100).
+        var currency = this.currencyCheck(invoice);
+        var priceFactor = !currency.required ? 1 : currency.available ? currency.rate : null;
 
         var maxQuantityVariancePct = 0;
         var maxPriceVariancePct = 0;
@@ -121,10 +317,12 @@ MatchingEngine.prototype = {
                     evidence.poNumber = poLine.getDisplayValue('purchase_order');
                     evidence.poQuantity = parseFloat(poLine.getValue('quantity') || '0');
                     evidence.poUnitPrice = poUnitPrice;
-                    if (poUnitPrice > 0) {
-                        var priceVariancePct = Math.abs(lineUnitPrice - poUnitPrice) / poUnitPrice;
+                    if (poUnitPrice > 0 && priceFactor !== null) {
+                        var comparablePrice = Math.round(lineUnitPrice * priceFactor * 10000) / 10000;
+                        if (currency.required) evidence.invoiceUnitPriceInPoCurrency = comparablePrice;
+                        var priceVariancePct = Math.abs(comparablePrice - poUnitPrice) / poUnitPrice;
                         if (priceVariancePct > maxPriceVariancePct) maxPriceVariancePct = priceVariancePct;
-                        priceVarianceValue += Math.abs(lineUnitPrice - poUnitPrice) * lineQty;
+                        priceVarianceValue += Math.abs(comparablePrice - poUnitPrice) * lineQty;
                     }
                 }
             }
@@ -174,12 +372,23 @@ MatchingEngine.prototype = {
         var lineTotalDifference = lineCount > 0 ? Math.round(Math.abs(lineTotal - netAmount) * 100) / 100 : 0;
         var lineTotalOk = lineTotalDifference <= tolerances.totalAbsolute;
 
-        var withinTolerance = linkIssues.length === 0 && receiptIssues.length === 0 &&
+        var withinTolerance = (!currency.required || currency.available) && linkIssues.length === 0 && receiptIssues.length === 0 &&
             (maxQuantityVariancePct <= tolerances.quantityPct) &&
             (maxPriceVariancePct <= tolerances.pricePct) &&
             taxWithinTolerance && lineTotalOk;
 
         var matchResult = withinTolerance ? 'matched' : 'mismatch';
+
+        // Phase 41, defect 6: the earlier results of this invoice are kept as
+        // history and marked superseded, so only this run is current.
+        var earlier = new GlideRecord('x_695068_bcfa_ap_match');
+        earlier.addQuery('ap_invoice', apInvoiceSysId);
+        earlier.addEncodedQuery('superseded=false^ORsupersededISEMPTY'); // rows from before the column existed are empty
+        earlier.query();
+        while (earlier.next()) {
+            earlier.setValue('superseded', true);
+            earlier.update();
+        }
 
         var match = new GlideRecord('x_695068_bcfa_ap_match');
         match.initialize();
@@ -202,6 +411,7 @@ MatchingEngine.prototype = {
         match.setValue('total_tolerance_abs', tolerances.totalAbsolute);
         if (expectedTax !== null) match.setValue('expected_tax', expectedTax);
         match.setValue('tax_result', taxEvaluation.result);
+        if (currency.required) match.setValue('fx_detail', String(currency.detail).substring(0, 1000));
         match.setValue('tolerance_detail', this._toleranceDetail(lineEvidence, maxQuantityVariancePct, maxPriceVariancePct, tolerances, taxEvaluation,
             lineTotal, netAmount, lineTotalDifference, lineTotalOk, lineCount).substring(0, 4000));
         var matchSysId = match.insert();
@@ -229,8 +439,42 @@ MatchingEngine.prototype = {
             lineTotal: lineTotal,
             lineTotalDifference: lineTotalDifference,
             lineTotalOk: lineTotalOk,
-            tolerancesUsed: tolerances
+            tolerancesUsed: tolerances,
+            currency: currency
         };
+    },
+
+    // Defect 5: invoice vs PO currency. Same currency (or either unknown):
+    // { required: false }. Different: the rate comes only from the governed
+    // source, the SAP adapter's getExchangeRate through IntegrationService
+    // (MOCK SAP: its static POC rate table; real SAP: SAP's rate), logged as
+    // an integration transaction. Returns { required, available, from, to,
+    // rate, rateDate, source, detail }.
+    currencyCheck: function(invoice) {
+        var po = invoice.purchase_order.getRefRecord();
+        var from = String(invoice.getValue('currency') || '').toUpperCase();
+        var to = po && po.isValidRecord() ? String(po.getValue('currency') || '').toUpperCase() : '';
+        if (!from || !to || from === to) return { required: false, from: from, to: to };
+        var policy = new FinancePolicy();
+        var adapter = policy.sapAdapter();
+        var r = new IntegrationService().execute({
+            operation: 'getExchangeRate',
+            adapter: adapter,
+            correlationId: invoice.getValue('correlation_id'),
+            idempotencyKey: 'FX-' + from + '-' + to + '-' + gs.generateGUID(),
+            sourceTable: 'x_695068_bcfa_ap_invoice',
+            sourceRecord: invoice.getUniqueValue(),
+            payload: { fromCurrency: from, toCurrency: to, date: invoice.getValue('invoice_date') || '' }
+        });
+        var res = r.response || {};
+        var source = policy.sapLabel() + ' exchange rate (' + (adapter === 'mock_sap' ? 'POC static rate table, MockSAPAdapter' : 'SAP') + ')';
+        if (r.status !== 'success' || !res.found || !(res.rate > 0)) {
+            return { required: true, available: false, from: from, to: to, source: source,
+                detail: 'No approved ' + from + ' to ' + to + ' rate from ' + source + (r.message ? ' (' + r.message + ')' : '') + '; prices were not compared. A person checks the currency.' };
+        }
+        var rateDate = res.rateDate || new GlideDateTime().getLocalDate().getValue();
+        return { required: true, available: true, from: from, to: to, rate: res.rate, rateDate: rateDate, source: source,
+            detail: '1 ' + from + ' = ' + res.rate + ' ' + to + ' on ' + rateDate + ' from ' + source + '; invoice prices converted to ' + to + ' before comparison.' };
     },
 
     // Phase 14: an invoice is a duplicate when another live invoice of the
@@ -256,6 +500,12 @@ MatchingEngine.prototype = {
         other.addQuery('vendor', invoice.getValue('vendor'));
         other.addQuery('sys_id', '!=', apInvoiceSysId);
         other.addQuery('state', 'NOT IN', 'FAILED,REJECTED');
+        // Phase 41: only an EARLIER invoice can be the original. Re-checking
+        // the original (Re-run Validation / Match) must never flag it as a
+        // duplicate of a later copy.
+        other.addQuery('sys_created_on', '<=', invoice.getValue('sys_created_on'));
+        // Created in the same second: both stay candidates (conservative; a
+        // sys_id is not chronological).
         other.orderBy('sys_created_on');
         other.query();
         var sameNumber = null;
@@ -271,9 +521,11 @@ MatchingEngine.prototype = {
         return sameNumber || { duplicate: false, duplicateKey: duplicateKey };
     },
 
-    // Upper case, letters and digits only: "inv-ap 001" == "INVAP001".
+    // Upper case, letters and digits only: "inv-ap 001" == "INVAP001";
+    // full-width digits fold ("２６１３２" == "26132") and letters of other
+    // scripts are kept (Phase 42).
     normalizeInvoiceNumber: function(value) {
-        return String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+        return this.canonicalText(value).replace(/ /g, '');
     },
 
     // ---- AR: cash application matching --------------------------------------
@@ -479,9 +731,32 @@ MatchingEngine.prototype = {
     },
 
     // Upper case, letters/digits separated by single spaces:
-    // "Lone Star Tyre Co." == "LONE STAR TYRE CO".
+    // "Lone Star Tyre Co." == "LONE STAR TYRE CO". Unicode-safe (Phase 42):
+    // "上海某某有限公司", "한국회사", "Müller GmbH" keep their characters.
     normalizeName: function(value) {
-        return String(value || '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+        return this.canonicalText(value);
+    },
+
+    // Phase 42: Unicode-safe comparison value. The printed value is never
+    // changed; this separate canonical value is used only to compare:
+    //   - Unicode NFKC: full-width letters, digits and punctuation
+    //     ("ＡＢＣ１２３（上海）") and the ideographic space fold to their
+    //     standard forms; foldFullWidth covers an engine without normalize()
+    //   - upper case (Latin, Greek, Cyrillic ...; scripts without case are
+    //     unchanged)
+    //   - harmless punctuation (ASCII, general and CJK punctuation such as
+    //     、。，「」【】《》・) and whitespace become one space
+    //   - letters, digits and marks of every script are kept, accents
+    //     included (Müller != Muller)
+    // The platform's JavaScript has no \p{L} classes, so the separators are
+    // an explicit list (CANONICAL_SEPARATORS); everything else is kept.
+    canonicalText: function(value) {
+        var s = value === null || value === undefined ? '' : String(value);
+        if (typeof s.normalize === 'function') {
+            try { s = s.normalize('NFKC'); } catch (e) {}
+        }
+        s = MatchingEngine.foldFullWidth(s).toUpperCase();
+        return s.replace(MatchingEngine.CANONICAL_SEPARATORS, ' ').replace(/\s+/g, ' ').replace(/^ | $/g, '');
     },
 
     // Phase 14: exact combinations of the customer's open items (same

@@ -273,3 +273,23 @@ export const sodApproverInGroup = Property({
     value: 'true',
     description: 'POC ASSUMPTION. The approver must be a member of the approval group the approval decision table routed the approval to (BCFA Finance Approvers or BCFA Finance Controllers).',
 })
+
+// Phase 42: document evidence (stamp / seal / chop presence). POC business
+// configuration, not a statement of law.
+export const documentEvidenceStampCountries = Property({
+    $id: Now.ID['prop-document-evidence-stamp-countries'],
+    name: 'x_695068_bcfa.document_evidence.stamp_required_countries',
+    type: 'string',
+    value: 'China',
+    description:
+        'Fallback of the BCFA Document Evidence Requirement decision table: countries (vendor master country, else the printed supplier country) whose AP invoices need a visible company stamp / seal / chop. POC business configuration agreed for the China invoice scenario; not a statement of law. Used only when the decision table cannot be read.',
+})
+
+export const documentEvidenceStampCapability = Property({
+    $id: Now.ID['prop-document-evidence-stamp-capability'],
+    name: 'x_695068_bcfa.document_evidence.stamp_detection_capability',
+    type: 'string',
+    value: 'ocr_text',
+    description:
+        'What the platform reading can establish about stamps on this instance. ocr_text (measured 2026-10-14): Document Intelligence reads document text only; a stamp answer is a best-effort hint, never a confirmation, and a required stamp is always confirmed by a person. native_visual: set only after a native ServiceNow image-understanding reading has been verified on stamped and unstamped client samples; then YES / NO from the reading count as evidence.',
+})

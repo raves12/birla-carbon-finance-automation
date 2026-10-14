@@ -516,6 +516,32 @@ Acl({
     description: 'The advisory AI note: processor, admin and the AI agent role.',
 })
 
+// Phase 41, defect D6: the Finance Approver decides AP exceptions (approve
+// override, reject, request correction, hold: ApExceptionDecisionService) and
+// each decision requires a Decision Reason, but had no write access, so the
+// field was read-only for them. Least privilege: record-level write for the
+// approver, narrowed by the field ACLs to decision_reason only (the wildcard
+// field ACL above keeps every other field to processor and admin). Auditor,
+// read-only and the AI agent role get nothing new.
+Acl({
+    $id: Now.ID['acl-write-ap-exception-decision-approver'],
+    type: 'record',
+    table: 'x_695068_bcfa_ap_exception',
+    operation: 'write',
+    roles: [bcfaFinanceApprover],
+    description: 'Finance Approver: record-level write, narrowed by the field ACLs to the Decision Reason (defect D6).',
+})
+
+Acl({
+    $id: Now.ID['acl-write-ap-exception-decision-reason'],
+    type: 'record',
+    table: 'x_695068_bcfa_ap_exception',
+    field: 'decision_reason',
+    operation: 'write',
+    roles: [bcfaApProcessor, bcfaFinanceApprover, bcfaAdmin],
+    description: 'Decision Reason: the roles that decide AP exceptions (processor, Finance Approver) and admin. Not the AI agent role.',
+})
+
 Acl({
     $id: Now.ID['acl-create-x_695068_bcfa_ap_exception'],
     type: 'record',
@@ -648,6 +674,28 @@ Acl({
     description: 'The advisory AI note: processor, admin and the AI agent role.',
 })
 
+// Phase 41, defect D6 (AR side): the Finance Approver decides AR exceptions
+// (approve deduction, request clarification, hold) with a Decision Reason.
+// Same least-privilege pattern as AP.
+Acl({
+    $id: Now.ID['acl-write-ar-exception-decision-approver'],
+    type: 'record',
+    table: 'x_695068_bcfa_ar_exception',
+    operation: 'write',
+    roles: [bcfaFinanceApprover],
+    description: 'Finance Approver: record-level write, narrowed by the field ACLs to the Decision Reason (defect D6).',
+})
+
+Acl({
+    $id: Now.ID['acl-write-ar-exception-decision-reason'],
+    type: 'record',
+    table: 'x_695068_bcfa_ar_exception',
+    field: 'decision_reason',
+    operation: 'write',
+    roles: [bcfaArProcessor, bcfaFinanceApprover, bcfaAdmin],
+    description: 'Decision Reason: the roles that decide AR exceptions (processor, Finance Approver) and admin. Not the AI agent role.',
+})
+
 Acl({
     $id: Now.ID['acl-create-x_695068_bcfa_ar_exception'],
     type: 'record',
@@ -744,3 +792,63 @@ Acl({
 })
 
 
+
+// --- Phase 42: vendor aliases and document evidence ------------------------
+
+Acl({
+    $id: Now.ID['acl-read-x_695068_bcfa_vendor_alias'],
+    type: 'record',
+    table: 'x_695068_bcfa_vendor_alias',
+    operation: 'read',
+    roles: [bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaAuditor, bcfaReadOnly, bcfaAdmin, bcfaAiAgent],
+})
+
+Acl({
+    $id: Now.ID['acl-create-x_695068_bcfa_vendor_alias'],
+    type: 'record',
+    table: 'x_695068_bcfa_vendor_alias',
+    operation: 'create',
+    roles: [bcfaApProcessor, bcfaAdmin],
+})
+
+Acl({
+    $id: Now.ID['acl-write-x_695068_bcfa_vendor_alias'],
+    type: 'record',
+    table: 'x_695068_bcfa_vendor_alias',
+    operation: 'write',
+    roles: [bcfaApProcessor, bcfaAdmin],
+})
+
+// Document evidence reviews are append-only: create and read, no write or
+// delete (business rule AppendOnly as well).
+Acl({
+    $id: Now.ID['acl-read-x_695068_bcfa_document_evidence_review'],
+    type: 'record',
+    table: 'x_695068_bcfa_document_evidence_review',
+    operation: 'read',
+    roles: [bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaAuditor, bcfaReadOnly, bcfaAdmin],
+})
+
+Acl({
+    $id: Now.ID['acl-create-x_695068_bcfa_document_evidence_review'],
+    type: 'record',
+    table: 'x_695068_bcfa_document_evidence_review',
+    operation: 'create',
+    roles: [bcfaApProcessor, bcfaFinanceReviewer, bcfaAdmin],
+})
+
+Acl({
+    $id: Now.ID['acl-read-x_695068_bcfa_grn_extraction'],
+    type: 'record',
+    table: 'x_695068_bcfa_grn_extraction',
+    operation: 'read',
+    roles: [bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaAuditor, bcfaReadOnly, bcfaAdmin],
+})
+
+Acl({
+    $id: Now.ID['acl-write-x_695068_bcfa_grn_extraction'],
+    type: 'record',
+    table: 'x_695068_bcfa_grn_extraction',
+    operation: 'write',
+    roles: [bcfaApProcessor, bcfaAdmin],
+})

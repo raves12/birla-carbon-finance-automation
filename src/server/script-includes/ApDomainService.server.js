@@ -4,6 +4,12 @@
 // whichever transition that result legalizes — state progression is a
 // side effect of real logic running, never a bare status flip.
 var ApDomainService = Class.create();
+// Phase 41, defect 6: states a re-run may start from (checks have run, no
+// approval decision yet), and the exception reasons the re-run re-checks.
+ApDomainService.RERUN_FROM = ['VALIDATED', 'MATCHED', 'EXCEPTION', 'ON_HOLD', 'PENDING_APPROVAL'];
+ApDomainService.RECHECKED_REASONS = ['duplicate', 'po_mismatch', 'quantity_tolerance', 'price_tolerance', 'tax_validation', 'low_confidence',
+    'missing_field', 'vendor_invalid', 'grn_missing', 'line_total_mismatch', 'currency_mismatch', 'totals_not_reconciled',
+    'document_evidence_missing', 'document_evidence_review'];
 ApDomainService.prototype = {
     initialize: function() {
         this.auditEngine = new AuditEngine();
@@ -103,6 +109,11 @@ ApDomainService.prototype = {
         invoice.setValue('currency', fields.currency || '');
         if (fields.invoiceDate) invoice.setValue('invoice_date', fields.invoiceDate);
         if (fields.purchaseOrder) invoice.setValue('purchase_order', fields.purchaseOrder);
+        // As printed on the document; validation resolves them to master data.
+        if (fields.printedVendorName) invoice.setValue('printed_vendor_name', String(fields.printedVendorName).substring(0, 255));
+        if (fields.printedVendorCode) invoice.setValue('printed_vendor_code', String(fields.printedVendorCode).substring(0, 40));
+        if (fields.printedVendorTaxId) invoice.setValue('printed_vendor_tax_id', String(fields.printedVendorTaxId).substring(0, 60));
+        if (fields.printedPoNumber) invoice.setValue('printed_po_number', String(fields.printedPoNumber).substring(0, 40));
         if (fields.salesOrderReference) invoice.setValue('sales_order_reference', fields.salesOrderReference);
         invoice.setValue('gross_amount', fields.grossAmount || 0);
         invoice.setValue('tax_amount', fields.taxAmount || 0);
@@ -192,31 +203,58 @@ ApDomainService.prototype = {
         extraction.query();
         var confidence = extraction.next() ? parseFloat(extraction.getValue('confidence') || '1') : 1;
 
+        // Vendor / PO printed on the document but not yet linked: resolve them
+        // now (master data may have been added since; Re-run Validation).
+        var references = this._resolvePrintedReferences(invoice);
+        var printedVendor = invoice.getValue('printed_vendor_name') || invoice.getValue('printed_vendor_code');
+        var printedPo = invoice.getValue('printed_po_number');
+
         var confidenceThreshold = this.policy.extractionConfidenceThreshold();
         var failure = null;
         if (confidence < confidenceThreshold) {
             failure = { reasonCode: 'low_confidence', description: 'Extraction confidence ' + confidence + ' is below the ' + confidenceThreshold + ' review threshold (POC ASSUMPTION).' };
-        } else if (!invoice.getValue('invoice_number') || !invoice.getValue('vendor') || !invoice.getValue('gross_amount')) {
+        } else if (!invoice.getValue('invoice_number') || !invoice.getValue('gross_amount') || (!invoice.getValue('vendor') && !printedVendor)) {
             failure = { reasonCode: 'missing_field', description: 'One or more mandatory fields (invoice number, vendor, gross amount) are missing.' };
+        } else if (invoice.getValue('amount_reconciliation') === 'not_reconciled') {
+            // Phase 41: the printed totals do not add up (net + tax + charges
+            // - discount vs gross). A person checks the amounts on the invoice.
+            failure = { reasonCode: 'totals_not_reconciled', description: 'The printed totals do not reconcile: ' +
+                (invoice.getValue('amount_reconciliation_detail') || 'net + tax + charges - discount differs from the gross amount') + '.' };
+        } else if (!invoice.getValue('vendor')) {
+            failure = { reasonCode: 'vendor_invalid', description: 'Vendor "' + printedVendor + '" printed on the invoice is not in the vendor master (no active vendor with this code or exactly this name). ' +
+                'Create or activate the vendor, or set the Vendor field, then Re-run Validation.' };
         } else {
             var vendor = new GlideRecord('x_695068_bcfa_vendor');
             if (!vendor.get(invoice.getValue('vendor')) || vendor.getValue('active') !== '1') {
                 failure = { reasonCode: 'vendor_invalid', description: 'Vendor could not be resolved to an active master record.' };
+            } else if (printedPo && !invoice.getValue('purchase_order')) {
+                // A printed PO that does not resolve is never treated as a
+                // non-PO invoice.
+                failure = { reasonCode: 'po_mismatch', description: 'Purchase order "' + printedPo + '" printed on the invoice was not found. ' +
+                    'Check the PO number (or create the PO), or set the Purchase Order field, then Re-run Validation.' };
             } else {
                 // PO exists, belongs to this vendor and is not closed (Phase 14).
                 var poCheck = this.matchingEngine.validatePurchaseOrder(apInvoiceSysId);
                 if (!poCheck.ok) failure = { reasonCode: poCheck.reasonCode, description: poCheck.description };
             }
         }
+        // Phase 42: document evidence (stamp presence) where the governed BCFA
+        // Document Evidence Requirement asks for it. Presence only; a person
+        // confirms what the reading cannot (see DocumentEvidenceService).
+        var evidence = new DocumentEvidenceService().evaluateStamp(invoice);
+        if (!failure && evidence.failure) failure = evidence.failure;
 
         if (failure) {
             var exceptionSysId = this.exceptionEngine.createApException(apInvoiceSysId, failure.reasonCode, failure.description, {
                 ruleResult: 'FAIL validation: ' + failure.description,
                 evidence: 'Extraction confidence: ' + confidence + ' (threshold ' + confidenceThreshold + ')\n' +
                     'Invoice number: ' + (invoice.getValue('invoice_number') || 'missing') + '\n' +
-                    'Vendor: ' + (invoice.getDisplayValue('vendor') || 'missing') + '\n' +
+                    'Vendor: ' + (invoice.getDisplayValue('vendor') || (printedVendor ? 'not in vendor master (printed: ' + printedVendor + ')' : 'missing')) + '\n' +
                     'Gross amount: ' + (invoice.getValue('gross_amount') || 'missing') + ' ' + invoice.getValue('currency') + '\n' +
-                    'Purchase order: ' + (invoice.getDisplayValue('purchase_order') || invoice.getValue('purchase_order') || 'none')
+                    'Purchase order: ' + (invoice.getDisplayValue('purchase_order') || (printedPo ? 'not found (printed: ' + printedPo + ')' : 'none')) + '\n' +
+                    'Printed totals: ' + (invoice.getDisplayValue('amount_reconciliation') || 'not checked') + '\n' +
+                    'Document evidence: ' + evidence.summary +
+                    (references.linked.length ? '\nLinked now: ' + references.linked.join('; ') : '')
             });
             this._explainApException(exceptionSysId);
             this._setState(apInvoiceSysId, 'EXCEPTION', null, 'Validation failed: ' + failure.reasonCode,
@@ -227,6 +265,69 @@ ApDomainService.prototype = {
         this._setState(apInvoiceSysId, 'VALIDATED', null, 'Validation passed',
             { reason: 'Confidence ' + confidence + ' >= ' + confidenceThreshold + '; mandatory fields present; vendor active; PO valid.', after: { rule: 'validation', result: 'PASS', confidence: confidence } });
         return { validated: true };
+    },
+
+    // Links the vendor / PO printed on the document when they now resolve to
+    // master data (exact code, unique exact name, PO number), and links the
+    // invoice lines to that PO's lines and receipts. Updates the given record.
+    // Never guesses: an unresolved value stays printed-only for validation.
+    _resolvePrintedReferences: function(invoice) {
+        var linked = [];
+        var updated = false;
+        var printedVendorName = invoice.getValue('printed_vendor_name');
+        var printedVendorCode = invoice.getValue('printed_vendor_code');
+        if (!invoice.getValue('vendor') && (printedVendorName || printedVendorCode)) {
+            var vendor = this.matchingEngine.resolveVendor(printedVendorCode, printedVendorName,
+                { taxId: invoice.getValue('printed_vendor_tax_id'), poNumber: invoice.getValue('printed_po_number') });
+            if (vendor.resolved) {
+                invoice.setValue('vendor', vendor.vendorSysId);
+                linked.push('vendor "' + (printedVendorName || printedVendorCode) + '" (' + vendor.method + ')');
+                updated = true;
+            }
+        }
+        var printedPo = invoice.getValue('printed_po_number');
+        var newPo = null;
+        if (!invoice.getValue('purchase_order') && printedPo) {
+            var po = this.matchingEngine.resolvePurchaseOrder(printedPo);
+            if (po.resolved) {
+                invoice.setValue('purchase_order', po.poSysId);
+                newPo = po.poSysId;
+                linked.push('purchase order ' + printedPo);
+                updated = true;
+            }
+        }
+        if (updated) invoice.update();
+        if (newPo) {
+            var resolver = new ApLineResolutionService();
+            var line = new GlideRecord('x_695068_bcfa_ap_invoice_line');
+            line.addQuery('ap_invoice', invoice.getUniqueValue());
+            line.addNullQuery('po_line');
+            line.query();
+            var lines = 0;
+            while (line.next()) {
+                var poLine = resolver.resolvePoLine(newPo, { line_number: line.getValue('line_number'),
+                    description: line.getValue('material_or_service'), quantity: line.getValue('quantity') });
+                if (!poLine.resolved) continue;
+                line.setValue('po_line', poLine.poLineSysId);
+                var receipt = resolver.resolveReceipt(poLine.poLineSysId);
+                if (receipt.resolved) line.setValue('receipt_reference', receipt.receiptSysId);
+                line.update();
+                lines++;
+            }
+            if (lines) linked.push(lines + ' line(s) to PO lines');
+        }
+        if (linked.length) {
+            this.auditEngine.logEvent({
+                correlationId: invoice.getValue('correlation_id'),
+                sourceTable: 'x_695068_bcfa_ap_invoice',
+                sourceRecord: invoice.getUniqueValue(),
+                eventType: 'rule_evaluated',
+                actorType: 'system',
+                description: 'Printed references resolved to master data: ' + linked.join('; ') + '.',
+                afterValue: { vendor: invoice.getValue('vendor'), purchase_order: invoice.getValue('purchase_order') }
+            });
+        }
+        return { linked: linked };
     },
 
     matchInvoice: function(apInvoiceSysId) {
@@ -264,7 +365,9 @@ ApDomainService.prototype = {
             // fix first: PO linkage, receipt, quantity, price, tax, totals.
             var tolerances = match.tolerancesUsed;
             var reasonCode = 'line_total_mismatch';
-            if (match.linkIssues.length) reasonCode = 'po_mismatch';
+            // Phase 41, defect 5: no approved rate, so prices were not compared.
+            if (match.currency && match.currency.required && !match.currency.available) reasonCode = 'currency_mismatch';
+            else if (match.linkIssues.length) reasonCode = 'po_mismatch';
             else if (match.receiptIssues.length) reasonCode = 'grn_missing';
             else if (match.quantityVariancePct > tolerances.quantityPct) reasonCode = 'quantity_tolerance';
             else if (match.priceVariancePct > tolerances.pricePct) reasonCode = 'price_tolerance';
@@ -297,6 +400,7 @@ ApDomainService.prototype = {
         var t = match.tolerancesUsed;
         var pct = function(v) { return (v * 100).toFixed(1) + '%'; };
         var checks = [
+            'currency ' + (!match.currency || !match.currency.required ? 'same as PO' : match.currency.available ? 'converted (' + match.currency.detail + ')' : 'FAIL (' + match.currency.detail + ')'),
             'PO linkage ' + (match.linkIssues.length ? 'FAIL (' + match.linkIssues.join('; ') + ')' : 'pass'),
             'receipt ' + (match.receiptIssues.length ? 'FAIL (' + match.receiptIssues.join('; ') + ')' : 'pass'),
             'quantity ' + pct(match.quantityVariancePct) + ' vs tolerance ' + pct(t.quantityPct) + (match.quantityVariancePct > t.quantityPct ? ' FAIL' : ' pass'),
@@ -330,7 +434,7 @@ ApDomainService.prototype = {
         } else if (reasonCode === 'line_total_mismatch') {
             varianceAmount = match.lineTotalDifference;
             variancePct = match.netAmount ? match.lineTotalDifference / match.netAmount : 0;
-        } else if (reasonCode === 'po_mismatch' || reasonCode === 'grn_missing') {
+        } else if (reasonCode === 'po_mismatch' || reasonCode === 'grn_missing' || reasonCode === 'currency_mismatch') {
             varianceAmount = null;
             variancePct = null;
         }
@@ -426,7 +530,7 @@ ApDomainService.prototype = {
                 eventType: 'ai_invocation',
                 actorType: 'system',
                 aiAgent: 'BCFA AP Invoice Review (agentic workflow)',
-                description: 'AI review handed to the BCFA AP Invoice Review agentic workflow (Now Assist), which starts on exception creation and records an advisory note.'
+                description: 'AI review handed to the BCFA AP Invoice Review AI agentic workflow, which starts on exception creation and records an advisory note.'
             });
             new AiInteractionLog().start({ sourceTable: 'x_695068_bcfa_ap_exception', sourceRecord: exceptionSysId, provider: 'now_assist',
                 operation: 'exception_review', capability: 'exception_review', workflow: 'BCFA AP Invoice Review' });
@@ -452,11 +556,61 @@ ApDomainService.prototype = {
         return match;
     },
 
+    // Phase 41, defect 6: Re-run Validation / Re-run Match. Re-checks the
+    // invoice from the current master data and configuration:
+    //  1. only before approval (an approved invoice's data is locked);
+    //  2. a pending approval is withdrawn: an approval requested for the old
+    //     result must not authorise a re-checked one;
+    //  3. open exceptions raised by the automated checks are closed as
+    //     superseded (kept as history); a condition that still holds raises a
+    //     fresh exception in this run. Human-decision exceptions stay open;
+    //  4. RESOLUTION -> validation -> 3-way match (earlier match rows are
+    //     marked superseded by MatchingEngine). A matched invoice gets the
+    //     configured approval rule (AP Approval Flow, or inline).
+    rerunChecks: function(apInvoiceSysId, scope, userSysId) {
+        var invoice = new GlideRecord('x_695068_bcfa_ap_invoice');
+        if (!invoice.get(apInvoiceSysId)) return { error: 'AP Invoice not found' };
+        var state = invoice.getValue('state');
+        var label = scope === 'match' ? 'Re-run Match' : 'Re-run Validation';
+        if (ApDomainService.RERUN_FROM.indexOf(state) < 0) {
+            return { error: label + ' is available before approval, after the checks have run (state ' + state + ' is not one of ' + ApDomainService.RERUN_FROM.join(', ') + ').' };
+        }
+        var who = gs.getUserDisplayName();
+        var withdrawn = this.approvalEngine.withdrawPendingApprovals('ap', apInvoiceSysId, label + ' requested by ' + who + ' re-checks the invoice data', userSysId);
+        if (withdrawn) {
+            invoice.get(apInvoiceSysId);
+            invoice.setValue('approval_state', 'not_required');
+            invoice.update();
+        }
+        var superseded = 0;
+        var ex = new GlideRecord('x_695068_bcfa_ap_exception');
+        ex.addQuery('ap_invoice', apInvoiceSysId);
+        ex.addQuery('status', 'IN', 'open,in_review');
+        ex.addQuery('reason_code', 'IN', ApDomainService.RECHECKED_REASONS.join(','));
+        ex.query();
+        while (ex.next()) {
+            this.exceptionEngine.resolve('ap', ex.getUniqueValue(), { status: 'closed', code: 'superseded_by_rerun',
+                notes: 'Superseded by ' + label + ' (' + who + '): the check runs again on the current data; if the condition still holds, a new exception is raised.', resolvedBy: userSysId });
+            superseded++;
+        }
+        this._setState(apInvoiceSysId, 'RESOLUTION', null, label + ' requested by ' + who + (withdrawn ? '; pending approval withdrawn' : '') +
+            (superseded ? '; ' + superseded + ' exception(s) superseded' : ''), { eventType: 'human_review', reason: label });
+        var validation = this.validateInvoice(apInvoiceSysId);
+        if (!validation.validated) return { rerun: true, scope: scope, withdrawnApprovals: withdrawn, supersededExceptions: superseded, stoppedAt: 'VALIDATION', result: validation };
+        var match = this.matchInvoice(apInvoiceSysId);
+        if (!match.matched) return { rerun: true, scope: scope, withdrawnApprovals: withdrawn, supersededExceptions: superseded, stoppedAt: 'MATCH', result: match };
+        var approval = FinanceOrchestration.isInline() ? this.routeForApproval(apInvoiceSysId, userSysId) : { handedTo: 'AP Approval Flow' };
+        return { rerun: true, scope: scope, withdrawnApprovals: withdrawn, supersededExceptions: superseded, stoppedAt: 'MATCHED', approval: approval };
+    },
+
     // options (optional): { group, type ('standard'|'override'|'rule'),
     // overrideReason }; a bare group sys_id is accepted too.
     requestApproval: function(apInvoiceSysId, requestedBy, options) {
         this._setState(apInvoiceSysId, 'PENDING_APPROVAL', null, 'Requesting posting approval');
         var approvalSysId = this.approvalEngine.requestApInvoiceApproval(apInvoiceSysId, requestedBy, options);
+        // The state change above refreshed the summary before the approval
+        // existed (approval_state still not_required): refresh it again.
+        new FinanceReviewSummary().refreshInvoice(apInvoiceSysId);
         return { approvalSysId: approvalSysId };
     },
 
@@ -507,7 +661,7 @@ ApDomainService.prototype = {
             return { error: 'Posting eligibility gate: AP Invoice has not been approved.' };
         }
 
-        this._setState(apInvoiceSysId, 'POSTING', null, 'Invoking mock SAP posting');
+        this._setState(apInvoiceSysId, 'POSTING', null, 'Sending the vendor invoice to ' + this.policy.sapLabel());
         invoice.setValue('posting_state', 'posting');
         invoice.update();
 
@@ -522,7 +676,8 @@ ApDomainService.prototype = {
             externalReference: invoice.getValue('vendor') + '|' + new MatchingEngine().normalizeInvoiceNumber(invoice.getValue('invoice_number')),
             sourceTable: 'x_695068_bcfa_ap_invoice',
             sourceRecord: apInvoiceSysId,
-            payload: { invoiceNumber: invoice.getValue('invoice_number'), vendor: invoice.getValue('vendor'), amount: invoice.getValue('net_amount') },
+            // Phase 41: the SAP-ready request (SapPayloadBuilder, schema bcfa.sap/1).
+            payload: new SapPayloadBuilder().invoicePosting(apInvoiceSysId),
             simulateOutcome: simulateOutcome
         });
 
@@ -537,7 +692,8 @@ ApDomainService.prototype = {
             invoice.setValue('posting_state', 'posted');
             if (result.response && result.response.sapDocumentId) invoice.setValue('sap_document_id', result.response.sapDocumentId);
             invoice.update();
-            this._setState(apInvoiceSysId, 'POSTED', null, 'Posted to SAP (simulated): ' + (result.response ? result.response.sapDocumentId : ''));
+            this._setState(apInvoiceSysId, 'POSTED', null, 'Posted to ' + this.policy.sapLabel() + ': ' + (result.response ? result.response.sapDocumentId : '') +
+                (result.response && result.response.warnings && result.response.warnings.length ? ' (warnings: ' + result.response.warnings.join('; ') + ')' : ''));
             this.reconcileAndClose(apInvoiceSysId);
             return { posted: true, sapDocumentId: result.response ? result.response.sapDocumentId : null };
         }
@@ -551,8 +707,8 @@ ApDomainService.prototype = {
 
         invoice.setValue('posting_state', 'failed');
         invoice.update();
-        var exceptionSysId = this.exceptionEngine.createApException(apInvoiceSysId, 'other', 'SAP posting failed: ' + result.status);
-        this._setState(apInvoiceSysId, 'FAILED', null, 'Posting failed: ' + result.status);
+        var exceptionSysId = this.exceptionEngine.createApException(apInvoiceSysId, 'other', 'SAP posting failed: ' + result.status + (result.message ? ' - ' + result.message : ''));
+        this._setState(apInvoiceSysId, 'FAILED', null, 'Posting failed: ' + result.status + (result.message ? ' - ' + result.message : ''));
         return { posted: false, failed: true, reasonCode: result.status, exceptionSysId: exceptionSysId };
     },
 

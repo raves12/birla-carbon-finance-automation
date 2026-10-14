@@ -76,6 +76,13 @@ ApprovalEngine.prototype = {
         var parent = new GlideRecord(p.parentTable);
         if (parent.get(parentSysId)) approval.setValue('state_before', parent.getValue('state'));
         var approvalSysId = approval.insert();
+        // Phase 41, defect 4: the destination is never blank.
+        var eligible = this.eligibleApprovers(process, approvalSysId);
+        if (approval.get(approvalSysId)) {
+            approval.setValue('eligible_approvers', eligible.text.substring(0, 1000));
+            approval.setWorkflow(false); // display field: no approval business rule reacts to it
+            approval.update();
+        }
         this.audit.logEvent({
             correlationId: parent.isValidRecord() ? parent.getValue('correlation_id') : '',
             sourceTable: p.table,
@@ -87,9 +94,67 @@ ApprovalEngine.prototype = {
             description: (options.type || 'standard') + ' approval requested for ' + (parent.isValidRecord() ? parent.getDisplayValue() : parentSysId) +
                 (options.group ? ' (group ' + approval.getDisplayValue('approval_group') + ')' : ''),
             afterValue: { approval_type: options.type || 'standard', approval_group: options.group || '', requested_by: requestedBy || '',
-                state_before: approval.getValue('state_before') }
+                state_before: approval.getValue('state_before'), eligible_approvers: eligible.names }
         });
         return approvalSysId;
+    },
+
+    // Phase 41, defect 6: a pending approval stops being valid when the
+    // financial data it was requested for is re-checked. It is withdrawn (not
+    // deleted): it can no longer be decided (_decide accepts only pending),
+    // and the re-checked transaction requests a new approval if it needs one.
+    withdrawPendingApprovals: function(process, parentSysId, reason, withdrawnBy) {
+        var p = ApprovalEngine.PROCESS[process];
+        var approval = new GlideRecord(p.table);
+        approval.addQuery(p.parentField, parentSysId);
+        approval.addQuery('decision', 'pending');
+        approval.query();
+        var n = 0;
+        while (approval.next()) {
+            approval.setValue('decision', 'withdrawn');
+            approval.setValue('decision_notes', 'Withdrawn: ' + reason);
+            approval.setValue('decided_at', new GlideDateTime().getValue());
+            approval.update();
+            n++;
+            this.audit.logEvent({
+                correlationId: this._parentCorrelation(p, approval),
+                sourceTable: p.table,
+                sourceRecord: approval.getUniqueValue(),
+                eventType: 'approval_decision',
+                actor: withdrawnBy || '',
+                actorType: withdrawnBy ? 'user' : 'system',
+                reason: reason,
+                description: 'Pending approval withdrawn before any decision: ' + reason,
+                beforeValue: { decision: 'pending' },
+                afterValue: { decision: 'withdrawn' }
+            });
+        }
+        return n;
+    },
+
+    // Defect 4: the active members of the approval group who would pass
+    // checkSegregation for this approval (same rule as the decision itself).
+    // Returns { names: [], text }.
+    eligibleApprovers: function(process, approvalSysId) {
+        var p = ApprovalEngine.PROCESS[process];
+        var approval = new GlideRecord(p.table);
+        if (!approval.get(approvalSysId)) return { names: [], text: '' };
+        var group = approval.getValue('approval_group');
+        if (!group) {
+            return { names: [], text: approval.getValue('approval_type') === 'rule' ? 'Rule-based approval: no approver needed.' : 'No approval group set: an administrator must route this approval.' };
+        }
+        var names = [];
+        var member = new GlideRecord('sys_user_grmember');
+        member.addQuery('group', group);
+        member.addQuery('user.active', true);
+        member.query();
+        while (member.next()) {
+            if (this.checkSegregation({ process: process, approvalSysId: approvalSysId }, member.getValue('user')).ok) names.push(member.getDisplayValue('user'));
+        }
+        names.sort();
+        var text = names.length ? names.join(', ')
+            : 'None: no active member of ' + approval.getDisplayValue('approval_group') + ' may approve (each lacks the approver role, requested it or processed the transaction). An administrator must add an eligible approver.';
+        return { names: names, text: text };
     },
 
     _parentCorrelation: function(p, approval) {

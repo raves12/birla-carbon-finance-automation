@@ -37,6 +37,7 @@ export const x_695068_bcfa_ai_interaction = Table({
         source_table: StringColumn({ label: 'Source Table', maxLength: 80 }),
         source_record: StringColumn({ label: 'Source Record', maxLength: 32 }),
         operation: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Operation',
             mandatory: true,
             choices: {
@@ -51,6 +52,7 @@ export const x_695068_bcfa_ai_interaction = Table({
                 extract_ap_invoice_document: 'Extract AP Invoice Document',
                 extract_ar_payment_advice_document: 'Extract AR Payment Advice Document',
                 extract_ar_remittance_document: 'Extract AR Remittance Document',
+                extract_goods_receipt_document: 'Extract Goods Receipt Document (evidence)',
                 ap_invoice_summary: 'AP Invoice Summary',
                 ap_match_exception_explanation: 'AP Match Exception Explanation',
                 ap_recommended_next_action: 'AP Recommended Next Action',
@@ -65,19 +67,22 @@ export const x_695068_bcfa_ai_interaction = Table({
             },
         }),
         process: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Process',
             default: 'platform',
             choices: { ap: 'Accounts Payable', ar: 'Accounts Receivable', intake: 'Document Intake', integration: 'Integration', platform: 'Platform' },
         }),
         provider: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Provider',
             choices: {
-                now_assist: 'Now Assist (Now LLM)',
+                now_assist: 'AI (Now LLM)',
                 simulated: 'Simulated (deterministic, no model)',
                 claude_legacy: 'Claude (legacy, removed in Phase 34)',
             },
         }),
         capability: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'AI Capability',
             choices: {
                 document_classification: 'Document Classification',
@@ -111,14 +116,16 @@ export const x_695068_bcfa_ai_interaction = Table({
         human_decided_at: DateTimeColumn({ label: 'Human Decided At' }),
         // Phase 21: what the guardrails did with this execution.
         guardrail_action: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Guardrail Action',
             default: 'none',
-            choices: { none: 'None', sanitized: 'Output sanitized', blocked: 'Blocked (not sent)', guardian_blocked: 'Blocked by Now Assist Guardian' },
+            choices: { none: 'None', sanitized: 'Output sanitized', blocked: 'Blocked (not sent)', guardian_blocked: 'Blocked by AI Guardian' },
         }),
         guardrail_reason: StringColumn({ label: 'Guardrail Reason', maxLength: 1000 }),
         claude_model: StringColumn({ label: 'Model', maxLength: 100 }),
         prompt_version: StringColumn({ label: 'Prompt Version', maxLength: 20 }),
         status: ChoiceColumn({
+            dropdown: 'dropdown_with_none',
             label: 'Status',
             mandatory: true,
             choices: {

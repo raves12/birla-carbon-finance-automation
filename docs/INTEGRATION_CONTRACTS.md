@@ -17,9 +17,10 @@ the only place correlation IDs, idempotency, and Unknown Outcome Control are imp
 | `mock_archive` | `MockArchiveAdapter` | Archive on reconcile-and-close |
 
 `IntegrationService.checkAdapterContract(adapter)` verifies an SAP adapter implements every canonical
-operation (`RealSAPAdapter.CANONICAL_OPERATIONS`). Connecting SAP later means implementing
-`RealSAPAdapter` and pointing the Integration Profile at `real_sap` — no change to the domain services,
-tables, ACLs or state models. No real SAP interface details have been provided (`OPEN_SAP_GAPS.md`).
+operation (`RealSAPAdapter.CANONICAL_OPERATIONS`). Connecting SAP later means implementing the
+transport inside `RealSAPAdapter`, deciding the master data source (below) and setting
+`x_695068_bcfa.sap.adapter = real_sap` — no change to the domain services, tables, ACLs or state models.
+No real SAP interface details have been provided (`OPEN_SAP_GAPS.md`).
 
 ## Canonical operations
 
@@ -30,9 +31,62 @@ tables, ACLs or state models. No real SAP interface details have been provided (
 | `getPurchaseOrder` | `{ poNumber }` → `{ found, sysId, poNumber, vendor, companyCode, currency, status, lines[] }` | alias `getPO` |
 | `getReceipt` | `{ receiptNumber }` → `{ found, sysId, receiptNumber, poLine, receiptType, quantity, sapDocumentId }` | |
 | `getOpenItems` | `{ customerSysId }` → `{ found, items[] }` | alias `getOpenARItems` |
-| `postVendorInvoice` | `{ invoiceNumber, vendor, amount }` → `{ status, sapDocumentId (MIRO…), message }` | financial write; never touches the AP invoice — `ApDomainService` applies the result |
-| `clearCustomerPayment` | `{ bankReference, customer, amount }` → `{ status, sapDocumentId (FB05…), message }` | financial write; alias `clearPayment` |
-| `queryTransactionStatus` | `{ operation, idempotencyKey, externalReference }` → `{ outcome: COMMITTED \| NOT_FOUND \| UNAVAILABLE, sapDocumentId? }` | read; used by reconciliation |
+| `postVendorInvoice` | SAP-ready invoice request (below) → `{ status, sapDocumentId (MIRO…), message, warnings? }` | financial write; never touches the AP invoice — `ApDomainService` applies the result |
+| `clearCustomerPayment` | SAP-ready clearing request (below) → `{ status, sapDocumentId (FB05… / PARK… for a draft), staged?, message, warnings? }` | financial write; alias `clearPayment` |
+| `queryTransactionStatus` | `{ operation, idempotencyKey, externalReference }` → `{ outcome: COMMITTED \| NOT_FOUND \| UNAVAILABLE, sapDocumentId? }` | read; Unknown Outcome Control only |
+| `getDraftStatus` | `{ documentId, draftIdempotencyKey }` → `{ outcome: POSTED \| DRAFT_PENDING \| DRAFT_REJECTED \| UNAVAILABLE, sapDocumentId? }` | read; DRAFT mode (Check SAP Draft Status). Phase 41: its own operation, so no adapter has to recognise a parked document by its number |
+
+## Adapter results and outcomes (Phase 41)
+
+`IntegrationService` decides the outcome from the adapter's own `status`, so a real adapter's answer
+is honoured. A result without a status (reads) is a success.
+
+| Adapter `status` | Transaction | Meaning |
+|---|---|---|
+| `SUCCESS` | `success`; `external_document_id` = `sapDocumentId`; `warnings` in `error_message` | done |
+| `VALIDATION_ERROR` / `REJECTED` | `validation_error` | SAP refused the request; nothing posted |
+| `TECHNICAL_ERROR` | `technical_error` | the request did not reach SAP; nothing posted |
+| `TIMEOUT` / `UNKNOWN_OUTCOME` | writes: `timeout` / `unknown_outcome`, reconciliation pending; reads: `technical_error` | a write may have reached SAP: Unknown Outcome Control, never a blind retry |
+| `DUPLICATE` | `duplicate` | SAP already holds the document |
+| `NOT_CONFIGURED` | `failed` | nothing sent |
+| exception thrown | writes: `unknown_outcome`; reads: `technical_error` | a connection failure mid-call |
+
+The failure reason (`message`) reaches the AP/AR exception and the audit trail. The simulation modes of
+the Integration Profile (below) still apply first, for MOCK SAP demonstrations.
+
+## SAP-ready request data (Phase 41, `SapPayloadBuilder`, schema `bcfa.sap/1`)
+
+The domain services build the two SAP writes from the records, so an adapter maps fields to its
+interface and never reads BCFA tables. Where SAP needs a value the record does not hold, a documented
+fallback is used and named in `defaults` (company code from the PO / vendor / customer / open item;
+posting date from the record, the value date or today).
+
+- **`postVendorInvoice`**: `companyCode`, `vendor { code, name }`, `reference` (invoice number),
+  `documentDate` (invoice date), `postingDate`, `currency`, `grossAmount`, `netAmount`, `taxAmount`,
+  `tax { type, ratePct, igst, cgst, sgst, vat, validation }`, `withholding { code, ratePct, amount, expectedAmount }`,
+  `purchaseOrder`, `items[] { line, poNumber, poItem, material, quantity, unit, unitPrice, amount, tax, goodsReceipt, goodsReceiptDocument }`.
+- **`clearCustomerPayment`**: `processingMode` (direct / draft), `companyCode`, `customer { code, name }`,
+  `bankReference`, `bankAccount`, `valueDate`, `postingDate`, `currency`, `amount`,
+  `items[] { openItem, companyCode, currency, openAmount, clearAmount, discount, bankCharge, tcs }`,
+  `deductions[] { type, reasonCode, amount, currency, openItem, adviceReason, creditNote }`,
+  `residual { amount, treatment: none | short_payment | overpayment }`, `totals { cleared, deductions }`.
+- Deduction reason codes: `SapPayloadBuilder.REASON_CODES` (Z01–Z09) are **POC placeholders**; the
+  client's SAP customising defines the real codes.
+- `SapPayloadBuilder.check(payload)` returns `{ errors, warnings }`: errors are what SAP would reject
+  (missing company code, vendor/customer number, invoice reference, document date, posting/value date,
+  currency; amount ≤ 0; net + tax ≠ gross; PO item or quantity missing; no open items; deduction
+  without reason code). A real adapter calls it before sending and returns `VALIDATION_ERROR` on errors.
+- MOCK SAP applies the same check (`x_695068_bcfa.mock_sap.strict_validation`): `false` (default)
+  records what SAP would reject as `warnings` and succeeds (POC data often has no invoice date);
+  `true` rejects like SAP. Older payloads without the schema (direct calls in tests) are not checked.
+
+## Master data source (open decision)
+
+Vendor, customer, PO and goods receipt checks read the BCFA tables (`x_695068_bcfa_vendor`,
+`_customer`, `_purchase_order`, `_po_line`, `_receipt`), which hold POC data. Only the AR open items are
+read through the adapter (`getOpenItems`, `ArDomainService.refreshOpenItems`). With real SAP, either
+replicate these tables from SAP or route the checks through `getVendor` / `getPurchaseOrder` /
+`getReceipt` (in the contract, not called yet). `SAP_ACTIVATION_CHECKLIST.md` 1.8.
 
 Also supported: `getCreditNotes`, `getExchangeRate`, `createReceipt` (write), `getBankStatement` (mock_bank),
 `archive` (mock_archive).

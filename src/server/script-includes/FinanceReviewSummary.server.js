@@ -11,12 +11,17 @@
 // AI note is saved; each refresh also refreshes the journey (Playbook) fields
 // through FinanceJourneyService. Written with setWorkflow(false): it is a derived display
 // field and must not trigger business rules (e.g. the approval cascade).
+// Layout: a headline (record, amount, status), then one titled section per
+// topic with one fact per bullet and a blank line between sections; amounts,
+// percentages and status values are written for a person (FinanceTextFormat).
 var FinanceReviewSummary = Class.create();
 
 FinanceReviewSummary.MAX = 8000;
 
 FinanceReviewSummary.prototype = {
-    initialize: function() {},
+    initialize: function() {
+        this.fmt = new FinanceTextFormat();
+    },
 
     refreshInvoice: function(sysId) {
         try {
@@ -57,23 +62,22 @@ FinanceReviewSummary.prototype = {
     },
 
     buildInvoice: function(inv) {
-        var id = inv.getUniqueValue();
-        var L = [];
-        L.push('INVOICE ' + inv.getValue('invoice_number') + ' | ' + (inv.getDisplayValue('vendor') || 'vendor not resolved') + ' | ' +
-            inv.getValue('currency') + ' ' + inv.getValue('gross_amount') + ' (net ' + inv.getValue('net_amount') + ', tax ' + inv.getValue('tax_amount') + ')' +
-            ' | state ' + inv.getValue('state') + ', approval ' + inv.getDisplayValue('approval_state') + ', posting ' + inv.getDisplayValue('posting_state'));
+        var id = inv.getUniqueValue(), f = this.fmt, cur = inv.getValue('currency') || '';
+        var S = [];
+        S.push([(inv.getValue('invoice_number') || 'Invoice') + ' — ' + (inv.getDisplayValue('vendor') || 'vendor not resolved'),
+            cur + ' ' + f.money(inv.getValue('gross_amount')) + '  (net ' + f.money(inv.getValue('net_amount')) + ' + tax ' + f.money(inv.getValue('tax_amount')) + ')',
+            'Status: ' + f.words(inv.getValue('state')) + '  ·  Approval: ' + f.words(inv.getDisplayValue('approval_state') || '-') + '  ·  Posting: ' + f.words(inv.getDisplayValue('posting_state') || '-')]);
 
         var intake = this._one('x_695068_bcfa_finance_intake', 'ap_invoice=' + id, 'sys_created_on', true);
-        L.push('DOCUMENT ' + (intake ? intake.getValue('number') + ' ' + this._file(intake) + ' (' + intake.getDisplayValue('source') + ', ' + intake.getDisplayValue('processing_status') + ')'
-            : 'no uploaded document; source ' + inv.getDisplayValue('source')));
+        S.push(['DOCUMENT', intake ? this._b(intake.getValue('number') + '  ·  ' + this._file(intake)) : this._b('No uploaded document (source: ' + (inv.getDisplayValue('source') || '-') + ')'),
+            intake ? this._b(intake.getDisplayValue('source') + ', ' + f.words(intake.getDisplayValue('processing_status'))) : null]);
 
         var ex = this._one('x_695068_bcfa_ap_extraction', 'ap_invoice=' + id, 'sys_created_on', true);
-        L.push('EXTRACTION ' + (ex ? ex.getDisplayValue('source') + ', confidence ' + ex.getValue('confidence') + (ex.getValue('requires_review') === '1' ? ' (review required)' : '')
-            : 'none') + (inv.getValue('extraction_confidence') ? ' | invoice confidence ' + inv.getValue('extraction_confidence') : ''));
+        S.push(['EXTRACTION', ex ? this._b(ex.getDisplayValue('source')) : this._b('None'),
+            ex ? this._b('Confidence ' + f.percent(ex.getValue('confidence') || inv.getValue('extraction_confidence')) + (ex.getValue('requires_review') === '1' ? '  ·  review required' : '')) : null]);
 
         var po = inv.purchase_order.getRefRecord();
-        L.push('PO ' + (po && po.isValidRecord() ? po.getValue('po_number') + ' (' + po.getDisplayValue('status') + ', vendor ' + po.getDisplayValue('vendor') + ')' : 'none referenced'));
-        var lines = [];
+        var poLines = [po && po.isValidRecord() ? this._b(po.getValue('po_number') + ' (' + f.words(po.getDisplayValue('status')) + ')  ·  ' + po.getDisplayValue('vendor')) : this._b('No PO referenced')];
         var line = new GlideRecord('x_695068_bcfa_ap_invoice_line');
         line.addQuery('ap_invoice', id);
         line.orderBy('line_number');
@@ -81,45 +85,46 @@ FinanceReviewSummary.prototype = {
         line.query();
         while (line.next()) {
             var pol = line.po_line.getRefRecord();
-            lines.push('L' + line.getValue('line_number') + ' qty ' + line.getValue('quantity') + ' @ ' + line.getValue('unit_price') +
-                (pol && pol.isValidRecord() ? ' vs PO qty ' + pol.getValue('quantity') + ' @ ' + pol.getValue('unit_price') + ', received ' + pol.getValue('received_quantity') : ', no PO line') +
-                (line.getValue('receipt_reference') ? ', GRN ' + line.getDisplayValue('receipt_reference') : ', no GRN'));
+            poLines.push(this._b('Line ' + line.getValue('line_number') + ': ' + line.getValue('quantity') + ' @ ' + f.money(line.getValue('unit_price')) +
+                (pol && pol.isValidRecord() ? '  ·  PO ' + pol.getValue('quantity') + ' @ ' + f.money(pol.getValue('unit_price')) + '  ·  received ' + (pol.getValue('received_quantity') || 0) : '  ·  no PO line') +
+                (line.getValue('receipt_reference') ? '  ·  GRN ' + line.getDisplayValue('receipt_reference') : '  ·  no GRN')));
         }
-        L.push('LINES / GRN ' + (lines.length ? lines.join('; ') : 'no invoice lines'));
+        S.push(['PURCHASE ORDER AND RECEIPT'].concat(poLines));
 
         var match = this._one('x_695068_bcfa_ap_match', 'ap_invoice=' + id, 'evaluated_at', true);
-        L.push('MATCH ' + (match ? match.getDisplayValue('match_result') + ': quantity variance ' + (match.getValue('quantity_variance') || 0) + ', price variance ' +
-            (match.getValue('price_variance') || 0) + ', tax variance ' + (match.getValue('tax_variance') || 0) + ', within tolerance ' + (match.getValue('within_tolerance') === '1' ? 'yes' : 'no')
-            : 'not run'));
         var tol = this._matchTolerances(inv);
-        L.push('TOLERANCE ' + (tol || 'not evaluated yet'));
+        S.push(['3-WAY MATCH',
+            match ? this._b('Result: ' + f.words(match.getDisplayValue('match_result')) + (match.getValue('within_tolerance') === '1' ? ', within tolerance' : ', outside tolerance')) : this._b('Not run yet'),
+            match ? this._b('Variance: quantity ' + (match.getValue('quantity_variance') || 0) + '  ·  price ' + (match.getValue('price_variance') || 0) + '  ·  tax ' + (match.getValue('tax_variance') || 0)) : null,
+            tol ? this._b('Tolerances: ' + tol) : null]);
 
-        this._exceptionLines(L, 'x_695068_bcfa_ap_exception', 'ap_invoice=' + id);
+        S.push(this._exceptions('x_695068_bcfa_ap_exception', 'ap_invoice=' + id));
 
         var ap = this._one('x_695068_bcfa_ap_approval', 'ap_invoice=' + id, 'sys_created_on', true);
-        L.push('APPROVAL ' + (ap ? ap.getDisplayValue('decision') + ' (' + ap.getDisplayValue('approval_type') + ', group ' + (ap.getDisplayValue('approval_group') || '-') +
-            ', requested by ' + (ap.getDisplayValue('requested_by') || '-') + (ap.getValue('approver') ? ', approver ' + ap.getDisplayValue('approver') : '') + ')' +
-            (ap.getValue('sod_check') ? ' | ' + ap.getValue('sod_check').substring(0, 160) : '') : 'none'));
-        L.push('INTEGRATION ' + this._integration('x_695068_bcfa_ap_invoice', id) + (inv.getValue('sap_document_id') ? ' | SAP document ' + inv.getValue('sap_document_id') : ''));
-        L.push('AUDIT ' + this._audit(inv.getValue('correlation_id'), id));
-        return this._cap(L.join('\n'));
+        S.push(['APPROVAL'].concat(this._approval(ap, true)));
+        S.push(['SAP POSTING (' + new FinancePolicy().sapLabel() + ')', this._b(this._integration('x_695068_bcfa_ap_invoice', id)),
+            inv.getValue('sap_document_id') ? this._b('SAP document ' + inv.getValue('sap_document_id')) : null]);
+        S.push(['AUDIT TRAIL', this._b(this._audit(inv.getValue('correlation_id'), id))]);
+        return this._cap(this._join(S));
     },
 
     buildPayment: function(pay) {
-        var id = pay.getUniqueValue();
-        var L = [];
-        L.push('PAYMENT ' + pay.getValue('bank_reference') + ' | ' + pay.getValue('currency') + ' ' + pay.getValue('amount') + ' | value date ' + (pay.getValue('value_date') || '-') +
-            ' | state ' + pay.getValue('state'));
+        var id = pay.getUniqueValue(), f = this.fmt, cur = pay.getValue('currency') || '';
+        var S = [];
+        S.push(['Payment ' + pay.getValue('bank_reference') + ' — ' + (pay.getDisplayValue('customer') || 'customer not identified yet'),
+            cur + ' ' + f.money(pay.getValue('amount')) + '  ·  value date ' + (pay.getValue('value_date') || '-'),
+            'Status: ' + f.words(pay.getValue('state'))]);
 
         var rem = this._one('x_695068_bcfa_remittance', 'payment=' + id, 'sys_created_on', true);
-        L.push('REMITTANCE ' + (rem ? (rem.getValue('remittance_reference') || 'no reference') + ' (' + rem.getDisplayValue('source') + ', received ' + (rem.getValue('received_date') || '-') +
-            ', confidence ' + (rem.getValue('confidence') || '-') + ')' : 'none'));
-        L.push('EXTRACTED FIELDS ' + (rem ? this._fields(rem.getValue('extracted_fields')) : '-'));
+        S.push(['REMITTANCE / PAYMENT ADVICE',
+            rem ? this._b((rem.getValue('remittance_reference') || 'no reference') + '  ·  ' + rem.getDisplayValue('source') + '  ·  received ' + (rem.getValue('received_date') || '-') +
+                '  ·  confidence ' + f.percent(rem.getValue('confidence'))) : this._b('None received yet'),
+            rem && rem.getValue('extracted_fields') ? this._b('Read from the advice: ' + this._fields(rem.getValue('extracted_fields'))) : null]);
 
         var customer = pay.customer.getRefRecord();
         var how = this._lastAudit(pay.getValue('correlation_id'), id, 'rule_evaluated', 'Customer identified');
-        L.push('CUSTOMER ' + (customer && customer.isValidRecord() ? customer.getValue('name') + ' (' + customer.getValue('customer_code') + ')' + (how ? ' | ' + how : '') : 'not identified'));
-
+        var cust = ['CUSTOMER', customer && customer.isValidRecord() ? this._b(customer.getValue('name') + ' (' + customer.getValue('customer_code') + ')') : this._b('Not identified yet'),
+            how ? this._b(how) : null];
         if (customer && customer.isValidRecord()) {
             var items = [], total = 0, n = 0;
             var oi = new GlideRecord('x_695068_bcfa_ar_open_item');
@@ -130,10 +135,11 @@ FinanceReviewSummary.prototype = {
             while (oi.next()) {
                 n++;
                 total += parseFloat(oi.getValue('open_amount') || '0');
-                if (items.length < 5) items.push(oi.getValue('item_number') + ' ' + oi.getValue('open_amount') + ' ' + oi.getValue('currency'));
+                if (items.length < 5) items.push(oi.getValue('item_number') + ' ' + f.money(oi.getValue('open_amount')) + ' ' + oi.getValue('currency'));
             }
-            L.push('OPEN ITEMS ' + n + ' open, total ' + (Math.round(total * 100) / 100) + (items.length ? ': ' + items.join(', ') + (n > 5 ? ', ...' : '') : ''));
+            cust.push(this._b('Open items: ' + n + ', total ' + f.money(total) + (items.length ? '  (' + items.join(', ') + (n > 5 ? ', …' : '') + ')' : '')));
         }
+        S.push(cust);
 
         var cands = [];
         var mc = new GlideRecord('x_695068_bcfa_match_candidate');
@@ -141,8 +147,9 @@ FinanceReviewSummary.prototype = {
         mc.orderBy('rank');
         mc.setLimit(6);
         mc.query();
-        while (mc.next()) cands.push(mc.getDisplayValue('match_type') + ' ' + mc.getDisplayValue('ar_open_item') + ' conf ' + (mc.getValue('confidence') || '-') + (mc.getValue('selected') === '1' ? ' [selected]' : ''));
-        L.push('RECOMMENDED MATCH ' + (cands.length ? cands.join('; ') : 'none'));
+        while (mc.next()) cands.push(this._b(mc.getDisplayValue('ar_open_item') + '  ·  ' + f.words(mc.getDisplayValue('match_type')) + '  ·  confidence ' + f.percent(mc.getValue('confidence')) +
+            (mc.getValue('selected') === '1' ? '  ·  selected' : '')));
+        S.push(['RECOMMENDED MATCH'].concat(cands.length ? cands : [this._b('None')]));
 
         var allocs = [], allocated = 0, deductions = 0, deds = [];
         var al = new GlideRecord('x_695068_bcfa_payment_allocation');
@@ -151,56 +158,88 @@ FinanceReviewSummary.prototype = {
         al.query();
         while (al.next()) {
             allocated += parseFloat(al.getValue('allocated_amount') || '0');
-            allocs.push(al.getDisplayValue('ar_open_item') + ' ' + al.getValue('allocated_amount') + ' (' + al.getDisplayValue('allocation_state') + ')');
+            allocs.push(this._b(al.getDisplayValue('ar_open_item') + '  ' + f.money(al.getValue('allocated_amount')) + '  (' + f.words(al.getDisplayValue('allocation_state')) + ')'));
             var d = new GlideRecord('x_695068_bcfa_deduction');
             d.addQuery('payment_allocation', al.getUniqueValue());
             d.query();
             while (d.next()) {
                 if (d.getValue('status') === 'approved') deductions += parseFloat(d.getValue('amount') || '0');
-                deds.push(d.getDisplayValue('deduction_type') + ' ' + d.getValue('amount') + ' (' + d.getDisplayValue('status') + ')');
+                deds.push(this._b(f.words(d.getDisplayValue('deduction_type')) + '  ' + f.money(d.getValue('amount')) + '  (' + f.words(d.getDisplayValue('status')) + ')'));
             }
         }
         var amount = parseFloat(pay.getValue('amount') || '0');
-        L.push('ALLOCATION ' + (allocs.length ? allocs.join('; ') + ' | total ' + (Math.round(allocated * 100) / 100) : 'none'));
-        L.push('RESIDUAL ' + (allocs.length ? (Math.round((amount - (allocated - deductions)) * 100) / 100) + ' (payment ' + amount + ' - allocated ' + (Math.round(allocated * 100) / 100) +
-            ' + approved deductions ' + deductions + ')' : '-'));
-        L.push('DEDUCTION ' + (deds.length ? deds.join('; ') : 'none'));
-        if (pay.getValue('ai_recommendation')) L.push('AI MATCH EXPLANATION ' + this._oneLine(pay.getValue('ai_recommendation'), 400));
+        S.push(['ALLOCATION'].concat(allocs.length ? allocs.concat([this._b('Total allocated ' + f.money(allocated))]) : [this._b('None yet')]));
+        S.push(['RESIDUAL', allocs.length ? this._b(f.money(amount - (allocated - deductions)) + '  =  payment ' + f.money(amount) + ' − allocated ' + f.money(allocated) +
+            ' + approved deductions ' + f.money(deductions)) : this._b('-')]);
+        S.push(['DEDUCTIONS'].concat(deds.length ? deds : [this._b('None')]));
+        if (pay.getValue('ai_recommendation')) {
+            S.push(['AI MATCH EXPLANATION (advisory)', this._b(f.brief(String(pay.getValue('ai_recommendation')).replace(/^AI MATCH EXPLANATION[^\n]*\n[─\s]*/, ''), 300))]);
+        }
 
-        this._exceptionLines(L, 'x_695068_bcfa_ar_exception', 'payment=' + id);
+        S.push(this._exceptions('x_695068_bcfa_ar_exception', 'payment=' + id));
 
         var ap = this._one('x_695068_bcfa_ar_approval', 'payment=' + id, 'sys_created_on', true);
-        L.push('APPROVAL ' + (ap ? ap.getDisplayValue('decision') + ' (' + ap.getDisplayValue('approval_type') + ', group ' + (ap.getDisplayValue('approval_group') || '-') +
-            ', requested by ' + (ap.getDisplayValue('requested_by') || '-') + (ap.getValue('approver') ? ', approver ' + ap.getDisplayValue('approver') : '') + ')' : 'none'));
-        L.push('SAP PROCESSING ' + (pay.getValue('sap_processing_mode') ? pay.getValue('sap_processing_mode').toUpperCase() : 'not yet sent') + ' mode | SAP status ' +
-            (pay.getDisplayValue('sap_status') || 'not sent') + (pay.getValue('sap_reference') ? ' | reference ' + pay.getValue('sap_reference') : '') + ' | MOCK SAP');
-        L.push('CLEARING ' + this._integration('x_695068_bcfa_payment', id));
-        L.push('AUDIT ' + this._audit(pay.getValue('correlation_id'), id));
-        return this._cap(L.join('\n'));
+        S.push(['APPROVAL'].concat(this._approval(ap, false)));
+        S.push(['SAP PROCESSING (' + new FinancePolicy().sapLabel() + ')',
+            this._b('Mode: ' + (pay.getValue('sap_processing_mode') ? pay.getValue('sap_processing_mode').toUpperCase() : 'not yet sent') + '  ·  SAP status: ' +
+                (pay.getDisplayValue('sap_status') || 'not sent') + (pay.getValue('sap_reference') ? '  ·  reference ' + pay.getValue('sap_reference') : '')),
+            this._b('Clearing: ' + this._integration('x_695068_bcfa_payment', id))]);
+        S.push(['AUDIT TRAIL', this._b(this._audit(pay.getValue('correlation_id'), id))]);
+        return this._cap(this._join(S));
     },
 
     // --- helpers --------------------------------------------------------------
 
-    _exceptionLines: function(L, table, query) {
+    // Sections: [heading, line, line, ...]; empty lines are dropped and a
+    // blank line separates sections.
+    _join: function(sections) {
+        var out = [];
+        for (var i = 0; i < sections.length; i++) {
+            var lines = [];
+            for (var j = 0; j < sections[i].length; j++) if (sections[i][j]) lines.push(sections[i][j]);
+            if (lines.length) out.push(lines.join('\n'));
+        }
+        return out.join('\n\n');
+    },
+
+    _b: function(text) {
+        return '• ' + text;
+    },
+
+    _approval: function(ap, withSod) {
+        if (!ap) return [this._b('Not requested yet')];
+        var f = this.fmt;
+        return [this._b(f.words(ap.getDisplayValue('decision')) + '  ·  ' + f.words(ap.getDisplayValue('approval_type')) + '  ·  group ' + (ap.getDisplayValue('approval_group') || '-')),
+            this._b('Requested by ' + (ap.getDisplayValue('requested_by') || '-') + (ap.getValue('approver') ? '  ·  approver ' + ap.getDisplayValue('approver') : '')),
+            withSod && ap.getValue('sod_check') ? this._b('Segregation of duties: ' + f.brief(ap.getValue('sod_check'), 200)) : null];
+    },
+
+    _exceptions: function(table, query) {
+        var f = this.fmt, lines = ['EXCEPTIONS'];
         var ex = new GlideRecord(table);
         ex.addEncodedQuery(query);
         ex.orderByDesc('sys_created_on');
         ex.setLimit(3);
         ex.query();
-        var any = false;
         while (ex.next()) {
-            any = true;
-            L.push('EXCEPTION ' + (ex.getValue('number') || '') + ' ' + ex.getDisplayValue('reason_code') + ' | ' + ex.getDisplayValue('status') + ', severity ' + ex.getDisplayValue('severity') +
-                ', SLA ' + (ex.getDisplayValue('sla_status') || '-') + (ex.getValue('decision') ? ', decision ' + ex.getDisplayValue('decision') : '') +
-                (ex.getValue('rule_result') ? ' | rule: ' + this._oneLine(ex.getValue('rule_result'), 220) : ''));
+            lines.push(this._b((ex.getValue('number') || '') + '  ' + ex.getDisplayValue('reason_code') + '  ·  ' + f.words(ex.getDisplayValue('status')) + '  ·  ' + f.words(ex.getDisplayValue('severity')) +
+                '  ·  SLA ' + f.words(ex.getDisplayValue('sla_status') || '-') + (ex.getValue('decision') ? '  ·  decision: ' + f.words(ex.getDisplayValue('decision')) : '')));
+            if (ex.getValue('rule_result')) lines.push('    Rule: ' + f.brief(f.recordNames(ex.getValue('rule_result')), 220));
             if (ex.getValue('ai_recommendation')) {
-                L.push('  AI EXPLANATION ' + (ex.getValue('ai_explanation') ? this._oneLine(ex.getValue('ai_explanation'), 350) : '-') +
-                    (ex.getValue('ai_confidence') ? ' (confidence ' + ex.getDisplayValue('ai_confidence') + ')' : ''));
+                if (ex.getValue('ai_explanation')) lines.push('    AI explanation' + (ex.getValue('ai_confidence') ? ' (confidence ' + ex.getDisplayValue('ai_confidence') + ')' : '') + ': ' +
+                    f.brief(this._flat(f.recordNames(ex.getValue('ai_explanation'))), 260));
                 var rec = new AiInteractionLog().recommendationOf(ex.getValue('ai_recommendation'));
-                L.push('  AI RECOMMENDATION ' + (rec ? this._oneLine(rec, 350) : '-') + ' (advisory; a person decides)');
+                if (rec) lines.push('    AI recommendation (advisory; a person decides): ' + f.brief(this._flat(f.recordNames(rec.replace(/^[^:]*:\s*/, ''))), 260));
             }
         }
-        if (!any) L.push('EXCEPTION none');
+        if (lines.length === 1) lines.push(this._b('None'));
+        return lines;
+    },
+
+    // A multi-line note as one line: bullets dropped, lines joined with "; ".
+    _flat: function(text) {
+        return String(text || '').split(/\n+/).map(function(l) { return l.replace(/^\s*[•◦\-*]\s*/, '').replace(/[\s.;:]+$/, '').trim(); })
+            .filter(function(l) { return l && l !== '────────────────────'; }).join('; ');
     },
 
     _integration: function(table, id) {
@@ -211,9 +250,9 @@ FinanceReviewSummary.prototype = {
         t.orderByDesc('sys_created_on');
         t.setLimit(1);
         t.query();
-        if (!t.next()) return 'not sent';
-        return t.getValue('operation') + ' ' + t.getDisplayValue('status') + ' (attempt ' + t.getValue('attempt') + ', reconciliation ' + t.getDisplayValue('reconciliation_state') +
-            (t.getValue('external_document_id') ? ', document ' + t.getValue('external_document_id') : '') + (t.getValue('error_code') ? ', ' + t.getValue('error_code') : '') + ')';
+        if (!t.next()) return 'Not sent';
+        return t.getValue('operation') + ': ' + t.getDisplayValue('status') + '  ·  attempt ' + t.getValue('attempt') + '  ·  reconciliation ' + t.getDisplayValue('reconciliation_state') +
+            (t.getValue('external_document_id') ? '  ·  document ' + t.getValue('external_document_id') : '') + (t.getValue('error_code') ? '  ·  ' + t.getValue('error_code') : '');
     },
 
     _audit: function(correlationId, id) {
@@ -223,8 +262,8 @@ FinanceReviewSummary.prototype = {
         e.orderByDesc('event_sequence');
         e.query();
         var n = e.getRowCount();
-        if (!e.next()) return 'no events';
-        return n + ' events; last: ' + e.getDisplayValue('event_type') + ' - ' + this._oneLine(e.getValue('description'), 140) + ' (' + e.getDisplayValue('occurred_at') + ')';
+        if (!e.next()) return 'No events';
+        return n + ' events  ·  last: ' + this._oneLine(e.getValue('description'), 140) + ' (' + e.getDisplayValue('occurred_at') + ')';
     },
 
     _lastAudit: function(correlationId, id, type, startsWith) {
@@ -251,8 +290,8 @@ FinanceReviewSummary.prototype = {
             var t = JSON.parse(e.getValue('after_value') || '{}').tolerances;
             if (!t) return '';
             var pct = function(v) { return v === undefined || v === null ? '-' : (Math.round(v * 1000) / 10) + '%'; };
-            return 'quantity ' + pct(t.quantityPct) + ', price ' + pct(t.pricePct) + ', tax ' + (t.taxAbsolute !== undefined ? t.taxAbsolute : '-') + ' / ' + pct(t.taxRelativePct) +
-                (t.source ? ' (source: ' + t.source + ')' : '');
+            return 'quantity ' + pct(t.quantityPct) + '  ·  price ' + pct(t.pricePct) + '  ·  tax ' + (t.taxAbsolute !== undefined ? t.taxAbsolute : '-') + ' or ' + pct(t.taxRelativePct) +
+                (t.source ? '  (' + t.source + ')' : '');
         } catch (x) {
             return '';
         }
@@ -276,9 +315,9 @@ FinanceReviewSummary.prototype = {
             for (var k in o) {
                 if (parts.length >= 10) break;
                 var v = o[k];
-                parts.push(k + '=' + (typeof v === 'object' ? JSON.stringify(v).substring(0, 120) : v));
+                parts.push(k.replace(/_/g, ' ') + ': ' + (typeof v === 'object' ? JSON.stringify(v).substring(0, 120) : v));
             }
-            return parts.join('; ') || '-';
+            return parts.join('  ·  ') || '-';
         } catch (e) {
             return this._oneLine(json, 300);
         }

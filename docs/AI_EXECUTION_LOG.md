@@ -18,7 +18,7 @@ The existing table was reused. The Claude-named columns keep their names but now
 |---|---|
 | Record, process | `source_table`, `source_record`, `process` (AP, AR, Document Intake, Platform) |
 | AI capability | `capability`: document classification or extraction, summarization, exception or match or residual explanation, next-action recommendation, exception review (agentic workflow), cash-match recommendation, candidate ranking, communication draft, connectivity test |
-| Skill | `skill`: the published Now Assist skill key (e.g. `ap_recommended_next_action`), `AISimulationService` / `SimulatedDocumentExtraction`, or the skills behind *Explain with Now Assist* |
+| Skill | `skill`: the published Now Assist skill key (e.g. `ap_recommended_next_action`), `AISimulationService` / `SimulatedDocumentExtraction`, or the skills behind *Explain with AI* |
 | Agent | `agent`: the AI agent whose tool made the call (e.g. *BCFA AP Resolution Recommendation Agent*). Empty when a person ran the skill |
 | Agentic workflow | `agentic_workflow`: *BCFA AP Invoice Review* or *BCFA Cash Application Review* |
 | Input context identifier | `input_context_id` (`sha256:` of the context sent to the model) and `input_context_size`. **The prompt and the context are never stored** |
@@ -37,7 +37,7 @@ The existing table was reused. The Claude-named columns keep their names but now
 | A Now Assist skill runs (`FinanceAgentTools._runSkill`, for agents and for people) | One row: skill, capability, hashed context, result, duration, status. Agent and workflow are filled when the AI user ran it |
 | An exception hands off to its agentic workflow | A **started** row for the workflow |
 | The workflow saves its note (`recordExceptionAdvice` as the AI user) | That row completes: agent, result, recommendation, confidence, and the duration of the whole run |
-| A person saves a note with *Explain with Now Assist* | Its own exception-review row |
+| A person saves a note with *Explain with AI* | Its own exception-review row |
 | Simulated extraction and recommendations; intake extraction | Rows with provider *Simulated* |
 | A legacy Claude call | Its row, with provider *Claude (legacy)* |
 
@@ -58,7 +58,7 @@ The existing table was reused. The Claude-named columns keep their names but now
 ## Verification (live)
 
 - **Backfill.** 27 legacy Claude rows now show provider, capability, process and times.
-- **Explain with Now Assist on an AP exception.** Two real Now Assist calls, each with a hashed context of 906 characters and
+- **Explain with AI on an AP exception.** Two real Now Assist calls, each with a hashed context of 906 characters and
   durations of 1.9 s and 1.2 s. The person's *request correction* decision overrode the skill's recommendation
   ("verify the missing vendor information"), with the person's reason.
 - **Agentic workflow, as the AI user.** Each skill call is logged with its agent:

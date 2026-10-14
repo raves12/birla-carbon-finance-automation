@@ -128,3 +128,28 @@ The role is only for this person. Do not add it to a group other people are in.
 | 3e | Admin | After any Playbook deploy: run `phase35_playbook_yokohama_fix_bg.js` (scope global) and activate both Playbooks in Workflow Studio |
 | 3f | Build team | SAP Mode 2: RealSAPAdapter, connectivity, SAP test system (`SAP_POC_MODES.md`). AR-REC-004 and adapter selection were done on 2026-10-05 |
 | 3g | Build team | The DocIntel field keys and skill configs are global-scope records created by `gen_native_extraction.py`: include them when the app moves to another instance |
+
+## Task 4: Client sample pack findings (Phase 41), open since 2026-10-08
+
+| # | Who | What |
+|---|---|---|
+| 4a | Client IT with ServiceNow | Chinese: **resolved** (Phase 42: CJ OCR use cases, which need `regional_hub_enabled` to be applied; `CHINESE_DOCUMENT_TEST_RESULTS.md`). Still open: Korean on image pages (CS-19) and Thai on scans (CS-26) lose their script; ask ServiceNow which OCR model covers them, and whether a native image-understanding reading (stamps, handwriting) exists for this release (`DOCUMENT_INTELLIGENCE_CAPABILITY_ASSESSMENT.md`). Until then these documents are processed from review |
+| 4b | Birla Carbon finance | Decide whether Chinese bank acceptance drafts (CS-10) are in scope for AR; BCFA has no draft model |
+| 4c | Birla Carbon | Supply samples written in French, Hungarian, Spanish, Arabic and Hindi (none in the pack) |
+| 4d | Birla Carbon | Send invoice pages only for large packages (the reader accepts up to 4 MB per file; CS-28 is 14.7 MB) |
+| 4e | Build team | Load the client vendors / POs / customers as POC master data. Since 2026-10-09 a client invoice with an unknown vendor or PO is created and sits in EXCEPTION (vendor invalid / PO mismatch); after loading, Re-run Validation links it |
+
+## Task 5: Fresh start of the front-end data (owner), prepared 2026-10-13
+
+Removes every Document Intake, AP and Cash Application transaction and keeps the master data (vendors, customers,
+POs, PO lines, GRN / SRN receipts, open items, credit notes), configuration, users and Playbooks.
+
+| # | Where | What |
+|---|---|---|
+| 5a | Scripts - Background, scope **x_695068_bcfa** | Paste `scripts/deploy/clean_transactions_bg.js` as is (PREVIEW = true) and run: it lists what it would delete. |
+| 5b | Same | Set `var PREVIEW = false;` and run again. It PERMANENTLY DELETES the transactions (intakes and their documents, AP invoices, payments, remittances, exceptions, approvals, allocations, deductions, integration transactions, AI interaction log) and reopens the open items. Audit events stay (`PURGE_AUDIT = false`). |
+| 5c | Scripts - Background, scope **global** | Paste `scripts/deploy/reset_number_counters_bg.js`, set `PREVIEW = false`, run: the next records are FDI0000001, AP00000001, AR00000001, RT00000001. |
+| 5d | Optional | For the client sample test, run `test/client_samples/kit/kit_setup_bg.js` (scope x_695068_bcfa) to re-create the 6 bank lines the payment advices need. |
+
+Run 5c last and do not run ATF tests in between (each test that creates an intake, invoice, payment or remittance
+uses a number). KPIs and the POC scorecard recalculate within 15 minutes.

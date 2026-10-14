@@ -18,9 +18,9 @@ import { UiAction, Record } from '@servicenow/sdk/core'
 export const apExceptionExplainWithNowAssist = UiAction({
     $id: Now.ID['ui-action-ap-exception-explain-claude'],
     table: 'x_695068_bcfa_ap_exception',
-    name: 'Explain with Now Assist',
+    name: 'Explain with AI',
     actionName: 'explain_with_now_assist_ap',
-    hint: 'Ask Now Assist to (re)generate the advisory explanation and recommended next action for this exception. Advisory only: it never decides the exception.',
+    hint: 'Ask AI to (re)generate the advisory explanation and recommended next action for this exception. Advisory only: it never decides the exception.',
     showUpdate: true,
     form: {
         showButton: true,
@@ -32,7 +32,7 @@ export const apExceptionExplainWithNowAssist = UiAction({
     },
     script: `
         var result = new ApDomainService().explainException(current.getUniqueValue());
-        if (result && result.ok === false) gs.addErrorMessage('Now Assist could not explain this exception: ' + (result.message || result.error));
+        if (result && result.ok === false) gs.addErrorMessage('AI could not explain this exception: ' + (result.message || result.error));
         action.setRedirectURL(current);
     `,
 })
@@ -45,7 +45,7 @@ const apExceptionExplainWithNowAssistFormAction = Record({
         ui_action: apExceptionExplainWithNowAssist,
         action_type: 'ui_action',
         active: true,
-        name: 'Explain with Now Assist',
+        name: 'Explain with AI',
     },
 })
 
@@ -54,8 +54,8 @@ Record({
     table: 'sys_ux_form_action_layout_item',
     data: {
         table: 'x_695068_bcfa_ap_exception',
-        name: 'Explain with Now Assist',
-        label: 'Explain with Now Assist',
+        name: 'Explain with AI',
+        label: 'Explain with AI',
         color: 'primary-ai',
         overflow: false,
         order: 100,
@@ -68,9 +68,9 @@ Record({
 export const arExceptionExplainWithNowAssist = UiAction({
     $id: Now.ID['ui-action-ar-exception-explain-claude'],
     table: 'x_695068_bcfa_ar_exception',
-    name: 'Explain with Now Assist',
+    name: 'Explain with AI',
     actionName: 'explain_with_now_assist_ar',
-    hint: 'Ask Now Assist to (re)generate the advisory explanation and recommended next action for this exception. Advisory only: it never decides the exception.',
+    hint: 'Ask AI to (re)generate the advisory explanation and recommended next action for this exception. Advisory only: it never decides the exception.',
     showUpdate: true,
     form: {
         showButton: true,
@@ -82,7 +82,7 @@ export const arExceptionExplainWithNowAssist = UiAction({
     },
     script: `
         var result = new ArDomainService().explainException(current.getUniqueValue());
-        if (result && result.ok === false) gs.addErrorMessage('Now Assist could not explain this exception: ' + (result.message || result.error));
+        if (result && result.ok === false) gs.addErrorMessage('AI could not explain this exception: ' + (result.message || result.error));
         action.setRedirectURL(current);
     `,
 })
@@ -95,7 +95,7 @@ const arExceptionExplainWithNowAssistFormAction = Record({
         ui_action: arExceptionExplainWithNowAssist,
         action_type: 'ui_action',
         active: true,
-        name: 'Explain with Now Assist',
+        name: 'Explain with AI',
     },
 })
 
@@ -104,8 +104,8 @@ Record({
     table: 'sys_ux_form_action_layout_item',
     data: {
         table: 'x_695068_bcfa_ar_exception',
-        name: 'Explain with Now Assist',
-        label: 'Explain with Now Assist',
+        name: 'Explain with AI',
+        label: 'Explain with AI',
         color: 'primary-ai',
         overflow: false,
         order: 100,

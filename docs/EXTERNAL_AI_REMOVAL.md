@@ -38,7 +38,7 @@ recorded in the update set.
 - **Column names.** `ai_interaction.claude_model` / `claude_request_id` and `finance_intake.claude_request_id` keep
   their names, because renaming a column drops its data. Their labels are provider-neutral: *Model*, *Provider
   Request ID*, *Provider Request ID (legacy)*.
-- **Record identities.** The UI actions *Explain with Now Assist* and *Process Document* keep the Fluent `$id` keys
+- **Record identities.** The UI actions *Explain with AI* and *Process Document* keep the Fluent `$id` keys
   from when they were Claude actions (`ui-action-…-claude`). Changing a key changes the sys_id and would create
   duplicates. Only the TypeScript variable names were renamed.
 - **The `GlideSysAttachment` cross-scope privilege.** It was added for the Claude client. It is still needed by the demo

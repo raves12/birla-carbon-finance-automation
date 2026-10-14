@@ -34,7 +34,7 @@ Switch persona with **Impersonate User** from the admin account. Never type or s
    - Expect "AP 9 of 9, AR 10 of 10 as documented" and "POC 2 cash journeys created: ARINV1001 … BANK-POC2-003".
    - About a minute later, BANK-POC2-001/002/003 are in **EXCEPTION** (`customer_ambiguous`). That is expected: the bank lines arrived without a remittance.
 2. **Check the landing page.** The KPI job refreshes every 15 minutes, so check the landing page at least 15 minutes after the reset. If Phase 30 is deployed, also check that **AI & Audit › POC Success Scorecard** shows 18 rows.
-3. **Check Now Assist.** Open any AP exception and click **Explain with Now Assist**. A note should appear within about 5 to 60 seconds. If it doesn't, see *If something goes wrong*.
+3. **Check Now Assist.** Open any AP exception and click **Explain with AI**. A note should appear within about 5 to 60 seconds. If it doesn't, see *If something goes wrong*.
 4. **Put the fixtures on the presenting laptop.** They are read natively; the file name does not matter, but upload each one only once per reset (a second upload of the same file is caught as a duplicate intake).
    - `test/fixtures/AP_INV_004_DUPLICATE.pdf`
    - `test/fixtures/AR_REMIT_101_EXACT.pdf`, `AR_REMIT_102_MULTI_INVOICE.pdf`, `AR_REMIT_103_BANK_CHARGE.pdf`
@@ -90,7 +90,7 @@ The two POC journeys are AP invoice to posting, and cash receipt to clearing. Bo
 
 1. Still as the approver, open **AP › Exceptions** and the `quantity_tolerance` exception for INV-AP-004. It shows 15 EA invoiced against 10 received, exceeding the 2 % tolerance, with severity, SLA, owner, rule result and evidence.
 2. Show the **AI recommendation**: advisory, with a confidence. It was written by the *BCFA AP Invoice Review* agentic workflow, running as the AI identity `bcfa.ai.reviewer`. On the seeded record it explains the 50 % quantity variance (EUR 2,500). It recommends asking Rhine Logistics GmbH for clarification, and includes a draft vendor message marked **NOT sent**. The AI drafts; a person sends.
-3. Click **Explain with Now Assist** to regenerate the note live. **Say:**
+3. Click **Explain with AI** to regenerate the note live. **Say:**
    - It reads only this exception's evidence.
    - The BCFA guard screens the input for prompt injection before the call.
    - It strips any sentence that claims an action happened, for example "the invoice has been approved".
@@ -176,7 +176,7 @@ The two POC journeys are AP invoice to posting, and cash receipt to clearing. Bo
 | Upload goes to **Review Required** with a low-confidence message | A critical field was not read | Show it as the control working: a person reviews; nothing is guessed |
 | Remittance goes to Review Required: "Payment … is already MATCHED/CLOSED…" | That journey was already used | Use another POC 2 file, or reset after the demo |
 | Payment stays in EXCEPTION after the remittance | Flow still running (usually seconds) | Refresh after 10–20 s. If it is still there, open the exception: the resolution notes say why, for example "customer still not identified" |
-| No AI note, or *Explain with Now Assist* spins | Now Assist is slow or unavailable | Show the note already on the record from the seeding run, and the AI Interaction Log. The pipeline does not depend on AI. |
+| No AI note, or *Explain with AI* spins | Now Assist is slow or unavailable | Show the note already on the record from the seeding run, and the AI Interaction Log. The pipeline does not depend on AI. |
 | Approve is refused | SoD working as designed, e.g. the requester or processor is approving | Approve as `bcfa.finance.approver` |
 | KPI cards look stale | Job runs every 15 min | Say so, or show the lists |
 

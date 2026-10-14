@@ -8,11 +8,23 @@ Intelligence admin UI creates. Idempotent (fixed sys_ids).
 Run the output in Scripts - Background, scope global: the field keys and skill
 configs live in global scope (di_skill_config cannot be created from the app
 scope), and updates of the keys from scope x_695068_bcfa fail (Phase 40 tuning 1).
-Usage: python scripts/deploy/gen_native_extraction.py"""
+Phase 42: a use case may name its own document_config (language): the CJ
+model for Chinese. Usage: python scripts/deploy/gen_native_extraction.py"""
 import io, json, os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 cfg = json.load(io.open(os.path.join(HERE, 'native_extraction_config.json'), encoding='utf8'))
+# A language variant ('fields_from') carries the same fields as its source use
+# case: names and descriptions are taken from the source, only the key sys_ids
+# are its own (Phase 42: Chinese use cases on the CJ document config).
+src_by_key = {u['key']: u for u in cfg['use_cases']}
+for uc in cfg['use_cases']:
+    if uc.get('fields_from'):
+        src = {f[1]: f for f in src_by_key[uc['fields_from']]['fields']}
+        own = {f[1]: f[0] for f in uc['fields']}
+        missing = [n for n in src if n not in own]
+        assert not missing, (uc['key'], 'add key sys_ids for', missing)
+        uc['fields'] = [[own[n], n, src[n][2], src[n][3]] for n in src]
 for uc in cfg['use_cases']:
     for f in uc['fields']:
         assert len(f[2]) <= 40, f[2]  # sys_di_key.name is 40 characters
@@ -40,8 +52,14 @@ script = """// Phase 40: BCFA native extraction use cases (Document Intelligence
     CFG.use_cases.forEach(function(uc) {
         var res = [];
         res.push(upsert('sys_di_task_definition', uc.sys_id, {
-            display_name: uc.name, capability: 'doc_qna', document_type: P.document_type, document_config: P.document_config,
+            display_name: uc.name, capability: 'doc_qna', document_type: P.document_type, document_config: uc.document_config || P.document_config,
             target_table: 'x_695068_bcfa_finance_intake', active: true, state: 'current', autofill: false, stp_enabled: false,
+            // Phase 42: as the Now Assist admin UI sets it. Without it the platform
+            // business rule 'Update Docreader config' (sys_di_task, filter
+            // task_definition.regional_hub_enabled=true) never copies the use
+            // case's document config into the task, and DocReader falls back to
+            // the default Latin config: the language setting is ignored.
+            regional_hub_enabled: true,
             warning_threshold: 0.7, autofill_threshold: 0.01
         }));
         uc.fields.forEach(function(f, i) {

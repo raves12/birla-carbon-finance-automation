@@ -29,7 +29,24 @@ Classification:
 | Workspace | Standard (configured) | Configurable workspace (UI Builder) | Pages and lists | — |
 | SAP integration | Custom (adapter pattern) | — (IntegrationHub spokes not used in the POC) | `IntegrationService`, `MockSAPAdapter`, `RealSAPAdapter` (not configured) | Idempotency, unknown-outcome reconciliation. Production would use IntegrationHub / the client's middleware |
 | Bank statement | Custom (mock) | — | `MockBankAdapter` | No bank connection in the POC |
-| Tests | Standard | ATF (suite *BCFA Regression*, 39 tests) | Server-side test scripts | — |
+| Tests | Standard | ATF (suite *BCFA Regression*, 49 tests) | Server-side test scripts | — |
+
+### Phase 41 additions (client sample pack, defects; deployed 2026-10-08)
+
+| Capability | Classification | ServiceNow feature | Custom part | License / external dependency |
+|---|---|---|---|---|
+| Multilingual extraction | **Standard (configured)** | Same Document Intelligence generative pipeline (Now LLM) reads the document in its own language; no translation step. Client run 2026-10-08: Latin-script documents read (invoices 85 %, advices 95 % of critical fields); Chinese VAT e-invoices and scanned Korean / Thai lose their script in the platform reading step | Field descriptions (data) asking for values as printed; locale-aware number / date normalization with the original and the rule kept (`NativeDocumentIntelligenceProvider`) | Now Assist / Document Intelligence entitlement. Client evidence per language: `MULTILINGUAL_DOCUMENT_INTELLIGENCE_READINESS.md` |
+| Page / document classification in multi-document PDFs | **Standard (configured), model-based** | Generative extraction fields *Invoice Page Numbers* and *Supporting Documents* (type, pages, reference) | Shown to the reviewer in the extracted-data summary; header values read from invoice pages only (field instructions) | No page-level confidence from the platform; a reviewer page-selection UI is not built. Treated as evidence, not as a guaranteed split |
+| Tax extraction (components) | **Standard (configured)** | Generative field *Tax Components* (printed label, rate, base, amount) | Printed label → normalized type (GST, CGST, SGST, IGST, VAT, SALES_TAX, WHT, TDS, OTHER_TAX), presentation and evidence only | — |
+| Tax validation | Custom (unchanged) | Decision Table *BCFA AP Tax Expectation* | `MatchingEngine.evaluateTax` | Statutory logic beyond configured rows is out of scope: unsupported regimes go to MANUAL REVIEW |
+| Totals reconciliation (charges, discount) | Custom | — | `reconcileInvoice` / `reconcileAdvice`: gross = net + tax + charges − discount; AR gross − advance − TDS − deduction = paid; stored on the invoice; separate from extraction confidence | — |
+| AR correlation (remittance ↔ payment) | Custom | — | `FinanceDocumentIntakeService.correlatePayment`: reference precedence, currency / amount / customer conflict checks, candidate evidence | — |
+| Duplicate intake (content identity) | Standard + script | `sys_attachment.hash` | Canonical intake rule (`duplicate_of`), invoice-level duplicate check (earlier invoices only) | — |
+| Cross-currency (FX) | Custom (adapter) | — | `MatchingEngine.currencyCheck` through `IntegrationService` / SAP adapter `getExchangeRate` | Rates from SAP (production); MOCK SAP static POC table in the POC; no public FX API |
+| Readable extracted data / review summary | Custom presentation | Form layouts, Playbook record fields | `FinanceTextFormat` | — |
+| Approval destination (group) | Standard + script | Groups, roles | `ApprovalEngine.eligibleApprovers` (same SoD rule as the decision) | — |
+| Decision reason for the approver | **Standard (configured)** | Record and field ACLs | 2 ACLs per exception table (least privilege) | — |
+| SAP-ready request data | Custom | — | `SapPayloadBuilder` (schema bcfa.sap/1) + `check()` | SAP interface definitions (MIRO / FB05 or the agreed interface) from the client |
 
 ## 2. Size of the custom part
 

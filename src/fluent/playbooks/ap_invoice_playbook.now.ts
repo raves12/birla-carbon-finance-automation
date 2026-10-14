@@ -114,7 +114,7 @@ export const apInvoicePlaybook = PlaybookDefinition(
             const extraction = wfa.playbook.lane({
                 config: {
                     $id: Now.ID['bcfa_pb_ap_lane_extraction'],
-                    label: '2. Document Extraction',
+                    label: '2. Document Understanding',
                     name: 'extraction',
                     order: 2,
                     description: 'Header, tax and line fields read from the invoice document by the configured provider (Extraction provider field): native ServiceNow Document Intelligence on Now LLM by default; SIMULATED DOCUMENT EXTRACTION — POC only for test fixtures. Low confidence or missing fields go to a person.',
@@ -142,7 +142,7 @@ export const apInvoicePlaybook = PlaybookDefinition(
                             description: 'Fields were read by the provider shown in Extraction provider. Native extraction failure never falls back to simulated values: it goes to manual review. The printed tax breakdown is recorded as read; it is validated in the next stage, not here. Low confidence or a missing mandatory field raises an exception: the stage does not complete until a person resolves it.',
                             pending_title: 'Document extraction (provider shown)',
                             pending_description: 'Waiting for extraction, or for a person to review a low-confidence / missing-field exception.',
-                            record_fields: FieldList<'x_695068_bcfa_ap_invoice'>(['extraction_provider', 'extraction_confidence', 'document_country', 'document_language', 'vendor', 'invoice_number', 'invoice_date', 'purchase_order', 'company_code', 'currency', 'net_amount', 'tax_type', 'tax_rate_pct', 'cgst_amount', 'sgst_amount', 'igst_amount', 'vat_amount', 'wht_amount', 'wht_rate_pct', 'tax_amount', 'gross_amount', 'journey_stage', 'journey_status', 'journey_blocked_reason', 'journey_next_action', 'journey_owner', 'journey_open_exceptions', 'journey_banner', 'journey_stage_entered']),
+                            record_fields: FieldList<'x_695068_bcfa_ap_invoice'>(['extraction_provider', 'extraction_confidence', 'document_language', 'document_country', 'amount_reconciliation', 'amount_reconciliation_detail', 'extraction_summary', 'journey_stage', 'journey_status', 'journey_blocked_reason', 'journey_next_action', 'journey_owner', 'journey_open_exceptions', 'journey_banner', 'journey_stage_entered']),
                         },
                     )
                     const extraction_records = wfa.playbook.activity(
@@ -408,7 +408,7 @@ export const apInvoicePlaybook = PlaybookDefinition(
                         { wait: 'no' },
                         {
                             tagline: 'AI RECOMMENDATION',
-                            list_title: 'AI RECOMMENDATION — advisory only (Now Assist): never approves, posts or overrides tolerance',
+                            list_title: 'AI RECOMMENDATION — advisory only: never approves, posts or overrides tolerance',
                             table: 'x_695068_bcfa_ai_interaction',
                             list_query: `source_record=${wfa.playbook.dataPill(params.parentRecord)}^ORDERBYDESCsys_created_on`,
                             columns: 'capability,skill,recommendation,confidence,guardrail_action,human_decision,human_decided_by,sys_created_on',

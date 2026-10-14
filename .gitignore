@@ -14,3 +14,6 @@ target/
 *.p12
 credentials*.json
 *secret*.json
+
+# Client-confidential sample documents (Birla Carbon POC pack): local only, never committed.
+test/client_samples/

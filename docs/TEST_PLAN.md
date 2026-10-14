@@ -267,6 +267,29 @@ All 22 are in suite **BCFA Playbook Regression** and in **BCFA Regression** (now
 
 Results: `FINAL_E2E_TEST_RESULTS.md`. Manual tests: `MANUAL_TEST_CASES.md`.
 
+## Phase 41: POC team defects and the client sample pack (`phase41_hardening_tests.now.ts`)
+
+12 tests, all in **BCFA Regression** (now 51 tests). Deterministic: each test creates its own data (rolled back by
+ATF); no document extraction call, no SAP write, no AI. Run on 2026-10-09: 51 / 51 passed on 2026-10-13 (serial run after the record-numbering and AI-terminology changes; 51 / 51 on 2026-10-12).
+
+| Test | sys_id | Checks |
+|---|---|---|
+| H41-D6 | `1eda99ce35654de09db2537e41ab40e4` | Finance Approver may write Decision Reason on AP / AR exceptions, nothing else; AI agent and auditor may not |
+| H41-D1 | `d09a7e9dcc544091855e186073b0c09c` | a later duplicate finds the canonical intake; the canonical never points at its duplicate; legacy duplicates never canonical |
+| H41-D2/D3 | `c195e6625f8141a28e8d0f34eb05c79b` | no attachment: draft, message, no transaction or exception; a new attempt clears the stale error and keeps it in the audit |
+| H41-D8 | `0cedd6bd2e5a4266838d9c70266eb805` | reference with conflicting customer / currency / amount never links; amount + currency alone never links; two candidates: none chosen; a unique unassigned bank line links when the advice customer is resolved (another customer's payment never does); an advice date read day / month swapped still finds the bank line |
+| H41-D10 | `a5e710b603c04c55bfc7e0e5487add80` | a payment created without a state starts RECEIVED with correlation ID and idempotency key |
+| H41-D9 | `3afa39bdc5984e28989dedd23cd5ac67` | subtotal + tax + shipping / handling = total reconciles (Uline figures); confidence unchanged |
+| H41-D5 | `e7688ebcbf4f4f36ab1294b705380553` | different currencies: converted at the governed rate, or not compared and routed to review |
+| H41-D6b | `94ce522786d84b10ae39413a27e9f239` | re-run only before approval; a pending approval is withdrawn; the original is never a duplicate of a later copy |
+| H41-SAP | `597c9d2e699945d0bf245cef59ff0a71` | adapter status decides the integration outcome; a crashed write is UNKNOWN_OUTCOME; real adapter implements every operation |
+| H41-NUM | `44e53c4c828f47bfb064e267dd77dd19` | 6 intakes inserted back to back get 6 distinct numbers |
+| H41-VEN | `c14c5a0850f646758f69254571c72363` | vendor resolved from the printed name despite spacing / case / punctuation, only when exactly one vendor fits; exact name still wins |
+| H41-INV | `dce97236d47a4ebba8395297d6a10d24` | a complete reading creates the invoice with unknown vendor / PO (printed values kept, vendor_invalid on the invoice); Re-run Validation links the vendor, then raises po_mismatch for the unknown printed PO, then links the PO and its line; totals not reconciled is an invoice exception |
+
+The client sample pack (28 real documents) is not an ATF test: the documents stay out of source control. Its run is
+recorded in `CLIENT_DOCUMENT_TEST_MATRIX.md` and repeated with `MANUAL_TEST_CASES.md` MT-41-12..17.
+
 ## Coverage against the brief's Section 18 checklist
 
 | Required coverage | Status |

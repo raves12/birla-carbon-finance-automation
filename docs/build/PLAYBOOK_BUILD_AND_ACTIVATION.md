@@ -229,6 +229,14 @@ All → System Definition → Scheduled Jobs. Every 30 minutes, active.
 - Script: redirect to `/x/695068/bcfa/playbook/<table>/<sys_id>` (the BCFA Workspace Playbook page).
 - Roles: all BCFA business roles.
 
+**Workspace button: Open Playbook** (BCFA Workspace AP invoice and payment forms)
+
+- Opens the Playbook as a "Playbook" sub-tab of the record's workspace tab.
+- Declarative form action `bcfa_open_playbook` (one per table), client action **BCFA Open Playbook** (key `BCFA_OPEN_PLAYBOOK`, payload: route `playbook` with the record's table and sys_id), enabled for all experiences.
+- UX add-on event mappings **BCFA Open Playbook (AP invoice / payment)**: controller Form, source component Action bar, target event "[Record Page] Item Selected", target route `current`. This is the platform pattern for a form button that opens a workspace page without editing the record page.
+- The form action and its layout item are created by `scripts/deploy/phase40_playbook_button_layout_bg.js` (scope global). They are not in the Fluent source, because the SDK identifies form actions by their UI action. Without them the whole action bar stays empty while the declarative action is active, so the script activates the declarative actions last.
+- A workspace UI action cannot do this: its client script runs sandboxed and cannot navigate.
+
 **SECURITY.** The route ACL `bcfa.*` (existing) applies.
 
 **TEST PROCEDURE**

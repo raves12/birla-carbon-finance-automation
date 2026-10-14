@@ -29,6 +29,15 @@ export const realSapAdapter = ScriptInclude({
     script: Now.include('../../server/script-includes/RealSAPAdapter.server.js'),
 })
 
+export const sapPayloadBuilder = ScriptInclude({
+    $id: Now.ID['si-sap-payload-builder'],
+    name: 'SapPayloadBuilder',
+    active: true,
+    apiName: 'x_695068_bcfa.SapPayloadBuilder',
+    description: 'Builds the SAP-ready request of the two SAP writes (vendor invoice posting, customer payment clearing) from the BCFA records, schema bcfa.sap/1, and checks what SAP would reject. Used by the domain services; MOCK SAP applies the check.',
+    script: Now.include('../../server/script-includes/SapPayloadBuilder.server.js'),
+})
+
 export const mockBankAdapter = ScriptInclude({
     $id: Now.ID['si-mock-bank-adapter'],
     name: 'MockBankAdapter',
