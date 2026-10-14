@@ -149,6 +149,16 @@ export const x_695068_bcfa_finance_intake = Table({
         // Phase 42: document evidence summary of the reading (the AP invoice
         // carries the full stamp evidence and its validation).
         document_language: StringColumn({ label: 'Document Language', maxLength: 40, readOnly: true, hint: "The model's reading of the document's language (never from the file name or a party's country)." }),
+        // Phase 42: routes the reading to the use case with the right OCR model
+        // (NativeDocumentIntelligenceProvider.resolveUseCase). Set by the person
+        // who uploads the document: the language cannot be detected safely
+        // before OCR. Changing it and processing again starts a new reading.
+        document_language_hint: ChoiceColumn({
+            label: 'Document Language Hint',
+            dropdown: 'dropdown_with_none',
+            choices: { latin: 'Latin scripts (default)', zh_hans: 'Chinese (Simplified)' },
+            hint: 'Script of the document, for the OCR model: leave empty or Latin for English / European documents; Chinese (Simplified) for Chinese invoices and advices (CJ OCR model).',
+        }),
         reader_script_check: StringColumn({ label: 'Reader Text Check', maxLength: 400, readOnly: true,
             hint: 'Characters per script in the text the platform reader produced (for example Chinese 0), to show when the reading step lost a script.' }),
         stamp_present: ChoiceColumn({ label: 'Stamp Present', readOnly: true, dropdown: 'dropdown_with_none', choices: { yes: 'Yes', no: 'No', uncertain: 'Uncertain' } }),

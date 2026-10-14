@@ -26,8 +26,25 @@ NativeDocumentIntelligenceProvider.LABEL = 'NATIVE: ServiceNow Document Intellig
 NativeDocumentIntelligenceProvider.USE_CASES = {
     ap: '4f1b9b4aca304a7182f72f68a3c168c9', // BCFA AP Invoice Extraction (Now LLM)
     ar: '394844f2a38542d9bb14f79668777523', // BCFA AR Payment Advice Extraction (Now LLM)
-    grn: '6d0f2a8c3e7b4f1a9c5d2e8b7a6f4c31' // BCFA Goods Receipt / GRN Extraction (Now LLM), Phase 42
+    grn: '6d0f2a8c3e7b4f1a9c5d2e8b7a6f4c31', // BCFA Goods Receipt / GRN Extraction (Now LLM), Phase 42
+    // Phase 42: the same fields read with the CJ OCR model (Chinese / Japanese).
+    ap_zh: 'a7c2d41e9b3f4c58b1e60d2f7a9c3e51', // BCFA AP Invoice Extraction - Chinese (Now LLM)
+    ar_zh: 'b8d3e52fac404d69c2f71e3a8bad4f62' // BCFA AR Payment Advice Extraction - Chinese (Now LLM)
 };
+// Phase 42: extraction use-case routing, kind + document language + visual
+// requirement -> use case. The language of a use case is its document config
+// (OCR model): Latin model (default) or CJ model (Chinese / Japanese). The
+// language comes from the intake's Document Language Hint (it cannot be
+// detected safely before OCR). No visual (image-understanding) use case is
+// configured: Now LLM is text-only, and a multimodal provider needs approval.
+NativeDocumentIntelligenceProvider.ROUTES = [
+    { kind: 'ap', language: 'zh_hans', visual: false, useCase: 'ap_zh', ocr: 'CJ model (Chinese / Japanese)' },
+    { kind: 'ar', language: 'zh_hans', visual: false, useCase: 'ar_zh', ocr: 'CJ model (Chinese / Japanese)' },
+    { kind: 'ap', language: '', visual: false, useCase: 'ap', ocr: 'Latin model (default)' },
+    { kind: 'ar', language: '', visual: false, useCase: 'ar', ocr: 'Latin model (default)' },
+    { kind: 'grn', language: '', visual: false, useCase: 'grn', ocr: 'Latin model (default)' }
+];
+NativeDocumentIntelligenceProvider.LANGUAGES = { '': 'Latin scripts (default)', latin: 'Latin scripts (default)', zh_hans: 'Chinese (Simplified)' };
 // A task that has not finished after this many minutes is reported as failed.
 NativeDocumentIntelligenceProvider.TIMEOUT_MINUTES = 10;
 
@@ -36,6 +53,7 @@ NativeDocumentIntelligenceProvider.TIMEOUT_MINUTES = 10;
 NativeDocumentIntelligenceProvider.FIELDS = {
     ap: {
         suppliername: 'vendor_name', suppliertaxregistrationnumber: 'vendor_tax_id', suppliercountry: 'vendor_country',
+        buyertaxregistrationnumber: 'buyer_tax_id', // Phase 42: guards against a seller / buyer tax ID swap
         invoicenumber: 'invoice_number', invoicedate: 'invoice_date', purchaseordernumber: 'po_number', buyercompany: 'buyer_name',
         buyercompanycode: 'company_code', currency: 'currency', paymentterms: 'payment_terms', subtotalbeforetax: 'net_amount',
         discountamount: 'discount_amount', freightamount: 'freight_amount', totaltaxamount: 'tax_amount', taxtype: 'tax_type',
@@ -88,18 +106,45 @@ NativeDocumentIntelligenceProvider.prototype = {
     // Returns { ok:true, data, source, fileName, taskId } once extracted,
     // { ok:false, pending:true, taskId, safeError } while the task runs, or
     // { ok:false, safeError } when extraction cannot run or returned nothing.
+    // Phase 42: the use case for kind + language (+ visual requirement).
+    // language: '' / 'latin' (default) or 'zh_hans'. Returns { useCase (sys_id),
+    // key, language, ocr, fallback, note } or { useCase: null, note } when no
+    // configured use case can read the document as required.
+    resolveUseCase: function(kind, language, visual) {
+        var lang = language === 'latin' ? '' : String(language || '');
+        var routes = NativeDocumentIntelligenceProvider.ROUTES;
+        var pick = function(l) {
+            for (var i = 0; i < routes.length; i++) {
+                if (routes[i].kind === kind && routes[i].language === l && routes[i].visual === !!visual) return routes[i];
+            }
+            return null;
+        };
+        if (visual) return { useCase: null, note: 'No visual (image-understanding) extraction use case is configured: Now LLM is text-only.' };
+        var route = pick(lang), fallback = false, note = '';
+        if (!route && lang) {
+            route = pick('');
+            fallback = true;
+            note = 'No ' + (NativeDocumentIntelligenceProvider.LANGUAGES[lang] || lang) + ' use case for ' + kind + ' documents; read with the Latin OCR model.';
+        }
+        if (!route) return { useCase: null, note: 'Unknown extraction kind "' + kind + '".' };
+        return { useCase: NativeDocumentIntelligenceProvider.USE_CASES[route.useCase], key: route.useCase, language: route.language,
+            languageLabel: NativeDocumentIntelligenceProvider.LANGUAGES[route.language], ocr: route.ocr, fallback: fallback, note: note };
+    },
+
     extract: function(intakeSysId, kind) {
-        var useCase = NativeDocumentIntelligenceProvider.USE_CASES[kind];
-        if (!useCase) return { ok: false, safeError: 'Unknown extraction kind "' + kind + '".' };
         var intake = new GlideRecord('x_695068_bcfa_finance_intake');
         if (!intake.get(intakeSysId)) return { ok: false, safeError: 'Finance Intake record not found.' };
+        var route = this.resolveUseCase(kind, intake.getValue('document_language_hint'), false);
+        var useCase = route.useCase;
+        if (!useCase) return { ok: false, safeError: route.note };
         var attachment = this._attachment(intakeSysId);
         if (!attachment) return { ok: false, safeError: 'No attachment on this intake record.' };
         var fileName = attachment.getValue('file_name');
 
-        // One task per attachment: the task name carries the attachment sys_id,
-        // so a replaced document starts a new task.
-        var taskName = 'BCFA ' + intake.getValue('number') + ' ' + attachment.getUniqueValue();
+        // One task per attachment and reading language: the task name carries
+        // the attachment sys_id (and the language), so a replaced document or a
+        // changed Document Language Hint starts a new task.
+        var taskName = 'BCFA ' + intake.getValue('number') + ' ' + attachment.getUniqueValue() + (route.language ? ' ' + route.language : '');
         var task = new GlideRecord('sys_di_task');
         var taskId = intake.getValue('extraction_task');
         if (!taskId || !task.get(taskId) || task.getValue('display_name') !== taskName) {
@@ -143,6 +188,11 @@ NativeDocumentIntelligenceProvider.prototype = {
         }
         data.extraction_method = NativeDocumentIntelligenceProvider.LABEL;
         data.extraction_task = taskId;
+        // Phase 42: which use case / OCR model read the document.
+        data.extraction_use_case = { sys_id: useCase, key: route.key, language: route.languageLabel, ocr_model: route.ocr };
+        if (route.fallback) {
+            data.warnings = (data.warnings || []).concat([route.note]);
+        }
         return { ok: true, data: data, source: NativeDocumentIntelligenceProvider.SOURCE, fileName: fileName, taskId: taskId };
     },
 

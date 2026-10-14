@@ -61,6 +61,10 @@ MatchingEngine.prototype = {
             }
         }
         var taxKey = this._idKey(opts.taxId);
+        // Phase 42: a supplier tax ID equal to the buyer's tax ID printed on the
+        // same document is a misreading (the Chinese e-invoice reading put the
+        // buyer block's ID in the seller field): it is not used.
+        if (taxKey && opts.buyerTaxId && this._idKey(opts.buyerTaxId) === taxKey) taxKey = '';
         if (taxKey.length >= 5) {
             var byTax = new GlideRecord('x_695068_bcfa_vendor');
             byTax.addQuery('active', true);
@@ -70,7 +74,24 @@ MatchingEngine.prototype = {
             while (byTax.next()) {
                 if (this._idKey(byTax.getValue('tax_registration_number')) === taxKey) taxHits.push(byTax.getUniqueValue());
             }
-            if (taxHits.length === 1) return { resolved: true, vendorSysId: taxHits[0], method: 'tax_registration_number' };
+            if (taxHits.length === 1) {
+                // Phase 42: the printed name must not point at another vendor.
+                var nameCheck = this._vendorByName(vendorName);
+                if (nameCheck.resolved && nameCheck.vendorSysId !== taxHits[0]) {
+                    return { resolved: false, conflict: true, candidates: [taxHits[0], nameCheck.vendorSysId],
+                        reason: 'Tax registration number "' + opts.taxId + '" belongs to one vendor, but the printed supplier "' + vendorName +
+                            '" matches another vendor (' + nameCheck.method + '); not resolved automatically.' };
+                }
+                // ... nor the printed purchase order (a tax ID read from the
+                // wrong block of the document must not win over the PO).
+                var poOfTax = this._poVendor(opts.poNumber);
+                if (poOfTax && poOfTax !== taxHits[0]) {
+                    return { resolved: false, conflict: true, candidates: [taxHits[0], poOfTax],
+                        reason: 'Tax registration number "' + opts.taxId + '" belongs to one vendor, but purchase order ' + opts.poNumber +
+                            ' belongs to another; not resolved automatically.' };
+                }
+                return { resolved: true, vendorSysId: taxHits[0], method: 'tax_registration_number' };
+            }
             if (taxHits.length > 1) return { resolved: false, ambiguous: true, candidates: taxHits,
                 reason: taxHits.length + ' active vendors share tax registration number "' + opts.taxId + '"; not resolved automatically.' };
         }
@@ -95,6 +116,15 @@ MatchingEngine.prototype = {
         if (byNameEvidence.resolved || byNameEvidence.ambiguous) return byNameEvidence;
         return { resolved: false, reason: 'No unique active vendor match for code "' + (vendorCode || '') + '"' + (opts.taxId ? ' / tax id "' + opts.taxId + '"' : '') +
             (opts.poNumber ? ' / PO "' + opts.poNumber + '"' : '') + ' / name "' + (vendorName || '') + '".' };
+    },
+
+    // Phase 42: the vendor of a printed PO number ('' when not found).
+    _poVendor: function(poNumber) {
+        if (!poNumber) return '';
+        var po = new GlideRecord('x_695068_bcfa_purchase_order');
+        po.addQuery('po_number', poNumber);
+        po.query();
+        return po.next() ? (po.getValue('vendor') || '') : '';
     },
 
     // Steps 4 and 5 of resolveVendor: active alias (unique vendor), then the

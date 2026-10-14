@@ -12,9 +12,10 @@ the POC team's defects. A row is PASS only with evidence from the instance (ATF,
   (`CLIENT_DOCUMENT_TEST_MATRIX.md`):
   - Latin-script invoices (English, Italian, Portuguese): 85 % of critical fields read correctly;
   - English payment advices: 95 %;
-  - Chinese VAT e-invoices, the Korean image invoice and the Thai scan: mostly not read, because the platform's reading
-    step loses those scripts (`MULTILINGUAL_DOCUMENT_INTELLIGENCE_READINESS.md`). Nothing is invented; they go to
-    review.
+  - Chinese VAT e-invoices and bank advices: read with the CJ OCR model since the Phase 42 remediation (the earlier
+    loss came from use cases running on the Latin model; `CHINESE_DOCUMENT_TEST_RESULTS.md`);
+  - the Korean image invoice and the Thai scan: mostly not read, because the platform's reading step loses those
+    scripts (`MULTILINGUAL_DOCUMENT_INTELLIGENCE_READINESS.md`). Nothing is invented; they go to review.
 - **SAP:** MOCK SAP only; no live SAP is claimed. SAP-ready request data and real-outcome mapping are built
   (`SAP_ACTIVATION_CHECKLIST.md`).
 
@@ -35,7 +36,7 @@ the POC team's defects. A row is PASS only with evidence from the instance (ATF,
 | Defect 8 (AR correlation) | **PASS** | H41-D8 (7 scenarios); no client advice linked on weak evidence |
 | Defect 9 (shipping) | **PASS (ATF)** | H41-D9 on the Uline figures; the Uline file (14.7 MB) itself must be split first |
 | Defect 10 (AR null state) | **PASS (ATF)** | H41-D10 |
-| Defect 11 (multilingual) | **PARTIAL** | Latin scripts verified on client documents; Chinese VAT e-invoices, scanned Korean and Thai not readable on this instance (platform); 5 languages have no client sample |
+| Defect 11 (multilingual) | **PARTIAL** | Latin scripts and Chinese (CJ OCR, Phase 42) verified on client documents; scanned Korean and Thai not readable on this instance (platform); 5 languages have no client sample |
 | Found in the run: E5 (duplicate intake numbers), E6 (normalization noise) | **PASS** | Fixed and deployed; H41-NUM |
 
 ### Capabilities

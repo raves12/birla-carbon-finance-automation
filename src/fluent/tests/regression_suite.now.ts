@@ -69,6 +69,7 @@ export const bcfaRegressionSuite = TestSuite({
         '0d0164aafdb7487bbe4bd4308b0fe3de', // H42-VEN vendor resolution precedence
         '656248665a0442af88ff296cfea42f86', // H42-STAMP stamp presence evidence and China rule
         '6fe27d4475e045819a350b9ad4c6ec00', // H42-GRN goods receipt documents as evidence
+        '97592bc6b13244f9914f19bff1094a66', // H42-ROUTE extraction use case by kind + language (CJ OCR)
     ],
 })
 

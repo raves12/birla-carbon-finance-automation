@@ -200,6 +200,15 @@ FinanceDocumentIntakeService.prototype = {
         var extractionSource = envelope.source;
 
         var data = envelope.data;
+        // Phase 42: a supplier tax ID equal to the buyer's tax ID on the same
+        // document is a misreading (seen on Chinese VAT e-invoices: the buyer
+        // block's ID read into the seller field). Kept as read, not used.
+        if (data.vendor_tax_id && data.buyer_tax_id &&
+            this.matchingEngine.canonicalText(data.vendor_tax_id).replace(/ /g, '') === this.matchingEngine.canonicalText(data.buyer_tax_id).replace(/ /g, '')) {
+            data.vendor_tax_id_as_read = data.vendor_tax_id;
+            data.vendor_tax_id = '';
+            data.warnings = (data.warnings || []).concat(['Supplier tax ID read equals the buyer tax ID (' + data.vendor_tax_id_as_read + '); not used to identify the vendor.']);
+        }
         intake.setValue('extraction_json', JSON.stringify(data));
         intake.setValue('extraction_summary', new FinanceTextFormat().extractionSummary(data, 'ap'));
         this._auditExtraction(intake, data, envelope);
@@ -215,7 +224,8 @@ FinanceDocumentIntakeService.prototype = {
             this.sendToManualReview(intakeSysId, 'Extraction confidence ' + data.confidence + ' is below the ' + threshold + ' review threshold.' +
                 (data.warnings && data.warnings.length ? ' ' + data.warnings.join(' ') : '') +
                 (data.reader_script_check ? ' ' + data.reader_script_check + ' If the document is written in a script missing from that count (for example Chinese), ' +
-                    'the platform reading lost it before extraction; enter the values from the document.' : ''));
+                    (intake.getValue('document_language_hint') === 'zh_hans' ? 'the platform reading lost it before extraction; enter the values from the document.' :
+                        'set Document Language Hint to Chinese (Simplified) and process the document again (CJ OCR model).') : ''));
             return { requiresReview: true };
         }
 
@@ -234,7 +244,19 @@ FinanceDocumentIntakeService.prototype = {
         // exception (vendor invalid, PO mismatch, totals not reconciled), so
         // the reviewer works on the invoice, not on the intake.
         // Phase 42: code, tax registration, PO vendor, alias, Unicode name.
-        var vendorResolution = this.resolveVendor(data.vendor_code, data.vendor_name, { taxId: data.vendor_tax_id, poNumber: data.po_number });
+        var vendorResolution = this.resolveVendor(data.vendor_code, data.vendor_name, { taxId: data.vendor_tax_id, buyerTaxId: data.buyer_tax_id, poNumber: data.po_number });
+        // Phase 42: the resolved vendor's registered tax ID was read in the buyer
+        // field: the two tax IDs were read swapped (Chinese e-invoice layout).
+        if (vendorResolution.resolved && data.buyer_tax_id) {
+            var resolvedVendor = new GlideRecord('x_695068_bcfa_vendor');
+            if (resolvedVendor.get(vendorResolution.vendorSysId) && resolvedVendor.getValue('tax_registration_number') &&
+                this._normRef(resolvedVendor.getValue('tax_registration_number')) === this._normRef(data.buyer_tax_id)) {
+                data.tax_ids_swapped = true;
+                data.warnings = (data.warnings || []).concat(['The supplier tax ID was read in the buyer field (seller and buyer tax IDs read swapped); ' +
+                    'the vendor was identified by ' + vendorResolution.method + '. Check the tax IDs on the document.']);
+                intake.setValue('extraction_json', JSON.stringify(data));
+            }
+        }
         var poResolution = data.po_number ? this.resolvePurchaseOrder(data.po_number) : { resolved: false };
 
         var intakeResult = this.apService.intakeInvoice({
@@ -243,7 +265,9 @@ FinanceDocumentIntakeService.prototype = {
             vendor: vendorResolution.resolved ? vendorResolution.vendorSysId : undefined,
             printedVendorName: data.vendor_name || '',
             printedVendorCode: data.vendor_code || '',
-            printedVendorTaxId: data.vendor_tax_id || '',
+            // The seller's ID: the one read in the buyer field when the master
+            // data shows the two were read swapped (as read, never invented).
+            printedVendorTaxId: (data.tax_ids_swapped ? data.buyer_tax_id : data.vendor_tax_id) || '',
             printedPoNumber: data.po_number || '',
             companyCode: data.company_code || intake.getValue('company_code') || '',
             currency: data.currency,

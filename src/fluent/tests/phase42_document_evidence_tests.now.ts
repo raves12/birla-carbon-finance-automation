@@ -94,6 +94,15 @@ Test(
                     assertEqual({ name: 'Chinese printed name, normalized', shouldbe: a + '|normalized_name', value: n.vendorSysId + '|' + n.method });
                     mk(tag + 'C', '上海测试化工有限公司 ' + tag, '');
                     assertEqual({ name: 'two vendors with the same normalized Chinese name: ambiguous', shouldbe: true, value: !!me.resolveVendor('', '上海测试化工有限公司　' + tag).ambiguous });
+                    var tc = me.resolveVendor('', 'Other Vendor ' + tag, { taxId: '91310000' + tag });
+                    assertEqual({ name: 'tax ID of vendor A, printed name of vendor B: conflict, not resolved', shouldbe: 'false|true', value: tc.resolved + '|' + tc.conflict });
+                    var tp = me.resolveVendor('', 'unreadable ' + tag, { taxId: '91310000' + tag, poNumber: 'PO' + tag + 'B' });
+                    assertEqual({ name: 'PO number of an unknown PO does not block the tax ID', shouldbe: a, value: tp.vendorSysId });
+                    var poB = new GlideRecord('x_695068_bcfa_purchase_order'); poB.initialize(); poB.setValue('po_number', 'PO' + tag + 'B'); poB.setValue('vendor', b); poB.setValue('currency', 'CNY'); poB.setValue('status', 'open'); poB.insert();
+                    var tpc = me.resolveVendor('', 'unreadable ' + tag, { taxId: '91310000' + tag, poNumber: 'PO' + tag + 'B' });
+                    assertEqual({ name: 'tax ID of vendor A, PO of vendor B: conflict, not resolved', shouldbe: 'false|true', value: tpc.resolved + '|' + tpc.conflict });
+                    assertEqual({ name: 'supplier tax ID equal to the buyer tax ID is not used', shouldbe: false,
+                        value: me.resolveVendor('', 'unreadable ' + tag, { taxId: '91310000' + tag, buyerTaxId: ' 91310000' + tag.toLowerCase() }).resolved });
                 })(outputs, steps, params, stepResult, assertEqual);
             `,
         })
@@ -211,6 +220,38 @@ Test(
                     var ik = new GlideRecord('x_695068_bcfa_finance_intake'); ik.get(iid);
                     assertEqual({ name: 'intake: GRN read as evidence, always to a person', shouldbe: 'true|review_required|' + out.grnExtractionSysId, value: out.requiresReview + '|' + ik.getValue('processing_status') + '|' + ik.getValue('grn_extraction') });
                     assertEqual({ name: 'intake review note says nothing was created', shouldbe: true, value: String(ik.getValue('processing_error')).indexOf('No goods receipt was created or changed') >= 0 });
+                })(outputs, steps, params, stepResult, assertEqual);
+            `,
+        })
+    }
+)
+
+Test(
+    { $id: Now.ID['test-h42-route'], name: 'H42-ROUTE Extraction use case by kind + language: Chinese goes to the CJ OCR use cases; every routed use case applies its language config', active: true },
+    (atf) => {
+        atf.server.runServerSideScript({
+            $id: Now.ID['test-h42-route-step'],
+            script: `
+                (function(outputs, steps, params, stepResult, assertEqual) {
+                    var p = new NativeDocumentIntelligenceProvider();
+                    var U = NativeDocumentIntelligenceProvider.USE_CASES;
+                    assertEqual({ name: 'AP, no hint -> Latin AP use case', shouldbe: U.ap, value: p.resolveUseCase('ap', '').useCase });
+                    assertEqual({ name: 'AP, Latin hint -> Latin AP use case', shouldbe: U.ap, value: p.resolveUseCase('ap', 'latin').useCase });
+                    assertEqual({ name: 'AP, Chinese (Simplified) -> Chinese AP use case', shouldbe: U.ap_zh, value: p.resolveUseCase('ap', 'zh_hans').useCase });
+                    assertEqual({ name: 'AR, no hint -> Latin AR use case', shouldbe: U.ar, value: p.resolveUseCase('ar', '').useCase });
+                    assertEqual({ name: 'AR, Chinese (Simplified) -> Chinese AR use case', shouldbe: U.ar_zh, value: p.resolveUseCase('ar', 'zh_hans').useCase });
+                    var g = p.resolveUseCase('grn', 'zh_hans');
+                    assertEqual({ name: 'GRN, Chinese: no Chinese GRN use case, Latin fallback stated', shouldbe: U.grn + '|true', value: g.useCase + '|' + (g.fallback && g.note.length > 0) });
+                    assertEqual({ name: 'visual reading requested: no use case (not configured)', shouldbe: null, value: p.resolveUseCase('ap', '', true).useCase });
+                    // Every routed use case: active, language config as routed, and
+                    // regional hub on (else the platform ignores its document config).
+                    var CJ = '9863298fff62621087f570dd03cb14db', LATIN = 'eaf4020fffe2621087f570dd03cb140f';
+                    NativeDocumentIntelligenceProvider.ROUTES.forEach(function(r) {
+                        var uc = new GlideRecord('sys_di_task_definition');
+                        var found = uc.get(U[r.useCase]);
+                        assertEqual({ name: r.useCase + ': active, config ' + (r.language ? 'CJ' : 'Latin') + ', regional hub on', shouldbe: 'true|' + (r.language === 'zh_hans' ? CJ : LATIN) + '|1',
+                            value: found + '|' + uc.getValue('document_config') + '|' + (uc.getValue('regional_hub_enabled') === '1' || uc.getValue('regional_hub_enabled') === 'true' ? '1' : '0') });
+                    });
                 })(outputs, steps, params, stepResult, assertEqual);
             `,
         })

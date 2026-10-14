@@ -1,8 +1,9 @@
 # MULTILINGUAL_DOCUMENT_INTELLIGENCE_READINESS.md (Phase 41)
 
-> **Phase 42 update (2026-10-14):** re-measured on the deployed Phase 42 build; the reading loss is unchanged and now
-> shown on every intake (`reader_script_check`). Current status: `OCR_VISUAL_DOCUMENT_READINESS.md`,
-> `CHINESE_DOCUMENT_TEST_RESULTS.md`, `DOCUMENT_INTELLIGENCE_CAPABILITY_ASSESSMENT.md`.
+> **Phase 42 update (2026-10-14):** the Chinese finding below is **superseded**. The loss came from BCFA's use cases
+> running on the Latin OCR model (created without `regional_hub_enabled`, so their language was never applied). With
+> the CJ model, Chinese e-invoices and bank advices are read (`CHINESE_DOCUMENT_TEST_RESULTS.md`). Korean images and
+> Thai scans: unchanged. Current status: `OCR_VISUAL_DOCUMENT_READINESS.md`.
 
 **Requirement:** document understanding in English, French, Portuguese, Hungarian, Italian, Spanish, Arabic, Thai,
 Korean, Hindi and Chinese. This is about reading documents, not translating the Workspace UI.

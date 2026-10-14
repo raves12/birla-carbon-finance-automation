@@ -3020,6 +3020,14 @@ declare global {
                         table: 'sys_atf_step'
                         id: 'c368713a213a4d87950126984a1d6a8a'
                     }
+                    'test-h42-route': {
+                        table: 'sys_atf_test'
+                        id: '97592bc6b13244f9914f19bff1094a66'
+                    }
+                    'test-h42-route-step': {
+                        table: 'sys_atf_step'
+                        id: 'b7b0e5f0f4f44cd3956c98813018b1e0'
+                    }
                     'test-h42-stamp': {
                         table: 'sys_atf_test'
                         id: '656248665a0442af88ff296cfea42f86'
@@ -6578,6 +6586,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_element_mapping'
+                        id: '140be4daa30b4394aee7523b06f8f27a'
+                        key: {
+                            id: 'b7b0e5f0f4f44cd3956c98813018b1e0'
+                            table: 'var__m_atf_input_variable_41de4a935332120028bc29cac2dc349a'
+                            field: 'script'
+                        }
+                    },
+                    {
                         table: 'sys_variable_value'
                         id: '140fc5b4928948bbbc3a0b677a8a0c1f'
                         key: {
@@ -9769,6 +9786,14 @@ declare global {
                             name: 'x_695068_bcfa_ap_invoice'
                             element: 'handwriting_status'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_variable_value'
+                        id: '2a575d1d711e471eba7aa6d9a1395c48'
+                        key: {
+                            document_key: 'b7b0e5f0f4f44cd3956c98813018b1e0'
+                            variable: '989d9e235324220002c6435723dc3484'
                         }
                     },
                     {
@@ -16937,6 +16962,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice_set'
+                        id: '5b31d6bfc3874a168bf2ed2e70515e72'
+                        key: {
+                            name: 'x_695068_bcfa_finance_intake'
+                            element: 'document_language_hint'
+                        }
+                    },
+                    {
                         table: 'sys_variable_value'
                         id: '5b3dd49d392441afb67f86d0a23fd90f'
                         key: {
@@ -17412,6 +17445,14 @@ declare global {
                             id: 'a6fe0cbde9f643ac876ff3a45c3ba23a'
                             table: 'var__m_sys_pd_activity_type_prop_fdbeceb95b61001070e4492c11f91a28'
                             field: 'tagline'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '5f46a71731094838acac8d3f4d61ed91'
+                        key: {
+                            name: 'x_695068_bcfa_finance_intake'
+                            element: 'document_language_hint'
                         }
                     },
                     {
@@ -21815,6 +21856,15 @@ declare global {
                             value: 'bank_statement'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '7c4df0a2caf54f6d86c44734492d349e'
+                        key: {
+                            name: 'x_695068_bcfa_finance_intake'
+                            element: 'document_language_hint'
+                            language: 'en'
                         }
                     },
                     {
@@ -36143,6 +36193,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: 'e2f9a3fd0dd74560acaa88ac4294c471'
+                        key: {
+                            name: 'x_695068_bcfa_finance_intake'
+                            element: 'document_language_hint'
+                            value: 'zh_hans'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_variable_value'
                         id: 'e33d519fa701423cab9567375a2b8a34'
                         key: {
@@ -36561,6 +36622,14 @@ declare global {
                             id: '520bb35413b5481789625362fe1aaf17'
                             table: 'var__m_sys_pd_activity_type_prop_e12af577871333003058d1a936cb0ba4'
                             field: 'associated_table'
+                        }
+                    },
+                    {
+                        table: 'sys_variable_value'
+                        id: 'e54ae251bf514056969c5d78f6e3167e'
+                        key: {
+                            document_key: 'b7b0e5f0f4f44cd3956c98813018b1e0'
+                            variable: '42f2564b73031300440211d8faf6a777'
                         }
                     },
                     {
@@ -37225,6 +37294,17 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_ar_exception'
                             element: 'resolution_notes'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'ea01f556b0624532a7673bc6400b669b'
+                        key: {
+                            name: 'x_695068_bcfa_finance_intake'
+                            element: 'document_language_hint'
+                            value: 'latin'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -40469,6 +40549,14 @@ declare global {
                         key: {
                             name: 'x_695068_bcfa_grn_extraction'
                             element: 'signature_present'
+                        }
+                    },
+                    {
+                        table: 'sys_atf_test_suite_test'
+                        id: 'ff894385a80840da9d9f35a7324c2ff7'
+                        key: {
+                            test_suite: 'fc5aebad352146fd876beed00f871088'
+                            test: '97592bc6b13244f9914f19bff1094a66'
                         }
                     },
                     {

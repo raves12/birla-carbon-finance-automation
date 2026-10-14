@@ -448,6 +448,41 @@ STEPS['phase42_fix2'] = {
 }
 
 
+# Phase 42, Chinese OCR: extraction use-case routing (kind + Document Language
+# Hint -> Latin or CJ OCR use case), Document Language Hint on the intake,
+# guards against a seller / buyer tax ID swap (tax ID equal to the buyer's is
+# not used; tax ID vs printed name conflict goes to a person); tests H42-ROUTE
+# and H42-VEN extended. Use cases: phase40_native_usecases_bg.js (scope global,
+# regional_hub_enabled so the platform applies each use case's language).
+STEPS['phase42_cj'] = {
+    'base': 'ebd7e88',
+    'base_files': {
+        'NativeDocumentIntelligenceProvider': 'scripts/deploy/baselines/NativeDocumentIntelligenceProvider.p42_fix1.js',
+        'FinanceDocumentIntakeService': 'scripts/deploy/baselines/FinanceDocumentIntakeService.p42_live.js',
+        'MatchingEngine': 'scripts/deploy/baselines/MatchingEngine.p42_live.js',
+    },
+    'new_si': [],
+    'mod_si': ['NativeDocumentIntelligenceProvider', 'FinanceDocumentIntakeService', 'MatchingEngine'],
+    'columns': ['x_695068_bcfa_finance_intake=document_language_hint'],
+    'choices': r'^sys_choice_x_695068_bcfa_finance_intake_document_language_hint\.xml$',
+    'files': r'^sys_atf_test_suite_fc5aebad352146fd876beed00f871088\.xml$',
+    'atf': ['97592bc6b13244f9914f19bff1094a66', '0d0164aafdb7487bbe4bd4308b0fe3de'],
+}
+
+
+# Phase 42, Chinese OCR follow-up (CS-18 run, AP00000099: the model read the
+# seller and buyer tax IDs swapped): a tax ID that points at another vendor
+# than the printed PO is a conflict; a swap confirmed by the vendor master is
+# stated on the intake and the seller's ID kept on the invoice.
+STEPS['phase42_cj2'] = {
+    'base': 'ebd7e88',
+    'base_files': {n: 'scripts/deploy/baselines/' + n + '.p42_cj.js' for n in ['FinanceDocumentIntakeService', 'MatchingEngine']},
+    'new_si': [],
+    'mod_si': ['FinanceDocumentIntakeService', 'MatchingEngine'],
+    'atf': ['0d0164aafdb7487bbe4bd4308b0fe3de'],
+}
+
+
 def h(t):
     a = 7
     for ch in t:

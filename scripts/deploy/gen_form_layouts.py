@@ -55,7 +55,7 @@ LAYOUTS = {
         ('Technical', ['correlation_id', 'idempotency_key'], ['journey_stage_order', 'journey_stage_entered', 'journey_updated'], []),
     ],
     P + 'finance_intake': [
-        ('', ['number', 'document_type', 'source', 'source_reference'], ['processing_status', 'requires_review', 'reviewed_by', 'reviewed_at'], ['processing_error']),
+        ('', ['number', 'document_type', 'document_language_hint', 'source', 'source_reference'], ['processing_status', 'requires_review', 'reviewed_by', 'reviewed_at'], ['processing_error']),
         ('Result', ['ap_invoice', 'payment', 'remittance'], ['extraction_provider', 'extraction_confidence', 'extraction_task'], []),
         ('Extracted Data', [], [], ['extraction_summary']),
         ('Document Evidence', ['document_language', 'stamp_present', 'stamp_evidence_status'], ['handwriting_status', 'visual_review_required', 'grn_extraction'], ['reader_script_check']),
