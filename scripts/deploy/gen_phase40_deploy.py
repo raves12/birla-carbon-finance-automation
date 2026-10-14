@@ -359,6 +359,95 @@ STEPS['numbers_ai_terms'] = {
 }
 
 
+# Phase 42: client document hardening. Unicode-safe names and references,
+# vendor resolution precedence (code, tax ID, PO, alias, printed name), stamp /
+# seal / chop presence evidence and the China stamp requirement (decision
+# table built afterwards by phase42_decision_tables_bg.js, scope
+# x_695068_bcfa), goods receipt (GRN) documents read as evidence, document
+# evidence reviews. Creates three tables (preamble). The extraction use case
+# fields are configured by phase40_native_usecases_bg.js (scope global).
+STEPS['phase42'] = {
+    'base': 'ebd7e88',
+    'preamble': 'scripts/deploy/preambles/phase42_evidence_tables.js',
+    'new_si': ['DocumentEvidenceService'],
+    'mod_si': ['MatchingEngine', 'FinanceDocumentIntakeService', 'ApDomainService', 'FinanceJourneyService', 'FinancePolicy',
+               'NativeDocumentIntelligenceProvider', 'DocumentExtractionService'],
+    'columns': [
+        'x_695068_bcfa_vendor=tax_registration_number',
+        'x_695068_bcfa_vendor_alias=vendor,alias_name,language,country_context,match_strength,source,active',
+        'x_695068_bcfa_grn_extraction=finance_intake,grn_number,po_number,vendor_name,receipt_date,plant,material_description,material_code,po_line,'
+        'quantity_received,uom,received_by,remarks,signature_present,stamp_present,handwritten_text_present,handwritten_values,document_language,'
+        'reading_status,critical_fields_missing,sap_receipt,comparison_result,comparison_detail,review_status,raw_extraction,extraction_task,read_on',
+        'x_695068_bcfa_document_evidence_review=ap_invoice,grn_extraction,evidence_item,ai_value,human_value,reason,reviewer,reviewed_on',
+        'x_695068_bcfa_ap_invoice=printed_vendor_tax_id,stamp_required,stamp_present,stamp_type,stamp_text,stamp_page,stamp_count,stamp_detection_method,'
+        'stamp_evidence_status,stamp_ai_finding,stamp_validation_result,stamp_validation_detail,handwriting_status,handwritten_values,'
+        'visual_review_required,evidence_reviewed_by,evidence_reviewed_on,evidence_review_decision',
+        'x_695068_bcfa_finance_intake=document_language,reader_script_check,stamp_present,stamp_evidence_status,handwriting_status,visual_review_required,grn_extraction',
+    ],
+    'choices': r'^sys_choice_x_695068_bcfa_(ai_interaction_operation|ap_exception_reason_code|finance_intake_(document_type|handwriting_status|stamp_evidence_status|stamp_present)'
+               r'|ap_invoice_(handwriting_status|stamp_detection_method|stamp_evidence_status|stamp_present|stamp_type|stamp_validation_result)'
+               r'|document_evidence_review_evidence_item|grn_extraction_(comparison_result|handwritten_text_present|reading_status|review_status|signature_present|stamp_present)'
+               r'|vendor_alias_source)\.xml$',
+    'files': r'^(sys_documentation_x_695068_bcfa_(vendor_alias|grn_extraction|document_evidence_review)__en'
+             r'|sys_properties_(008e1c736d284348802c137e53fc21d8|e8c71bf005904c908e7df5265201cb07)'
+             r'|sys_script_(4507e95050c643418ddeabe73a35a1ca|ac6f5ff616b948d087b21bab48f4e47e|bf97d09c69924725a79ff60fe677ec40)'
+             r'|sys_security_acl_(2fe60b223b8f4e64954e01888fbfb8e5|6dc6c660a59941f4901f952301eabe88|8857be8366c74355a883b1f9caece57c|9e776f7dbb524bb6ac350a24b8391b3d'
+             r'|a9a87308d82e4aac95b332c70af29174|b0469a04def84e4ca849692b4b5edaf4|bbf8b07d9ee24b869c84df0707505bc2)'
+             r'|sys_security_acl_role_(057c5e43|6054dd7d|20584275|3cf2ab53|7e0b5734|92781391|da11f55c|db73df5a|db8bb44d|f7a280e7|8e722d90|dd52b3da|635fbf6c|9a7d5dbe'
+             r'|0b885ad5|248acf66|36d78454|946ebe81|98d5da01|a06b242d|d840e161|0443ba6d|0cc87413|dcd08e64|38d82f95|49f236fa|c0ae0fe0|d5e93993|f3604323|f473037f|f7dea741)[0-9a-f]{24})\.xml$',
+}
+
+
+# Phase 42 tests: H42-UNI, H42-NUM, H42-VEN, H42-STAMP, H42-GRN in BCFA Regression.
+P42_TESTS = ['f3821bf8183043378f39e96b72261128', '2f839d674ea747a383b8869230c7f8a6', '0d0164aafdb7487bbe4bd4308b0fe3de',
+             '656248665a0442af88ff296cfea42f86', '6fe27d4475e045819a350b9ad4c6ec00']
+STEPS['phase42_tests'] = {
+    'base': 'ebd7e88',
+    'new_si': [],
+    'mod_si': [],
+    'files': r'^sys_atf_test_suite_fc5aebad352146fd876beed00f871088\.xml$',
+    'atf': P42_TESTS,
+}
+
+
+# Phase 42 workspace: lists (Goods Receipts (evidence), Document Evidence
+# Review, Evidence Decisions, Vendor Aliases) and Document Evidence Reviews
+# related lists. The form sections come from phase40_forms_bg.js
+# (gen_form_layouts.py).
+STEPS['phase42_workspace'] = {
+    'base': 'ebd7e88',
+    'new_si': [],
+    'mod_si': [],
+    'files': r'^(sys_ux_list_(2169fbfa78b84705b1e2e18c4bbc8008|91ff569367034271a887242cf7c760a1|f062e43a2d6345218a5839994aeebc3a|a59743452abd4a948851449c4abbe6c9)'
+             r'|sys_ux_applicability_m2m_list_(ee2573089cfa4b0298ab8adf5482e80a|7eb0be2b5dab49d19ddeb63f7e3da3a7|04033e21b9c74f4fa4055e9733cd766d|158f09bda66e4bb88367f3ce27bb2c36)'
+             r'|sys_ui_related_list_1307fa60389c4f1687ec96c9b3d0b532'
+             r'|sys_ui_related_list_entry_(d05f559bf12242db95f71af6a69280b6|d6805c0bd9d345b8afc74cfa22405844|65ee05b2dcee4924a0f880822892ff35))\.xml$',
+}
+
+
+# Phase 42 fix 1 (client run): an empty handwriting list ("[]") is not
+# handwriting (FDI0000037 was classed "handwriting readable"); the reader
+# script check counts every page group of a multi-page document.
+STEPS['phase42_fix1'] = {
+    'base': 'ebd7e88',
+    'base_files': {n: 'scripts/deploy/baselines/' + n + '.p42_live.js' for n in ['DocumentEvidenceService', 'NativeDocumentIntelligenceProvider']},
+    'new_si': [],
+    'mod_si': ['DocumentEvidenceService', 'NativeDocumentIntelligenceProvider'],
+    'atf': ['6fe27d4475e045819a350b9ad4c6ec00'],
+}
+
+
+# Phase 42 fix 2: a handwritten entry reported as PARTIAL / UNREADABLE without
+# a value still counts as handwriting present (not readable).
+STEPS['phase42_fix2'] = {
+    'base': 'ebd7e88',
+    'base_files': {'DocumentEvidenceService': 'scripts/deploy/baselines/DocumentEvidenceService.p42_fix1.js'},
+    'new_si': [],
+    'mod_si': ['DocumentEvidenceService'],
+    'atf': ['6fe27d4475e045819a350b9ad4c6ec00'],
+}
+
+
 def h(t):
     a = 7
     for ch in t:
@@ -396,6 +485,10 @@ def main(step):
         args += ['--choices', cfg['choices']]
     for c in cfg.get('columns', []):
         args += ['--columns', c]
+    if cfg.get('preamble'):
+        args += ['--preamble', cfg['preamble']]
+    if cfg.get('postamble'):
+        args += ['--postamble', cfg['postamble']]
     subprocess.run(args, cwd=REPO, check=True)
     loader = io.open(tmp, encoding='utf8').read()
     script = ("// Phase 40 step '" + step + "'. Generated by scripts/deploy/gen_phase40_deploy.py from the now-sdk build.\n"

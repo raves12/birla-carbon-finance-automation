@@ -64,6 +64,11 @@ export const bcfaRegressionSuite = TestSuite({
         '44e53c4c828f47bfb064e267dd77dd19', // H41-NUM distinct intake numbers
         'dce97236d47a4ebba8395297d6a10d24', // H41-INV invoice created when vendor / PO unknown
         'c14c5a0850f646758f69254571c72363', // H41-VEN vendor by normalized printed name
+        'f3821bf8183043378f39e96b72261128', // H42-UNI Unicode-safe names and references
+        '2f839d674ea747a383b8869230c7f8a6', // H42-NUM CJK dates, CNY, full-width amounts
+        '0d0164aafdb7487bbe4bd4308b0fe3de', // H42-VEN vendor resolution precedence
+        '656248665a0442af88ff296cfea42f86', // H42-STAMP stamp presence evidence and China rule
+        '6fe27d4475e045819a350b9ad4c6ec00', // H42-GRN goods receipt documents as evidence
     ],
 })
 

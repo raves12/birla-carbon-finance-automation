@@ -52,6 +52,7 @@ export const x_695068_bcfa_ai_interaction = Table({
                 extract_ap_invoice_document: 'Extract AP Invoice Document',
                 extract_ar_payment_advice_document: 'Extract AR Payment Advice Document',
                 extract_ar_remittance_document: 'Extract AR Remittance Document',
+                extract_goods_receipt_document: 'Extract Goods Receipt Document (evidence)',
                 ap_invoice_summary: 'AP Invoice Summary',
                 ap_match_exception_explanation: 'AP Match Exception Explanation',
                 ap_recommended_next_action: 'AP Recommended Next Action',

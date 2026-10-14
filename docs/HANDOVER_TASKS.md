@@ -133,7 +133,7 @@ The role is only for this person. Do not add it to a group other people are in.
 
 | # | Who | What |
 |---|---|---|
-| 4a | Client IT with ServiceNow | Raise a case: the Document Intelligence reader text has no Chinese characters for Chinese VAT e-invoices (CS-18, CS-20; the PDFs have a Chinese text layer) and no Hangul / Thai for scanned or image pages (CS-19, CS-26). Bank documents keep Chinese. Evidence: `MULTILINGUAL_DOCUMENT_INTELLIGENCE_READINESS.md` (finding). Until fixed, these documents are processed from review |
+| 4a | Client IT with ServiceNow | Raise a case: the Document Intelligence reader text has no Chinese characters for Chinese VAT e-invoices (CS-18, CS-20; the PDFs have a Chinese text layer) and no Hangul / Thai for scanned or image pages (CS-19, CS-26). Bank documents keep Chinese. Evidence: `MULTILINGUAL_DOCUMENT_INTELLIGENCE_READINESS.md` (finding), re-measured in `CHINESE_DOCUMENT_TEST_RESULTS.md` (Phase 42). Also ask whether a native image-understanding reading (stamps, handwriting) exists for this release (`DOCUMENT_INTELLIGENCE_CAPABILITY_ASSESSMENT.md`). Until fixed, these documents are processed from review |
 | 4b | Birla Carbon finance | Decide whether Chinese bank acceptance drafts (CS-10) are in scope for AR; BCFA has no draft model |
 | 4c | Birla Carbon | Supply samples written in French, Hungarian, Spanish, Arabic and Hindi (none in the pack) |
 | 4d | Birla Carbon | Send invoice pages only for large packages (the reader accepts up to 4 MB per file; CS-28 is 14.7 MB) |

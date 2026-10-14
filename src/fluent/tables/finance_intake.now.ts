@@ -71,6 +71,7 @@ export const x_695068_bcfa_finance_intake = Table({
                 ap_invoice: 'AP Invoice',
                 ar_payment_advice: 'AR Payment Advice',
                 ar_remittance: 'AR Remittance',
+                goods_receipt: 'Goods Receipt / GRN (evidence)',
             },
         }),
         processing_status: ChoiceColumn({
@@ -145,6 +146,19 @@ export const x_695068_bcfa_finance_intake = Table({
         requires_review: BooleanColumn({ label: 'Requires Review', default: false }),
         reviewed_by: ReferenceColumn({ label: 'Reviewed By', referenceTable: 'sys_user' }),
         reviewed_at: DateTimeColumn({ label: 'Reviewed At' }),
+        // Phase 42: document evidence summary of the reading (the AP invoice
+        // carries the full stamp evidence and its validation).
+        document_language: StringColumn({ label: 'Document Language', maxLength: 40, readOnly: true, hint: "The model's reading of the document's language (never from the file name or a party's country)." }),
+        reader_script_check: StringColumn({ label: 'Reader Text Check', maxLength: 400, readOnly: true,
+            hint: 'Characters per script in the text the platform reader produced (for example Chinese 0), to show when the reading step lost a script.' }),
+        stamp_present: ChoiceColumn({ label: 'Stamp Present', readOnly: true, dropdown: 'dropdown_with_none', choices: { yes: 'Yes', no: 'No', uncertain: 'Uncertain' } }),
+        stamp_evidence_status: ChoiceColumn({ label: 'Stamp Evidence Status', readOnly: true, dropdown: 'dropdown_with_none', choices: {
+                confirmed_by_native_visual: 'Confirmed by native visual reading', detected_best_effort: 'Detected (best effort, not confirmed)',
+                uncertain: 'Uncertain', not_detected: 'Not detected', human_confirmed: 'Human confirmed', human_rejected: 'Human rejected (no stamp)' } }),
+        handwriting_status: ChoiceColumn({ label: 'Handwriting', readOnly: true, dropdown: 'dropdown_with_none', choices: {
+                none: 'No handwriting found', readable: 'Handwriting readable', partially_readable: 'Partially readable', not_readable: 'Not readable', unknown: 'Unknown' } }),
+        visual_review_required: BooleanColumn({ label: 'Visual Review Required', readOnly: true, default: false }),
+        grn_extraction: ReferenceColumn({ label: 'GRN Extraction', referenceTable: 'x_695068_bcfa_grn_extraction', readOnly: true }),
     },
     index: [{ unique: false, element: 'attachment_hash' }],
 })

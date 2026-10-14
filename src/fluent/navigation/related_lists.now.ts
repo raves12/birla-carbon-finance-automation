@@ -237,3 +237,31 @@ export const paymentAiInteractionEntry = Record({
     table: 'sys_ui_related_list_entry',
     data: { list_id: paymentRelatedList, position: 8, related_list: `REL:${paymentToAiInteractionRel}` },
 })
+
+// --- Phase 42: document evidence ---------------------------------------
+// Document Evidence Reviews (append-only human decisions on stamp presence
+// and GRN values) on the AP invoice and on the GRN extraction.
+
+export const apInvoiceEvidenceReviewEntry = Record({
+    $id: Now.ID['ap-invoice-evidence-review-entry'],
+    table: 'sys_ui_related_list_entry',
+    data: { list_id: apInvoiceRelatedList, position: 9, related_list: 'x_695068_bcfa_document_evidence_review.ap_invoice' },
+})
+
+export const grnExtractionRelatedList = Record({
+    $id: Now.ID['grn-extraction-related-list'],
+    table: 'sys_ui_related_list',
+    data: { name: 'x_695068_bcfa_grn_extraction', view: 'Default view' },
+})
+
+export const grnExtractionEvidenceReviewEntry = Record({
+    $id: Now.ID['grn-extraction-evidence-review-entry'],
+    table: 'sys_ui_related_list_entry',
+    data: { list_id: grnExtractionRelatedList, position: 0, related_list: 'x_695068_bcfa_document_evidence_review.grn_extraction' },
+})
+
+export const grnExtractionIntakeEntry = Record({
+    $id: Now.ID['grn-extraction-intake-entry'],
+    table: 'sys_ui_related_list_entry',
+    data: { list_id: grnExtractionRelatedList, position: 1, related_list: 'x_695068_bcfa_finance_intake.grn_extraction' },
+})

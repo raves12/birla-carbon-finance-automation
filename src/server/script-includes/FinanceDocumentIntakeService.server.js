@@ -157,6 +157,7 @@ FinanceDocumentIntakeService.prototype = {
         if (documentType === 'ap_invoice') return this.processApInvoiceDocument(intakeSysId);
         if (documentType === 'ar_payment_advice') return this.processArPaymentAdviceDocument(intakeSysId);
         if (documentType === 'ar_remittance') return this.processArRemittanceDocument(intakeSysId);
+        if (documentType === 'goods_receipt') return this.processGoodsReceiptDocument(intakeSysId);
         this.sendToManualReview(intakeSysId, 'Unrecognized document_type: ' + documentType);
         return { requiresReview: true };
     },
@@ -203,6 +204,7 @@ FinanceDocumentIntakeService.prototype = {
         intake.setValue('extraction_summary', new FinanceTextFormat().extractionSummary(data, 'ap'));
         this._auditExtraction(intake, data, envelope);
         intake.setValue('extraction_confidence', data.confidence);
+        this._recordReadingEvidence(intake, data);
         intake.update();
 
         // Only the quality of the READING decides here. A document that was
@@ -211,7 +213,9 @@ FinanceDocumentIntakeService.prototype = {
         var threshold = this.policy.extractionConfidenceThreshold();
         if (data.confidence < threshold) {
             this.sendToManualReview(intakeSysId, 'Extraction confidence ' + data.confidence + ' is below the ' + threshold + ' review threshold.' +
-                (data.warnings && data.warnings.length ? ' ' + data.warnings.join(' ') : ''));
+                (data.warnings && data.warnings.length ? ' ' + data.warnings.join(' ') : '') +
+                (data.reader_script_check ? ' ' + data.reader_script_check + ' If the document is written in a script missing from that count (for example Chinese), ' +
+                    'the platform reading lost it before extraction; enter the values from the document.' : ''));
             return { requiresReview: true };
         }
 
@@ -229,7 +233,8 @@ FinanceDocumentIntakeService.prototype = {
         // printed values are kept on the invoice and validation raises the
         // exception (vendor invalid, PO mismatch, totals not reconciled), so
         // the reviewer works on the invoice, not on the intake.
-        var vendorResolution = this.resolveVendor(data.vendor_code, data.vendor_name);
+        // Phase 42: code, tax registration, PO vendor, alias, Unicode name.
+        var vendorResolution = this.resolveVendor(data.vendor_code, data.vendor_name, { taxId: data.vendor_tax_id, poNumber: data.po_number });
         var poResolution = data.po_number ? this.resolvePurchaseOrder(data.po_number) : { resolved: false };
 
         var intakeResult = this.apService.intakeInvoice({
@@ -238,6 +243,7 @@ FinanceDocumentIntakeService.prototype = {
             vendor: vendorResolution.resolved ? vendorResolution.vendorSysId : undefined,
             printedVendorName: data.vendor_name || '',
             printedVendorCode: data.vendor_code || '',
+            printedVendorTaxId: data.vendor_tax_id || '',
             printedPoNumber: data.po_number || '',
             companyCode: data.company_code || intake.getValue('company_code') || '',
             currency: data.currency,
@@ -298,6 +304,9 @@ FinanceDocumentIntakeService.prototype = {
             if (rec.result) invoiceForConfidence.setValue('amount_reconciliation', rec.result);
             if (rec.detail) invoiceForConfidence.setValue('amount_reconciliation_detail', String(rec.detail).substring(0, 1000));
             invoiceForConfidence.setValue('extraction_summary', new FinanceTextFormat().extractionSummary(data, 'ap'));
+            // Phase 42: stamp / handwriting evidence as read (the requirement
+            // and its validation run in validateInvoice).
+            new DocumentEvidenceService().applyReadingToInvoice(invoiceForConfidence, data);
             invoiceForConfidence.update();
         }
 
@@ -366,8 +375,8 @@ FinanceDocumentIntakeService.prototype = {
 
     // ==== Deterministic master-data resolvers (never guess ambiguity) ======
 
-    resolveVendor: function(vendorCode, vendorName) {
-        return this.matchingEngine.resolveVendor(vendorCode, vendorName);
+    resolveVendor: function(vendorCode, vendorName, opts) {
+        return this.matchingEngine.resolveVendor(vendorCode, vendorName, opts);
     },
 
     resolvePurchaseOrder: function(poNumber) {
@@ -480,6 +489,7 @@ FinanceDocumentIntakeService.prototype = {
         intake.setValue('extraction_summary', new FinanceTextFormat().extractionSummary(data, 'ar'));
         this._auditExtraction(intake, data, envelope);
         intake.setValue('extraction_confidence', data.confidence);
+        this._recordReadingEvidence(intake, data);
         intake.update();
 
         var threshold = this.policy.extractionConfidenceThreshold();
@@ -674,8 +684,10 @@ FinanceDocumentIntakeService.prototype = {
         return out;
     },
 
+    // Phase 42: Unicode-safe (full-width digits and letters fold, other
+    // scripts kept, punctuation ignored).
     _normRef: function(value) {
-        return String(value || '').toUpperCase().replace(/[\s\-_\/.]/g, '');
+        return this.matchingEngine.canonicalText(value).replace(/ /g, '');
     },
 
     _findPaymentByReference: function(reference) {
@@ -935,7 +947,8 @@ FinanceDocumentIntakeService.prototype = {
         var isNative = !!envelope && envelope.provider === 'native';
         new AiInteractionLog().log({
             sourceTable: 'x_695068_bcfa_finance_intake', sourceRecord: intake.getUniqueValue(), process: 'intake', provider: isNative ? 'now_assist' : 'simulated',
-            operation: type === 'ap_invoice' ? 'extract_ap_invoice_document' : type === 'ar_payment_advice' ? 'extract_ar_payment_advice_document' : 'extract_ar_remittance_document',
+            operation: type === 'ap_invoice' ? 'extract_ap_invoice_document' : type === 'ar_payment_advice' ? 'extract_ar_payment_advice_document' :
+                type === 'goods_receipt' ? 'extract_goods_receipt_document' : 'extract_ar_remittance_document',
             capability: 'document_extraction', skill: isNative ? 'Document Intelligence (generative, Now LLM)' : 'SimulatedDocumentExtraction', status: 'success', durationMs: 0,
             result: 'Extracted fields: ' + fields.join(', '), confidence: data.confidence,
             model: isNative ? 'Document Key Value Extraction (NowLLM); task ' + envelope.taskId : 'fixture'
@@ -951,6 +964,52 @@ FinanceDocumentIntakeService.prototype = {
             afterValue: { provider: envelope ? envelope.provider : '', confidence: data.confidence, confidence_basis: data.confidence_basis || '',
                 fields: fields, warnings: data.warnings || [], extraction_task: data.extraction_task || '' }
         });
+    },
+
+    // Phase 42: what the reading established about the document itself,
+    // on the intake (language, the reader-text script check, stamp and
+    // handwriting findings). Caller updates the intake.
+    _recordReadingEvidence: function(intake, data) {
+        var evidence = new DocumentEvidenceService();
+        intake.setValue('document_language', String(data.document_language || '').substring(0, 40));
+        intake.setValue('reader_script_check', String(data.reader_script_check || '').substring(0, 400));
+        if (intake.getValue('document_type') === 'ap_invoice' || intake.getValue('document_type') === 'goods_receipt') {
+            var stamp = evidence.stampEvidence(data);
+            intake.setValue('stamp_present', stamp.stamp_present);
+            intake.setValue('stamp_evidence_status', stamp.stamp_evidence_status);
+            var hw = evidence.handwritingEvidence(data);
+            intake.setValue('handwriting_status', hw.handwriting_status);
+            intake.setValue('visual_review_required', stamp.stamp_evidence_status !== 'confirmed_by_native_visual' && stamp.stamp_evidence_status !== 'not_detected');
+        }
+    },
+
+    // Phase 42: a goods receipt (GRN) document, printed or handwritten, read
+    // as EVIDENCE. It is compared with the SAP receipt of the same number and
+    // always goes to a person; it never creates or changes a receipt, and a
+    // value that was not read is never filled in.
+    processGoodsReceiptDocument: function(intakeSysId) {
+        var intake = new GlideRecord('x_695068_bcfa_finance_intake');
+        if (!intake.get(intakeSysId)) return { error: 'Finance Intake record not found' };
+        if (intake.getValue('grn_extraction')) {
+            this.sendToManualReview(intakeSysId, 'This goods receipt document was already read (GRN Extraction ' + intake.getDisplayValue('grn_extraction') + '): review it there.');
+            return { requiresReview: true, grnExtractionSysId: intake.getValue('grn_extraction') };
+        }
+        var envelope = this._extract(intakeSysId, 'grn', 'goods receipt');
+        if (!envelope.ok) return envelope.pending ? { pending: true, taskId: envelope.taskId } : { requiresReview: true };
+        var data = envelope.data;
+        intake.setValue('extraction_json', JSON.stringify(data));
+        intake.setValue('extraction_confidence', data.confidence);
+        this._auditExtraction(intake, data, envelope);
+        this._recordReadingEvidence(intake, data);
+        var outcome = new DocumentEvidenceService().recordGrnReading(intakeSysId, data, envelope.taskId);
+        intake.setValue('grn_extraction', outcome.grnExtractionSysId);
+        intake.update();
+        var labels = { printed_readable: 'printed values read', handwriting_readable: 'handwriting read', partially_readable: 'partially readable', not_readable: 'not readable' };
+        this.sendToManualReview(intakeSysId, 'Goods receipt read as evidence (' + labels[outcome.readingStatus] + ')' +
+            (outcome.missing.length ? '; not read: ' + outcome.missing.join(', ') : '') + '. ' + outcome.comparison.detail +
+            ' Check the values against the document in the GRN Extraction and record any correction as a Document Evidence Review. ' +
+            'No goods receipt was created or changed.' + (data.reader_script_check ? ' ' + data.reader_script_check : ''));
+        return { requiresReview: true, grnExtractionSysId: outcome.grnExtractionSysId, readingStatus: outcome.readingStatus, comparison: outcome.comparison.result };
     },
 
     // Phase 40: runs the configured extraction provider. While a native task

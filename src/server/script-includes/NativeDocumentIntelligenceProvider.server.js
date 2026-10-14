@@ -25,7 +25,8 @@ NativeDocumentIntelligenceProvider.SOURCE = 'servicenow_document_intelligence';
 NativeDocumentIntelligenceProvider.LABEL = 'NATIVE: ServiceNow Document Intelligence (generative extraction, Now LLM)';
 NativeDocumentIntelligenceProvider.USE_CASES = {
     ap: '4f1b9b4aca304a7182f72f68a3c168c9', // BCFA AP Invoice Extraction (Now LLM)
-    ar: '394844f2a38542d9bb14f79668777523'  // BCFA AR Payment Advice Extraction (Now LLM)
+    ar: '394844f2a38542d9bb14f79668777523', // BCFA AR Payment Advice Extraction (Now LLM)
+    grn: '6d0f2a8c3e7b4f1a9c5d2e8b7a6f4c31' // BCFA Goods Receipt / GRN Extraction (Now LLM), Phase 42
 };
 // A task that has not finished after this many minutes is reported as failed.
 NativeDocumentIntelligenceProvider.TIMEOUT_MINUTES = 10;
@@ -45,7 +46,11 @@ NativeDocumentIntelligenceProvider.FIELDS = {
         // and the page layout of multi-document PDFs.
         shippingandhandlingamount: 'shipping_amount', surchargeamount: 'surcharge_amount', otherchargesamount: 'other_charge_amount',
         duedate: 'due_date', goodsreceiptnumber: 'grn_number', serviceentrynumber: 'srn_number', taxcomponents: 'tax_components',
-        invoicepagenumbers: 'invoice_pages', supportingdocuments: 'supporting_documents'
+        invoicepagenumbers: 'invoice_pages', supportingdocuments: 'supporting_documents',
+        // Phase 42: document evidence as read (DocumentEvidenceService decides
+        // what it is worth).
+        stamppresent: 'stamp_present_read', stamptype: 'stamp_type_read', stamptext: 'stamp_text', stamppage: 'stamp_page',
+        stampcount: 'stamp_count', handwrittentextpresent: 'handwriting_present_read', handwrittenvalues: 'handwritten_values'
     },
     ar: {
         payername: 'customer_name', customeraccountnumber: 'customer_code', paymentreference: 'payment_reference',
@@ -55,8 +60,18 @@ NativeDocumentIntelligenceProvider.FIELDS = {
         // Phase 41
         beneficiaryname: 'beneficiary_name', valuedate: 'value_date', totaladvanceamount: 'advance_amount', totaltdsamount: 'tds_amount',
         documentlanguage: 'document_language'
+    },
+    // Phase 42: goods receipt (GRN) documents, printed or handwritten.
+    grn: {
+        goodsreceiptnumber: 'grn_number', purchaseordernumber: 'po_number', suppliername: 'vendor_name', receiptdate: 'receipt_date',
+        plantorsite: 'plant', materialorservicedescription: 'material_description', materialcode: 'material_code', polinenumber: 'po_line',
+        quantityreceived: 'quantity_received', unitofmeasure: 'uom', receivedby: 'received_by', remarks: 'remarks',
+        signaturepresent: 'signature_present_read', stamppresent: 'stamp_present_read', handwrittentextpresent: 'handwriting_present_read',
+        handwrittenvalues: 'handwritten_values', documentlanguage: 'document_language'
     }
 };
+// Phase 42: date fields normalized to YYYY-MM-DD (original kept).
+NativeDocumentIntelligenceProvider.DATES = ['invoice_date', 'due_date', 'payment_date', 'value_date', 'receipt_date'];
 NativeDocumentIntelligenceProvider.NUMERIC = [
     'net_amount', 'discount_amount', 'freight_amount', 'tax_amount', 'tax_rate_pct', 'cgst_amount', 'sgst_amount', 'igst_amount',
     'vat_amount', 'wht_amount', 'wht_rate_pct', 'gross_amount', 'payment_amount', 'deduction_amount',
@@ -120,8 +135,12 @@ NativeDocumentIntelligenceProvider.prototype = {
             return { ok: false, taskId: taskId, safeError: 'Native extraction returned no result for "' + fileName + '" (Document Intelligence task ' + taskId + ')' +
                 (result.error ? ': ' + result.error : '') + '. Review the document manually.' };
         }
-        var data = kind === 'ap' ? this._mapInvoice(result.raw) : this._mapAdvice(result.raw);
+        var data = kind === 'ap' ? this._mapInvoice(result.raw) : kind === 'grn' ? this._mapGrn(result.raw) : this._mapAdvice(result.raw);
         data.field_evidence = result.evidence;
+        if (result.readerText) {
+            data.reader_script_check = result.readerText.summary;
+            data.reader_text_counts = result.readerText;
+        }
         data.extraction_method = NativeDocumentIntelligenceProvider.LABEL;
         data.extraction_task = taskId;
         return { ok: true, data: data, source: NativeDocumentIntelligenceProvider.SOURCE, fileName: fileName, taskId: taskId };
@@ -132,7 +151,9 @@ NativeDocumentIntelligenceProvider.prototype = {
     _readResult: function(taskId) {
         var keys = {};
         var key = new GlideRecord('sys_di_key');
-        key.addQuery('task_definition', 'IN', NativeDocumentIntelligenceProvider.USE_CASES.ap + ',' + NativeDocumentIntelligenceProvider.USE_CASES.ar);
+        var useCases = [];
+        for (var uc in NativeDocumentIntelligenceProvider.USE_CASES) useCases.push(NativeDocumentIntelligenceProvider.USE_CASES[uc]);
+        key.addQuery('task_definition', 'IN', useCases.join(','));
         key.query();
         while (key.next()) keys[key.getUniqueValue()] = this._norm(key.getValue('name'));
         var outputId = '', evidence = {};
@@ -154,7 +175,39 @@ NativeDocumentIntelligenceProvider.prototype = {
         if (out.getValue('error')) return { raw: null, error: out.getValue('error'), evidence: evidence };
         var raw = null;
         try { raw = JSON.parse(out.getValue('data') || ''); } catch (e) { return { raw: null, error: 'structured output is not JSON', evidence: evidence }; }
-        return { raw: raw, evidence: evidence };
+        return { raw: raw, evidence: evidence, readerText: this.readerScriptCheck(taskId) };
+    },
+
+    // Phase 42: characters per script in the text the platform's reader
+    // (DocReader) produced for the task. Shows whether the reading step kept
+    // the document's script: a Chinese e-invoice whose reader text has no
+    // Chinese characters lost its labels and names before extraction. A
+    // multi-page document has one reader text per page group: all are counted.
+    readerScriptCheck: function(taskId) {
+        var o = new GlideRecord('di_genai_output');
+        o.addQuery('task', taskId);
+        o.query();
+        var c = null;
+        var add = function(t, key, re) { c[key] += (t.match(re) || []).length; };
+        while (o.next()) {
+            var j = null;
+            try { j = JSON.parse(o.getValue('data') || ''); } catch (e) { j = null; }
+            if (!j || j.document_text === undefined) continue;
+            var t = String(j.document_text || '');
+            if (!c) c = { chinese: 0, korean: 0, thai: 0, devanagari: 0, arabic: 0, latin: 0, length: 0, parts: 0 };
+            add(t, 'chinese', /[\u4e00-\u9fff\u3400-\u4dbf]/g);
+            add(t, 'korean', /[\uac00-\ud7af\u1100-\u11ff]/g);
+            add(t, 'thai', /[\u0e00-\u0e7f]/g);
+            add(t, 'devanagari', /[\u0900-\u097f]/g);
+            add(t, 'arabic', /[\u0600-\u06ff]/g);
+            add(t, 'latin', /[A-Za-z\u00c0-\u024f]/g);
+            c.length += t.length;
+            c.parts++;
+        }
+        if (!c) return null;
+        c.summary = 'Reader text: ' + c.length + ' characters' + (c.parts > 1 ? ' in ' + c.parts + ' page groups' : '') + ' (Latin ' + c.latin + ', Chinese ' + c.chinese +
+            ', Korean ' + c.korean + ', Thai ' + c.thai + ', Devanagari ' + c.devanagari + ', Arabic ' + c.arabic + ').';
+        return c;
     },
 
     // Phase 41: extraction confidence and financial reconciliation are
@@ -296,6 +349,15 @@ NativeDocumentIntelligenceProvider.prototype = {
         return checks.finish(d);
     },
 
+    // Phase 42: a goods receipt reading. Critical values (GRN, PO, quantity)
+    // are judged by DocumentEvidenceService; nothing here is authoritative.
+    _mapGrn: function(raw) {
+        var d = this._mapFields(raw, NativeDocumentIntelligenceProvider.FIELDS.grn);
+        d.raw = raw;
+        var checks = this._confidence(d, ['grn_number', 'po_number', 'quantity_received']);
+        return checks.finish(d);
+    },
+
     // Per invoice: gross - advance - TDS - other deductions = paid (where the
     // advice prints them); overall: sum of amounts paid = payment amount.
     reconcileAdvice: function(d) {
@@ -350,10 +412,52 @@ NativeDocumentIntelligenceProvider.prototype = {
                 if (typeof v === 'string' && /\d/.test(v) && !/^\s*-?\d+(\.\d+)?\s*$/.test(v) && String(d[field]) !== v) {
                     normalization.push({ field: field, original: v, normalized: d[field], rule: this._numRule(v) });
                 }
+            } else if (NativeDocumentIntelligenceProvider.DATES.indexOf(field) >= 0) {
+                // Phase 42: 2026年09月15日, 2026.09.15, full-width digits -> 2026-09-15
+                var date = this.normalizeDate(v);
+                d[field] = date.value;
+                if (date.rule) normalization.push({ field: field, original: this._str(v), normalized: date.value, rule: date.rule });
             } else d[field] = this._str(v);
+        }
+        if (d.currency !== undefined) {
+            var cur = this.normalizeCurrency(d.currency, d.document_language);
+            if (cur.rule) normalization.push({ field: 'currency', original: d.currency, normalized: cur.value, rule: cur.rule });
+            d.currency = cur.value;
         }
         d.normalization = normalization;
         return d;
+    },
+
+    // Phase 42: a date as printed or as returned -> YYYY-MM-DD. Accepts
+    // full-width digits and the Chinese / Japanese / Korean year-month-day
+    // forms (2026年9月15日, 2026년 9월 15일) and year-first forms with . / -.
+    // A day-first or month-first date is left as returned (the field
+    // descriptions ask the model to convert it with the document locale; an
+    // ambiguous order is never guessed here). Returns { value, rule }.
+    normalizeDate: function(v) {
+        var s = this._str(v);
+        if (!s) return { value: '', rule: '' };
+        var f = MatchingEngine.foldFullWidth(s.normalize ? s.normalize('NFKC') : s);
+        var m = f.match(/^(\d{4})\s*[年년.\/\-]\s*(\d{1,2})\s*[月월.\/\-]\s*(\d{1,2})\s*[日일]?$/);
+        if (!m) return { value: s, rule: '' };
+        var mm = parseInt(m[2], 10), dd = parseInt(m[3], 10);
+        if (mm < 1 || mm > 12 || dd < 1 || dd > 31) return { value: s, rule: '' };
+        var out = m[1] + '-' + (mm < 10 ? '0' : '') + mm + '-' + (dd < 10 ? '0' : '') + dd;
+        return { value: out, rule: out === s ? '' : 'year-month-day date normalized (full-width digits, 年月日 / 년월일, . or / separators)' };
+    },
+
+    // Phase 42: currency as returned -> ISO 4217. RMB / 人民币 / 元 -> CNY;
+    // ¥ / ￥ -> CNY only on a Chinese-language document (the same sign is
+    // used for JPY), otherwise left as returned (not guessed). Returns
+    // { value, rule }.
+    normalizeCurrency: function(v, language) {
+        var s = this._str(v);
+        var f = MatchingEngine.foldFullWidth(s.normalize ? s.normalize('NFKC') : s).toUpperCase().replace(/\s+/g, '');
+        if (!f) return { value: '', rule: '' };
+        if (f === 'RMB' || f === '人民币' || f === '人民幣' || f === '元' || f === 'CN¥') return { value: 'CNY', rule: 'Chinese currency name -> CNY' };
+        if (/^[A-Z]{3}$/.test(f)) return { value: f, rule: f === s ? '' : 'currency code upper-cased / full-width folded' };
+        if ((f === '¥' || f === 'YEN') && /chinese|中文/i.test(String(language || ''))) return { value: 'CNY', rule: '¥ on a Chinese-language document -> CNY' };
+        return { value: s, rule: '' };
     },
 
     _numRule: function(v) {
@@ -403,7 +507,10 @@ NativeDocumentIntelligenceProvider.prototype = {
     _num: function(v) {
         if (v === null || v === undefined) return null;
         if (typeof v === 'number') return isNaN(v) ? null : v;
-        var s = String(v).replace(/[^0-9.,\-]/g, '');
+        // Phase 42: full-width digits and separators (１２３，４５６．７８) fold first.
+        var folded = MatchingEngine.foldFullWidth(String(v));
+        if (folded.normalize) folded = folded.normalize('NFKC');
+        var s = folded.replace(/[^0-9.,\-]/g, '');
         if (s === '' || s === '-') return null;
         var lastDot = s.lastIndexOf('.'), lastComma = s.lastIndexOf(',');
         var decimal = lastDot > lastComma ? '.' : ',';

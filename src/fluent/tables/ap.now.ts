@@ -189,6 +189,37 @@ export const x_695068_bcfa_ap_invoice = Table({
                 manual_review: 'Manual Review',
                 fail: 'Fail',
             } }),
+        // Phase 42: document evidence (stamp / seal / chop presence and
+        // handwriting). Presence detection only: BCFA never claims a stamp is
+        // authentic. The AI finding is kept read-only next to the human
+        // decision; the governed BCFA Document Evidence Requirement decides
+        // whether a stamp is required.
+        printed_vendor_tax_id: StringColumn({ label: 'Supplier Tax ID (Printed)', maxLength: 60, readOnly: true, hint: 'Supplier tax registration / organization identifier as printed (extraction). Used to resolve the vendor.' }),
+        stamp_required: BooleanColumn({ label: 'Stamp Required', readOnly: true, default: false, hint: 'Set by the BCFA Document Evidence Requirement decision table (POC business configuration, not a statement of law).' }),
+        stamp_present: ChoiceColumn({ label: 'Stamp Present', readOnly: true, dropdown: 'dropdown_with_none', choices: { yes: 'Yes', no: 'No', uncertain: 'Uncertain' },
+            hint: 'Current stamp finding: the human decision when recorded, otherwise the extraction finding. Presence only, never authenticity.' }),
+        stamp_type: ChoiceColumn({ label: 'Stamp Type', readOnly: true, dropdown: 'dropdown_with_none', choices: {
+                company_chop: 'Company Chop', company_seal: 'Company Seal', finance_seal: 'Finance Seal', invoice_seal: 'Invoice Seal',
+                tax_seal: 'Tax Seal', other: 'Other', unknown: 'Unknown' } }),
+        stamp_text: StringColumn({ label: 'Stamp Text', maxLength: 400, readOnly: true, hint: 'Text read inside the stamp, best effort. Empty does not mean the stamp is absent.' }),
+        stamp_page: StringColumn({ label: 'Stamp Page', maxLength: 40, readOnly: true }),
+        stamp_count: IntegerColumn({ label: 'Stamp Count', readOnly: true }),
+        stamp_detection_method: ChoiceColumn({ label: 'Stamp Detection Method', readOnly: true, dropdown: 'dropdown_with_none', choices: {
+                native_visual: 'Native visual (image) reading', ocr_text: 'OCR text only (no image understanding)', human: 'Human review', not_run: 'Not run' } }),
+        stamp_evidence_status: ChoiceColumn({ label: 'Stamp Evidence Status', readOnly: true, dropdown: 'dropdown_with_none', choices: {
+                confirmed_by_native_visual: 'Confirmed by native visual reading', detected_best_effort: 'Detected (best effort, not confirmed)',
+                uncertain: 'Uncertain', not_detected: 'Not detected', human_confirmed: 'Human confirmed', human_rejected: 'Human rejected (no stamp)' } }),
+        stamp_ai_finding: StringColumn({ label: 'Stamp AI Finding', maxLength: 1000, readOnly: true, hint: 'What the extraction reported about stamps, as read (evidence, immutable).' }),
+        stamp_validation_result: ChoiceColumn({ label: 'Stamp Validation', readOnly: true, dropdown: 'dropdown_with_none', choices: {
+                not_required: 'Not required', passed: 'Passed', missing: 'Required stamp missing', review_required: 'Review required' } }),
+        stamp_validation_detail: StringColumn({ label: 'Stamp Validation Detail', maxLength: 1000, readOnly: true }),
+        handwriting_status: ChoiceColumn({ label: 'Handwriting', readOnly: true, dropdown: 'dropdown_with_none', choices: {
+                none: 'No handwriting found', readable: 'Handwriting readable', partially_readable: 'Partially readable', not_readable: 'Not readable', unknown: 'Unknown' } }),
+        handwritten_values: StringColumn({ label: 'Handwritten Values (Read)', maxLength: 1000, readOnly: true, hint: 'Handwritten values the extraction could read, as read. Never completed by guessing.' }),
+        visual_review_required: BooleanColumn({ label: 'Visual Review Required', readOnly: true, default: false }),
+        evidence_reviewed_by: ReferenceColumn({ label: 'Evidence Reviewed By', referenceTable: 'sys_user', readOnly: true }),
+        evidence_reviewed_on: DateTimeColumn({ label: 'Evidence Reviewed On', readOnly: true }),
+        evidence_review_decision: StringColumn({ label: 'Evidence Review Decision', maxLength: 400, readOnly: true }),
     },
     index: [{ unique: false, element: 'duplicate_key' }],
 })
@@ -305,6 +336,8 @@ export const x_695068_bcfa_ap_exception = Table({
                 line_total_mismatch: 'Line Total Mismatch',
                 currency_mismatch: 'Currency / FX (no approved rate)',
                 totals_not_reconciled: 'Printed Totals Not Reconciled',
+                document_evidence_missing: 'Required Stamp Missing',
+                document_evidence_review: 'Document Evidence Review (stamp)',
                 other: 'Other',
             },
         }),

@@ -8,7 +8,8 @@ var ApDomainService = Class.create();
 // approval decision yet), and the exception reasons the re-run re-checks.
 ApDomainService.RERUN_FROM = ['VALIDATED', 'MATCHED', 'EXCEPTION', 'ON_HOLD', 'PENDING_APPROVAL'];
 ApDomainService.RECHECKED_REASONS = ['duplicate', 'po_mismatch', 'quantity_tolerance', 'price_tolerance', 'tax_validation', 'low_confidence',
-    'missing_field', 'vendor_invalid', 'grn_missing', 'line_total_mismatch', 'currency_mismatch', 'totals_not_reconciled'];
+    'missing_field', 'vendor_invalid', 'grn_missing', 'line_total_mismatch', 'currency_mismatch', 'totals_not_reconciled',
+    'document_evidence_missing', 'document_evidence_review'];
 ApDomainService.prototype = {
     initialize: function() {
         this.auditEngine = new AuditEngine();
@@ -111,6 +112,7 @@ ApDomainService.prototype = {
         // As printed on the document; validation resolves them to master data.
         if (fields.printedVendorName) invoice.setValue('printed_vendor_name', String(fields.printedVendorName).substring(0, 255));
         if (fields.printedVendorCode) invoice.setValue('printed_vendor_code', String(fields.printedVendorCode).substring(0, 40));
+        if (fields.printedVendorTaxId) invoice.setValue('printed_vendor_tax_id', String(fields.printedVendorTaxId).substring(0, 60));
         if (fields.printedPoNumber) invoice.setValue('printed_po_number', String(fields.printedPoNumber).substring(0, 40));
         if (fields.salesOrderReference) invoice.setValue('sales_order_reference', fields.salesOrderReference);
         invoice.setValue('gross_amount', fields.grossAmount || 0);
@@ -236,6 +238,11 @@ ApDomainService.prototype = {
                 if (!poCheck.ok) failure = { reasonCode: poCheck.reasonCode, description: poCheck.description };
             }
         }
+        // Phase 42: document evidence (stamp presence) where the governed BCFA
+        // Document Evidence Requirement asks for it. Presence only; a person
+        // confirms what the reading cannot (see DocumentEvidenceService).
+        var evidence = new DocumentEvidenceService().evaluateStamp(invoice);
+        if (!failure && evidence.failure) failure = evidence.failure;
 
         if (failure) {
             var exceptionSysId = this.exceptionEngine.createApException(apInvoiceSysId, failure.reasonCode, failure.description, {
@@ -245,7 +252,8 @@ ApDomainService.prototype = {
                     'Vendor: ' + (invoice.getDisplayValue('vendor') || (printedVendor ? 'not in vendor master (printed: ' + printedVendor + ')' : 'missing')) + '\n' +
                     'Gross amount: ' + (invoice.getValue('gross_amount') || 'missing') + ' ' + invoice.getValue('currency') + '\n' +
                     'Purchase order: ' + (invoice.getDisplayValue('purchase_order') || (printedPo ? 'not found (printed: ' + printedPo + ')' : 'none')) + '\n' +
-                    'Printed totals: ' + (invoice.getDisplayValue('amount_reconciliation') || 'not checked') +
+                    'Printed totals: ' + (invoice.getDisplayValue('amount_reconciliation') || 'not checked') + '\n' +
+                    'Document evidence: ' + evidence.summary +
                     (references.linked.length ? '\nLinked now: ' + references.linked.join('; ') : '')
             });
             this._explainApException(exceptionSysId);
@@ -269,7 +277,8 @@ ApDomainService.prototype = {
         var printedVendorName = invoice.getValue('printed_vendor_name');
         var printedVendorCode = invoice.getValue('printed_vendor_code');
         if (!invoice.getValue('vendor') && (printedVendorName || printedVendorCode)) {
-            var vendor = this.matchingEngine.resolveVendor(printedVendorCode, printedVendorName);
+            var vendor = this.matchingEngine.resolveVendor(printedVendorCode, printedVendorName,
+                { taxId: invoice.getValue('printed_vendor_tax_id'), poNumber: invoice.getValue('printed_po_number') });
             if (vendor.resolved) {
                 invoice.setValue('vendor', vendor.vendorSysId);
                 linked.push('vendor "' + (printedVendorName || printedVendorCode) + '" (' + vendor.method + ')');

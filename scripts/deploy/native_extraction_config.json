@@ -1,5 +1,5 @@
 {
-  "_comment": "Phase 40: BCFA native (ServiceNow Document Intelligence, generative, Now LLM) extraction use cases. One DocIntel field per extracted value. Fields carry facts only: no tax, tolerance or approval rules. 'field' is the BCFA extraction contract name used by NativeDocumentIntelligenceProvider. Tuning 1 (2026-10-05): descriptions of VAT Amount, Withholding Tax Amount and Withholding Tax Rate Percent made explicit about the printed labels (still facts only). Phase 41 (client sample pack): separate charge components (shipping/handling, surcharge, other), due date, GRN/SRN from notes, tax components, invoice pages vs supporting documents in multi-document PDFs, header fields read from the invoice pages only; AR beneficiary, value date, advance and TDS per invoice. Facts only.",
+  "_comment": "Phase 40: BCFA native (ServiceNow Document Intelligence, generative, Now LLM) extraction use cases. One DocIntel field per extracted value. Fields carry facts only: no tax, tolerance or approval rules. 'field' is the BCFA extraction contract name used by NativeDocumentIntelligenceProvider. Tuning 1 (2026-10-05): descriptions of VAT Amount, Withholding Tax Amount and Withholding Tax Rate Percent made explicit about the printed labels (still facts only). Phase 41 (client sample pack): separate charge components (shipping/handling, surcharge, other), due date, GRN/SRN from notes, tax components, invoice pages vs supporting documents in multi-document PDFs, header fields read from the invoice pages only; AR beneficiary, value date, advance and TDS per invoice. Facts only. Phase 42 (client document hardening): Chinese label hints on the AP header fields (names kept as printed, never translated); stamp / seal / chop PRESENCE and handwriting fields (facts as seen, YES/NO/UNCERTAIN; never authenticity); goods receipt (GRN) use case, read as evidence only.",
   "platform": {
     "document_type": "0a13c28bffe2621087f570dd03cb14d9",
     "document_config": "eaf4020fffe2621087f570dd03cb140f",
@@ -19,13 +19,13 @@
           "7c43f318896b4dd4bd4b174b363eedfc",
           "vendor_name",
           "Supplier Name",
-          "Legal name of the company that issued (sold) this invoice. This is the seller, not the buyer or bill-to party."
+          "Legal name of the company that issued (sold) this invoice. This is the seller, not the buyer or bill-to party. On a Chinese VAT invoice (发票) it is the 销售方 名称. Copy it exactly as printed, in its original script (for example Chinese characters); never translate or transliterate it."
         ],
         [
           "09ec6e2839ef4149ad7b6bcf718899fe",
           "vendor_tax_id",
           "Supplier Tax Registration Number",
-          "The seller's tax registration number exactly as printed (for example GSTIN, VAT number, EIN). Empty if none is printed."
+          "The seller's tax registration number exactly as printed (for example GSTIN, VAT number, EIN). Empty if none is printed. On a Chinese invoice: the 销售方 统一社会信用代码 / 纳税人识别号."
         ],
         [
           "d6f413f0a76941999b0e8a3d756755c8",
@@ -37,13 +37,13 @@
           "05f68e360c854270a241fc75a4de243e",
           "invoice_number",
           "Invoice Number",
-          "The invoice number exactly as printed (for fiscal documents: the fiscal invoice / NF-e / e-invoice number). Read it from the vendor invoice itself, never from a purchase order, goods receipt, packing list, delivery receipt, e-mail or other supporting page in the same file."
+          "The invoice number exactly as printed (for fiscal documents: the fiscal invoice / NF-e / e-invoice number). Read it from the vendor invoice itself, never from a purchase order, goods receipt, packing list, delivery receipt, e-mail or other supporting page in the same file. On a Chinese invoice: 发票号码."
         ],
         [
           "a0ef379ee5dd4c6c83957a3a3e8f3945",
           "invoice_date",
           "Invoice Date",
-          "The invoice (issue) date, formatted YYYY-MM-DD. Convert from the printed format and calendar (for example 05.10.2026, 2026年10月05日, 2026.10.05) without guessing day/month order when the document locale makes it clear. Read it from the vendor invoice itself, never from a purchase order, goods receipt, packing list, delivery receipt, e-mail or other supporting page in the same file."
+          "The invoice (issue) date, formatted YYYY-MM-DD. Convert from the printed format and calendar (for example 05.10.2026, 2026年10月05日, 2026.10.05) without guessing day/month order when the document locale makes it clear. Read it from the vendor invoice itself, never from a purchase order, goods receipt, packing list, delivery receipt, e-mail or other supporting page in the same file. On a Chinese invoice: 开票日期."
         ],
         [
           "32142d489495425895a85976775da311",
@@ -55,7 +55,7 @@
           "0e798a877cec47d391eaf71a96fe274f",
           "buyer_name",
           "Buyer Company",
-          "Legal name of the buyer / bill-to company."
+          "Legal name of the buyer / bill-to company. On a Chinese invoice: the 购买方 名称. Copy it exactly as printed, in its original script (for example Chinese characters); never translate or transliterate it."
         ],
         [
           "49e84d8215ff41a79128bcc26f4be6f4",
@@ -67,7 +67,7 @@
           "4343eba4046842e48f043bf4e2df5fd6",
           "currency",
           "Currency",
-          "Invoice currency as a three-letter ISO 4217 code (for example INR, EUR, USD)."
+          "Invoice currency as a three-letter ISO 4217 code (for example INR, EUR, USD). ¥ / ￥ / 元 / 人民币 / RMB on a Chinese invoice is CNY."
         ],
         [
           "1f99e970b46b440cab45347408efecb4",
@@ -79,7 +79,7 @@
           "37ef17fbac4449748be4fa3a106af109",
           "net_amount",
           "Subtotal Before Tax",
-          "The goods / services subtotal before tax and before separately printed charges (shipping, freight, handling, surcharges), as a plain number without currency symbol or thousands separators. If the invoice prints only one pre-tax total that already includes the charges, use that total. Read it from the vendor invoice itself, never from a purchase order, goods receipt, packing list, delivery receipt, e-mail or other supporting page in the same file."
+          "The goods / services subtotal before tax and before separately printed charges (shipping, freight, handling, surcharges), as a plain number without currency symbol or thousands separators. If the invoice prints only one pre-tax total that already includes the charges, use that total. Read it from the vendor invoice itself, never from a purchase order, goods receipt, packing list, delivery receipt, e-mail or other supporting page in the same file. On a Chinese invoice: the 合计 金额 (amount before tax)."
         ],
         [
           "9f7cffc76b5c4d3b98953c5c93892107",
@@ -97,7 +97,7 @@
           "57fd1c05203d42b194927e47741c954a",
           "tax_amount",
           "Total Tax Amount",
-          "Total of all taxes charged on the invoice (VAT, GST, sales tax, ICMS, IPI, etc.) as a plain number. Do not include withholding tax deducted by the buyer. Read it from the vendor invoice itself, never from a purchase order, goods receipt, packing list, delivery receipt, e-mail or other supporting page in the same file."
+          "Total of all taxes charged on the invoice (VAT, GST, sales tax, ICMS, IPI, etc.) as a plain number. Do not include withholding tax deducted by the buyer. Read it from the vendor invoice itself, never from a purchase order, goods receipt, packing list, delivery receipt, e-mail or other supporting page in the same file. On a Chinese invoice: the 合计 税额."
         ],
         [
           "1fa54e3dcc8249759e51cd1e058317f8",
@@ -151,7 +151,7 @@
           "32f6fad316ad4cfa98f855e0b7650c5c",
           "gross_amount",
           "Invoice Total",
-          "The total amount due on the invoice including tax and charges, as a plain number. Read it from the vendor invoice itself, never from a purchase order, goods receipt, packing list, delivery receipt, e-mail or other supporting page in the same file."
+          "The total amount due on the invoice including tax and charges, as a plain number. Read it from the vendor invoice itself, never from a purchase order, goods receipt, packing list, delivery receipt, e-mail or other supporting page in the same file. On a Chinese invoice: 价税合计 (小写), the figure after ¥ / ￥."
         ],
         [
           "ae7775f6ff6f486c9fe48dad597a927b",
@@ -218,6 +218,48 @@
           "supporting_documents_json",
           "Supporting Documents",
           "Other documents contained in this file, as a JSON array: {\"type\": one of PURCHASE_ORDER, GOODS_RECEIPT, SERVICE_RECEIPT, PACKING_LIST, DELIVERY_RECEIPT, EMAIL_SUPPORT, OTHER_SUPPORTING_DOCUMENT, \"pages\": \"comma separated 1-based page numbers\", \"reference\": the document number printed on it or null}. Return [] if the file contains only the invoice."
+        ],
+        [
+          "1f6918e9b2a54ed19a016a60162aedcc",
+          "stamp_present_read",
+          "Stamp Present",
+          "Whether an official stamp, seal or chop is visibly impressed on the vendor invoice pages (for example a red round or oval company seal, a 发票专用章 invoice seal, a rubber stamp). A printed label or box such as 'Seal and Signature' or '盖章', a company logo, a letterhead, a watermark or a QR code is NOT a stamp. Report only what is visible; never infer a stamp from the country or the document type. Answer YES, NO or UNCERTAIN. Answer UNCERTAIN whenever you cannot tell."
+        ],
+        [
+          "294c426863334723a71dcf7e22ac78c3",
+          "stamp_type_read",
+          "Stamp Type",
+          "Kind of the stamp seen, one of: INVOICE_SEAL (发票专用章), COMPANY_SEAL (公章), FINANCE_SEAL (财务专用章), RECEIVED_STAMP, OTHER. Empty if no stamp is seen."
+        ],
+        [
+          "cf1cbae837c24e79a10fd03881492b85",
+          "stamp_text",
+          "Stamp Text",
+          "Text inside the stamp, exactly as it can be read, in its original script. Empty if no stamp is seen or its text cannot be read; never guess it."
+        ],
+        [
+          "b1e88e6698b244d18c3fd8c8b8271949",
+          "stamp_page",
+          "Stamp Page",
+          "1-based page number(s) of the file where a stamp is seen, comma separated. Empty if none."
+        ],
+        [
+          "71a154699576442da194c4a62d0bad59",
+          "stamp_count",
+          "Stamp Count",
+          "Number of stamps / seals seen on the invoice pages, as a plain number. Empty if none is seen."
+        ],
+        [
+          "957bf91c2be346c5b5519d2c422cce59",
+          "handwriting_present_read",
+          "Handwritten Text Present",
+          "Whether any handwritten text or figures (not a printed font) appear on the document, for example a handwritten PO, GRN or service entry number, a quantity or a note. Answer YES, NO or UNCERTAIN. Answer UNCERTAIN whenever you cannot tell."
+        ],
+        [
+          "817e049499db415e97d7360c601f32ec",
+          "handwritten_values",
+          "Handwritten Values",
+          "Every handwritten value as a JSON array: {\"label\": what it refers to as printed nearby or null, \"value\": exactly what is written, \"page\": number, \"legibility\": READABLE, PARTIAL or UNREADABLE}. Use null for a value that cannot be read; never guess a digit. Return [] if there is no handwriting."
         ]
       ]
     },
@@ -328,6 +370,116 @@
           "document_language",
           "Document Language",
           "Main language the advice itself is written in, judged from its text (not from addresses or company names), as an English language name."
+        ]
+      ]
+    },
+    {
+      "key": "grn",
+      "sys_id": "6d0f2a8c3e7b4f1a9c5d2e8b7a6f4c31",
+      "skill_sys_id": "0e85c757859a471a834e30369f94193f",
+      "name": "BCFA Goods Receipt / GRN Extraction (Now LLM)",
+      "fields": [
+        [
+          "e538e6a7f847493b9e37010e3b681878",
+          "grn_number",
+          "Goods Receipt Number",
+          "The goods receipt / GRN / GR / material document / 入库单号 / 收货单号 number. Read it from the goods receipt itself (it may be printed or handwritten). If it is handwritten, copy exactly what is written; if a character cannot be read, leave the field empty. Never guess."
+        ],
+        [
+          "aff0b5370ee84532898eee09f1bb7bd9",
+          "po_number",
+          "Purchase Order Number",
+          "The purchase order number the receipt refers to. If it is handwritten, copy exactly what is written; if a character cannot be read, leave the field empty. Never guess."
+        ],
+        [
+          "a9a3021ac9fb42f2bab5a3c03974cb25",
+          "vendor_name",
+          "Supplier Name",
+          "The supplier (vendor) the goods were received from, exactly as written, in its original script; never translate it."
+        ],
+        [
+          "37232759cb7243fdaf254012ee4bb531",
+          "receipt_date",
+          "Receipt Date",
+          "The date the goods were received, formatted YYYY-MM-DD (convert 2026年10月05日 or 05.10.2026 using the document locale; empty if the order is ambiguous). If it is handwritten, copy exactly what is written; if a character cannot be read, leave the field empty. Never guess."
+        ],
+        [
+          "203ec474ddcf407a9a4f6c67f5b23c4c",
+          "plant",
+          "Plant or Site",
+          "The receiving plant, site, warehouse or storage location, as written."
+        ],
+        [
+          "446800bdfd67492681da7c49566c5cd4",
+          "material_description",
+          "Material or Service Description",
+          "Description of the material or service received, as written. Several lines: separate with ' | '."
+        ],
+        [
+          "aabf2474299d48c1b62986a4e72a62ab",
+          "material_code",
+          "Material Code",
+          "Material / item code(s), as written, comma separated. Empty if none."
+        ],
+        [
+          "52293ca608d34291ab881b15949ef078",
+          "po_line",
+          "PO Line Number",
+          "The purchase order line / item number(s), comma separated. Empty if none."
+        ],
+        [
+          "1da269eca46f4e7ca7d318f14f9e64de",
+          "quantity_received",
+          "Quantity Received",
+          "Quantity received as a plain number (several lines in the same unit: their total; otherwise the first line). If it is handwritten, copy exactly what is written; if a character cannot be read, leave the field empty. Never guess."
+        ],
+        [
+          "ba37b61f57fb4018b2a0652e783f6dc6",
+          "uom",
+          "Unit of Measure",
+          "Unit of the received quantity as written (for example KG, MT, EA, PC, 吨, 千克)."
+        ],
+        [
+          "0c462c92a76b4a48b33cc06f87c52d8e",
+          "received_by",
+          "Received By",
+          "Name of the person who received or signed for the goods, as written. Empty if not written or not readable."
+        ],
+        [
+          "ff7d6e4ef3d64c35aafb0e8394302356",
+          "remarks",
+          "Remarks",
+          "Any remark or note on the receipt (for example short delivery, damage, rejection), as written. Empty if none."
+        ],
+        [
+          "f6659076e60d478cbcfe38607ed04d64",
+          "signature_present_read",
+          "Signature Present",
+          "Whether a handwritten signature is visible on the receipt. Answer YES, NO or UNCERTAIN. Answer UNCERTAIN whenever you cannot tell."
+        ],
+        [
+          "7069061d18a84434a7645317c57c747a",
+          "stamp_present_read",
+          "Stamp Present",
+          "Whether an official stamp, seal or chop is visibly impressed on the receipt. A printed label or box such as 'Seal and Signature' or '盖章', a company logo, a letterhead, a watermark or a QR code is NOT a stamp. Report only what is visible; never infer a stamp from the country or the document type. Answer YES, NO or UNCERTAIN. Answer UNCERTAIN whenever you cannot tell."
+        ],
+        [
+          "a966cc007f6248f791c8f897d05fb709",
+          "handwriting_present_read",
+          "Handwritten Text Present",
+          "Whether any handwritten text or figures appear on the receipt. Answer YES, NO or UNCERTAIN. Answer UNCERTAIN whenever you cannot tell."
+        ],
+        [
+          "b38f10d4763a486690112b1a8a52aed4",
+          "handwritten_values",
+          "Handwritten Values",
+          "Every handwritten value as a JSON array: {\"label\": what it refers to as printed nearby or null, \"value\": exactly what is written, \"page\": number, \"legibility\": READABLE, PARTIAL or UNREADABLE}. Use null for a value that cannot be read; never guess a digit. Return [] if there is no handwriting."
+        ],
+        [
+          "b39202ce1b19495e80e7c126c3a9dd6b",
+          "document_language",
+          "Document Language",
+          "Main language the receipt is written in, as an English language name (for example English, Chinese, Korean, Hindi)."
         ]
       ]
     }

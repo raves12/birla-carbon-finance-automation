@@ -1,4 +1,22 @@
 var MatchingEngine = Class.create();
+
+// Phase 42: separators for canonicalText: whitespace, ASCII punctuation and
+// symbols, Latin-1 punctuation (no-break space, inverted marks, middle dot,
+// guillemets), general punctuation (dashes, quotes, bullets, ellipsis), CJK
+// symbols and punctuation except the ideographic iteration / number marks
+// 々 〆 〇 (U+3005-3007, used in names), CJK compatibility and small form
+// variants, half-width brackets and the katakana middle dot.
+MatchingEngine.CANONICAL_SEPARATORS = /[\s!-\/:-@\[-`{-~ -¿‐-⁞　-〄〈-〿︰-﹫｟-･・]+/g;
+
+// Full-width ASCII (U+FF01-FF5E) -> ASCII and the ideographic space -> a
+// space, for an engine without String.prototype.normalize (a no-op after
+// NFKC).
+MatchingEngine.foldFullWidth = function(s) {
+    return String(s).replace(/[！-～]/g, function(c) {
+        return String.fromCharCode(c.charCodeAt(0) - 0xfee0);
+    }).replace(/　/g, ' ');
+};
+
 MatchingEngine.prototype = {
     initialize: function() {},
 
@@ -22,8 +40,17 @@ MatchingEngine.prototype = {
 
     // ---- AP: master-data resolution (never guesses an ambiguity) -------------
 
-    // Vendor by exact active vendor code, then by a unique exact active name.
-    resolveVendor: function(vendorCode, vendorName) {
+    // Phase 42: deterministic precedence, never a translation and never a
+    // guess between candidates:
+    //   1. vendor code
+    //   2. tax registration / organization identifier (opts.taxId)
+    //   3. purchase order -> its vendor (opts.poNumber), unless the printed
+    //      name points to a different vendor (conflict: manual review)
+    //   4. active vendor alias in the printed language
+    //   5. exact or Unicode-normalized vendor name
+    //   6. otherwise unresolved (manual review / vendor exception)
+    resolveVendor: function(vendorCode, vendorName, opts) {
+        opts = opts || {};
         if (vendorCode) {
             var byCode = new GlideRecord('x_695068_bcfa_vendor');
             byCode.addQuery('vendor_code', vendorCode);
@@ -33,6 +60,78 @@ MatchingEngine.prototype = {
                 return { resolved: true, vendorSysId: byCode.getUniqueValue(), method: 'vendor_code' };
             }
         }
+        var taxKey = this._idKey(opts.taxId);
+        if (taxKey.length >= 5) {
+            var byTax = new GlideRecord('x_695068_bcfa_vendor');
+            byTax.addQuery('active', true);
+            byTax.addNotNullQuery('tax_registration_number');
+            byTax.query();
+            var taxHits = [];
+            while (byTax.next()) {
+                if (this._idKey(byTax.getValue('tax_registration_number')) === taxKey) taxHits.push(byTax.getUniqueValue());
+            }
+            if (taxHits.length === 1) return { resolved: true, vendorSysId: taxHits[0], method: 'tax_registration_number' };
+            if (taxHits.length > 1) return { resolved: false, ambiguous: true, candidates: taxHits,
+                reason: taxHits.length + ' active vendors share tax registration number "' + opts.taxId + '"; not resolved automatically.' };
+        }
+        var byNameEvidence = this._vendorByName(vendorName);
+        if (opts.poNumber) {
+            var po = new GlideRecord('x_695068_bcfa_purchase_order');
+            po.addQuery('po_number', opts.poNumber);
+            po.query();
+            if (po.next() && po.getValue('vendor')) {
+                var poVendor = po.getValue('vendor');
+                var poVendorRec = new GlideRecord('x_695068_bcfa_vendor');
+                if (poVendorRec.get(poVendor) && poVendorRec.getValue('active') !== '0' && poVendorRec.getValue('active') !== 'false') {
+                    if (byNameEvidence.resolved && byNameEvidence.vendorSysId !== poVendor) {
+                        return { resolved: false, conflict: true, candidates: [poVendor, byNameEvidence.vendorSysId],
+                            reason: 'Purchase order ' + opts.poNumber + ' belongs to vendor ' + poVendorRec.getValue('name') + ', but the printed supplier "' +
+                                vendorName + '" matches another vendor (' + byNameEvidence.method + '); not resolved automatically.' };
+                    }
+                    return { resolved: true, vendorSysId: poVendor, method: 'purchase_order_vendor' };
+                }
+            }
+        }
+        if (byNameEvidence.resolved || byNameEvidence.ambiguous) return byNameEvidence;
+        return { resolved: false, reason: 'No unique active vendor match for code "' + (vendorCode || '') + '"' + (opts.taxId ? ' / tax id "' + opts.taxId + '"' : '') +
+            (opts.poNumber ? ' / PO "' + opts.poNumber + '"' : '') + ' / name "' + (vendorName || '') + '".' };
+    },
+
+    // Steps 4 and 5 of resolveVendor: active alias (unique vendor), then the
+    // exact name, then the Unicode-normalized name (unique vendor).
+    _vendorByName: function(vendorName) {
+        if (!vendorName) return { resolved: false };
+        var key = this._vendorNameKey(vendorName);
+        if (key.length >= 2) {
+            var aliasHits = {};
+            var alias = new GlideRecord('x_695068_bcfa_vendor_alias');
+            if (alias.isValid()) {
+                alias.addQuery('active', true);
+                alias.query();
+                while (alias.next()) {
+                    if (this._vendorNameKey(alias.getValue('alias_name')) !== key) continue;
+                    var aliasVendor = new GlideRecord('x_695068_bcfa_vendor');
+                    if (aliasVendor.get(alias.getValue('vendor')) && aliasVendor.getValue('active') !== '0' && aliasVendor.getValue('active') !== 'false') {
+                        aliasHits[alias.getValue('vendor')] = true;
+                    }
+                }
+            }
+            var aliasIds = [];
+            for (var v in aliasHits) aliasIds.push(v);
+            if (aliasIds.length === 1) return { resolved: true, vendorSysId: aliasIds[0], method: 'vendor_alias' };
+            if (aliasIds.length > 1) return { resolved: false, ambiguous: true, candidates: aliasIds,
+                reason: 'The alias "' + vendorName + '" belongs to ' + aliasIds.length + ' vendors; not resolved automatically.' };
+        }
+        return this._vendorByPrintedName(vendorName);
+    },
+
+    // Comparison key of an identifier (tax registration, organization code):
+    // canonical text without spaces.
+    _idKey: function(value) {
+        return this.canonicalText(value).replace(/ /g, '');
+    },
+
+    _vendorByPrintedName: function(vendorName) {
         if (vendorName) {
             var byName = new GlideRecord('x_695068_bcfa_vendor');
             byName.addQuery('name', vendorName);
@@ -45,8 +144,10 @@ MatchingEngine.prototype = {
             // The same name read with other spacing, case or punctuation
             // ("D . SURESHPRASAD" = "D. Sureshprasad"); linked only when
             // exactly one active vendor has that normalized name.
+            // Phase 42: Unicode-safe, so a Chinese, Korean or accented name
+            // is compared as printed (two characters are a valid CJK name).
             var key = this._vendorNameKey(vendorName);
-            if (key.length >= 3) {
+            if (key.length >= 2) {
                 var all = new GlideRecord('x_695068_bcfa_vendor');
                 all.addQuery('active', true);
                 all.query();
@@ -55,14 +156,17 @@ MatchingEngine.prototype = {
                     if (this._vendorNameKey(all.getValue('name')) === key) hits.push(all.getUniqueValue());
                 }
                 if (hits.length === 1) return { resolved: true, vendorSysId: hits[0], method: 'normalized_name' };
+                if (hits.length > 1) return { resolved: false, ambiguous: true, candidates: hits,
+                    reason: hits.length + ' active vendors have the name "' + vendorName + '"; not resolved automatically.' };
             }
         }
-        return { resolved: false, reason: 'No unique active vendor match for code "' + (vendorCode || '') + '" / name "' + (vendorName || '') + '".' };
+        return { resolved: false };
     },
 
-    // Letters and digits only, upper case (any script).
+    // Comparison key of a vendor name: the canonical text without spaces
+    // (any script; see canonicalText).
     _vendorNameKey: function(name) {
-        return String(name || '').toUpperCase().replace(/[\s.,;:'"`\-_\/\\()&]+/g, '');
+        return this.canonicalText(name).replace(/ /g, '');
     },
 
     resolvePurchaseOrder: function(poNumber) {
@@ -387,9 +491,11 @@ MatchingEngine.prototype = {
         return sameNumber || { duplicate: false, duplicateKey: duplicateKey };
     },
 
-    // Upper case, letters and digits only: "inv-ap 001" == "INVAP001".
+    // Upper case, letters and digits only: "inv-ap 001" == "INVAP001";
+    // full-width digits fold ("２６１３２" == "26132") and letters of other
+    // scripts are kept (Phase 42).
     normalizeInvoiceNumber: function(value) {
-        return String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+        return this.canonicalText(value).replace(/ /g, '');
     },
 
     // ---- AR: cash application matching --------------------------------------
@@ -595,9 +701,32 @@ MatchingEngine.prototype = {
     },
 
     // Upper case, letters/digits separated by single spaces:
-    // "Lone Star Tyre Co." == "LONE STAR TYRE CO".
+    // "Lone Star Tyre Co." == "LONE STAR TYRE CO". Unicode-safe (Phase 42):
+    // "上海某某有限公司", "한국회사", "Müller GmbH" keep their characters.
     normalizeName: function(value) {
-        return String(value || '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+        return this.canonicalText(value);
+    },
+
+    // Phase 42: Unicode-safe comparison value. The printed value is never
+    // changed; this separate canonical value is used only to compare:
+    //   - Unicode NFKC: full-width letters, digits and punctuation
+    //     ("ＡＢＣ１２３（上海）") and the ideographic space fold to their
+    //     standard forms; foldFullWidth covers an engine without normalize()
+    //   - upper case (Latin, Greek, Cyrillic ...; scripts without case are
+    //     unchanged)
+    //   - harmless punctuation (ASCII, general and CJK punctuation such as
+    //     、。，「」【】《》・) and whitespace become one space
+    //   - letters, digits and marks of every script are kept, accents
+    //     included (Müller != Muller)
+    // The platform's JavaScript has no \p{L} classes, so the separators are
+    // an explicit list (CANONICAL_SEPARATORS); everything else is kept.
+    canonicalText: function(value) {
+        var s = value === null || value === undefined ? '' : String(value);
+        if (typeof s.normalize === 'function') {
+            try { s = s.normalize('NFKC'); } catch (e) {}
+        }
+        s = MatchingEngine.foldFullWidth(s).toUpperCase();
+        return s.replace(MatchingEngine.CANONICAL_SEPARATORS, ' ').replace(/\s+/g, ' ').replace(/^ | $/g, '');
     },
 
     // Phase 14: exact combinations of the customer's open items (same

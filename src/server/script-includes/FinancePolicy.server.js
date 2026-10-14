@@ -14,6 +14,12 @@ FinancePolicy.DEFAULTS = {
     // them is an outgoing sales invoice and never enters AP.
     'own_company_names': 'Birla Carbon,Aditya Birla,博拉碳,비를라카본',
     'ai.provider': 'native',
+    // Phase 42: document evidence (POC business configuration). Countries
+    // whose AP invoices need a visible company stamp when the decision table
+    // cannot be read, and what the platform's reading can establish about
+    // stamps ('ocr_text' = measured: text only, no image understanding).
+    'document_evidence.stamp_required_countries': 'China',
+    'document_evidence.stamp_detection_capability': 'ocr_text',
     'ap.tolerance.quantity_pct': 0.02,
     'ap.tolerance.price_pct': 0.02,
     'ap.tolerance.tax_absolute': 1,
@@ -80,7 +86,8 @@ FinancePolicy.DECISION_TABLES = {
     apTolerance: 'BCFA AP Tolerance',
     apApproval: 'BCFA AP Approval',
     arDeduction: 'BCFA AR Deduction',
-    apTax: 'BCFA AP Tax Expectation'
+    apTax: 'BCFA AP Tax Expectation',
+    documentEvidence: 'BCFA Document Evidence Requirement'
 };
 // Fallback approval group when no decision table row applies.
 FinancePolicy.DEFAULT_APPROVAL_GROUP = 'e34ee8a159fd504893d4fc248a6632a7'; // BCFA Finance Approvers
@@ -236,6 +243,47 @@ FinancePolicy.prototype = {
         }
         return { regime: 'UNKNOWN', ratePct: null, whtApplicable: false, whtCode: '', whtRatePct: null,
             source: 'no tax expectation configured for country "' + (context.country || '') + '"' };
+    },
+
+    // Phase 42: BCFA Document Evidence Requirement decision table. context
+    // { country, documentType ('ap_invoice'), company, vendorType,
+    // invoiceType ('po' / 'non_po') }. Returns { stampRequired,
+    // signatureRequired, manualReviewRequired, source }. POC BUSINESS
+    // CONFIGURATION (for example: China AP invoices need a visible company
+    // stamp), not a statement of law. Fallback property
+    // x_695068_bcfa.document_evidence.stamp_required_countries (comma
+    // separated countries, AP invoices only).
+    documentEvidenceRequirement: function(context) {
+        context = context || {};
+        var decision = this.decide('documentEvidence', {
+            country: context.country || '', document_type: context.documentType || '', company: context.company || '',
+            vendor_type: context.vendorType || 'standard', invoice_type: context.invoiceType || ''
+        }, ['stamp_required', 'signature_required', 'manual_review_required']);
+        if (decision) {
+            return {
+                stampRequired: this._bool(decision.values.stamp_required),
+                signatureRequired: this._bool(decision.values.signature_required),
+                manualReviewRequired: this._bool(decision.values.manual_review_required),
+                source: 'decision table ' + decision.table + ' (' + decision.answer + ') - POC BUSINESS CONFIGURATION'
+            };
+        }
+        var countries = this._string('document_evidence.stamp_required_countries').split(',');
+        var wanted = String(context.country || '').toLowerCase();
+        var stamp = false;
+        for (var i = 0; i < countries.length; i++) {
+            if (wanted && countries[i].replace(/^\s+|\s+$/g, '').toLowerCase() === wanted && context.documentType === 'ap_invoice') stamp = true;
+        }
+        return { stampRequired: stamp, signatureRequired: false, manualReviewRequired: false,
+            source: 'property x_695068_bcfa.document_evidence.stamp_required_countries - POC BUSINESS CONFIGURATION' };
+    },
+
+    // Phase 42: what the platform's reading can establish about stamps on
+    // this instance: 'ocr_text' (text only, the measured capability) or
+    // 'native_visual' (set only once a native image-understanding reading
+    // has been verified on client samples).
+    stampDetectionCapability: function() {
+        var v = this._string('document_evidence.stamp_detection_capability');
+        return v === 'native_visual' ? 'native_visual' : 'ocr_text';
     },
 
     // Phase 40: AR rounding difference that may be written off without an

@@ -792,3 +792,63 @@ Acl({
 })
 
 
+
+// --- Phase 42: vendor aliases and document evidence ------------------------
+
+Acl({
+    $id: Now.ID['acl-read-x_695068_bcfa_vendor_alias'],
+    type: 'record',
+    table: 'x_695068_bcfa_vendor_alias',
+    operation: 'read',
+    roles: [bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaAuditor, bcfaReadOnly, bcfaAdmin, bcfaAiAgent],
+})
+
+Acl({
+    $id: Now.ID['acl-create-x_695068_bcfa_vendor_alias'],
+    type: 'record',
+    table: 'x_695068_bcfa_vendor_alias',
+    operation: 'create',
+    roles: [bcfaApProcessor, bcfaAdmin],
+})
+
+Acl({
+    $id: Now.ID['acl-write-x_695068_bcfa_vendor_alias'],
+    type: 'record',
+    table: 'x_695068_bcfa_vendor_alias',
+    operation: 'write',
+    roles: [bcfaApProcessor, bcfaAdmin],
+})
+
+// Document evidence reviews are append-only: create and read, no write or
+// delete (business rule AppendOnly as well).
+Acl({
+    $id: Now.ID['acl-read-x_695068_bcfa_document_evidence_review'],
+    type: 'record',
+    table: 'x_695068_bcfa_document_evidence_review',
+    operation: 'read',
+    roles: [bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaAuditor, bcfaReadOnly, bcfaAdmin],
+})
+
+Acl({
+    $id: Now.ID['acl-create-x_695068_bcfa_document_evidence_review'],
+    type: 'record',
+    table: 'x_695068_bcfa_document_evidence_review',
+    operation: 'create',
+    roles: [bcfaApProcessor, bcfaFinanceReviewer, bcfaAdmin],
+})
+
+Acl({
+    $id: Now.ID['acl-read-x_695068_bcfa_grn_extraction'],
+    type: 'record',
+    table: 'x_695068_bcfa_grn_extraction',
+    operation: 'read',
+    roles: [bcfaApProcessor, bcfaArProcessor, bcfaFinanceReviewer, bcfaFinanceApprover, bcfaAuditor, bcfaReadOnly, bcfaAdmin],
+})
+
+Acl({
+    $id: Now.ID['acl-write-x_695068_bcfa_grn_extraction'],
+    type: 'record',
+    table: 'x_695068_bcfa_grn_extraction',
+    operation: 'write',
+    roles: [bcfaApProcessor, bcfaAdmin],
+})

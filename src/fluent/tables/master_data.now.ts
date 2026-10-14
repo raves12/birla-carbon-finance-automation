@@ -28,6 +28,10 @@ export const x_695068_bcfa_vendor = Table({
         currency: StringColumn({ label: 'Currency', maxLength: 3 }),
         payment_terms: StringColumn({ label: 'Payment Terms', maxLength: 40 }),
         bank_account: StringColumn({ label: 'Bank Account', maxLength: 40 }),
+        // Phase 42: tax registration / organization identifier (for example
+        // a China unified social credit code, GSTIN, VAT number); the second
+        // vendor resolution key after the vendor code.
+        tax_registration_number: StringColumn({ label: 'Tax Registration Number', maxLength: 60 }),
         // Phase 40: POC reference data for the BCFA AP Tax Expectation
         // decision table (with the country). Not read from SAP.
         tax_category: ChoiceColumn({

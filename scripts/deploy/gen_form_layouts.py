@@ -33,6 +33,10 @@ LAYOUTS = {
         ('Review Summary', [], [], ['review_summary']),
         ('Amounts', ['net_amount', 'tax_amount', 'charges_amount', 'discount_amount', 'gross_amount'], ['company_code', 'posting_date', 'amount_reconciliation', 'sales_order_reference', 'source'], ['amount_reconciliation_detail']),
         ('Document Extraction', ['extraction_provider', 'extraction_confidence', 'printed_vendor_name', 'printed_vendor_code'], ['document_country', 'document_language', 'printed_po_number'], ['extraction_summary']),
+        # Phase 42: stamp / seal / chop presence (never authenticity) and handwriting, as read and as reviewed.
+        ('Document Evidence (stamp / seal, handwriting)', ['stamp_required', 'stamp_present', 'stamp_evidence_status', 'stamp_detection_method', 'stamp_validation_result', 'visual_review_required'],
+             ['stamp_type', 'stamp_text', 'stamp_page', 'stamp_count', 'handwriting_status', 'printed_vendor_tax_id', 'evidence_reviewed_by', 'evidence_reviewed_on'],
+             ['stamp_validation_detail', 'stamp_ai_finding', 'evidence_review_decision', 'handwritten_values']),
         ('Tax as Printed on the Invoice', ['tax_type', 'tax_rate_pct', 'igst_amount', 'cgst_amount', 'sgst_amount'], ['vat_amount', 'wht_amount', 'wht_rate_pct'], []),
         ('Tax and Withholding Validation', ['tax_regime', 'expected_tax_amount', 'tax_variance_amount', 'tax_validation_result'],
              ['wht_applicable', 'wht_code', 'wht_expected_amount', 'wht_result'], ['tax_validation_detail', 'tax_rule_source']),
@@ -54,7 +58,24 @@ LAYOUTS = {
         ('', ['number', 'document_type', 'source', 'source_reference'], ['processing_status', 'requires_review', 'reviewed_by', 'reviewed_at'], ['processing_error']),
         ('Result', ['ap_invoice', 'payment', 'remittance'], ['extraction_provider', 'extraction_confidence', 'extraction_task'], []),
         ('Extracted Data', [], [], ['extraction_summary']),
+        ('Document Evidence', ['document_language', 'stamp_present', 'stamp_evidence_status'], ['handwriting_status', 'visual_review_required', 'grn_extraction'], ['reader_script_check']),
         ('Technical', ['company_code', 'currency', 'correlation_id'], ['attachment_hash', 'duplicate_of', 'classification_confidence', 'classification_reason'], ['extraction_json']),
+    ],
+    # Phase 42: goods receipt documents read as evidence, vendor aliases and
+    # the human evidence reviews.
+    P + 'grn_extraction': [
+        ('', ['grn_number', 'po_number', 'vendor_name', 'receipt_date', 'quantity_received', 'uom'],
+             ['reading_status', 'review_status', 'comparison_result', 'sap_receipt', 'finance_intake', 'document_language'],
+             ['comparison_detail', 'critical_fields_missing']),
+        ('As Read from the Document', ['plant', 'material_code', 'po_line', 'received_by'], ['signature_present', 'stamp_present', 'handwritten_text_present', 'read_on'],
+             ['material_description', 'remarks', 'handwritten_values']),
+        ('Technical', ['extraction_task'], [], ['raw_extraction']),
+    ],
+    P + 'vendor_alias': [
+        ('', ['vendor', 'alias_name', 'language'], ['country_context', 'source', 'match_strength', 'active'], []),
+    ],
+    P + 'document_evidence_review': [
+        ('', ['ap_invoice', 'grn_extraction', 'evidence_item'], ['reviewer', 'reviewed_on'], ['ai_value', 'human_value', 'reason']),
     ],
     P + 'remittance': [
         ('', ['number', 'payment', 'remittance_reference', 'bank_reference', 'payer_name', 'received_date'],
